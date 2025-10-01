@@ -1,22 +1,15 @@
 # ScreenGraph
 
-A repository where **Junie Pro** and **Zep** work together to build full-stack AI applications.
+A full-Kotlin, multi-module project template inspired by KotlinConf App. Modules:
 
----
+- :backend — Ktor server (Koin, JSON, SQLite for dev)
+- :agent — Agent orchestrations (Koin). TODO: add Koog + MCP tools when coordinates are confirmed.
+- :shared — Common models/utilities shared by all modules
+- :ui — Compose Multiplatform (WASM) web UI
 
-## Kotlin Full-Stack (KMP + Ktor)
+## Quick start
 
-A lean, single-person setup using:
+- Backend: `./gradlew :backend:run` (exposes http://localhost:8080/health)
+- UI (wasm/js dev server): `./gradlew :ui:wasmJsRun`
 
-- **Kotlin Multiplatform (KMP)** for shared code  
-- **Jetpack Compose** for UI  
-- **Ktor** for the backend  
-
-**Memory lives in Zep.**
-
-**Guidelines:**
-- Keep all code modular  
-- Use constants/enums wherever possible  
-- Comment every function  
-- No function > 50 lines  
-
+Note: Koog/MCP dependencies are placeholders pending exact Maven coordinates. Please provide the artifact coordinates to finalize.

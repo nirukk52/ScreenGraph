@@ -1,0 +1,51 @@
+# Kotlin/Gradle/IntelliJ common ignores
+# Build outputs
+build/
+*/build/
+out/
+.kotlin/
+
+# Gradle
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# IntelliJ IDEA / Android Studio
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and reports
+*.log
+logs/
+reports/
+
+# Environment / secrets
+.env
+.env.*
+*.local
+*.secret
+secrets.*
+
+# Ktor / backend runtime artifacts
+backend/**/*.db
+backend/**/*.db-shm
+backend/**/*.db-wal
+backend/**/local.conf
+backend/**/application-local.conf
+
+# Compose Multiplatform / WASM artifacts (covered by build/, here for clarity)
+ui/**/dist/
+
+# Node/Yarn if any tooling is used by WASM
+node_modules/
+.yarn/
+.pnp.*
+
+# JetBrains IDE shelf
+.shelf/

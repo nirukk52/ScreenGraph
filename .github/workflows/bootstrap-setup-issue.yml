@@ -1,0 +1,131 @@
+name: Bootstrap Setup Issue
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+  repository-projects: write
+
+jobs:
+  ensure-setup-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create initial setup issue if none exist and add to single project's Backlog (if present)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // 1) Check if any issues (open or closed) exist in the repo
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: 'all',
+              per_page: 1,
+              page: 1,
+            });
+
+            if (issues.length > 0) {
+              core.info(`Issues already exist in ${owner}/${repo}. Skipping bootstrap issue creation.`);
+              return;
+            }
+
+            // 2) Create the bootstrap issue
+            const title = 'Setup project/coding environment';
+            const now = new Date().toLocaleString('en-US', { timeZone: 'UTC' });
+            const body = [
+              `This is an automatically generated issue to bootstrap the project setup.`,
+              `\nDate (UTC): ${now}`,
+              `\n\nChecklist to set up ScreenGraph project/coding environment:`,
+              `- [ ] Confirm repository name and description are accurate`,
+              `- [ ] Define primary language/tooling (Kotlin Multiplatform, Jetpack Compose, Ktor)`,
+              `- [ ] Establish code style and formatting (ktlint/Spotless)`,
+              `- [ ] Configure Gradle wrapper and versions catalog (libs.versions.toml)`,
+              `- [ ] Add CI workflow (build, test, lint)`,
+              `- [ ] Configure GitHub branch protection rules`,
+              `- [ ] Add .editorconfig and IDE code style settings`,
+              `- [ ] Create CONTRIBUTING.md and CODE_OF_CONDUCT.md`,
+              `- [ ] Add issue and PR templates`,
+              `- [ ] Document local dev setup in README with quick-start commands`,
+              `- [ ] Add LICENSE`,
+              `\nGuidelines (ScreenGraph):`,
+              `- Keep all code modular`,
+              `- Use constants/enums wherever possible`,
+              `- Comment every function`,
+              `- No function > 50 lines`,
+            ].join('\n');
+
+            const created = await github.rest.issues.create({
+              owner,
+              repo,
+              title,
+              body,
+              labels: ['project-setup']
+            });
+            core.info('Bootstrap setup issue created successfully.');
+
+            // 3) Try to add the issue to the only existing Project (Projects v2) and set Status=Backlog
+            try {
+              // Determine whether the repo owner is a User or an Organization
+              const { data: repoData } = await github.rest.repos.get({ owner, repo });
+              const login = repoData.owner.login;
+              const ownerIsOrg = repoData.owner.type === 'Organization';
+
+              // Query the owner's Projects v2 list
+              const projectsQuery = ownerIsOrg
+                ? `query($login: String!) { organization(login: $login) { projectsV2(first: 10, orderBy: {field: TITLE, direction: ASC}) { totalCount nodes { id title } } } }`
+                : `query($login: String!) { user(login: $login) { projectsV2(first: 10, orderBy: {field: TITLE, direction: ASC}) { totalCount nodes { id title } } } }`;
+
+              const projResp = await github.graphql(projectsQuery, { login });
+              const container = ownerIsOrg ? projResp.organization : projResp.user;
+              if (!container || container.projectsV2.totalCount !== 1) {
+                core.info('Did not find exactly one project for this owner; skipping project assignment.');
+                return;
+              }
+              const projectId = container.projectsV2.nodes[0].id;
+
+              // Add this issue to that project
+              const addItemMutation = `mutation($projectId: ID!, $contentId: ID!) { addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) { item { id } } }`;
+              const addItemResp = await github.graphql(addItemMutation, {
+                projectId,
+                contentId: created.data.node_id,
+              });
+              const itemId = addItemResp.addProjectV2ItemById?.item?.id;
+              if (!itemId) {
+                core.info('Could not add issue to project (no item id returned).');
+                return;
+              }
+              core.info('Issue added to the only existing Project successfully.');
+
+              // Try to set Status field to Backlog if available
+              const fieldsQuery = `query($projectId: ID!) { node(id: $projectId) { ... on ProjectV2 { fields(first: 50) { nodes { __typename ... on ProjectV2Field { id name } ... on ProjectV2SingleSelectField { id name options { id name } } } } } } }`;
+              const fieldsResp = await github.graphql(fieldsQuery, { projectId });
+              const fields = fieldsResp.node?.fields?.nodes || [];
+              const statusField = fields.find(f => f.name === 'Status' && (f.__typename === 'ProjectV2SingleSelectField' || f.options));
+              if (!statusField || !statusField.options) {
+                core.info('No single-select Status field found on project; skipping Backlog status set.');
+                return;
+              }
+              const backlogOption = statusField.options.find(opt => opt.name.toLowerCase() === 'backlog');
+              if (!backlogOption) {
+                core.info('No Backlog option found in Status field; skipping status set.');
+                return;
+              }
+              const setStatusMutation = `mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) { updateProjectV2ItemFieldValue(input: { projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: { singleSelectOptionId: $optionId } }) { projectV2Item { id } } }`;
+              await github.graphql(setStatusMutation, {
+                projectId,
+                itemId,
+                fieldId: statusField.id,
+                optionId: backlogOption.id,
+              });
+              core.info('Set project item Status to Backlog.');
+            } catch (e) {
+              core.info(`Project assignment skipped or failed: ${e.message || e}`);
+            }
