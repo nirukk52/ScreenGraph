@@ -1,0 +1,65 @@
+{
+  "sections": [
+    {
+      "id": "rules",
+      "name": "Rules",
+      "description": "Hard constraints — law of the land",
+      "icon": "shield-check",
+      "color": "red",
+      "order": 1
+    },
+    {
+      "id": "facts",
+      "name": "Facts",
+      "description": "Immutable truths — what is",
+      "icon": "database",
+      "color": "blue",
+      "order": 2
+    },
+    {
+      "id": "procedures",
+      "name": "Procedures",
+      "description": "How-tos and playbooks",
+      "icon": "list-checks",
+      "color": "green",
+      "order": 3
+    },
+    {
+      "id": "preferences",
+      "name": "Preferences",
+      "description": "Cultural styles and conventions",
+      "icon": "palette",
+      "color": "purple",
+      "order": 4
+    },
+    {
+      "id": "reports",
+      "name": "Reports",
+      "description": "Strategic thinking and reflections",
+      "icon": "file-text",
+      "color": "orange",
+      "order": 5
+    },
+    {
+      "id": "wip",
+      "name": "WIP",
+      "description": "Active work area — high churn",
+      "icon": "hammer",
+      "color": "yellow",
+      "order": 6
+    },
+    {
+      "id": "tasks",
+      "name": "Tasks",
+      "description": "Atomic task management",
+      "icon": "check-square",
+      "color": "teal",
+      "order": 7
+    }
+  ],
+  "metadata": {
+    "last_updated": "2025-10-23",
+    "ui_layout": "sidebar_navigation",
+    "default_view": "wip/current-focus.md"
+  }
+}

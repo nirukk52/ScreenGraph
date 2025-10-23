@@ -1,0 +1,47 @@
+{
+  "version": "1.0.0",
+  "mandatory_reading": [
+    "steering-docs/README.md",
+    "steering-docs/rules/coding-standards.md",
+    "steering-docs/rules/architecture-rules.md",
+    "steering-docs/wip/current-focus.md",
+    "steering-docs/tasks/today.md",
+    "steering-docs/facts/glossary.md"
+  ],
+  "context_files": [
+    "steering-docs/facts/milestone-index.md",
+    "steering-docs/facts/agent-system-deep-dive.md",
+    "steering-docs/preferences/code-style.md",
+    "steering-docs/preferences/ai-persona-guidelines.md"
+  ],
+  "read_order": [
+    "README",
+    "current-focus",
+    "today-tasks",
+    "coding-standards",
+    "architecture-rules",
+    "glossary"
+  ],
+  "update_permissions": {
+    "ai_can_modify": [
+      "wip/*.md",
+      "tasks/*.md",
+      "reports/founder-daily.md"
+    ],
+    "ai_must_ask": [
+      "rules/*.md",
+      "facts/*.md",
+      "procedures/*.md"
+    ],
+    "human_only": [
+      "config/*.json",
+      "reports/strategy-roadmap.md"
+    ]
+  },
+  "notes": {
+    "purpose": "This file tells AI agents what to read before acting and what they can modify",
+    "read_before_task": "AI must read all mandatory_reading files before performing any development task",
+    "context_on_demand": "context_files provide additional detail when needed for specific work",
+    "update_policy": "AI can freely update WIP/tasks, must ask permission for rules/facts/procedures"
+  }
+}
