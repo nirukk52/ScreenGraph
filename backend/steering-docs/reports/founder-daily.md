@@ -39,7 +39,7 @@ Feeling energized about getting the Steering Wheel system in place. This has bee
 
 1. **Clarity on architecture**: Writing the architecture rules doc forced me to think through event sourcing, outbox pattern, and service boundaries. Unstable right now, but at least it's documented.
 
-2. **Domain language solidified**: The glossary is incredibly valuable. "Agent" not "bot", "crawl session" not "job", etc. This prevents drift.
+2. **Domain language solidified**: The glossary is incredibly valuable. "Agent" not "bot", "run" not "job", etc. This prevents drift.
 
 3. **AI integration designed well**: The `ai.config.json` with mandatory reading list is elegant. AI agents know exactly what to read before starting work.
 

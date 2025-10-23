@@ -25,11 +25,11 @@ Each Encore.ts service owns **exactly one aggregate root** and its related entit
 ```
 ✅ Good:
 - agent/ owns Agent aggregate
-- crawl/ owns CrawlSession aggregate
+- run/ owns Run aggregate
 - analysis/ owns AnalysisReport aggregate
 
 ❌ Bad:
-- shared-service/ owns Agent + CrawlSession
+- shared-service/ owns Agent + Run
 ```
 
 **Why**: Clear ownership, independent scaling, reduced coupling.
@@ -42,9 +42,9 @@ Each Encore.ts service owns **exactly one aggregate root** and its related entit
 
 ```typescript
 // ✅ Good — async event
-await publishEvent("agent.crawl.completed", {
+await publishEvent("agent.run.completed", {
   agentId,
-  sessionId,
+  runId,
   screenshots: 42
 });
 
@@ -64,9 +64,9 @@ See `rules/naming-conventions.md` for complete event naming guide.
 
 ```
 Examples:
-- agent.crawl.started
-- agent.crawl.completed
-- agent.crawl.failed
+- agent.run.started
+- agent.run.completed
+- agent.run.failed
 - analysis.report.created
 - analysis.report.published
 ```
@@ -74,15 +74,15 @@ Examples:
 ### Event Payload Structure
 
 ```typescript
-export interface CrawlCompletedEvent {
+export interface RunCompletedEvent {
   eventId: string;           // UUID for idempotency
-  eventType: "agent.crawl.completed";
+  eventType: "agent.run.completed";
   timestamp: number;         // Unix epoch ms
-  aggregateId: string;       // Entity ID (e.g., sessionId)
+  aggregateId: string;       // Entity ID (e.g., runId)
   version: number;           // Event schema version
   data: {
     agentId: string;
-    sessionId: string;
+    runId: string;
     screenshotCount: number;
     duration: number;
     // ... domain-specific fields
@@ -142,7 +142,7 @@ Events for the same aggregate (e.g., same `sessionId`) must be processed **in or
 ```typescript
 // ✅ Good — Pub/Sub subscription with ordering key
 await topic.publish({
-  orderingKey: sessionId,  // Ensures FIFO for this session
+  orderingKey: runId,  // Ensures FIFO for this run
   payload: event
 });
 
@@ -161,7 +161,7 @@ await topic.publish({ payload: event });
 ```
 ✅ Good:
 - agent-db (owned by agent/)
-- crawl-db (owned by crawl/)
+- run-db (owned by run/)
 - analysis-db (owned by analysis/)
 
 ❌ Bad:

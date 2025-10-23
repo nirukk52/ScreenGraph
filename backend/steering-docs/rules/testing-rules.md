@@ -155,7 +155,7 @@ describe("PostgresAgentRepository", () => {
 ## E2E Tests
 
 ### What to Test
-- **Critical user flows**: Login → create agent → start crawl → view results
+- **Critical user flows**: Login → create agent → start run → view results
 - **Happy paths**: Most common user journeys
 - **Error scenarios**: What happens when things fail
 
@@ -166,12 +166,12 @@ describe("PostgresAgentRepository", () => {
 
 ### Example
 ```typescript
-// e2e/agent-crawl-flow.test.ts
+// e2e/agent-run-flow.test.ts
 import { describe, it, expect } from "vitest";
 import backend from "~backend/client";
 
-describe("Agent Crawl Flow", () => {
-  it("completes full crawl workflow", async () => {
+describe("Agent Run Flow", () => {
+  it("completes full run workflow", async () => {
     // Create agent
     const agent = await backend.agent.create({
       name: "E2E Test Agent",
@@ -179,22 +179,22 @@ describe("Agent Crawl Flow", () => {
     });
     expect(agent.id).toBeDefined();
 
-    // Start crawl
-    const session = await backend.crawl.start({
+    // Start run
+    const run = await backend.run.start({
       agentId: agent.id,
       maxScreens: 10
     });
-    expect(session.status).toBe("running");
+    expect(run.status).toBe("running");
 
     // Wait for completion (with timeout)
-    const completed = await waitForCrawlCompletion(session.id, {
+    const completed = await waitForRunCompletion(run.id, {
       timeout: 30000
     });
     expect(completed.status).toBe("completed");
     expect(completed.screenshotCount).toBeGreaterThan(0);
 
     // Verify analysis created
-    const analysis = await backend.analysis.getBySession(session.id);
+    const analysis = await backend.analysis.getByRun(run.id);
     expect(analysis.screens.length).toBe(completed.screenshotCount);
   });
 });

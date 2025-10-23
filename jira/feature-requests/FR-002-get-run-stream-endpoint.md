@@ -1,4 +1,4 @@
-# FR-002: GET /crawl/:id/stream Endpoint
+# FR-002: GET /run/:id/stream Endpoint
 
 **Status:** 📋 Todo  
 **Priority:** P0 (Critical)  
@@ -9,16 +9,16 @@
 ---
 
 ## 📝 Description
-Create Server-Sent Events (SSE) endpoint for streaming crawl events in real-time with support for reconnection and backfill of missed events.
+Create Server-Sent Events (SSE) endpoint for streaming run events in real-time with support for reconnection and backfill of missed events.
 
 ---
 
 ## 🎯 Acceptance Criteria
-- [ ] `GET /crawl/:id/stream` endpoint with SSE response
-- [ ] Returns 404 if crawl ID not found
-- [ ] Streams events from Redis Pub/Sub topic `crawl:{id}`
+- [ ] `GET /run/:id/stream` endpoint with SSE response
+- [ ] Returns 404 if run ID not found
+- [ ] Streams events from Redis Pub/Sub topic `run:{id}`
 - [ ] Supports `?lastEventId=X` query param for backfill
-- [ ] Backfills missed events from `crawl_events` table on reconnect
+- [ ] Backfills missed events from `run_events` table on reconnect
 - [ ] Each SSE message has unique event ID (sequential)
 - [ ] Sends heartbeat every 30s to prevent connection timeout
 - [ ] Closes stream after terminal event (`COMPLETED` or `FAILED`)
@@ -29,7 +29,7 @@ Create Server-Sent Events (SSE) endpoint for streaming crawl events in real-time
 
 ## 🔗 Dependencies
 - Redis Pub/Sub integration
-- `crawl_events` table (FR-006)
+- `run_events` table (FR-006)
 - Outbox publisher (FR-005)
 
 ---
@@ -39,7 +39,7 @@ Create Server-Sent Events (SSE) endpoint for streaming crawl events in real-time
 - [ ] Unit test: Backfill fetches missed events correctly
 - [ ] Integration test: Client reconnects and receives backfill
 - [ ] Integration test: Stream closes after terminal event
-- [ ] Load test: 50 concurrent SSE connections per crawl
+- [ ] Load test: 50 concurrent SSE connections per run
 - [ ] Test: Heartbeat keeps connection alive
 
 ---
@@ -48,22 +48,22 @@ Create Server-Sent Events (SSE) endpoint for streaming crawl events in real-time
 **SSE Message Format:**
 ```
 id: 42
-event: crawl-event
+event: run-event
 data: {"type":"NODE_START","nodeType":"Perceive","timestamp":"2025-10-23T..."}
 
 id: 43
-event: crawl-event
+event: run-event
 data: {"type":"SCREENSHOT_CAPTURED","url":"https://...","timestamp":"..."}
 ```
 
 **Backfill Logic:**
 1. Client sends `Last-Event-ID` header or `?lastEventId=42` query param
-2. Server queries `crawl_events` WHERE `id > 42` ORDER BY `id` ASC
+2. Server queries `run_events` WHERE `id > 42` ORDER BY `id` ASC
 3. Server sends buffered events before subscribing to live topic
 4. Server switches to live Redis stream after backfill complete
 
 **Event Types:**
-- `CRAWL_STARTED`, `NODE_START`, `NODE_COMPLETE`, `SCREENSHOT_CAPTURED`, `ACTION_EXECUTED`, `ERROR`, `CRAWL_COMPLETED`, `CRAWL_FAILED`, `CRAWL_CANCELLED`
+- `RUN_STARTED`, `NODE_START`, `NODE_COMPLETE`, `SCREENSHOT_CAPTURED`, `ACTION_EXECUTED`, `ERROR`, `RUN_COMPLETED`, `RUN_FAILED`, `RUN_CANCELLED`
 
 ---
 

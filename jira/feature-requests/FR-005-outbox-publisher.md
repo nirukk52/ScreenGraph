@@ -9,14 +9,14 @@
 ---
 
 ## 📝 Description
-Implement background job that polls `crawl_outbox` table every 200ms and publishes unpublished events to Redis Pub/Sub in order, ensuring deterministic streaming.
+Implement background job that polls `run_outbox` table every 200ms and publishes unpublished events to Redis Pub/Sub in order, ensuring deterministic streaming.
 
 ---
 
 ## 🎯 Acceptance Criteria
 - [ ] Encore cron job or separate worker that runs every 200ms
-- [ ] Query: `SELECT * FROM crawl_outbox WHERE published_at IS NULL ORDER BY id ASC LIMIT 100`
-- [ ] For each event: Publish to Redis topic `crawl:{crawlId}`
+- [ ] Query: `SELECT * FROM run_outbox WHERE published_at IS NULL ORDER BY id ASC LIMIT 100`
+- [ ] For each event: Publish to Redis topic `run:{runId}`
 - [ ] After successful publish: Update `published_at` timestamp
 - [ ] Handle Redis publish failures with retry (max 3 attempts)
 - [ ] Log metrics: events published, latency, failures
@@ -26,7 +26,7 @@ Implement background job that polls `crawl_outbox` table every 200ms and publish
 
 ## 🔗 Dependencies
 - Redis Pub/Sub setup
-- `crawl_outbox` table (FR-007)
+- `run_outbox` table (FR-007)
 - Orchestrator must write to outbox (FR-004)
 
 ---
@@ -36,7 +36,7 @@ Implement background job that polls `crawl_outbox` table every 200ms and publish
 - [ ] Unit test: Marks events as published after success
 - [ ] Unit test: Retries on Redis failure
 - [ ] Integration test: Events appear in SSE stream within 500ms
-- [ ] Load test: Handles 1000 events/second across multiple crawls
+- [ ] Load test: Handles 1000 events/second across multiple runs
 - [ ] Test: No duplicate publications
 
 ---
@@ -52,13 +52,13 @@ Implement background job that polls `crawl_outbox` table every 200ms and publish
 ```typescript
 async function publishBatch() {
   const events = await db.query(
-    'SELECT * FROM crawl_outbox WHERE published_at IS NULL ORDER BY id ASC LIMIT 100'
+    'SELECT * FROM run_outbox WHERE published_at IS NULL ORDER BY id ASC LIMIT 100'
   );
   
   for (const event of events) {
     try {
-      await redis.publish(`crawl:${event.crawl_id}`, JSON.stringify(event.payload));
-      await db.query('UPDATE crawl_outbox SET published_at = NOW() WHERE id = ?', [event.id]);
+      await redis.publish(`run:${event.run_id}`, JSON.stringify(event.payload));
+      await db.query('UPDATE run_outbox SET published_at = NOW() WHERE id = ?', [event.id]);
     } catch (err) {
       // Log and continue (retry next poll)
     }

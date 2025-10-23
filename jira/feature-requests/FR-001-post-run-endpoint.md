@@ -1,4 +1,4 @@
-# FR-001: POST /crawl Endpoint
+# FR-001: POST /run Endpoint
 
 **Status:** 📋 Todo  
 **Priority:** P0 (Critical)  
@@ -9,24 +9,24 @@
 ---
 
 ## 📝 Description
-Create REST API endpoint to initiate a new crawl run. The endpoint should accept configuration parameters, validate inputs, enqueue orchestrator job, and return crawl ID for tracking.
+Create REST API endpoint to initiate a new run. The endpoint should accept configuration parameters, validate inputs, enqueue orchestrator job, and return run ID for tracking.
 
 ---
 
 ## 🎯 Acceptance Criteria
-- [ ] `POST /crawl` endpoint defined in Encore service
+- [ ] `POST /run` endpoint defined in Encore service
 - [ ] Request schema includes: `appPackage`, `deviceConfig`, `maxSteps`, `goal` (optional)
 - [ ] Endpoint validates required fields and returns 400 on invalid input
-- [ ] Creates `crawl_runs` database record with status `PENDING`
-- [ ] Enqueues orchestrator job with crawl ID
-- [ ] Returns `{ crawlId, status, createdAt }` response
+- [ ] Creates `runs` database record with status `PENDING`
+- [ ] Enqueues orchestrator job with run ID
+- [ ] Returns `{ runId, status, createdAt }` response
 - [ ] Returns 201 status code on success
 - [ ] API documented in OpenAPI schema
 
 ---
 
 ## 🔗 Dependencies
-- Database schema for `crawl_runs` table (FR-006)
+- Database schema for `runs` table (FR-006)
 - Encore queue configuration for orchestrator
 
 ---
@@ -34,15 +34,15 @@ Create REST API endpoint to initiate a new crawl run. The endpoint should accept
 ## 🧪 Testing Requirements
 - [ ] Unit test: Valid request creates DB record and enqueues job
 - [ ] Unit test: Invalid request returns 400 with error details
-- [ ] Integration test: End-to-end crawl initiation
-- [ ] Test: Idempotency if same crawl ID submitted twice
+- [ ] Integration test: End-to-end run initiation
+- [ ] Test: Idempotency if same run ID submitted twice
 
 ---
 
 ## 📋 Technical Notes
 **Request Schema:**
 ```typescript
-interface StartCrawlRequest {
+interface StartRunRequest {
   appPackage: string;
   deviceConfig?: {
     platform: "android" | "ios";
@@ -55,11 +55,11 @@ interface StartCrawlRequest {
 
 **Response Schema:**
 ```typescript
-interface StartCrawlResponse {
-  crawlId: string;
+interface StartRunResponse {
+  runId: string;
   status: "PENDING";
   createdAt: Date;
-  streamUrl: string; // GET /crawl/:id/stream
+  streamUrl: string; // GET /run/:id/stream
 }
 ```
 

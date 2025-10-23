@@ -2,7 +2,7 @@ import db from "../db";
 
 interface OutboxEvent {
   id: number;
-  crawl_id: string;
+  run_id: string;
   event_type: string;
   payload: any;
   created_at: Date;
@@ -28,7 +28,7 @@ export function startOutboxPublisher() {
 async function publishBatch() {
   try {
     const events = await db.queryAll<OutboxEvent>`
-      SELECT * FROM crawl_outbox 
+      SELECT * FROM run_outbox 
       WHERE published_at IS NULL 
       ORDER BY id ASC 
       LIMIT 100
@@ -42,10 +42,10 @@ async function publishBatch() {
 
     for (const event of events) {
       try {
-        console.log(`[OutboxPublisher] Publishing event ${event.id} (${event.event_type}) for crawl ${event.crawl_id}`);
+        console.log(`[OutboxPublisher] Publishing event ${event.id} (${event.event_type}) for run ${event.run_id}`);
 
         await db.exec`
-          UPDATE crawl_outbox 
+          UPDATE run_outbox 
           SET published_at = NOW() 
           WHERE id = ${event.id}
         `;

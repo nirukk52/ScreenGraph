@@ -110,12 +110,12 @@ pattern to abstract database access and follows REST conventions...
 
 ```typescript
 // ✅ Correct — uses glossary terms
-const session = await agent.startCrawl({ maxScreens: 100 });
-await publishEvent("agent.crawl.started", { sessionId: session.id });
+const run = await agent.startRun({ maxScreens: 100 });
+await publishEvent("agent.run.started", { runId: run.id });
 
 // ❌ Wrong — inconsistent terminology
 const job = await bot.begin({ limit: 100 });
-await sendEvent("crawl_begin", { jobId: job.id });
+await sendEvent("run_begin", { jobId: job.id });
 ```
 
 ---
@@ -303,21 +303,21 @@ Good: Always use "agent" (from glossary)
 
 ## Example Interaction Flow
 
-**User**: "Add ability to pause a running crawl"
+**User**: "Add ability to pause a running run"
 
 **AI Agent** (you):
 1. ✅ Read `tasks/today.md` — is this today's task?
-2. ✅ Read `facts/glossary.md` — use "crawl session", not "job"
+2. ✅ Read `facts/glossary.md` — use "run", not "job"
 3. ✅ Read `rules/architecture-rules.md` — check event patterns
 4. ✅ Read `facts/agent-system-deep-dive.md` — understand current flow
 5. Implement:
-   - Add `agent.crawl.paused` event to glossary
-   - Create `backend/agent/pause-crawl.ts` endpoint
+   - Add `agent.run.paused` event to glossary
+   - Create `backend/agent/pause-run.ts` endpoint
    - Update agent domain logic
    - Add tests
    - Update docs if needed
 6. ✅ Mark task complete in `tasks/today.md`
-7. Brief status: "Added pause crawl endpoint. Agent can now pause/resume sessions."
+7. Brief status: "Added pause run endpoint. Agent can now pause/resume runs."
 
 ---
 

@@ -104,9 +104,9 @@ See `rules/naming-conventions.md` for complete guide.
 ### Structured Logging
 ```typescript
 // ✅ Good
-logger.info("agent_crawl_started", {
+logger.info("agent_run_started", {
   agentId,
-  sessionId,
+  runId,
   appPackage,
   timestamp: Date.now()
 });

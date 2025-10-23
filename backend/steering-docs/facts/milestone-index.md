@@ -62,7 +62,7 @@ ScreenGraph development is organized into 8 milestones (M1-M8), each building to
 ### Deliverables
 - [ ] Agent domain model (entity, value objects, events)
 - [ ] Appium driver adapter (port + implementation)
-- [ ] Basic crawl logic (screenshot → tap → screenshot)
+- [ ] Basic run logic (screenshot → tap → screenshot)
 - [ ] Event outbox pattern implementation
 - [ ] Agent CRUD API endpoints
 

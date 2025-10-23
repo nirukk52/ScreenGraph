@@ -9,13 +9,13 @@
 ---
 
 ## 📝 Description
-Build React timeline component that connects to SSE stream, displays crawl events in real-time, handles reconnection with backfill, and shows terminal states.
+Build React timeline component that connects to SSE stream, displays run events in real-time, handles reconnection with backfill, and shows terminal states.
 
 ---
 
 ## 🎯 Acceptance Criteria
 - [ ] Timeline component renders event list in chronological order
-- [ ] SSE client connects to `/crawl/:id/stream` on mount
+- [ ] SSE client connects to `/run/:id/stream` on mount
 - [ ] Events appear in UI within 500ms of server emission (p95)
 - [ ] Auto-reconnect on connection loss with exponential backoff
 - [ ] Backfill uses `Last-Event-ID` header to fetch missed events
@@ -47,23 +47,23 @@ Build React timeline component that connects to SSE stream, displays crawl event
 ## 📋 Technical Notes
 **Component Structure:**
 ```typescript
-<CrawlTimeline crawlId={id}>
+<RunTimeline runId={id}>
   <TimelineHeader status={status} />
   <EventList events={events} />
   <ConnectionStatus connected={connected} />
-</CrawlTimeline>
+</RunTimeline>
 ```
 
 **SSE Client Hook:**
 ```typescript
-const useCrawlStream = (crawlId: string) => {
-  const [events, setEvents] = useState<CrawlEvent[]>([]);
+const useRunStream = (runId: string) => {
+  const [events, setEvents] = useState<RunEvent[]>([]);
   const [connected, setConnected] = useState(false);
   const lastEventId = useRef<string | null>(null);
 
   useEffect(() => {
     const eventSource = new EventSource(
-      `/crawl/${crawlId}/stream?lastEventId=${lastEventId.current || ''}`
+      `/run/${runId}/stream?lastEventId=${lastEventId.current || ''}`
     );
     
     eventSource.onmessage = (e) => {
@@ -79,20 +79,20 @@ const useCrawlStream = (crawlId: string) => {
     };
     
     return () => eventSource.close();
-  }, [crawlId]);
+  }, [runId]);
 
   return { events, connected };
 };
 ```
 
 **Event Rendering:**
-- `CRAWL_STARTED`: 🚀 "Crawl started"
+- `RUN_STARTED`: 🚀 "Run started"
 - `NODE_START`: ⚙️ "Starting {nodeType}"
 - `NODE_COMPLETE`: ✅ "{nodeType} completed"
 - `PROCESSING`: 🔄 "Processing..."
-- `CRAWL_COMPLETED`: 🎉 "Crawl completed successfully"
-- `CRAWL_FAILED`: ❌ "Crawl failed: {error}"
-- `CRAWL_CANCELLED`: 🚫 "Crawl cancelled"
+- `RUN_COMPLETED`: 🎉 "Run completed successfully"
+- `RUN_FAILED`: ❌ "Run failed: {error}"
+- `RUN_CANCELLED`: 🚫 "Run cancelled"
 
 **Virtualization:**
 Use `react-window` or similar for efficient rendering of large event lists.

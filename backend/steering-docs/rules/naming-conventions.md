@@ -23,7 +23,7 @@ kebab-case
 
 ✅ Good:
 - agent/
-- crawl-session/
+- run/
 - analysis-report/
 
 ❌ Bad:
@@ -38,7 +38,7 @@ kebab-case.ts
 
 ✅ Good:
 - create-agent.ts
-- list-crawl-sessions.ts
+- list-runs.ts
 - agent-repository.ts
 
 ❌ Bad:
@@ -176,9 +176,9 @@ const permission = false;
 <service>.<aggregate>.<action> (dot-separated, lowercase)
 
 ✅ Good:
-- agent.crawl.started
-- agent.crawl.completed
-- agent.crawl.failed
+- agent.run.started
+- agent.run.completed
+- agent.run.failed
 - analysis.report.created
 - analysis.report.published
 
@@ -211,7 +211,7 @@ snake_case, plural
 
 ✅ Good:
 - agents
-- crawl_sessions
+- runs
 - analysis_reports
 
 ❌ Bad:
@@ -273,7 +273,7 @@ kebab-case, lowercase
 - /agents
 - /agents/:id
 - /agents/:id/start
-- /crawl-sessions
+- /runs
 
 ❌ Bad:
 - /Agents
@@ -288,7 +288,7 @@ camelCase
 
 ✅ Good:
 - /agents/:agentId
-- /crawl-sessions/:sessionId
+- /runs/:runId
 
 ❌ Bad:
 - /agents/:agent_id
@@ -316,7 +316,7 @@ kebab-case
 
 ✅ Good:
 - agent-events
-- crawl-events
+- run-events
 - analysis-events
 
 ❌ Bad:
@@ -331,7 +331,7 @@ kebab-case
 
 ✅ Good:
 - analysis-agent-events-processor
-- notification-crawl-events-emailer
+- notification-run-events-emailer
 
 ❌ Bad:
 - processor
@@ -367,7 +367,7 @@ PascalCase.tsx
 
 ✅ Good:
 - AgentDashboard.tsx
-- CrawlSessionList.tsx
+- RunList.tsx
 - ScreenshotViewer.tsx
 
 ❌ Bad:
@@ -394,7 +394,7 @@ use-{name}.ts
 
 ✅ Good:
 - use-agent-status.ts
-- use-crawl-session.ts
+- use-run.ts
 
 ❌ Bad:
 - useAgentStatus.ts
@@ -407,7 +407,7 @@ use{Name} (camelCase)
 
 ✅ Good:
 export function useAgentStatus() { }
-export function useCrawlSession() { }
+export function useRun() { }
 
 ❌ Bad:
 export function UseAgentStatus() { }
@@ -420,8 +420,8 @@ export function agent_status_hook() { }
 
 Use these exact terms consistently across code:
 
-- **Agent**: AI-powered crawler (not bot, spider, worker)
-- **Crawl Session**: Single crawl run (not job, task, execution)
+- **Agent**: AI-powered system (not bot, spider, worker, crawler)
+- **Run**: Single execution (not job, task, crawl, session)
 - **Screenshot**: UI capture (not image, picture, snap)
 - **Screen**: Unique UI state (not page, view, activity)
 - **Node**: Graph vertex representing a screen (not vertex, state, page-node)

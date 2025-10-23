@@ -53,15 +53,15 @@ const sum = (a: number, b: number) => a + b;
 ### Destructuring for Clarity
 ```typescript
 // ✅ Preferred
-const { agentId, sessionId, status } = crawlData;
+const { agentId, runId, status } = runData;
 
 // ⚠️ Acceptable for single property
-const agentId = crawlData.agentId;
+const agentId = runData.agentId;
 
 // ❌ Avoid when destructuring helps
-const id1 = crawlData.agentId;
-const id2 = crawlData.sessionId;
-const s = crawlData.status;
+const id1 = runData.agentId;
+const id2 = runData.runId;
+const s = runData.status;
 ```
 
 ---

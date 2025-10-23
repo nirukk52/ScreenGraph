@@ -1,33 +1,33 @@
-export type CrawlStatus = "PENDING" | "RUNNING" | "COMPLETED" | "FAILED" | "CANCELLED";
+export type RunStatus = "PENDING" | "RUNNING" | "COMPLETED" | "FAILED" | "CANCELLED";
 
 export interface DeviceConfig {
   platform: "android" | "ios";
   version?: string;
 }
 
-export interface StartCrawlRequest {
+export interface StartRunRequest {
   appPackage: string;
   deviceConfig?: DeviceConfig;
   maxSteps?: number;
   goal?: string;
 }
 
-export interface StartCrawlResponse {
-  crawlId: string;
+export interface StartRunResponse {
+  runId: string;
   status: "PENDING";
   createdAt: Date;
   streamUrl: string;
 }
 
-export interface CancelCrawlResponse {
-  crawlId: string;
+export interface CancelRunResponse {
+  runId: string;
   status: "CANCELLED";
   cancelledAt: Date;
 }
 
-export interface CrawlRun {
+export interface Run {
   id: string;
-  status: CrawlStatus;
+  status: RunStatus;
   app_package: string;
   device_config: DeviceConfig | null;
   max_steps: number;
@@ -39,14 +39,14 @@ export interface CrawlRun {
   error_message: string | null;
 }
 
-export interface CrawlEvent {
+export interface RunEvent {
   id: number;
-  crawl_id: string;
+  run_id: string;
   event_type: string;
   payload: any;
   created_at: Date;
 }
 
-export interface CrawlJob {
-  crawlId: string;
+export interface RunJob {
+  runId: string;
 }

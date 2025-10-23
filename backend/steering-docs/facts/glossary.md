@@ -9,24 +9,24 @@
 ## Core Entities
 
 ### Agent
-**Definition**: AI-powered crawler that autonomously explores a mobile app using Appium.
+**Definition**: AI-powered system that autonomously explores a mobile app using Appium.
 
 **Usage**: "The agent takes screenshots and taps UI elements to discover screens."
 
 **Not**: bot, spider, worker, crawler (use "agent" consistently)
 
-**Technical**: Aggregate root in the agent service, owns crawl lifecycle.
+**Technical**: Aggregate root in the agent service, owns run lifecycle.
 
 ---
 
-### Crawl Session
-**Definition**: A single execution run of an agent exploring an app from start to finish.
+### Run
+**Definition**: A single execution of an agent exploring an app from start to finish.
 
-**Usage**: "Each crawl session produces a graph of screens and transitions."
+**Usage**: "Each run produces a graph of screens and transitions."
 
-**Not**: job, task, execution, run (use "crawl session" or "session")
+**Not**: job, task, execution, crawl, session (use "run")
 
-**Technical**: Aggregate root in the crawl service, tracks state and results.
+**Technical**: Aggregate root in the run service, tracks state and results.
 
 ---
 
@@ -119,7 +119,7 @@
 ### Aggregate Root
 **Definition**: The entry point entity in a cluster of related domain objects (DDD concept).
 
-**Usage**: "Agent is the aggregate root for all crawl-related entities."
+**Usage**: "Agent is the aggregate root for all run-related entities."
 
 **Technical**: Enforces invariants and owns lifecycle of related entities.
 
@@ -128,7 +128,7 @@
 ### Domain Event
 **Definition**: A significant state change in the system, published for other services to react to.
 
-**Usage**: "The `agent.crawl.completed` event triggers analysis."
+**Usage**: "The `agent.run.completed` event triggers analysis."
 
 **Technical**: Named `<service>.<aggregate>.<action>`, immutable, versioned.
 
@@ -157,7 +157,7 @@
 ### App Package
 **Definition**: The unique identifier for a mobile app (e.g., `com.example.myapp`).
 
-**Usage**: "Agent crawls the app with package `com.instagram.android`."
+**Usage**: "Agent runs the app with package `com.instagram.android`."
 
 **Technical**: Used by Appium to launch the app on device/emulator.
 
@@ -203,14 +203,14 @@
 
 ### Agent Status
 - `idle` — created but not running
-- `running` — actively crawling
+- `running` — actively executing run
 - `paused` — temporarily stopped
 - `completed` — finished successfully
 - `failed` — terminated with error
 
 ---
 
-### Crawl Session Status
+### Run Status
 - `pending` — queued but not started
 - `running` — in progress
 - `completed` — finished successfully
@@ -231,7 +231,7 @@
 
 Use these sparingly, and only in code (not user-facing text):
 
-- **ID**: Identifier (e.g., `agentId`, `sessionId`)
+- **ID**: Identifier (e.g., `agentId`, `runId`)
 - **URL**: Uniform Resource Locator
 - **API**: Application Programming Interface
 - **UI**: User Interface
@@ -252,11 +252,11 @@ All events follow the pattern: `<service>.<aggregate>.<action>`
 - `agent.created` — new agent registered
 - `agent.updated` — agent configuration changed
 - `agent.deleted` — agent removed
-- `agent.crawl.started` — crawl session initiated
-- `agent.crawl.paused` — crawl temporarily stopped
-- `agent.crawl.resumed` — crawl restarted after pause
-- `agent.crawl.completed` — crawl finished successfully
-- `agent.crawl.failed` — crawl terminated with error
+- `agent.run.started` — run initiated
+- `agent.run.paused` — run temporarily stopped
+- `agent.run.resumed` — run restarted after pause
+- `agent.run.completed` — run finished successfully
+- `agent.run.failed` — run terminated with error
 
 ### Graph Events
 - `graph.screen.discovered` — new screen found
@@ -274,9 +274,11 @@ All events follow the pattern: `<service>.<aggregate>.<action>`
 ## Anti-Patterns (Don't Use)
 
 ❌ **Ambiguous terms**:
-- "process" (too generic — use "crawl", "analysis", or specific action)
+- "process" (too generic — use "run", "analysis", or specific action)
 - "data" (too vague — use "screenshot", "element", "graph")
 - "item" (too abstract — use specific entity name)
+- "crawl" (replaced by "run")
+- "session" (replaced by "run")
 
 ❌ **Inconsistent pluralization**:
 - Don't mix "agent" and "agents" in same context
@@ -292,15 +294,13 @@ All events follow the pattern: `<service>.<aggregate>.<action>`
 
 ### ✅ Good
 ```typescript
-// Clear domain language
 const agent = await agentRepository.findById(agentId);
-const session = await agent.startCrawl({ maxScreens: 100 });
-await publishEvent("agent.crawl.started", { agentId, sessionId: session.id });
+const run = await agent.startRun({ maxScreens: 100 });
+await publishEvent("agent.run.started", { agentId, runId: run.id });
 ```
 
 ### ❌ Bad
 ```typescript
-// Unclear, inconsistent terminology
 const bot = await getBot(id);
 const job = await bot.start({ limit: 100 });
 await sendEvent("crawl_begin", { botId: id, jobId: job.id });
