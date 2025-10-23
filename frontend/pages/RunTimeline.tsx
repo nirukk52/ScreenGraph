@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft, Loader2, WifiOff } from "lucide-react";
 import EventBlock from "@/components/run/EventBlock";
+import backend from "~backend/client";
 
 interface RunEvent {
   id: number;
@@ -39,7 +40,7 @@ export default function RunTimeline({ runId }: RunTimelineProps) {
 
       const lastEventId = events.length > 0 ? events[events.length - 1].id : 0;
 
-      const stream = await (window as any).encoreBackendClient.run.stream({
+      const stream = await backend.run.stream({
         id: runId,
         lastEventId,
       });

@@ -1,10 +1,21 @@
+import React, { useState, useEffect } from "react";
 import { SteeringWheel } from "./pages/SteeringWheel";
 import StartRun from "./pages/StartRun";
 import RunTimeline from "./pages/RunTimeline";
 import { Toaster } from "@/components/ui/toaster";
 
 export default function App() {
-  const hash = window.location.hash;
+  const [hash, setHash] = useState(window.location.hash);
+  
+  useEffect(() => {
+    const handleHashChange = () => {
+      setHash(window.location.hash);
+    };
+    
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
+  
   const runMatch = hash.match(/^#\/run\/(.+)$/);
   
   let page;
