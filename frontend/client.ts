@@ -33,7 +33,7 @@ const BROWSER = typeof globalThis === "object" && ("window" in globalThis);
  * Client is an API client for the  Encore application.
  */
 export class Client {
-    public readonly crawl: crawl.ServiceClient
+    public readonly run: run.ServiceClient
     public readonly steering: steering.ServiceClient
     private readonly options: ClientOptions
     private readonly target: string
@@ -49,7 +49,7 @@ export class Client {
         this.target = target
         this.options = options ?? {}
         const base = new BaseClient(this.target, this.options)
-        this.crawl = new crawl.ServiceClient(base)
+        this.run = new run.ServiceClient(base)
         this.steering = new steering.ServiceClient(base)
     }
 
@@ -84,11 +84,11 @@ export interface ClientOptions {
 /**
  * Import the endpoint handlers to derive the types for the client.
  */
-import { cancel as api_crawl_cancel_cancel } from "~backend/crawl/cancel";
-import { start as api_crawl_start_start } from "~backend/crawl/start";
-import { stream as api_crawl_stream_stream } from "~backend/crawl/stream";
+import { cancel as api_run_cancel_cancel } from "~backend/run/cancel";
+import { start as api_run_start_start } from "~backend/run/start";
+import { stream as api_run_stream_stream } from "~backend/run/stream";
 
-export namespace crawl {
+export namespace run {
 
     export class ServiceClient {
         private baseClient: BaseClient
@@ -100,25 +100,25 @@ export namespace crawl {
             this.stream = this.stream.bind(this)
         }
 
-        public async cancel(params: { id: string }): Promise<ResponseType<typeof api_crawl_cancel_cancel>> {
+        public async cancel(params: { id: string }): Promise<ResponseType<typeof api_run_cancel_cancel>> {
             // Now make the actual call to the API
-            const resp = await this.baseClient.callTypedAPI(`/crawl/${encodeURIComponent(params.id)}/cancel`, {method: "POST", body: undefined})
-            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_crawl_cancel_cancel>
+            const resp = await this.baseClient.callTypedAPI(`/run/${encodeURIComponent(params.id)}/cancel`, {method: "POST", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_run_cancel_cancel>
         }
 
-        public async start(params: RequestType<typeof api_crawl_start_start>): Promise<ResponseType<typeof api_crawl_start_start>> {
+        public async start(params: RequestType<typeof api_run_start_start>): Promise<ResponseType<typeof api_run_start_start>> {
             // Now make the actual call to the API
-            const resp = await this.baseClient.callTypedAPI(`/crawl`, {method: "POST", body: JSON.stringify(params)})
-            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_crawl_start_start>
+            const resp = await this.baseClient.callTypedAPI(`/run`, {method: "POST", body: JSON.stringify(params)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_run_start_start>
         }
 
-        public async stream(params: RequestType<typeof api_crawl_stream_stream>): Promise<StreamIn<StreamResponse<typeof api_crawl_stream_stream>>> {
+        public async stream(params: RequestType<typeof api_run_stream_stream>): Promise<StreamIn<StreamResponse<typeof api_run_stream_stream>>> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
                 lastEventId: params.lastEventId === undefined ? undefined : String(params.lastEventId),
             })
 
-            return await this.baseClient.createStreamIn(`/crawl/${encodeURIComponent(params.id)}/stream`, {query})
+            return await this.baseClient.createStreamIn(`/run/${encodeURIComponent(params.id)}/stream`, {query})
         }
     }
 }
