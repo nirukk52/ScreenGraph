@@ -78,7 +78,55 @@ Astro's documentation theme - modern, fast, content-focused.
 
 ---
 
-## Option 3: Custom Encore.ts + React Solution
+## Option 3: Notion
+
+### Overview
+All-in-one workspace with docs, wikis, databases, and collaboration features. Popular among startups and solo devs.
+
+### Pros
+- ✅ **Zero setup** - create account and start writing
+- ✅ **Rich editor** - blocks, databases, embeds, formatting
+- ✅ **Built-in AI** - Notion AI for chat, summarization, editing
+- ✅ **Version history** - track changes over time (paid plans)
+- ✅ **Templates** - ready-made structures for wikis, docs, project management
+- ✅ **Mobile apps** - access from anywhere
+- ✅ **Search** - powerful full-text search
+- ✅ **Databases** - tables, boards, calendars for tasks/reports
+- ✅ **Collaboration** - comments, mentions (if team grows)
+
+### Cons
+- ❌ **Not AI-agent readable** - proprietary format, no direct file access
+- ❌ **API limitations** - rate limits, complex setup for programmatic access
+- ❌ **Export friction** - markdown export exists but loses structure
+- ❌ **Context switching** - separate tool outside codebase
+- ❌ **Vendor lock-in** - data trapped in Notion ecosystem
+- ❌ **No mandatory reading enforcement** - can't force AI agents to read specific pages
+- ❌ **Cost** - free tier limited, paid plans $8-10/month
+- ❌ **Performance** - can be slow with large workspaces
+- ❌ **Offline limitations** - requires internet connection
+- ❌ **No Git integration** - can't version control with code
+
+### AI-Agent Integration
+**Major limitation:**
+- Notion API exists but is paginated, slow, and complex
+- AI agents like Leap/Cursor can't directly read Notion pages without custom integration
+- Would need to build Notion API wrapper → convert to markdown → feed to AI
+- No way to enforce "mandatory reading" for AI agents
+- Updates require API calls instead of direct file edits
+
+**Workaround approach:**
+1. Export Notion pages to markdown manually
+2. Commit to Git repository
+3. AI reads exported files
+4. Manual sync process between Notion ↔ Git
+
+This defeats the purpose of real-time collaboration with AI.
+
+### Effort Estimate: **Low for setup, High for AI integration** (5 min setup, 1-2 days for proper AI integration)
+
+---
+
+## Option 4: Custom Encore.ts + React Solution
 
 ### Overview
 Build a lightweight docs app within the ScreenGraph project using Encore.ts backend + React frontend with markdown rendering.
@@ -173,7 +221,7 @@ AI agents like Leap can:
 
 ---
 
-## Recommendation: **Option 3 - Custom Encore.ts Solution**
+## Recommendation: **Option 4 - Custom Encore.ts Solution**
 
 ### Why This Is the Best Approach
 
@@ -244,7 +292,26 @@ As a SAAS product for UI/UX analysis, having internal docs in the same codebase:
 
 ---
 
+## Comparison Matrix
+
+| Feature | Docusaurus | Starlight | Notion | Custom Encore.ts |
+|---------|-----------|-----------|--------|------------------|
+| **AI-Agent Readable** | ✅ Markdown files | ✅ Markdown files | ❌ Proprietary API | ✅ Direct file access |
+| **Setup Time** | 2-3 days | 1-2 days | 5 minutes | 4-6 hours |
+| **Real-time Editing** | ❌ Build required | ❌ Build required | ✅ Instant | ✅ Instant |
+| **Chat Interface** | ❌ Custom needed | ❌ Custom needed | ✅ Built-in AI | ✅ Custom (easy) |
+| **Version Control** | ✅ Git + Built-in | ⚠️ Git only | ⚠️ Paid plans | ✅ DB + Git |
+| **Mandatory Reading** | ⚠️ Possible | ⚠️ Possible | ❌ Impossible | ✅ Config-driven |
+| **Deployment** | Separate | Separate | Cloud-hosted | Integrated |
+| **Cost** | Free | Free | $0-10/month | Free (your infra) |
+| **Context Switching** | ❌ Separate site | ❌ Separate site | ❌ External tool | ✅ Same codebase |
+| **Customization** | ⚠️ Limited | ⚠️ Limited | ❌ Very limited | ✅ Full control |
+
+---
+
 ## Conclusion
+
+**Notion** is excellent for personal wikis and team collaboration, but **fundamentally incompatible** with the goal of AI-agent readable documentation. The proprietary format and API limitations create too much friction for programmatic access by Leap, Cursor, and Claude.
 
 **Docusaurus** and **Starlight** are excellent tools for public documentation websites, but they're over-engineered for a solo dev's internal knowledge base that needs AI integration and real-time editing.
 
