@@ -12,7 +12,7 @@ interface UpdateDocResponse {
   success: boolean;
 }
 
-const STEERING_DOCS_PATH = path.join(process.cwd(), "steering-docs");
+const STEERING_DOCS_PATH = path.resolve("./steering-docs");
 
 export const updateDoc = api<UpdateDocParams, UpdateDocResponse>(
   {

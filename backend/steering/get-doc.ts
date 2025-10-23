@@ -13,7 +13,7 @@ interface GetDocResponse {
   filename: string;
 }
 
-const STEERING_DOCS_PATH = path.join(process.cwd(), "steering-docs");
+const STEERING_DOCS_PATH = path.resolve("./steering-docs");
 
 export const getDoc = api<GetDocParams, GetDocResponse>(
   { expose: true, method: "GET", path: "/steering/docs/:category/:filename" },
