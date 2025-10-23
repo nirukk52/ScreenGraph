@@ -22,6 +22,11 @@
     "architecture-rules",
     "glossary"
   ],
+  "focus_items": {
+    "milestones": [],
+    "feature_requests": [],
+    "bugs": []
+  },
   "update_permissions": {
     "ai_can_modify": [
       "wip/*.md",
