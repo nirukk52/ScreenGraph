@@ -115,7 +115,7 @@ export namespace run {
         public async stream(params: RequestType<typeof api_run_stream_stream>): Promise<StreamIn<StreamResponse<typeof api_run_stream_stream>>> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
-                lastEventId: params.lastEventId === undefined ? undefined : String(params.lastEventId),
+                lastEventSeq: params.lastEventSeq === undefined ? undefined : String(params.lastEventSeq),
             })
 
             return await this.baseClient.createStreamIn(`/run/${encodeURIComponent(params.id)}/stream`, {query})
