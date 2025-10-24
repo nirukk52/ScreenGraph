@@ -17,7 +17,7 @@ export const Local: BaseURL = "http://localhost:4000"
  * Environment returns a BaseURL for calling the cloud environment with the given name.
  */
 export function Environment(name: string): BaseURL {
-    return `https://${name}-steering-wheel-documentation-65b2.encr.app`
+    return `https://steering-wheel-documentation-65b2-${name}.encr.app`
 }
 
 /**
