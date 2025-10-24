@@ -84,9 +84,9 @@ export interface ClientOptions {
 /**
  * Import the endpoint handlers to derive the types for the client.
  */
-import { cancel as api_run_cancel_cancel } from "~backend/run/cancel";
-import { start as api_run_start_start } from "~backend/run/start";
-import { stream as api_run_stream_stream } from "~backend/run/stream";
+import { cancel as api_run_cancel_cancel } from "../backend/run/cancel";
+import { start as api_run_start_start } from "../backend/run/start";
+import { stream as api_run_stream_stream } from "../backend/run/stream";
 
 export namespace run {
 
@@ -126,9 +126,9 @@ export namespace run {
 /**
  * Import the endpoint handlers to derive the types for the client.
  */
-import { getDoc as api_steering_get_doc_getDoc } from "~backend/steering/get-doc";
-import { listDocs as api_steering_list_docs_listDocs } from "~backend/steering/list-docs";
-import { updateDoc as api_steering_update_doc_updateDoc } from "~backend/steering/update-doc";
+import { getDoc as api_steering_get_doc_getDoc } from "../backend/steering/get-doc";
+import { listDocs as api_steering_list_docs_listDocs } from "../backend/steering/list-docs";
+import { updateDoc as api_steering_update_doc_updateDoc } from "../backend/steering/update-doc";
 
 export namespace steering {
 
