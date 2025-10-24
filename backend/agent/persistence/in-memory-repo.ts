@@ -1,0 +1,146 @@
+import { RepoPort, RunRecord } from "../ports/repo.port";
+import { AgentState, RunStatus } from "../domain/state";
+import { DomainEvent } from "../domain/events";
+
+export class InMemoryRepo implements RepoPort {
+  private runs = new Map<string, RunRecord>();
+  private events = new Map<string, DomainEvent[]>();
+  private snapshots = new Map<string, Map<number, AgentState>>();
+  private screens = new Map<string, ScreenRecord>();
+  private actions = new Map<string, ActionRecord>();
+
+  async createRun(runId: string, tenantId: string, projectId: string, now: string): Promise<void> {
+    this.runs.set(runId, {
+      runId,
+      tenantId,
+      projectId,
+      status: "running",
+      createdAt: now,
+      updatedAt: now,
+    });
+    this.events.set(runId, []);
+    this.snapshots.set(runId, new Map());
+  }
+
+  async getRun(runId: string): Promise<RunRecord | null> {
+    return this.runs.get(runId) ?? null;
+  }
+
+  async updateRunStatus(runId: string, newStatus: RunStatus, now: string): Promise<boolean> {
+    const run = this.runs.get(runId);
+    if (!run) return false;
+
+    if (run.status === "completed" || run.status === "failed" || run.status === "canceled") {
+      return false;
+    }
+
+    run.status = newStatus;
+    run.updatedAt = now;
+    return true;
+  }
+
+  async appendEvent(event: DomainEvent): Promise<void> {
+    const runEvents = this.events.get(event.runId);
+    if (!runEvents) {
+      throw new Error(`Run ${event.runId} not found`);
+    }
+
+    const existing = runEvents.find((e) => e.sequence === event.sequence);
+    if (existing) {
+      if (existing.checksum !== event.checksum) {
+        throw new Error(`Idempotency violation: duplicate sequence ${event.sequence} with different checksum`);
+      }
+      return;
+    }
+
+    runEvents.push(event);
+    runEvents.sort((a, b) => a.sequence - b.sequence);
+  }
+
+  async getEvents(runId: string): Promise<DomainEvent[]> {
+    return this.events.get(runId) ?? [];
+  }
+
+  async saveSnapshot(runId: string, stepOrdinal: number, state: AgentState): Promise<void> {
+    const runSnapshots = this.snapshots.get(runId);
+    if (!runSnapshots) {
+      throw new Error(`Run ${runId} not found`);
+    }
+    runSnapshots.set(stepOrdinal, JSON.parse(JSON.stringify(state)));
+  }
+
+  async getSnapshot(runId: string, stepOrdinal: number): Promise<AgentState | null> {
+    const runSnapshots = this.snapshots.get(runId);
+    if (!runSnapshots) return null;
+    const snapshot = runSnapshots.get(stepOrdinal);
+    return snapshot ? JSON.parse(JSON.stringify(snapshot)) : null;
+  }
+
+  async upsertScreen(
+    runId: string,
+    screenId: string,
+    perceptualHash64: string,
+    screenshotRef: string,
+    xmlRef: string
+  ): Promise<void> {
+    this.screens.set(screenId, {
+      screenId,
+      runId,
+      perceptualHash64,
+      screenshotRef,
+      xmlRef,
+      evidenceCounter: (this.screens.get(screenId)?.evidenceCounter ?? 0) + 1,
+    });
+  }
+
+  async upsertAction(
+    runId: string,
+    actionId: string,
+    fromScreenId: string,
+    toScreenId: string,
+    actionKind: string
+  ): Promise<void> {
+    this.actions.set(actionId, {
+      actionId,
+      runId,
+      fromScreenId,
+      toScreenId,
+      actionKind,
+      evidenceCounter: (this.actions.get(actionId)?.evidenceCounter ?? 0) + 1,
+    });
+  }
+
+  getAllScreens(): ScreenRecord[] {
+    return Array.from(this.screens.values());
+  }
+
+  getAllActions(): ActionRecord[] {
+    return Array.from(this.actions.values());
+  }
+
+  reset(): void {
+    this.runs.clear();
+    this.events.clear();
+    this.snapshots.clear();
+    this.screens.clear();
+    this.actions.clear();
+  }
+}
+
+interface ScreenRecord {
+  screenId: string;
+  runId: string;
+  perceptualHash64: string;
+  screenshotRef: string;
+  xmlRef: string;
+  evidenceCounter: number;
+}
+
+interface ActionRecord {
+  actionId: string;
+  runId: string;
+  fromScreenId: string;
+  toScreenId: string;
+  actionKind: string;
+  evidenceCounter: number;
+}

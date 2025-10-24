@@ -1,0 +1,17 @@
+{
+  "maxSteps": 50,
+  "maxTimeMs": 300000,
+  "maxTaps": 100,
+  "outsideAppLimit": 3,
+  "restartLimit": 2,
+  "strategyName": "breadth_first_explore",
+  "policyVersion": 1,
+  "idleHeuristics": {
+    "minQuietMillis": 400,
+    "maxWaitMillis": 5000
+  },
+  "enumerationHeuristics": {
+    "maxActionsPerScreen": 20,
+    "includeBackNavigationAction": true
+  }
+}
