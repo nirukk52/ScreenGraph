@@ -1,7 +1,7 @@
 import { Orchestrator } from "../agent/orchestrator/orchestrator";
 import { DBRepoPort } from "../agent/persistence/db-repo";
-import { Budgets, AgentState, advanceStep } from "../agent/domain/state";
-import { EventKind } from "../agent/domain/events";
+import { Budgets, AgentState, advanceStep, createInitialState } from "../agent/domain/state";
+import { EventKind, createRunStartedEvent } from "../domain/events";
 
 export async function runAgentLoop(
   runId: string,
@@ -19,12 +19,23 @@ export async function runAgentLoop(
     restartLimit: 3,
   };
 
-  let state = await orchestrator.createRun(
-    "tenant-default",
-    "project-default",
+  const now = new Date().toISOString();
+  const tenantId = "tenant-default";
+  const projectId = "project-default";
+
+  let state = createInitialState(tenantId, projectId, runId, budgets, now);
+
+  const startEvent = createRunStartedEvent(
+    orchestrator.generateId(),
     runId,
-    budgets
+    tenantId,
+    projectId,
+    orchestrator.nextSequence(),
+    now
   );
+
+  await orchestrator.recordEvent(startEvent);
+  await repo.saveSnapshot(runId, 0, state);
 
   await emitSimpleEvent(orchestrator, state, "agent.event.screenshot_captured", {
     stepOrdinal: state.stepOrdinal,
