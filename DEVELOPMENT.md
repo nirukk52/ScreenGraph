@@ -126,6 +126,3 @@ git push origin main
 - [Deployment Guide](https://encore.dev/docs/platform/deploy/deploying)
 - [GitHub Integration](https://encore.dev/docs/platform/integrations/github)
 - [Encore Cloud Dashboard](https://app.encore.dev)
-
-
-

@@ -1,0 +1,11 @@
+---
+alwaysApply: true
+---
+
+<typescript_style_guide>
+  <rule>Use interface or type definitions for complex objects</rule>
+  <rule>Prefer TypeScript's built-in utility types (e.g., Record, Partial, Pick) over any</rule>
+</typescript_style_guide><typescript_style_guide>
+  <rule>Use interface or type definitions for complex objects</rule>
+  <rule>Prefer TypeScript's built-in utility types (e.g., Record, Partial, Pick) over any</rule>
+</typescript_style_guide>
