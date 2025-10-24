@@ -7,7 +7,7 @@ import EventBlock from "@/components/run/EventBlock";
 import backend from "~backend/client";
 
 interface RunEvent {
-  id: number;
+  seq: number;
   type: string;
   data: any;
   timestamp: string;
@@ -38,11 +38,11 @@ export default function RunTimeline({ runId }: RunTimelineProps) {
       setError(null);
       isReconnectingRef.current = true;
 
-      const lastEventId = events.length > 0 ? events[events.length - 1].id : 0;
+      const lastEventSeq = events.length > 0 ? events[events.length - 1].seq : 0;
 
       const stream = await backend.run.stream({
         id: runId,
-        lastEventId,
+        lastEventSeq,
       });
 
       streamRef.current = stream;
@@ -52,7 +52,7 @@ export default function RunTimeline({ runId }: RunTimelineProps) {
 
       for await (const event of stream) {
         setEvents((prev: any) => {
-          const exists = prev.some((e: any) => e.id === event.id);
+          const exists = prev.some((e: any) => e.seq === event.seq);
           if (exists) return prev;
           return [...prev, event];
         });
@@ -162,8 +162,8 @@ export default function RunTimeline({ runId }: RunTimelineProps) {
               <div className="space-y-0">
                 {events.map((event: any) => (
                   <EventBlock
-                    key={event.id}
-                    id={event.id}
+                    key={event.seq}
+                    id={event.seq}
                     type={event.type}
                     data={event.data}
                     timestamp={event.timestamp}

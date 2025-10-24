@@ -1,29 +1,35 @@
 import { api, APIError, StreamOut, Query } from "encore.dev/api";
 import db from "../db";
-import { RunEvent } from "./types";
 
 interface StreamHandshake {
   id: string;
-  lastEventId?: Query<number>;
+  lastEventSeq?: Query<number>;
 }
 
 interface RunEventMessage {
-  id: number;
+  seq: number;
   type: string;
   data: any;
   timestamp: string;
+}
+
+interface RunEventRow {
+  seq: number;
+  type: string;
+  payload: string;
+  created_at: Date;
 }
 
 export const stream = api.streamOut<StreamHandshake, RunEventMessage>(
   { expose: true, path: "/run/:id/stream" },
   async (handshake, stream) => {
     const runId = handshake.id;
-    const lastEventId = handshake.lastEventId ?? 0;
+    const lastEventSeq = handshake.lastEventSeq ?? 0;
 
-    console.log(`[Stream] Client connected to run ${runId} stream, lastEventId: ${lastEventId}`);
+    console.log(`[Stream] Client connected to run ${runId} stream, lastEventSeq: ${lastEventSeq}`);
 
-    const run = await db.queryRow<{ id: string }>`
-      SELECT id FROM runs WHERE id = ${runId}
+    const run = await db.queryRow<{ run_id: string }>`
+      SELECT run_id FROM runs WHERE run_id = ${runId}
     `;
 
     if (!run) {
@@ -32,57 +38,64 @@ export const stream = api.streamOut<StreamHandshake, RunEventMessage>(
     }
 
     try {
-      console.log(`[Stream] Backfilling events from ID ${lastEventId} for run ${runId}`);
-      const backfillEvents = await db.queryAll<RunEvent>`
-        SELECT * FROM run_events 
-        WHERE run_id = ${runId} AND id > ${lastEventId}
-        ORDER BY id ASC
-      `;
+      console.log(`[Stream] Backfilling events from seq ${lastEventSeq} for run ${runId}`);
+      
+      const backfillEvents: RunEventRow[] = [];
+      for await (const event of db.query<RunEventRow>`
+        SELECT seq, type, payload, created_at FROM run_events 
+        WHERE run_id = ${runId} AND seq > ${lastEventSeq}
+        ORDER BY seq ASC
+      `) {
+        backfillEvents.push(event);
+      }
 
       console.log(`[Stream] Found ${backfillEvents.length} backfill events for run ${runId}`);
       for (const event of backfillEvents) {
         const message: RunEventMessage = {
-          id: event.id,
-          type: event.event_type,
-          data: event.payload,
+          seq: event.seq,
+          type: event.type,
+          data: typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload,
           timestamp: event.created_at.toISOString(),
         };
-        console.log(`[Stream] Sending backfill event ${event.id} (${event.event_type}) to client`);
+        console.log(`[Stream] Sending backfill event ${event.seq} (${event.type}) to client`);
         await stream.send(message);
       }
 
       console.log(`[Stream] Starting live stream for run ${runId}`);
-      let lastCheckedId = backfillEvents.length > 0 
-        ? backfillEvents[backfillEvents.length - 1].id 
-        : lastEventId;
+      let lastCheckedSeq = backfillEvents.length > 0 
+        ? backfillEvents[backfillEvents.length - 1].seq 
+        : lastEventSeq;
 
       while (true) {
         await new Promise(resolve => setTimeout(resolve, 300));
 
         try {
-          const newEvents = await db.queryAll<RunEvent>`
-            SELECT * FROM run_events 
-            WHERE run_id = ${runId} AND id > ${lastCheckedId}
-            ORDER BY id ASC
-          `;
+          const newEvents: RunEventRow[] = [];
+          for await (const event of db.query<RunEventRow>`
+            SELECT seq, type, payload, created_at FROM run_events 
+            WHERE run_id = ${runId} AND seq > ${lastCheckedSeq}
+            ORDER BY seq ASC
+          `) {
+            newEvents.push(event);
+          }
 
           for (const event of newEvents) {
             const message: RunEventMessage = {
-              id: event.id,
-              type: event.event_type,
-              data: event.payload,
+              seq: event.seq,
+              type: event.type,
+              data: typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload,
               timestamp: event.created_at.toISOString(),
             };
-            console.log(`[Stream] Sending live event ${event.id} (${event.event_type}) to client`);
+            console.log(`[Stream] Sending live event ${event.seq} (${event.type}) to client`);
             await stream.send(message);
-            lastCheckedId = event.id;
+            lastCheckedSeq = event.seq;
 
             if (
-              event.event_type === "RUN_COMPLETED" ||
-              event.event_type === "RUN_FAILED" ||
-              event.event_type === "RUN_CANCELLED"
+              event.type === "agent.run.finished" ||
+              event.type === "agent.run.failed" ||
+              event.type === "agent.run.canceled"
             ) {
-              console.log(`[Stream] Terminal event ${event.event_type} reached, closing stream for run ${runId}`);
+              console.log(`[Stream] Terminal event ${event.type} reached, closing stream for run ${runId}`);
               await stream.close();
               return;
             }

@@ -2,6 +2,7 @@ import { api, APIError } from "encore.dev/api";
 import { Topic } from "encore.dev/pubsub";
 import db from "../db";
 import { StartRunRequest, StartRunResponse, Run, RunJob } from "./types";
+import { ulid } from "ulidx";
 
 export const runJobTopic = new Topic<RunJob>("run-job", {
   deliveryGuarantee: "at-least-once",
@@ -20,12 +21,20 @@ export const start = api<StartRunRequest, StartRunResponse>(
       throw APIError.invalidArgument("appiumServerUrl is required");
     }
 
-    const maxSteps = req.maxSteps ?? 100;
+    const runId = ulid();
+    const tenantId = "tenant-default";
+    const projectId = "project-default";
+    const appConfigId = JSON.stringify({
+      apkPath: req.apkPath,
+      appiumServerUrl: req.appiumServerUrl,
+      maxSteps: req.maxSteps ?? 100,
+      goal: req.goal,
+    });
 
     console.log("[POST /run] Creating runs record");
     const run = await db.queryRow<Run>`
-      INSERT INTO runs (app_package, device_config, max_steps, goal)
-      VALUES (${req.apkPath}, ${JSON.stringify({ appiumServerUrl: req.appiumServerUrl })}, ${maxSteps}, ${req.goal || null})
+      INSERT INTO runs (run_id, tenant_id, project_id, app_config_id, status, created_at, updated_at)
+      VALUES (${runId}, ${tenantId}, ${projectId}, ${appConfigId}, 'running', NOW(), NOW())
       RETURNING *
     `;
 
@@ -34,16 +43,16 @@ export const start = api<StartRunRequest, StartRunResponse>(
       throw APIError.internal("Failed to create run");
     }
 
-    console.log(`[POST /run] Created run ${run.id}`);
+    console.log(`[POST /run] Created run ${run.run_id}`);
 
-    console.log(`[POST /run] Publishing run job to topic for run ${run.id}`);
-    await runJobTopic.publish({ runId: run.id, apkPath: req.apkPath, appiumServerUrl: req.appiumServerUrl });
+    console.log(`[POST /run] Publishing run job to topic for run ${run.run_id}`);
+    await runJobTopic.publish({ runId: run.run_id, apkPath: req.apkPath, appiumServerUrl: req.appiumServerUrl });
 
-    const streamUrl = `/run/${run.id}/stream`;
-    console.log(`[POST /run] Run ${run.id} initiated, stream URL: ${streamUrl}`);
+    const streamUrl = `/run/${run.run_id}/stream`;
+    console.log(`[POST /run] Run ${run.run_id} initiated, stream URL: ${streamUrl}`);
 
     return {
-      runId: run.id,
+      runId: run.run_id,
       status: "PENDING",
       createdAt: run.created_at,
       streamUrl,

@@ -26,25 +26,15 @@ export interface CancelRunResponse {
 }
 
 export interface Run {
-  id: string;
-  status: RunStatus;
-  app_package: string;
-  device_config: DeviceConfig | null;
-  max_steps: number;
-  goal: string | null;
-  created_at: Date;
-  started_at: Date | null;
-  completed_at: Date | null;
-  cancelled_at: Date | null;
-  error_message: string | null;
-}
-
-export interface RunEvent {
-  id: number;
   run_id: string;
-  event_type: string;
-  payload: any;
+  tenant_id: string;
+  project_id: string;
+  app_config_id: string;
+  policy_version: number;
+  status: string;
+  stop_reason: string | null;
   created_at: Date;
+  updated_at: Date;
 }
 
 export interface RunJob {
