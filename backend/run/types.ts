@@ -6,8 +6,8 @@ export interface DeviceConfig {
 }
 
 export interface StartRunRequest {
-  appPackage: string;
-  deviceConfig?: DeviceConfig;
+  apkPath: string;
+  appiumServerUrl: string;
   maxSteps?: number;
   goal?: string;
 }
@@ -49,4 +49,6 @@ export interface RunEvent {
 
 export interface RunJob {
   runId: string;
+  apkPath: string;
+  appiumServerUrl: string;
 }

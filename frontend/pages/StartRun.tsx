@@ -11,15 +11,25 @@ import backend from "~backend/client";
 export default function StartRun() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [appPackage, setAppPackage] = useState("");
+  const [apkPath, setApkPath] = useState("");
+  const [appiumServerUrl, setAppiumServerUrl] = useState("http://localhost:4723");
   const [goal, setGoal] = useState("");
 
   const handleStart = async () => {
-    if (!appPackage.trim()) {
+    if (!apkPath.trim()) {
       toast({
         variant: "destructive",
-        title: "Missing app package",
-        description: "Please enter an app package name",
+        title: "Missing APK path",
+        description: "Please enter an APK path",
+      });
+      return;
+    }
+
+    if (!appiumServerUrl.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Missing Appium server URL",
+        description: "Please enter an Appium server URL",
       });
       return;
     }
@@ -27,7 +37,8 @@ export default function StartRun() {
     setLoading(true);
     try {
       const response = await backend.run.start({
-        appPackage: appPackage.trim(),
+        apkPath: apkPath.trim(),
+        appiumServerUrl: appiumServerUrl.trim(),
         goal: goal.trim() || undefined,
       });
 
@@ -63,12 +74,23 @@ export default function StartRun() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="appPackage">App Package</Label>
+            <Label htmlFor="apkPath">APK Path</Label>
             <Input
-              id="appPackage"
-              placeholder="com.example.app"
-              value={appPackage}
-              onChange={(e: any) => setAppPackage(e.target.value)}
+              id="apkPath"
+              placeholder="/path/to/app.apk"
+              value={apkPath}
+              onChange={(e: any) => setApkPath(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="appiumServerUrl">Appium Server URL</Label>
+            <Input
+              id="appiumServerUrl"
+              placeholder="http://localhost:4723"
+              value={appiumServerUrl}
+              onChange={(e: any) => setAppiumServerUrl(e.target.value)}
               disabled={loading}
             />
           </div>

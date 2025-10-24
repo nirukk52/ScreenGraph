@@ -12,8 +12,12 @@ export const start = api<StartRunRequest, StartRunResponse>(
   async (req) => {
     console.log("[POST /run] Starting new run", req);
 
-    if (!req.appPackage) {
-      throw APIError.invalidArgument("appPackage is required");
+    if (!req.apkPath) {
+      throw APIError.invalidArgument("apkPath is required");
+    }
+
+    if (!req.appiumServerUrl) {
+      throw APIError.invalidArgument("appiumServerUrl is required");
     }
 
     const maxSteps = req.maxSteps ?? 100;
@@ -21,7 +25,7 @@ export const start = api<StartRunRequest, StartRunResponse>(
     console.log("[POST /run] Creating runs record");
     const run = await db.queryRow<Run>`
       INSERT INTO runs (app_package, device_config, max_steps, goal)
-      VALUES (${req.appPackage}, ${JSON.stringify(req.deviceConfig || null)}, ${maxSteps}, ${req.goal || null})
+      VALUES (${req.apkPath}, ${JSON.stringify({ appiumServerUrl: req.appiumServerUrl })}, ${maxSteps}, ${req.goal || null})
       RETURNING *
     `;
 
@@ -33,7 +37,7 @@ export const start = api<StartRunRequest, StartRunResponse>(
     console.log(`[POST /run] Created run ${run.id}`);
 
     console.log(`[POST /run] Publishing run job to topic for run ${run.id}`);
-    await runJobTopic.publish({ runId: run.id });
+    await runJobTopic.publish({ runId: run.id, apkPath: req.apkPath, appiumServerUrl: req.appiumServerUrl });
 
     const streamUrl = `/run/${run.id}/stream`;
     console.log(`[POST /run] Run ${run.id} initiated, stream URL: ${streamUrl}`);

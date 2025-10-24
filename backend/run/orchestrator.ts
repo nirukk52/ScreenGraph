@@ -3,6 +3,7 @@ import { APIError } from "encore.dev/api";
 import db from "../db";
 import { runJobTopic } from "./start";
 import { Run, RunJob } from "./types";
+import { runAgentLoop } from "./agent-runner";
 
 class CancellationError extends Error {
   constructor() {
@@ -14,11 +15,11 @@ class CancellationError extends Error {
 new Subscription(runJobTopic, "orchestrator-worker", {
   handler: async (job: RunJob) => {
     console.log(`[Orchestrator] Starting run ${job.runId}`);
-    await executeOrchestrator(job.runId);
+    await executeOrchestrator(job.runId, job.apkPath, job.appiumServerUrl);
   },
 });
 
-async function executeOrchestrator(runId: string): Promise<void> {
+async function executeOrchestrator(runId: string, apkPath: string, appiumServerUrl: string): Promise<void> {
   try {
     console.log(`[Orchestrator] Updating run ${runId} status to RUNNING`);
     await db.exec`
@@ -28,15 +29,9 @@ async function executeOrchestrator(runId: string): Promise<void> {
     `;
 
     await checkCancellation(runId);
-    await executeNode(runId, "Start", "RUN_STARTED", {});
-
-    await checkCancellation(runId);
-    await executeNode(runId, "Process", "PROCESSING", {});
-    console.log(`[Orchestrator] Process node waiting 2 seconds...`);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    await checkCancellation(runId);
-    await executeNode(runId, "Finish", "RUN_COMPLETED", {});
+    
+    console.log(`[Orchestrator] Starting agent loop for run ${runId}`);
+    await runAgentLoop(runId, apkPath, appiumServerUrl);
 
     console.log(`[Orchestrator] Run ${runId} completed successfully`);
     await db.exec`
@@ -78,19 +73,6 @@ async function checkCancellation(runId: string): Promise<void> {
   if (run.cancelled_at) {
     throw new CancellationError();
   }
-}
-
-async function executeNode(
-  runId: string,
-  nodeType: string,
-  eventType: string,
-  additionalPayload: any
-): Promise<void> {
-  console.log(`[Orchestrator] Executing node ${nodeType} for run ${runId}`);
-  await emitEvent(runId, eventType, {
-    nodeType,
-    ...additionalPayload,
-  });
 }
 
 async function emitEvent(
