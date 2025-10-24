@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Encore CLI
+        run: |
+          curl -L https://encore.dev/install.sh | bash
+          echo "$HOME/.encore/bin" >> $GITHUB_PATH
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: bun install
+
+      - name: Run backend tests
+        working-directory: ./backend
+        run: encore test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+
+      - name: Build backend
+        working-directory: ./backend
+        run: encore build
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: bun install
+
+      - name: Run frontend tests
+        working-directory: ./frontend
+        run: bun test
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: bun run build
