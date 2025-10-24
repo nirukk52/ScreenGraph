@@ -1,31 +1,77 @@
-# Merge Conflict Test
+# ScreenGraph Development Workflow
 
-## Purpose
-Testing how Leap handles merge conflicts when there are changes on the main branch in GitHub.
+## Overview
+This document outlines the development workflow and testing procedures for the ScreenGraph project.
 
-## What We're Testing
-1. **Create a test file in Leap** (this file)
-2. **Push changes to a different branch or main from local/Cursor**
-3. **Try to merge in Leap UI** and observe what happens
-4. **Document the behavior** when conflicts occur
+## Development Environment Setup
 
-## Expected Scenarios
+### Prerequisites
+- Node.js 18+
+- Bun package manager
+- Git configured with proper credentials
+- Cursor IDE for development
 
-### Scenario A: No Conflicts
-- Leap merges successfully
-- Changes appear in GitHub
+### Project Structure
+```
+ScreenGraph/
+├── backend/          # Encore backend services
+├── frontend/         # React frontend application
+├── jira/            # Project management and tickets
+└── steering-docs/    # Documentation and guidelines
+```
 
-### Scenario B: Conflicts Exist
-- Leap shows an error or warning
-- Conflict markers may appear in files
-- Need to resolve manually
+## Testing Procedures
 
-## Next Steps
-1. Edit this file in Cursor/local environment
-2. Push changes to GitHub main
-3. Also edit this file in Leap (create a conflict)
-4. Click Merge in Leap
-5. Document what happens
+### Automated Testing
+- Unit tests for individual components
+- Integration tests for service interactions
+- End-to-end tests for user workflows
 
-## Results
-_To be filled in after testing..._
+### Manual Testing Checklist
+- [ ] Feature functionality verification
+- [ ] UI/UX consistency checks
+- [ ] Performance benchmarking
+- [ ] Cross-browser compatibility
+- [ ] Mobile responsiveness
+
+## Deployment Process
+
+### Staging Environment
+1. Create feature branch from main
+2. Implement changes with tests
+3. Submit pull request for review
+4. Deploy to staging after approval
+
+### Production Deployment
+1. Merge approved changes to main
+2. Run full test suite
+3. Deploy to production environment
+4. Monitor for issues
+
+## Quality Assurance
+
+### Code Standards
+- TypeScript for type safety
+- ESLint for code quality
+- Prettier for formatting consistency
+- Comprehensive documentation
+
+### Review Process
+- Peer code review required
+- Automated testing must pass
+- Documentation updates included
+- Performance impact assessed
+
+## Monitoring and Maintenance
+
+### Performance Metrics
+- Response time monitoring
+- Error rate tracking
+- User engagement analytics
+- System resource usage
+
+### Maintenance Tasks
+- Regular dependency updates
+- Security patch management
+- Performance optimization
+- Documentation maintenance
