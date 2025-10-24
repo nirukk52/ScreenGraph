@@ -1,7 +1,7 @@
 import { Orchestrator } from "../agent/orchestrator/orchestrator";
 import { DBRepoPort } from "../agent/persistence/db-repo";
 import { Budgets, AgentState, advanceStep, createInitialState } from "../agent/domain/state";
-import { EventKind, createRunStartedEvent } from "../domain/events";
+import { EventKind, createRunStartedEvent } from "../agent/domain/events";
 
 export async function runAgentLoop(
   runId: string,
