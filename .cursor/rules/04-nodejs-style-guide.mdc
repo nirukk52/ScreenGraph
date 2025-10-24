@@ -7,9 +7,4 @@ alwaysApply: true
   - Always use ES6+ syntax.
   - Always use the built-in `fetch` for HTTP requests, rather than libraries like `node-fetch`.
   - Always use Node.js `import`, never use `require`.
-</nodejs_style_guide><nodejs_style_guide>
- Corey MUST write valid TypeScript code, which uses state-of-the-art Node.js v20+ features and follows best practices:
-  - Always use ES6+ syntax.
-  - Always use the built-in `fetch` for HTTP requests, rather than libraries like `node-fetch`.
-  - Always use Node.js `import`, never use `require`.
 </nodejs_style_guide>
