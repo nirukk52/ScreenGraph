@@ -1,7 +1,7 @@
 <script>
-	let url = $state('');
-	let loading = $state(false);
-	let error = $state('');
+	let url = '';
+	let loading = false;
+	let error = '';
 
 	async function startRun() {
 		if (!url.trim()) {
