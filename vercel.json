@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd frontend && bun install && bun run build",
+  "buildCommand": "cd frontend && rm -rf .svelte-kit .vercel && bun install && bun run build",
   "outputDirectory": "frontend/.vercel/output",
   "devCommand": "cd frontend && bun run dev",
   "installCommand": "bun install",
