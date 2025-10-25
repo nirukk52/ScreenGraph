@@ -1,0 +1,29 @@
+# Founder Rules
+
+## Package Manager Consistency
+- **Use Bun consistently across the entire monorepo**
+- Frontend should use `bun run dev` instead of `npm run dev`
+- Backend already uses Bun (`"packageManager": "bun"`)
+- Remove `node_modules` and `package-lock.json` from frontend
+- Run `bun install` in frontend directory for consistency
+
+## Why Bun Over npm
+1. **Faster**: Significantly faster than npm for installs and script execution
+2. **Consistency**: Single package manager for entire monorepo
+3. **Performance**: Better TypeScript compilation and hot reload
+4. **Toolchain**: One unified toolchain instead of mixing npm and Bun
+
+## Implementation
+```bash
+# Switch frontend to Bun
+cd frontend
+rm -rf node_modules package-lock.json
+bun install
+bun run dev  # Instead of npm run dev
+```
+
+## Project Structure
+- Root: Bun lockfile (`bun.lock`)
+- Backend: Bun package manager
+- Frontend: Should use Bun (not npm)
+- Single consistent toolchain across entire monorepo
