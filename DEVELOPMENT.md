@@ -16,6 +16,44 @@ You also need to have bun installed for package management. If you don't have bu
 npm install -g bun
 ```
 
+## Authentication Setup
+
+### Encore CLI Authentication
+
+The Encore CLI handles authentication automatically for most operations, but for git operations and deployment, you may need to set up SSH authentication.
+
+#### SSH Key Setup (Recommended)
+
+1. **Generate an SSH key** (if you don't have one):
+```bash
+ssh-keygen -t ed25519 -C "your-email@example.com"
+```
+
+2. **Add your SSH key to your Encore account**:
+   - Go to [app.encore.cloud](https://app.encore.cloud)
+   - Navigate to **Settings** → **SSH Keys**
+   - Add your public key (usually found in `~/.ssh/id_ed25519.pub`)
+
+3. **Test the connection**:
+```bash
+ssh -T git@git.encore.dev
+```
+
+You should see: "Hi [Your Name]! You've been successfully authenticated..."
+
+#### Alternative: CLI Authentication
+
+If you prefer not to use SSH keys, you can authenticate using the CLI:
+
+```bash
+encore auth login
+```
+
+Check your authentication status:
+```bash
+encore auth whoami
+```
+
 ## Running the Application
 //sleep 2 && lsof -ti:4000,4001,4002,4003,5173 2>/dev/null || echo "No processes running on ports 4000-4003 or 5173"
 ### Setup
