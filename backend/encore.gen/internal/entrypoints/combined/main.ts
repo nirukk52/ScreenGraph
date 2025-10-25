@@ -7,9 +7,9 @@ import { getDoc as steering_getDocImpl3 } from "../../../../steering/get-doc";
 import { listDocs as steering_listDocsImpl4 } from "../../../../steering/list-docs";
 import { updateDoc as steering_updateDocImpl5 } from "../../../../steering/update-doc";
 import "../../../../run/orchestrator";
+import * as run_service from "../../../../run/encore.service";
 import * as steering_service from "../../../../steering/encore.service";
 import * as frontend_service from "../../../../frontend/encore.service";
-import * as run_service from "../../../../run/encore.service";
 
 const gateways: any[] = [
 ];
