@@ -3,15 +3,15 @@
 	import { page } from '$app/stores';
 	import { streamRunEvents, cancelRun } from '$lib/api';
 	
-	let runId = $state('');
-	let events = $state([]);
-	let loading = $state(true);
-	let error = $state('');
+	let runId = '';
+	let events = [];
+	let loading = true;
+	let error = '';
 	
-	let cleanup = $state(null);
+	let cleanup = null;
 	
 	onMount(() => {
-		runId = $page.params.id;
+		runId = $page.params.id || '';
 		startStreaming();
 	});
 	
@@ -26,7 +26,7 @@
 				loading = false;
 			});
 		} catch (e) {
-			error = e.message;
+			error = e instanceof Error ? e.message : 'Unknown error';
 			loading = false;
 		}
 	}
@@ -36,7 +36,7 @@
 			await cancelRun(runId);
 			alert('Run cancelled');
 		} catch (e) {
-			error = e.message;
+			error = e instanceof Error ? e.message : 'Unknown error';
 		}
 	}
 </script>

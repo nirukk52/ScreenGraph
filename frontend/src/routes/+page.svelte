@@ -1,7 +1,7 @@
 <script>
-	let runId = $state('');
-	let error = $state('');
-	let loading = $state(false);
+	let runId = '';
+	let error = '';
+	let loading = false;
 
 	async function startRun() {
 		if (!runId) return;
@@ -23,7 +23,7 @@
 			const data = await response.json();
 			window.location.href = `/run/${data.id}`;
 		} catch (e) {
-			error = e.message;
+			error = e instanceof Error ? e.message : 'Unknown error';
 		} finally {
 			loading = false;
 		}
