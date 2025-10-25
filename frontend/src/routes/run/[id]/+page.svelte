@@ -1,25 +1,17 @@
-<script lang="ts">
+<script>
 	import { onMount, onDestroy } from 'svelte';
-	import { page } from '$app/state';
+	import { page } from '$app/stores';
 	import { streamRunEvents, cancelRun } from '$lib/api';
 
-	type RunEvent = {
-		type: string;
-		timestamp?: string;
-		message?: string;
-	};
-
-	const currentPage = $derived(page);
-
-	let runId = $state('');
-	let events = $state<RunEvent[]>([]);
-	let loading = $state(true);
-	let error = $state('');
-	let cleanup = $state<(() => void) | null>(null);
+	let runId = '';
+	let events = [];
+	let loading = true;
+	let error = '';
+	let cleanup = null;
 
 	onMount(() => {
-		runId = currentPage.params.id ?? '';
-		void startStreaming();
+		runId = $page.params.id || '';
+		startStreaming();
 	});
 
 	onDestroy(() => {

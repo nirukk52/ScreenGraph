@@ -16,4 +16,3 @@ type PageParentData = EnsureDefined<import('../../$types.js').LayoutData>;
 export type EntryGenerator = () => Promise<Array<RouteParams>> | Array<RouteParams>;
 export type PageServerData = null;
 export type PageData = Expand<PageParentData>;
-export type PageProps = { params: RouteParams; data: PageData }
