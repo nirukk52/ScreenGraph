@@ -1,4 +1,3 @@
-import { browser } from '$app/environment';
 import Client, { Environment, Local } from './encore-client';
 
 /**
@@ -7,9 +6,10 @@ import Client, { Environment, Local } from './encore-client';
  * In production, connects to the Encore Cloud staging environment
  */
 export function getEncoreClient(): Client {
-  const target = browser
-    ? Local // Browser always connects to local dev server
-    : (import.meta.env.PROD ? Environment('staging') : Local); // SSR uses cloud in production
+	const isBrowser = typeof window !== 'undefined';
+	const target = isBrowser
+		? Local // Browser always connects to local dev server
+		: (process.env.NODE_ENV === 'production' ? Environment('staging') : Local); // SSR uses cloud in production
   
   return new Client(target);
 }

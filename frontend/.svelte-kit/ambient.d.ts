@@ -26,6 +26,7 @@
  * ```
  */
 declare module '$env/static/private' {
+	export const VITE_CLIENT_TARGET: string;
 	export const VSCODE_CRASH_REPORTER_PROCESS_TYPE: string;
 	export const NODE: string;
 	export const ANDROID_HOME: string;
@@ -79,7 +80,6 @@ declare module '$env/static/private' {
 	export const VSCODE_L10N_BUNDLE_LOCATION: string;
 	export const VSCODE_CWD: string;
 	export const npm_node_execpath: string;
-	export const NODE_ENV: string;
 }
 
 /**
@@ -109,6 +109,7 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
+		VITE_CLIENT_TARGET: string;
 		VSCODE_CRASH_REPORTER_PROCESS_TYPE: string;
 		NODE: string;
 		ANDROID_HOME: string;
@@ -162,7 +163,6 @@ declare module '$env/dynamic/private' {
 		VSCODE_L10N_BUNDLE_LOCATION: string;
 		VSCODE_CWD: string;
 		npm_node_execpath: string;
-		NODE_ENV: string;
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;
 	}

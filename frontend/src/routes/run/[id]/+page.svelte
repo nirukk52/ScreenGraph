@@ -1,7 +1,8 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
-	import { page } from '$app/state';
-	import { streamRunEvents, cancelRun } from '$lib/api';
+    import { onMount, onDestroy } from 'svelte';
+    import { page } from '$app/state';
+    import autoAnimate from '@formkit/auto-animate';
+    import { streamRunEvents, cancelRun } from '$lib/api';
 
 	let runId = $state('');
 	let events = $state([]);
@@ -20,6 +21,7 @@
 		}
 	});
 
+    /** Handles subscribing to the run event stream so the timeline stays live. */
     async function startStreaming() {
         try {
             cleanup = await streamRunEvents(runId, (event) => {
@@ -32,7 +34,8 @@
         }
     }
 
-	async function handleCancel() {
+    /** Cancels the active run when the user no longer wants to continue processing. */
+    async function handleCancel() {
 		try {
 			await cancelRun(runId);
 			alert('Run cancelled');
@@ -63,7 +66,7 @@
 		</div>
 	{/if}
 	
-	<div class="space-y-4">
+    <div class="space-y-4" use:autoAnimate>
 		{#each events as event}
 			<div class="p-4 border rounded-lg">
 				<div class="font-semibold">{event.type}</div>

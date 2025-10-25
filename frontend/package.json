@@ -1,19 +1,22 @@
 {
-  "name": "frontend",
+  "name": "screengraph-frontend",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "svelte-kit dev",
+    "build": "svelte-kit build",
+    "preview": "svelte-kit preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "gen": "encore gen client screengraph-ovzi --lang=typescript --output=./src/lib/encore-client.ts --env=local"
   },
   "dependencies": {
-    "lucide-svelte": "^0.425.0",
+    "@formkit/auto-animate": "^0.8.2",
+    "@skeletonlabs/skeleton": "^4.1.4",
+    "@skeletonlabs/skeleton-svelte": "^4.1.4",
     "clsx": "^2.0.0",
-    "tailwind-merge": "^1.14.0"
+    "lucide-svelte": "^0.425.0",
+    "tailwind-merge": "^2.5.2"
   },
   "devDependencies": {
     "@sveltejs/adapter-vercel": "^4.0.0",
