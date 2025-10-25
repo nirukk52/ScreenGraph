@@ -17,7 +17,7 @@ npm install -g bun
 ```
 
 ## Running the Application
-
+//sleep 2 && lsof -ti:4000,4001,4002,4003,5173 2>/dev/null || echo "No processes running on ports 4000-4003 or 5173"
 ### Setup
 
 1. Install dependencies from the root directory:
@@ -78,9 +78,19 @@ This builds the frontend to `frontend/dist/` which is served by Encore.
 
 ### Run Tests
 
+For Encore applications, use the Encore test command to run tests with the proper environment:
+
 ```bash
-bun run test
+encore test
 ```
+
+This command:
+- Compiles the Encore application
+- Sets up the local development environment (databases, services, etc.)
+- Runs all tests with access to Encore services
+- Supports all the same flags as standard test runners
+
+**Note:** Do not use `bun test` or `npm test` directly for Encore applications, as they won't have access to the Encore runtime environment.
 
 ### Project Structure
 
