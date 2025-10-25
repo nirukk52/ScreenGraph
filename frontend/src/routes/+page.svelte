@@ -1,71 +1,83 @@
-<script>
-	let url = $state('');
-	let loading = $state(false);
-	let error = $state('');
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import autoAnimate from '@formkit/auto-animate';
 
-	async function startRun() {
-		if (!url.trim()) {
-			error = 'Please enter a URL';
-			return;
-		}
+	let isLoading = $state(true);
+	let showContent = $state(false);
 
-		loading = true;
-		error = '';
+	onMount(() => {
+		const timer = setTimeout(() => {
+			isLoading = false;
+			showContent = true;
+		}, 1000);
 
-		try {
-			const response = await fetch('http://localhost:4000/run.Start', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ url: url.trim() })
-			});
+		return () => clearTimeout(timer);
+	});
 
-			if (!response.ok) {
-				throw new Error('Failed to start run');
-			}
-
-			const data = await response.json();
-			window.location.href = `/run/${data.id}`;
-		} catch (e) {
-			error = e instanceof Error ? e.message : 'Unknown error';
-		} finally {
-			loading = false;
-		}
+	function handleConnect() {
+		// No navigation yet; logs demonstrate interaction wiring
+		console.log('Connect Your App clicked');
 	}
 </script>
 
-<div class="container mx-auto p-8 max-w-2xl">
-	<h1 class="text-3xl font-bold mb-8">ScreenGraph Agent</h1>
-	
-	<div class="bg-white rounded-lg shadow-md p-6">
-		<h2 class="text-xl font-semibold mb-4">Start a New Run</h2>
-		
-		{#if error}
-			<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-				{error}
-			</div>
-		{/if}
+<svelte:head>
+	<title>ScreenGraph</title>
+	<meta name="description" content="ScreenGraph – a living map of your mobile app." />
+</svelte:head>
 
-		<div class="mb-4">
-			<label for="url" class="block text-sm font-medium text-gray-700 mb-2">
-				Website URL
-			</label>
-			<input
-				id="url"
-				type="url"
-				bind:value={url}
-				placeholder="https://example.com"
-				class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-				disabled={loading}
-			/>
+<div class="min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
+	<main class="flex-1 flex items-center justify-center px-6 py-16">
+		<div use:autoAnimate class="w-full max-w-5xl mx-auto">
+			{#if isLoading}
+				<div class="grid gap-8">
+					<div class="h-32 rounded-3xl bg-white/10 animate-pulse"></div>
+					<div class="h-12 w-3/4 rounded-2xl bg-white/10 animate-pulse"></div>
+					<div class="h-16 w-60 rounded-full bg-white/10 animate-pulse"></div>
+				</div>
+			{:else if showContent}
+				<section class="grid gap-10 text-center">
+					<div class="space-y-6">
+						<h1 class="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-none">
+							<span class="bg-gradient-to-r from-sky-300 via-blue-400 to-indigo-300 bg-clip-text text-transparent">
+								ScreenGraph
+							</span>
+						</h1>
+						<p class="text-xl sm:text-2xl text-slate-300 max-w-3xl mx-auto">
+							A living map of your mobile app.
+						</p>
+					</div>
+
+					<div class="flex justify-center">
+						<button
+							onclick={handleConnect}
+							class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 px-8 py-4 text-lg font-semibold text-slate-900 shadow-lg shadow-sky-500/30 transition-transform duration-200 hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-300"
+						>
+							Connect Your App
+						</button>
+					</div>
+
+					<div class="grid gap-6 sm:grid-cols-3 text-sm text-slate-400">
+						<div class="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+							<h2 class="text-lg font-semibold text-slate-100">SSR Ready</h2>
+							<p>Hydrates instantly with zero client-side fetches.</p>
+						</div>
+						<div class="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+							<h2 class="text-lg font-semibold text-slate-100">Tailwind CSS</h2>
+							<p>Utility-first styling with gradient backgrounds.</p>
+						</div>
+						<div class="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+							<h2 class="text-lg font-semibold text-slate-100">AutoAnimate</h2>
+							<p>Hero transitions glide in without manual animation logic.</p>
+						</div>
+					</div>
+				</section>
+			{/if}
 		</div>
+	</main>
 
-		<button
-			onclick={startRun}
-			disabled={loading || !url.trim()}
-			class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-		>
-			{loading ? 'Starting...' : 'Start Run'}
-		</button>
-	</div>
+	<footer class="sticky bottom-0 border-t border-white/10 bg-slate-950/80 py-6 text-center text-sm text-slate-400 backdrop-blur">
+		© ScreenGraph 2025
+	</footer>
 </div>
+
 
