@@ -26,6 +26,7 @@
  * ```
  */
 declare module '$env/static/private' {
+	export const VITE_CLIENT_TARGET: string;
 	export const VSCODE_CRASH_REPORTER_PROCESS_TYPE: string;
 	export const NODE: string;
 	export const ANDROID_HOME: string;
@@ -109,6 +110,7 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
+		VITE_CLIENT_TARGET: string;
 		VSCODE_CRASH_REPORTER_PROCESS_TYPE: string;
 		NODE: string;
 		ANDROID_HOME: string;
