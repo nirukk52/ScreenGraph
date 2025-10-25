@@ -1,0 +1,8 @@
+{
+	"buildCommand": "bun run build",
+	"outputDirectory": ".svelte-kit",
+	"framework": "sveltekit",
+	"env": {
+		"PUBLIC_API_BASE": "https://steering-wheel-documentation-65b2.encr.app"
+	}
+}
