@@ -20965,18 +20965,18 @@ function SteeringWheel() {
     ] })
   ] }) });
 }
-function setRef$1(ref, value) {
+function setRef(ref, value) {
   if (typeof ref === "function") {
     return ref(value);
   } else if (ref !== null && ref !== void 0) {
     ref.current = value;
   }
 }
-function composeRefs$1(...refs) {
+function composeRefs(...refs) {
   return (node2) => {
     let hasCleanup = false;
     const cleanups = refs.map((ref) => {
-      const cleanup = setRef$1(ref, node2);
+      const cleanup = setRef(ref, node2);
       if (!hasCleanup && typeof cleanup == "function") {
         hasCleanup = true;
       }
@@ -20989,7 +20989,7 @@ function composeRefs$1(...refs) {
           if (typeof cleanup == "function") {
             cleanup();
           } else {
-            setRef$1(refs[i], null);
+            setRef(refs[i], null);
           }
         }
       };
@@ -20997,15 +20997,15 @@ function composeRefs$1(...refs) {
   };
 }
 function useComposedRefs(...refs) {
-  return reactExports.useCallback(composeRefs$1(...refs), refs);
+  return reactExports.useCallback(composeRefs(...refs), refs);
 }
 // @__NO_SIDE_EFFECTS__
 function createSlot(ownerName) {
-  const SlotClone2 = /* @__PURE__ */ createSlotClone(ownerName);
+  const SlotClone = /* @__PURE__ */ createSlotClone(ownerName);
   const Slot2 = reactExports.forwardRef((props, forwardedRef) => {
     const { children, ...slotProps } = props;
     const childrenArray = reactExports.Children.toArray(children);
-    const slottable = childrenArray.find(isSlottable$1);
+    const slottable = childrenArray.find(isSlottable);
     if (slottable) {
       const newElement = slottable.props.children;
       const newChildren = childrenArray.map((child) => {
@@ -21017,36 +21017,36 @@ function createSlot(ownerName) {
           return child;
         }
       });
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone2, { ...slotProps, ref: forwardedRef, children: reactExports.isValidElement(newElement) ? reactExports.cloneElement(newElement, void 0, newChildren) : null });
+      return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone, { ...slotProps, ref: forwardedRef, children: reactExports.isValidElement(newElement) ? reactExports.cloneElement(newElement, void 0, newChildren) : null });
     }
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone2, { ...slotProps, ref: forwardedRef, children });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone, { ...slotProps, ref: forwardedRef, children });
   });
   Slot2.displayName = `${ownerName}.Slot`;
   return Slot2;
 }
-var Slot$1 = /* @__PURE__ */ createSlot("Slot");
+var Slot = /* @__PURE__ */ createSlot("Slot");
 // @__NO_SIDE_EFFECTS__
 function createSlotClone(ownerName) {
-  const SlotClone2 = reactExports.forwardRef((props, forwardedRef) => {
+  const SlotClone = reactExports.forwardRef((props, forwardedRef) => {
     const { children, ...slotProps } = props;
     if (reactExports.isValidElement(children)) {
-      const childrenRef = getElementRef$2(children);
-      const props2 = mergeProps$1(slotProps, children.props);
+      const childrenRef = getElementRef$1(children);
+      const props2 = mergeProps(slotProps, children.props);
       if (children.type !== reactExports.Fragment) {
-        props2.ref = forwardedRef ? composeRefs$1(forwardedRef, childrenRef) : childrenRef;
+        props2.ref = forwardedRef ? composeRefs(forwardedRef, childrenRef) : childrenRef;
       }
       return reactExports.cloneElement(children, props2);
     }
     return reactExports.Children.count(children) > 1 ? reactExports.Children.only(null) : null;
   });
-  SlotClone2.displayName = `${ownerName}.SlotClone`;
-  return SlotClone2;
+  SlotClone.displayName = `${ownerName}.SlotClone`;
+  return SlotClone;
 }
 var SLOTTABLE_IDENTIFIER = Symbol("radix.slottable");
-function isSlottable$1(child) {
+function isSlottable(child) {
   return reactExports.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER;
 }
-function mergeProps$1(slotProps, childProps) {
+function mergeProps(slotProps, childProps) {
   const overrideProps = { ...childProps };
   for (const propName in childProps) {
     const slotPropValue = slotProps[propName];
@@ -21070,7 +21070,7 @@ function mergeProps$1(slotProps, childProps) {
   }
   return { ...slotProps, ...overrideProps };
 }
-function getElementRef$2(element2) {
+function getElementRef$1(element2) {
   var _a, _b;
   let getter = (_a = Object.getOwnPropertyDescriptor(element2.props, "ref")) == null ? void 0 : _a.get;
   let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
@@ -23645,7 +23645,7 @@ function Button({
   asChild = false,
   ...props
 }) {
-  const Comp = asChild ? Slot$1 : "button";
+  const Comp = asChild ? Slot : "button";
   return /* @__PURE__ */ jsxRuntimeExports.jsx(
     Comp,
     {
@@ -23671,114 +23671,7 @@ function Input({ className, type, ...props }) {
     }
   );
 }
-function setRef(ref, value) {
-  if (typeof ref === "function") {
-    return ref(value);
-  } else if (ref !== null && ref !== void 0) {
-    ref.current = value;
-  }
-}
-function composeRefs(...refs) {
-  return (node2) => {
-    let hasCleanup = false;
-    const cleanups = refs.map((ref) => {
-      const cleanup = setRef(ref, node2);
-      if (!hasCleanup && typeof cleanup == "function") {
-        hasCleanup = true;
-      }
-      return cleanup;
-    });
-    if (hasCleanup) {
-      return () => {
-        for (let i = 0; i < cleanups.length; i++) {
-          const cleanup = cleanups[i];
-          if (typeof cleanup == "function") {
-            cleanup();
-          } else {
-            setRef(refs[i], null);
-          }
-        }
-      };
-    }
-  };
-}
-var Slot = reactExports.forwardRef((props, forwardedRef) => {
-  const { children, ...slotProps } = props;
-  const childrenArray = reactExports.Children.toArray(children);
-  const slottable = childrenArray.find(isSlottable);
-  if (slottable) {
-    const newElement = slottable.props.children;
-    const newChildren = childrenArray.map((child) => {
-      if (child === slottable) {
-        if (reactExports.Children.count(newElement) > 1)
-          return reactExports.Children.only(null);
-        return reactExports.isValidElement(newElement) ? newElement.props.children : null;
-      } else {
-        return child;
-      }
-    });
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone, { ...slotProps, ref: forwardedRef, children: reactExports.isValidElement(newElement) ? reactExports.cloneElement(newElement, void 0, newChildren) : null });
-  }
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone, { ...slotProps, ref: forwardedRef, children });
-});
-Slot.displayName = "Slot";
-var SlotClone = reactExports.forwardRef((props, forwardedRef) => {
-  const { children, ...slotProps } = props;
-  if (reactExports.isValidElement(children)) {
-    const childrenRef = getElementRef$1(children);
-    const props2 = mergeProps(slotProps, children.props);
-    if (children.type !== reactExports.Fragment) {
-      props2.ref = forwardedRef ? composeRefs(forwardedRef, childrenRef) : childrenRef;
-    }
-    return reactExports.cloneElement(children, props2);
-  }
-  return reactExports.Children.count(children) > 1 ? reactExports.Children.only(null) : null;
-});
-SlotClone.displayName = "SlotClone";
-var Slottable = ({ children }) => {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children });
-};
-function isSlottable(child) {
-  return reactExports.isValidElement(child) && child.type === Slottable;
-}
-function mergeProps(slotProps, childProps) {
-  const overrideProps = { ...childProps };
-  for (const propName in childProps) {
-    const slotPropValue = slotProps[propName];
-    const childPropValue = childProps[propName];
-    const isHandler = /^on[A-Z]/.test(propName);
-    if (isHandler) {
-      if (slotPropValue && childPropValue) {
-        overrideProps[propName] = (...args) => {
-          childPropValue(...args);
-          slotPropValue(...args);
-        };
-      } else if (slotPropValue) {
-        overrideProps[propName] = slotPropValue;
-      }
-    } else if (propName === "style") {
-      overrideProps[propName] = { ...slotPropValue, ...childPropValue };
-    } else if (propName === "className") {
-      overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(" ");
-    }
-  }
-  return { ...slotProps, ...overrideProps };
-}
-function getElementRef$1(element2) {
-  var _a, _b;
-  let getter = (_a = Object.getOwnPropertyDescriptor(element2.props, "ref")) == null ? void 0 : _a.get;
-  let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element2.ref;
-  }
-  getter = (_b = Object.getOwnPropertyDescriptor(element2, "ref")) == null ? void 0 : _b.get;
-  mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element2.props.ref;
-  }
-  return element2.props.ref || element2.ref;
-}
-var NODES$4 = [
+var NODES = [
   "a",
   "button",
   "div",
@@ -23792,14 +23685,16 @@ var NODES$4 = [
   "nav",
   "ol",
   "p",
+  "select",
   "span",
   "svg",
   "ul"
 ];
-var Primitive$4 = NODES$4.reduce((primitive, node2) => {
+var Primitive = NODES.reduce((primitive, node2) => {
+  const Slot2 = /* @__PURE__ */ createSlot(`Primitive.${node2}`);
   const Node = reactExports.forwardRef((props, forwardedRef) => {
     const { asChild, ...primitiveProps } = props;
-    const Comp = asChild ? Slot : node2;
+    const Comp = asChild ? Slot2 : node2;
     if (typeof window !== "undefined") {
       window[Symbol.for("radix-ui")] = true;
     }
@@ -23808,10 +23703,14 @@ var Primitive$4 = NODES$4.reduce((primitive, node2) => {
   Node.displayName = `Primitive.${node2}`;
   return { ...primitive, [node2]: Node };
 }, {});
+function dispatchDiscreteCustomEvent(target, event) {
+  if (target)
+    reactDomExports.flushSync(() => target.dispatchEvent(event));
+}
 var NAME$1 = "Label";
 var Label$1 = reactExports.forwardRef((props, forwardedRef) => {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    Primitive$4.label,
+    Primitive.label,
     {
       ...props,
       ref: forwardedRef,
@@ -24413,42 +24312,6 @@ function createCollection(name2) {
     createCollectionScope2
   ];
 }
-var NODES$3 = [
-  "a",
-  "button",
-  "div",
-  "form",
-  "h2",
-  "h3",
-  "img",
-  "input",
-  "label",
-  "li",
-  "nav",
-  "ol",
-  "p",
-  "select",
-  "span",
-  "svg",
-  "ul"
-];
-var Primitive$3 = NODES$3.reduce((primitive, node2) => {
-  const Slot2 = /* @__PURE__ */ createSlot(`Primitive.${node2}`);
-  const Node = reactExports.forwardRef((props, forwardedRef) => {
-    const { asChild, ...primitiveProps } = props;
-    const Comp = asChild ? Slot2 : node2;
-    if (typeof window !== "undefined") {
-      window[Symbol.for("radix-ui")] = true;
-    }
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(Comp, { ...primitiveProps, ref: forwardedRef });
-  });
-  Node.displayName = `Primitive.${node2}`;
-  return { ...primitive, [node2]: Node };
-}, {});
-function dispatchDiscreteCustomEvent$1(target, event) {
-  if (target)
-    reactDomExports.flushSync(() => target.dispatchEvent(event));
-}
 function useCallbackRef(callback) {
   const callbackRef = reactExports.useRef(callback);
   reactExports.useEffect(() => {
@@ -24566,7 +24429,7 @@ var DismissableLayer = reactExports.forwardRef(
       return () => document.removeEventListener(CONTEXT_UPDATE, handleUpdate);
     }, []);
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      Primitive$3.div,
+      Primitive.div,
       {
         ...layerProps,
         ref: composedRefs,
@@ -24599,7 +24462,7 @@ var DismissableLayerBranch = reactExports.forwardRef((props, forwardedRef) => {
       };
     }
   }, [context.branches]);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive$3.div, { ...props, ref: composedRefs });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.div, { ...props, ref: composedRefs });
 });
 DismissableLayerBranch.displayName = BRANCH_NAME;
 function usePointerDownOutside(onPointerDownOutside, ownerDocument = globalThis == null ? void 0 : globalThis.document) {
@@ -24675,45 +24538,13 @@ function handleAndDispatchCustomEvent$1(name2, handler, detail, { discrete }) {
   if (handler)
     target.addEventListener(name2, handler, { once: true });
   if (discrete) {
-    dispatchDiscreteCustomEvent$1(target, event);
+    dispatchDiscreteCustomEvent(target, event);
   } else {
     target.dispatchEvent(event);
   }
 }
 var Root = DismissableLayer;
 var Branch = DismissableLayerBranch;
-var NODES$2 = [
-  "a",
-  "button",
-  "div",
-  "form",
-  "h2",
-  "h3",
-  "img",
-  "input",
-  "label",
-  "li",
-  "nav",
-  "ol",
-  "p",
-  "select",
-  "span",
-  "svg",
-  "ul"
-];
-var Primitive$2 = NODES$2.reduce((primitive, node2) => {
-  const Slot2 = /* @__PURE__ */ createSlot(`Primitive.${node2}`);
-  const Node = reactExports.forwardRef((props, forwardedRef) => {
-    const { asChild, ...primitiveProps } = props;
-    const Comp = asChild ? Slot2 : node2;
-    if (typeof window !== "undefined") {
-      window[Symbol.for("radix-ui")] = true;
-    }
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(Comp, { ...primitiveProps, ref: forwardedRef });
-  });
-  Node.displayName = `Primitive.${node2}`;
-  return { ...primitive, [node2]: Node };
-}, {});
 var useLayoutEffect2 = (globalThis == null ? void 0 : globalThis.document) ? reactExports.useLayoutEffect : () => {
 };
 var PORTAL_NAME = "Portal";
@@ -24723,7 +24554,7 @@ var Portal = reactExports.forwardRef((props, forwardedRef) => {
   const [mounted, setMounted] = reactExports.useState(false);
   useLayoutEffect2(() => setMounted(true), []);
   const container = containerProp || mounted && ((_a = globalThis == null ? void 0 : globalThis.document) == null ? void 0 : _a.body);
-  return container ? ReactDOM.createPortal(/* @__PURE__ */ jsxRuntimeExports.jsx(Primitive$2.div, { ...portalProps, ref: forwardedRef }), container) : null;
+  return container ? ReactDOM.createPortal(/* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.div, { ...portalProps, ref: forwardedRef }), container) : null;
 });
 Portal.displayName = PORTAL_NAME;
 function useStateMachine(initialState, machine) {
@@ -24792,7 +24623,7 @@ function usePresence(present) {
       const ownerWindow = node2.ownerDocument.defaultView ?? window;
       const handleAnimationEnd = (event) => {
         const currentAnimationName = getAnimationName(stylesRef.current);
-        const isCurrentAnimation = currentAnimationName.includes(event.animationName);
+        const isCurrentAnimation = currentAnimationName.includes(CSS.escape(event.animationName));
         if (event.target === node2 && isCurrentAnimation) {
           send("ANIMATION_END");
           if (!prevPresentRef.current) {
@@ -24848,42 +24679,6 @@ function getElementRef(element2) {
     return element2.props.ref;
   }
   return element2.props.ref || element2.ref;
-}
-var NODES$1 = [
-  "a",
-  "button",
-  "div",
-  "form",
-  "h2",
-  "h3",
-  "img",
-  "input",
-  "label",
-  "li",
-  "nav",
-  "ol",
-  "p",
-  "select",
-  "span",
-  "svg",
-  "ul"
-];
-var Primitive$1 = NODES$1.reduce((primitive, node2) => {
-  const Slot2 = /* @__PURE__ */ createSlot(`Primitive.${node2}`);
-  const Node = reactExports.forwardRef((props, forwardedRef) => {
-    const { asChild, ...primitiveProps } = props;
-    const Comp = asChild ? Slot2 : node2;
-    if (typeof window !== "undefined") {
-      window[Symbol.for("radix-ui")] = true;
-    }
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(Comp, { ...primitiveProps, ref: forwardedRef });
-  });
-  Node.displayName = `Primitive.${node2}`;
-  return { ...primitive, [node2]: Node };
-}, {});
-function dispatchDiscreteCustomEvent(target, event) {
-  if (target)
-    reactDomExports.flushSync(() => target.dispatchEvent(event));
 }
 var useInsertionEffect = React$1[" useInsertionEffect ".trim().toString()] || useLayoutEffect2;
 function useControllableState({
@@ -24951,38 +24746,6 @@ function useUncontrolledState({
 function isFunction(value) {
   return typeof value === "function";
 }
-var NODES = [
-  "a",
-  "button",
-  "div",
-  "form",
-  "h2",
-  "h3",
-  "img",
-  "input",
-  "label",
-  "li",
-  "nav",
-  "ol",
-  "p",
-  "select",
-  "span",
-  "svg",
-  "ul"
-];
-var Primitive = NODES.reduce((primitive, node2) => {
-  const Slot2 = /* @__PURE__ */ createSlot(`Primitive.${node2}`);
-  const Node = reactExports.forwardRef((props, forwardedRef) => {
-    const { asChild, ...primitiveProps } = props;
-    const Comp = asChild ? Slot2 : node2;
-    if (typeof window !== "undefined") {
-      window[Symbol.for("radix-ui")] = true;
-    }
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(Comp, { ...primitiveProps, ref: forwardedRef });
-  });
-  Node.displayName = `Primitive.${node2}`;
-  return { ...primitive, [node2]: Node };
-}, {});
 var VISUALLY_HIDDEN_STYLES = Object.freeze({
   // See: https://github.com/twbs/bootstrap/blob/main/scss/mixins/_visually-hidden.scss
   position: "absolute",
@@ -25189,7 +24952,7 @@ var ToastViewport$1 = reactExports.forwardRef(
               }
             }
           ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Collection.Slot, { scope: __scopeToast, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive$1.ol, { tabIndex: -1, ...viewportProps, ref: composedRefs }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Collection.Slot, { scope: __scopeToast, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.ol, { tabIndex: -1, ...viewportProps, ref: composedRefs }) }),
           hasToasts && /* @__PURE__ */ jsxRuntimeExports.jsx(
             FocusProxy,
             {
@@ -25216,7 +24979,6 @@ var FocusProxy = reactExports.forwardRef(
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       VisuallyHidden,
       {
-        "aria-hidden": true,
         tabIndex: 0,
         ...proxyProps,
         ref: forwardedRef,
@@ -25375,7 +25137,6 @@ var ToastImpl = reactExports.forwardRef(
           __scopeToast,
           role: "status",
           "aria-live": type === "foreground" ? "assertive" : "polite",
-          "aria-atomic": true,
           children: announceTextContent
         }
       ),
@@ -25390,11 +25151,8 @@ var ToastImpl = reactExports.forwardRef(
               context.isFocusedToastEscapeKeyDownRef.current = false;
             }),
             children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Primitive$1.li,
+              Primitive.li,
               {
-                role: "status",
-                "aria-live": "off",
-                "aria-atomic": true,
                 tabIndex: 0,
                 "data-state": open ? "open" : "closed",
                 "data-swipe-direction": context.swipeDirection,
@@ -25502,7 +25260,7 @@ var TITLE_NAME = "ToastTitle";
 var ToastTitle$1 = reactExports.forwardRef(
   (props, forwardedRef) => {
     const { __scopeToast, ...titleProps } = props;
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive$1.div, { ...titleProps, ref: forwardedRef });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.div, { ...titleProps, ref: forwardedRef });
   }
 );
 ToastTitle$1.displayName = TITLE_NAME;
@@ -25510,7 +25268,7 @@ var DESCRIPTION_NAME = "ToastDescription";
 var ToastDescription$1 = reactExports.forwardRef(
   (props, forwardedRef) => {
     const { __scopeToast, ...descriptionProps } = props;
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive$1.div, { ...descriptionProps, ref: forwardedRef });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(Primitive.div, { ...descriptionProps, ref: forwardedRef });
   }
 );
 ToastDescription$1.displayName = DESCRIPTION_NAME;
@@ -25534,7 +25292,7 @@ var ToastClose$1 = reactExports.forwardRef(
     const { __scopeToast, ...closeProps } = props;
     const interactiveContext = useToastInteractiveContext(CLOSE_NAME, __scopeToast);
     return /* @__PURE__ */ jsxRuntimeExports.jsx(ToastAnnounceExclude, { asChild: true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-      Primitive$1.button,
+      Primitive.button,
       {
         type: "button",
         ...closeProps,
@@ -25548,7 +25306,7 @@ ToastClose$1.displayName = CLOSE_NAME;
 var ToastAnnounceExclude = reactExports.forwardRef((props, forwardedRef) => {
   const { __scopeToast, altText, ...announceExcludeProps } = props;
   return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    Primitive$1.div,
+    Primitive.div,
     {
       "data-radix-toast-announce-exclude": "",
       "data-radix-toast-announce-alt": altText || void 0,
