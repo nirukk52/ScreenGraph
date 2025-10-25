@@ -1,6 +1,12 @@
+# Encore build artifacts
 .encore
 encore.gen.go
 encore.gen.cue
 /.encore
-node_modules
 /encore.gen
+
+# Dependencies
+node_modules
+
+# OS files
+.DS_Store
