@@ -14,6 +14,17 @@ export async function cancel(params, opts) {
     return apiCall("run", "cancel", params, opts);
 }
 
+export async function health(params, opts) {
+    const handler = (await import("../../../../run/health")).health;
+    registerTestHandler({
+        apiRoute: { service: "run", name: "health", raw: false, handler, streamingRequest: false, streamingResponse: false },
+        middlewares: run_service.default.cfg.middlewares || [],
+        endpointOptions: {"expose":true,"auth":false,"isRaw":false,"isStream":false,"tags":[]},
+    });
+
+    return apiCall("run", "health", params, opts);
+}
+
 export async function start(params, opts) {
     const handler = (await import("../../../../run/start")).start;
     registerTestHandler({

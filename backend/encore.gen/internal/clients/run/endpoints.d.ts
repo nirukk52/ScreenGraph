@@ -36,6 +36,10 @@ import { cancel as cancel_handler } from "../../../../run/cancel.js";
 declare const cancel: WithCallOpts<typeof cancel_handler>;
 export { cancel };
 
+import { health as health_handler } from "../../../../run/health.js";
+declare const health: WithCallOpts<typeof health_handler>;
+export { health };
+
 import { start as start_handler } from "../../../../run/start.js";
 declare const start: WithCallOpts<typeof start_handler>;
 export { start };

@@ -11,6 +11,14 @@ export async function cancel(params, opts) {
 
     return apiCall("run", "cancel", params, opts);
 }
+export async function health(opts) {
+    const params = undefined;
+    if (typeof ENCORE_DROP_TESTS === "undefined" && process.env.NODE_ENV === "test") {
+        return TEST_ENDPOINTS.health(params, opts);
+    }
+
+    return apiCall("run", "health", params, opts);
+}
 export async function start(params, opts) {
     if (typeof ENCORE_DROP_TESTS === "undefined" && process.env.NODE_ENV === "test") {
         return TEST_ENDPOINTS.start(params, opts);
