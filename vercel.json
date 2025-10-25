@@ -4,10 +4,10 @@
   "devCommand": "cd frontend && bun run dev",
   "installCommand": "bun install",
   "framework": null,
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
