@@ -7,6 +7,18 @@ encore.gen.cue
 
 # Dependencies
 node_modules
+package-lock.json
+bun.lockb
+
+# Frontend build artifacts
+frontend/.svelte-kit
+frontend/dist
+frontend/build
+frontend/.vercel
+
+# Backend build artifacts
+backend/.encore
+backend/encore.gen
 
 # OS files
 .DS_Store
