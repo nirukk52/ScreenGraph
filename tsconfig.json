@@ -6,7 +6,7 @@
     "module": "ES2022",
     "types": ["node"],
     "paths": {
-      "~encore/*": ["./encore.gen/*"],
+      "~encore/*": ["./backend/encore.gen/*"],
       "~/*": ["./*"]
     },
     "composite": true,
@@ -20,11 +20,15 @@
     "skipLibCheck": true
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx"
+    "backend/**/*.ts",
+    "frontend/**/*.ts",
+    "frontend/**/*.tsx"
   ],
   "exclude": [
     "node_modules",
-    "encore.gen"
+    "backend/encore.gen",
+    "frontend/.svelte-kit",
+    "frontend/dist"
   ]
 }
+
