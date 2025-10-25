@@ -241,7 +241,7 @@ interface DomainEvent {
 
 ## References
 
-- [Architecture Docs](/backend/steering-docs/architecture-founder-generated/)
-- [Guardrails](/backend/steering-docs/architecture-founder-generated/guardrails.md)
-- [Requirements](/backend/steering-docs/architecture-founder-generated/requirements.md)
-- [Testing Requirements](/backend/steering-docs/architecture-founder-generated/testing_requirements.md)
+- [Architecture Docs](/steering-docs/architecture-founder-generated/)
+- [Guardrails](/steering-docs/architecture-founder-generated/guardrails.md)
+- [Requirements](/steering-docs/architecture-founder-generated/requirements.md)
+- [Testing Requirements](/steering-docs/architecture-founder-generated/testing_requirements.md)

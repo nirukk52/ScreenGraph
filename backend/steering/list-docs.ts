@@ -16,7 +16,7 @@ interface ListDocsResponse {
   categories: DocCategory[];
 }
 
-const STEERING_DOCS_PATH = path.resolve("./backend/steering-docs");
+const STEERING_DOCS_PATH = path.resolve("../steering-docs");
 
 export const listDocs = api<void, ListDocsResponse>(
   { expose: true, method: "GET", path: "/steering/docs" },

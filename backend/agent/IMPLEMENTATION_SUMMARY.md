@@ -2,7 +2,7 @@
 
 ## Overview
 
-Complete scaffolding implementation of the ScreenGraph Agent System following the architecture specifications in `/backend/steering-docs/architecture-founder-generated/`. The system implements a deterministic, event-sourced, replay-capable agent framework for Android UI automation.
+Complete scaffolding implementation of the ScreenGraph Agent System following the architecture specifications in `/steering-docs/architecture-founder-generated/`. The system implements a deterministic, event-sourced, replay-capable agent framework for Android UI automation.
 
 ## Implementation Approach Evaluation
 
@@ -246,15 +246,15 @@ backend/agent/
 ## Architecture Alignment
 
 This implementation strictly follows the specifications in:
-- ✅ `/backend/steering-docs/architecture-founder-generated/guardrails.md`
-- ✅ `/backend/steering-docs/architecture-founder-generated/requirements.md`
-- ✅ `/backend/steering-docs/architecture-founder-generated/testing_requirements.md`
-- ✅ `/backend/steering-docs/architecture-founder-generated/mvp_agent_state.md`
-- ✅ `/backend/steering-docs/architecture-founder-generated/agent_main_updated.md`
-- ✅ `/backend/steering-docs/architecture-founder-generated/agent_policy_updated.md`
-- ✅ `/backend/steering-docs/architecture-founder-generated/agent_recovery_updated.md`
-- ✅ `/backend/steering-docs/architecture-founder-generated/agent_setup_updated.md`
-- ✅ `/backend/steering-docs/architecture-founder-generated/agent_terminal_updated.md`
+- ✅ `/steering-docs/architecture-founder-generated/guardrails.md`
+- ✅ `/steering-docs/architecture-founder-generated/requirements.md`
+- ✅ `/steering-docs/architecture-founder-generated/testing_requirements.md`
+- ✅ `/steering-docs/architecture-founder-generated/mvp_agent_state.md`
+- ✅ `/steering-docs/architecture-founder-generated/agent_main_updated.md`
+- ✅ `/steering-docs/architecture-founder-generated/agent_policy_updated.md`
+- ✅ `/steering-docs/architecture-founder-generated/agent_recovery_updated.md`
+- ✅ `/steering-docs/architecture-founder-generated/agent_setup_updated.md`
+- ✅ `/steering-docs/architecture-founder-generated/agent_terminal_updated.md`
 
 All node inputs/outputs match the exact JSON schemas from the architecture docs.
 
