@@ -26,9 +26,9 @@
  * ```
  */
 declare module '$env/static/private' {
+	export const VITE_CLIENT_TARGET: string;
 	export const VSCODE_CRASH_REPORTER_PROCESS_TYPE: string;
 	export const NODE: string;
-	export const INIT_CWD: string;
 	export const ANDROID_HOME: string;
 	export const TERM: string;
 	export const SHELL: string;
@@ -48,16 +48,16 @@ declare module '$env/static/private' {
 	export const SSH_AUTH_SOCK: string;
 	export const __CF_USER_TEXT_ENCODING: string;
 	export const npm_execpath: string;
-	export const BUN_WHICH_IGNORE_CWD: string;
 	export const PATH: string;
 	export const npm_package_json: string;
 	export const _: string;
-	export const JOBS: string;
 	export const __CFBundleIdentifier: string;
 	export const CONDA_PREFIX: string;
+	export const npm_command: string;
 	export const PWD: string;
 	export const VSCODE_HANDLES_UNCAUGHT_ERRORS: string;
 	export const JAVA_HOME: string;
+	export const npm_lifecycle_event: string;
 	export const VSCODE_ESM_ENTRYPOINT: string;
 	export const npm_package_name: string;
 	export const CURSOR_AGENT: string;
@@ -70,6 +70,7 @@ declare module '$env/static/private' {
 	export const VSCODE_NLS_CONFIG: string;
 	export const LOGNAME: string;
 	export const CONDA_PYTHON_EXE: string;
+	export const npm_lifecycle_script: string;
 	export const COMPOSER_NO_INTERACTION: string;
 	export const VSCODE_IPC_HOOK: string;
 	export const VSCODE_CODE_CACHE_PATH: string;
@@ -79,6 +80,7 @@ declare module '$env/static/private' {
 	export const VSCODE_L10N_BUNDLE_LOCATION: string;
 	export const VSCODE_CWD: string;
 	export const npm_node_execpath: string;
+	export const NODE_ENV: string;
 }
 
 /**
@@ -108,9 +110,9 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
+		VITE_CLIENT_TARGET: string;
 		VSCODE_CRASH_REPORTER_PROCESS_TYPE: string;
 		NODE: string;
-		INIT_CWD: string;
 		ANDROID_HOME: string;
 		TERM: string;
 		SHELL: string;
@@ -130,16 +132,16 @@ declare module '$env/dynamic/private' {
 		SSH_AUTH_SOCK: string;
 		__CF_USER_TEXT_ENCODING: string;
 		npm_execpath: string;
-		BUN_WHICH_IGNORE_CWD: string;
 		PATH: string;
 		npm_package_json: string;
 		_: string;
-		JOBS: string;
 		__CFBundleIdentifier: string;
 		CONDA_PREFIX: string;
+		npm_command: string;
 		PWD: string;
 		VSCODE_HANDLES_UNCAUGHT_ERRORS: string;
 		JAVA_HOME: string;
+		npm_lifecycle_event: string;
 		VSCODE_ESM_ENTRYPOINT: string;
 		npm_package_name: string;
 		CURSOR_AGENT: string;
@@ -152,6 +154,7 @@ declare module '$env/dynamic/private' {
 		VSCODE_NLS_CONFIG: string;
 		LOGNAME: string;
 		CONDA_PYTHON_EXE: string;
+		npm_lifecycle_script: string;
 		COMPOSER_NO_INTERACTION: string;
 		VSCODE_IPC_HOOK: string;
 		VSCODE_CODE_CACHE_PATH: string;
@@ -161,6 +164,7 @@ declare module '$env/dynamic/private' {
 		VSCODE_L10N_BUNDLE_LOCATION: string;
 		VSCODE_CWD: string;
 		npm_node_execpath: string;
+		NODE_ENV: string;
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;
 	}
