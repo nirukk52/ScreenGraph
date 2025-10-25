@@ -92,6 +92,43 @@ This command:
 
 **Note:** Do not use `bun test` or `npm test` directly for Encore applications, as they won't have access to the Encore runtime environment.
 
+#### Test Configuration
+
+The project uses Vitest as the test runner, configured for optimal Encore integration:
+
+- **Root config:** `vite.config.ts` with Encore-specific settings
+- **Test environment:** Automatically sets up test databases and services
+- **Performance:** Test databases optimized for speed (in-memory, no fsync)
+
+#### Running Specific Tests
+
+```bash
+# Run all tests
+encore test
+
+# Run tests in watch mode
+encore test --watch
+
+# Run specific test file
+encore test backend/agent/tests/determinism.test.ts
+
+# Run tests with coverage
+encore test --coverage
+```
+
+#### VS Code Integration (Optional)
+
+For VS Code users, install the Vitest extension and add to `.vscode/settings.json`:
+
+```json
+{
+  "vitest.commandLine": "encore test",
+  "vitest.nodeEnv": {
+    "ENCORE_RUNTIME_LIB": "/opt/homebrew/Cellar/encore/1.50.6/libexec/runtimes/js/encore-runtime.node"
+  }
+}
+```
+
 ### Project Structure
 
 ```
