@@ -4,7 +4,12 @@
   "type": "module",
   "packageManager": "bun",
   "dependencies": {
-    "encore.dev": "^1.50.6"
+    "encore.dev": "^1.50.6",
+    "ulidx": "^1.2.0"
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0",
+    "@types/node": "^22.0.0"
   },
   "scripts": {
     "dev": "encore run",
