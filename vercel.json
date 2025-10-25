@@ -1,6 +1,5 @@
 {
   "buildCommand": "cd frontend && bun install && bun run build",
-  "outputDirectory": "frontend/.vercel/output",
   "devCommand": "cd frontend && bun run dev",
   "installCommand": "bun install",
   "framework": "sveltekit"
