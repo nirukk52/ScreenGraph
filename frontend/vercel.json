@@ -1,14 +1,7 @@
 {
-  "buildCommand": "echo 'No build needed'",
-  "devCommand": "echo 'No dev server'",
-  "installCommand": "echo 'No install needed'",
-  "framework": null,
-  "outputDirectory": ".",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "buildCommand": "bun install && bun run build",
+  "devCommand": "bun run dev",
+  "installCommand": "bun install",
+  "framework": "sveltekit"
 }
 
