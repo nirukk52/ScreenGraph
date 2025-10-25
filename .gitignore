@@ -21,6 +21,7 @@ frontend/.output
 frontend/.env
 frontend/.env.local
 frontend/.env.production
+frontend/.env.*.local
 
 # Backend build artifacts
 backend/.encore
@@ -56,3 +57,13 @@ coverage
 # Temporary folders
 tmp
 temp
+
+# Bun specific
+bun.lockb
+
+# TypeScript
+*.tsbuildinfo
+
+# SvelteKit specific
+.svelte-kit
+.svelte-kit/
