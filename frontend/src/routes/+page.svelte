@@ -1,7 +1,7 @@
 <script>
-	let runId = '';
-	let error = '';
-	let loading = false;
+	let runId = $state('');
+	let error = $state('');
+	let loading = $state(false);
 
 	async function startRun() {
 		if (!runId) return;

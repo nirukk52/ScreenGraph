@@ -3,12 +3,12 @@
 	import { page } from '$app/stores';
 	import { streamRunEvents, cancelRun } from '$lib/api';
 	
-	let runId = '';
-	let events = [];
-	let loading = true;
-	let error = '';
+	let runId = $state('');
+	let events = $state([]);
+	let loading = $state(true);
+	let error = $state('');
 	
-	let cleanup = null;
+	let cleanup = $state(null);
 	
 	onMount(() => {
 		runId = $page.params.id;
