@@ -38,6 +38,6 @@ declare module "$app/types" {
 		};
 		Pathname(): "/" | "/run" | "/run/" | `/run/${string}` & {} | `/run/${string}/` & {};
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
-		Asset(): "/index.html" | string & {};
+		Asset(): string & {};
 	}
 }

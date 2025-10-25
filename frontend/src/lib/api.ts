@@ -2,22 +2,39 @@ import { getEncoreClient } from './getEncoreClient';
 import type { run } from './encore-client';
 
 /**
- * Stream run events via WebSocket
- * Uses the generated Encore client for type safety
+ * Stream run events using the generated Encore client so the frontend always
+ * respects the centralized Encore base URL configuration.
  */
 export async function streamRunEvents(runId: string, onEvent: (event: run.RunEventMessage) => void) {
-	const ws = new WebSocket(`ws://localhost:4000/run.Stream?id=${runId}`);
-	
-	ws.onmessage = (e) => {
-		const event = JSON.parse(e.data);
-		onEvent(event);
+	const client = getEncoreClient();
+	const stream = await client.run.stream(runId, {});
+	let active = true;
+
+	const streamPump = (async () => {
+		try {
+			for await (const event of stream) {
+				if (!active) {
+					return;
+				}
+				onEvent(event);
+			}
+		} catch (error) {
+			console.error('Run stream error:', error);
+		}
+	})();
+
+	streamPump.catch((error) => {
+		console.error('Unhandled run stream error:', error);
+	});
+
+	stream.socket.on('error', (error) => {
+		console.error('Run stream socket error:', error);
+	});
+
+	return () => {
+		active = false;
+		stream.close();
 	};
-	
-	ws.onerror = (error) => {
-		console.error('WebSocket error:', error);
-	};
-	
-	return () => ws.close();
 }
 
 /**

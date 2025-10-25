@@ -1,18 +1,18 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { streamRunEvents, cancelRun } from '$lib/api';
 
-	let runId = '';
-	let events = [];
-	let loading = true;
-	let error = '';
-	let cleanup = null;
+	let runId = $state('');
+	let events = $state([]);
+	let loading = $state(true);
+	let error = $state('');
+	let cleanup = $state(null);
 
-	onMount(() => {
-		runId = $page.params.id || '';
-		startStreaming();
-	});
+    onMount(() => {
+        runId = page.params.id || '';
+        startStreaming();
+    });
 
 	onDestroy(() => {
 		if (cleanup) {
@@ -20,17 +20,17 @@
 		}
 	});
 
-	async function startStreaming() {
-		try {
-			cleanup = await streamRunEvents(runId, (event) => {
-				events = [...events, event];
-				loading = false;
-			});
-		} catch (e) {
-			error = e instanceof Error ? e.message : 'Unknown error';
-			loading = false;
-		}
-	}
+    async function startStreaming() {
+        try {
+            cleanup = await streamRunEvents(runId, (event) => {
+                events = [...events, event];
+                loading = false;
+            });
+        } catch (e) {
+            error = e instanceof Error ? e.message : 'Unknown error';
+            loading = false;
+        }
+    }
 
 	async function handleCancel() {
 		try {
