@@ -17315,7 +17315,6 @@ const deprecations = [
     id: "replace-allownode-allowedtypes-and-disallowedtypes",
     to: "allowedElements"
   },
-  { from: "className", id: "remove-classname" },
   {
     from: "disallowedTypes",
     id: "replace-allownode-allowedtypes-and-disallowedtypes",
@@ -17371,9 +17370,24 @@ function post(tree, options) {
       );
     }
   }
+  if (options.className) {
+    tree = {
+      type: "element",
+      tagName: "div",
+      properties: { className: options.className },
+      // Assume no doctypes.
+      children: (
+        /** @type {Array<ElementContent>} */
+        tree.type === "root" ? tree.children : [tree]
+      )
+    };
+  }
   visit(tree, transform);
   return toJsxRuntime(tree, {
     Fragment: jsxRuntimeExports.Fragment,
+    // @ts-expect-error
+    // React components are allowed to return numbers,
+    // but not according to the types in hast-util-to-jsx-runtime
     components,
     ignoreInvalidStyle: true,
     jsx: jsxRuntimeExports.jsx,
