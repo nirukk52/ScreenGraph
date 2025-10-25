@@ -1,6 +1,11 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+import { getEncoreClient } from './getEncoreClient';
+import type { run } from './encore-client';
 
-export async function streamRunEvents(runId: string, onEvent: (event: any) => void) {
+/**
+ * Stream run events via WebSocket
+ * Uses the generated Encore client for type safety
+ */
+export async function streamRunEvents(runId: string, onEvent: (event: run.RunEventMessage) => void) {
 	const ws = new WebSocket(`ws://localhost:4000/run.Stream?id=${runId}`);
 	
 	ws.onmessage = (e) => {
@@ -15,17 +20,11 @@ export async function streamRunEvents(runId: string, onEvent: (event: any) => vo
 	return () => ws.close();
 }
 
-export async function cancelRun(runId: string) {
-	const response = await fetch(`${API_BASE}/run.Cancel`, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ id: runId })
-	});
-	
-	if (!response.ok) {
-		throw new Error('Failed to cancel run');
-	}
-	
-	return response.json();
+/**
+ * Cancel a run using the Encore client
+ */
+export async function cancelRun(runId: string): Promise<run.CancelRunResponse> {
+	const client = getEncoreClient();
+	return client.run.cancel(runId);
 }
 
