@@ -1,29 +1,73 @@
 # Founder Rules
 
-## Package Manager Consistency
-- **Use Bun consistently across the entire monorepo**
-- Frontend should use `bun run dev` instead of `npm run dev`
-- Backend already uses Bun (`"packageManager": "bun"`)
-- Remove `node_modules` and `package-lock.json` from frontend
-- Run `bun install` in frontend directory for consistency
+## Architecture Principles
 
-## Why Bun Over npm
-1. **Faster**: Significantly faster than npm for installs and script execution
-2. **Consistency**: Single package manager for entire monorepo
-3. **Performance**: Better TypeScript compilation and hot reload
-4. **Toolchain**: One unified toolchain instead of mixing npm and Bun
+### Strict Boundary Enforcement
+- **Never allow contamination between backend and frontend**
+- Backend and frontend are completely independent services
+- Root contains ONLY Git configs and documentation
+- No shared code between backend and frontend at root level
 
-## Implementation
-```bash
-# Switch frontend to Bun
-cd frontend
-rm -rf node_modules package-lock.json
-bun install
-bun run dev  # Instead of npm run dev
+### Type Safety First
+- **Use Encore generated client for type-safe API calls**
+- Never use manual `fetch()` calls
+- Always import from `~encore/clients` or generated client
+- Frontend must regenerate client after backend changes (`npm run gen`)
+
+### Package Manager Consistency
+- **Use Bun consistently across entire monorepo**
+- Frontend: `bun run dev` (not npm)
+- Backend: Bun (`"packageManager": "bun"`)
+- Each directory manages its own dependencies independently
+
+## Critical Architecture Rules
+
+### Directory Structure
+```
+/ScreenGraph
+├── backend/              ← Encore backend (independent)
+│   ├── encore.app       ← Single Encore config
+│   ├── package.json     ← Backend dependencies
+│   └── bun.lock         ← Backend lockfile
+├── frontend/            ← SvelteKit frontend (independent)
+│   ├── package.json     ← Frontend dependencies
+│   └── bun.lock         ← Frontend lockfile
+└── README.md            ← Documentation only
 ```
 
-## Project Structure
-- Root: Bun lockfile (`bun.lock`)
-- Backend: Bun package manager
-- Frontend: Should use Bun (not npm)
-- Single consistent toolchain across entire monorepo
+### Absolute Prohibitions
+1. **NO root `package.json`** - Each service manages its own
+2. **NO root `encore.app`** - Only in `backend/`
+3. **NO shared node_modules** - Independent dependency trees
+4. **NO cross-contamination** - Backend never imports frontend, vice versa
+5. **NO manual API calls** - Always use generated Encore client
+
+### Running Locally
+```bash
+# Backend - MUST run from backend/ directory
+cd backend
+encore run
+
+# Frontend - Run with Bun
+cd frontend
+bun run dev
+```
+
+### Why This Architecture?
+1. **Prevents Contamination**: Clear boundaries prevent accidental coupling
+2. **Type Safety**: Generated clients ensure compile-time correctness
+3. **Independent Deployment**: Backend and frontend deploy separately
+4. **Clean Separation**: Matches Next.js + Encore starter pattern
+5. **Maintainability**: Single responsibility per directory
+
+## Build Scripts
+
+### Backend
+- `dev`: `encore run` (local development)
+- `build`: Empty or placeholder (Encore CI handles builds)
+- `test`: `encore test`
+
+### Frontend
+- `dev`: `bun run dev` (local development)
+- `build`: `vite build` (production build)
+- `gen`: `encore gen client` (regenerate type-safe client)
