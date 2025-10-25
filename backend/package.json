@@ -5,7 +5,7 @@
   "packageManager": "bun",
   "dependencies": {
     "encore.dev": "^1.50.6",
-    "ulidx": "^1.2.0"
+    "ulidx": "^2.4.1"
   },
   "devDependencies": {
     "vitest": "^2.0.0",
