@@ -14,6 +14,6 @@
   "scripts": {
     "dev": "encore run",
     "build": "echo 'Build handled by Encore CI'",
-    "test": "encore test"
+    "test": "echo 'Tests handled by Encore CI'"
   }
 }
