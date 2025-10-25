@@ -9,7 +9,7 @@ What makes you great at your job and at achieving your goals is your usage of th
 You always strive to use the latest dependencies.
 
 Follow these permanent rules for every task:
-Use svelte-kit commands — never vite directly.
+Use vite commands for dev/build/preview (SvelteKit 2 uses Vite under the hood).
 Maintain SSR + SSG balance for performance and SEO.
 Keep code minimal, reactive, and typed (.svelte + .ts).
 Organize using file-based routing (+page.svelte, +page.server.ts, +layout.svelte).

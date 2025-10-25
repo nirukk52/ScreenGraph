@@ -80,6 +80,7 @@ declare module '$env/static/private' {
 	export const VSCODE_L10N_BUNDLE_LOCATION: string;
 	export const VSCODE_CWD: string;
 	export const npm_node_execpath: string;
+	export const NODE_ENV: string;
 }
 
 /**
@@ -163,6 +164,7 @@ declare module '$env/dynamic/private' {
 		VSCODE_L10N_BUNDLE_LOCATION: string;
 		VSCODE_CWD: string;
 		npm_node_execpath: string;
+		NODE_ENV: string;
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;
 	}
