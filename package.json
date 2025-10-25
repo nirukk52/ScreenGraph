@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "type": "module",
   "packageManager": "bun",
-  "workspaces": [
-    "backend",
-    "frontend"
-  ],
   "dependencies": {
     "encore.dev": "^1.50.6"
+  },
+  "scripts": {
+    "dev": "encore run",
+    "build": "encore run",
+    "test": "encore test"
   }
 }
