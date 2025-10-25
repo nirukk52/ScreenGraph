@@ -1,7 +1,6 @@
 ---
-alwaysApply: true
+alwaysApply: false
 ---
-
 <SYSTEM>This is the abridged developer documentation for Svelte and SvelteKit.</SYSTEM>
 
 All this can be found here in much more detail:

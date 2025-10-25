@@ -1,73 +1,58 @@
+---
+alwaysApply: true
+---
+
 # Founder Rules
+Architecture & Boundary Rules
+Backend (backend/) and frontend (frontend/) are completely independent services.
+No root-level coupling: root only holds docs and Git config.
+No shared code or node_modules between backend and frontend.
+No root package.json or encore.app`.
+Backend never imports frontend; frontend never touches backend code.
 
-## Architecture Principles
+Type Safety Rules
+Always use Encore generated clients (~encore/clients).
+Never use manual fetch() calls.
+After backend API changes → run bun run gen on frontend.
+Generated clients guarantee full end-to-end type safety.
 
-### Strict Boundary Enforcement
-- **Never allow contamination between backend and frontend**
-- Backend and frontend are completely independent services
-- Root contains ONLY Git configs and documentation
-- No shared code between backend and frontend at root level
+Package Management
+Use Bun everywhere ("packageManager": "bun").
+Each sub-directory manages its own dependencies.
 
-### Type Safety First
-- **Use Encore generated client for type-safe API calls**
-- Never use manual `fetch()` calls
-- Always import from `~encore/clients` or generated client
-- Frontend must regenerate client after backend changes (`npm run gen`)
+Commands:
+Backend: encore run
+Frontend: bun run dev
 
-### Package Manager Consistency
-- **Use Bun consistently across entire monorepo**
-- Frontend: `bun run dev` (not npm)
-- Backend: Bun (`"packageManager": "bun"`)
-- Each directory manages its own dependencies independently
-
-## Critical Architecture Rules
-
-### Directory Structure
-```
+Directory Structure
 /ScreenGraph
-├── backend/              ← Encore backend (independent)
-│   ├── encore.app       ← Single Encore config
-│   ├── package.json     ← Backend dependencies
-│   └── bun.lock         ← Backend lockfile
-├── frontend/            ← SvelteKit frontend (independent)
-│   ├── package.json     ← Frontend dependencies
-│   └── bun.lock         ← Frontend lockfile
-└── README.md            ← Documentation only
-```
+├── backend/   ← Encore backend (independent)
+│   ├── encore.app
+│   ├── package.json
+│   └── bun.lock
+├── frontend/  ← SvelteKit frontend (independent)
+│   ├── package.json
+│   └── bun.lock
+└── README.md  ← Docs only
 
-### Absolute Prohibitions
-1. **NO root `package.json`** - Each service manages its own
-2. **NO root `encore.app`** - Only in `backend/`
-3. **NO shared node_modules** - Independent dependency trees
-4. **NO cross-contamination** - Backend never imports frontend, vice versa
-5. **NO manual API calls** - Always use generated Encore client
+Build & Deployment Rules
+Backend builds via Encore Cloud CI (don’t script builds manually).
+Frontend builds with vite build.
+Deploy independently (Encore Cloud for backend, Vercel for frontend).
 
-### Running Locally
-```bash
-# Backend - MUST run from backend/ directory
-cd backend
-encore run
+Run Discipline
+cd backend && encore run
+cd frontend && bun run dev
 
-# Frontend - Run with Bun
-cd frontend
-bun run dev
-```
+Absolute Prohibitions
+No root package.json
+No root encore.app
+No shared node_modules
+No backend↔frontend imports
+No manual HTTP fetches
 
-### Why This Architecture?
-1. **Prevents Contamination**: Clear boundaries prevent accidental coupling
-2. **Type Safety**: Generated clients ensure compile-time correctness
-3. **Independent Deployment**: Backend and frontend deploy separately
-4. **Clean Separation**: Matches Next.js + Encore starter pattern
-5. **Maintainability**: Single responsibility per directory
-
-## Build Scripts
-
-### Backend
-- `dev`: `encore run` (local development)
-- `build`: Empty or placeholder (Encore CI handles builds)
-- `test`: `encore test`
-
-### Frontend
-- `dev`: `bun run dev` (local development)
-- `build`: `vite build` (production build)
-- `gen`: `encore gen client` (regenerate type-safe client)
+Why This Matters
+Isolation → Clean Deployment
+Type Safety → Zero API Drift
+Encapsulation → Predictable CI
+Clarity → Easy Onboarding & Maintenance
