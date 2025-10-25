@@ -27,17 +27,16 @@ export {};
 
 declare module "$app/types" {
 	export interface AppTypes {
-		RouteId(): "/" | "/run" | "/run/[id]" | "/steering";
+		RouteId(): "/" | "/run" | "/run/[id]";
 		RouteParams(): {
 			"/run/[id]": { id: string }
 		};
 		LayoutParams(): {
 			"/": { id?: string };
 			"/run": { id?: string };
-			"/run/[id]": { id: string };
-			"/steering": Record<string, never>
+			"/run/[id]": { id: string }
 		};
-		Pathname(): "/" | "/run" | "/run/" | `/run/${string}` & {} | `/run/${string}/` & {} | "/steering" | "/steering/";
+		Pathname(): "/" | "/run" | "/run/" | `/run/${string}` & {} | `/run/${string}/` & {};
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
 		Asset(): string & {};
 	}

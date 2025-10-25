@@ -1,14 +1,8 @@
 {
   "buildCommand": "cd frontend && bun install && bun run build",
-  "outputDirectory": "frontend/dist",
+  "outputDirectory": "frontend/.svelte-kit/vercel/static",
   "devCommand": "cd frontend && bun run dev",
   "installCommand": "bun install",
-  "framework": null,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "framework": "sveltekit"
 }
 

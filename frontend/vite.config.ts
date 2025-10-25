@@ -1,19 +1,7 @@
-import { defineConfig } from 'vite'
-import path from 'path'
-import react from '@vitejs/plugin-react'
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/',
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname),
-      '~backend/client': path.resolve(__dirname, './client'),
-    },
-  },
-  plugins: [react()],
-  build: {
-    outDir: './dist',
-    emptyOutDir: true,
-    minify: false,
-  }
-})
+	plugins: [sveltekit()]
+});
+
