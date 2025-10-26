@@ -1,4 +1,4 @@
-import type { DriverPort, DeviceConfiguration } from "../../ports/driver.port";
+import type { DriverPort, DeviceConfiguration } from "../../ports/appium/driver.port";
 import type { DeviceRuntimeContext, ApplicationForegroundContext } from "../../domain/entities";
 
 export class FakeDriver implements DriverPort {

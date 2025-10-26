@@ -1,4 +1,4 @@
-import type { AgentState } from "../domain/state";
+import type { AgentState } from "../../domain/state";
 
 /**
  * AgentStateDbPort encapsulates persistence of full agent state snapshots per step.

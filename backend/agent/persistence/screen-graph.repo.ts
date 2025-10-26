@@ -1,5 +1,5 @@
 import db from "../../db";
-import type { ScreenGraphDbPort } from "../ports/screen-graph.port";
+import type { ScreenGraphDbPort } from "../ports/db-ports/screen-graph.port";
 import { ulid } from "ulidx";
 
 /**

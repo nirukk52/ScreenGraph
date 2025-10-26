@@ -1,6 +1,6 @@
 import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import type { EventKind } from "../../domain/events";
-import type { DriverPort } from "../../ports/driver.port";
+import type { AppLifecyclePort } from "../../ports/appium/app-lifecycle.port";
 import { ApplicationForegroundContext } from "../../domain/entities";
 
 export interface LaunchOrAttachInput extends CommonNodeInput {
@@ -19,15 +19,14 @@ export interface LaunchOrAttachOutput extends CommonNodeOutput {
 
 export async function launchOrAttach(
   input: LaunchOrAttachInput,
-  driver: DriverPort,
+  appLifecyclePort: AppLifecyclePort,
   sessionId: string,
   generateId: () => string,
 ): Promise<{
   output: LaunchOrAttachOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
 }> {
-  const appFg = await driver.launchApp(
-    sessionId,
+  const appFg = await appLifecyclePort.launchApp(
     input.applicationUnderTestDescriptor.androidPackageId,
   );
   const contextId = generateId();

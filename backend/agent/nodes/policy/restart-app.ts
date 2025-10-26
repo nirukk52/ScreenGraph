@@ -1,6 +1,6 @@
 import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import type { EventKind } from "../../domain/events";
-import type { DriverPort } from "../../ports/driver.port";
+import type { AppLifecyclePort } from "../../ports/appium/app-lifecycle.port";
 
 export interface RestartAppInput extends CommonNodeInput {
   runId: string;
@@ -24,14 +24,13 @@ export interface RestartAppOutput extends CommonNodeOutput {
 
 export async function restartApp(
   input: RestartAppInput,
-  driver: DriverPort,
+  appLifecyclePort: AppLifecyclePort,
   sessionId: string,
 ): Promise<{
   output: RestartAppOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
 }> {
-  const appFg = await driver.launchApp(
-    sessionId,
+  const appFg = await appLifecyclePort.launchApp(
     input.applicationUnderTestDescriptor.androidPackageId,
   );
 

@@ -1,7 +1,8 @@
 import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import type { EventKind } from "../../domain/events";
 import type { PerceptionArtifacts } from "../../domain/perception";
-import type { DriverPort } from "../../ports/driver";
+import type { PerceptionPort } from "../../ports/appium/perception.port";
+import type { DeviceInfoPort } from "../../ports/appium/device-info.port";
 import type { StoragePort } from "../../ports/storage";
 import * as crypto from "node:crypto";
 
@@ -22,7 +23,8 @@ export interface PerceiveOutput extends CommonNodeOutput {
  */
 export async function perceive(
   input: PerceiveInput,
-  driver: DriverPort,
+  perceptionPort: PerceptionPort,
+  deviceInfoPort: DeviceInfoPort,
   storage: StoragePort,
 ): Promise<{
   output: PerceiveOutput;
@@ -32,9 +34,9 @@ export async function perceive(
 
   // Capture screenshot and UI hierarchy in parallel
   const [screenshotData, uiHierarchyData, screenDimensions] = await Promise.all([
-    driver.captureScreenshot(),
-    driver.dumpUiHierarchy(),
-    driver.getScreenDimensions(),
+    perceptionPort.captureScreenshot(),
+    perceptionPort.dumpUiHierarchy(),
+    deviceInfoPort.getScreenDimensions(),
   ]);
 
   // Store artifacts in object storage

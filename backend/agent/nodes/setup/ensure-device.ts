@@ -1,5 +1,6 @@
 import { AgentState, type CommonNodeInput, type CommonNodeOutput } from "../../domain/state";
-import type { DriverPort, DeviceConfiguration } from "../../ports/driver.port";
+import type { DeviceConfiguration } from "../../ports/appium/driver.port";
+import type { SessionPort } from "../../ports/appium/session.port";
 import { createDomainEvent, type EventKind } from "../../domain/events";
 
 export interface EnsureDeviceInput extends CommonNodeInput {
@@ -18,13 +19,13 @@ export interface EnsureDeviceOutput extends CommonNodeOutput {
 
 export async function ensureDevice(
   input: EnsureDeviceInput,
-  driver: DriverPort,
+  sessionPort: SessionPort,
   generateId: () => string,
 ): Promise<{
   output: EnsureDeviceOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
 }> {
-  const ctx = await driver.ensureDevice(input.deviceConfiguration);
+  const ctx = await sessionPort.ensureDevice(input.deviceConfiguration);
   const contextId = generateId();
 
   return {

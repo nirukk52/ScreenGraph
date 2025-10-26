@@ -1,5 +1,5 @@
 import db from "../../db";
-import type { AgentStateDbPort } from "../ports/agent-state.port";
+import type { AgentStateDbPort } from "../ports/db-ports/agent-state.port";
 import type { AgentState } from "../domain/state";
 
 /**

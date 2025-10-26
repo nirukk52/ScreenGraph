@@ -1,6 +1,6 @@
 import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import type { EventKind } from "../../domain/events";
-import type { DriverPort } from "../../ports/driver.port";
+import type { IdleDetectorPort } from "../../ports/appium/idle-detector.port";
 
 export interface WaitIdleInput extends CommonNodeInput {
   runId: string;
@@ -20,14 +20,13 @@ export interface WaitIdleOutput extends CommonNodeOutput {
 
 export async function waitIdle(
   input: WaitIdleInput,
-  driver: DriverPort,
+  idleDetectorPort: IdleDetectorPort,
   sessionId: string,
 ): Promise<{
   output: WaitIdleOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
 }> {
-  const quietMillis = await driver.waitIdle(
-    sessionId,
+  const quietMillis = await idleDetectorPort.waitIdle(
     input.idleHeuristicsConfiguration.minQuietMillis,
     input.idleHeuristicsConfiguration.maxWaitMillis,
   );

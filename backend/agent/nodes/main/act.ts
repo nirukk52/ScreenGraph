@@ -1,7 +1,8 @@
 import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import type { EventKind } from "../../domain/events";
 import type { ActionDecision, ActionExecutionResult } from "../../domain/actions";
-import type { DriverPort } from "../../ports/driver";
+import type { InputActionsPort } from "../../ports/appium/input-actions.port";
+import type { NavigationPort } from "../../ports/appium/navigation.port";
 
 export interface ActInput extends CommonNodeInput {
   runId: string;
@@ -22,7 +23,8 @@ export interface ActOutput extends CommonNodeOutput {
  */
 export async function act(
   input: ActInput,
-  driver: DriverPort,
+  inputActionsPort: InputActionsPort,
+  navigationPort: NavigationPort,
 ): Promise<{
   output: ActOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
@@ -37,7 +39,7 @@ export async function act(
     switch (action.actionKind) {
       case "TAP":
         if (action.targetCoordinates) {
-          await driver.performTap(action.targetCoordinates.x, action.targetCoordinates.y);
+          await inputActionsPort.performTap(action.targetCoordinates.x, action.targetCoordinates.y);
         } else {
           throw new Error("TAP action requires targetCoordinates");
         }
@@ -65,19 +67,19 @@ export async function act(
               break;
           }
 
-          await driver.performSwipe(x, y, endX, endY, 300);
+          await inputActionsPort.performSwipe(x, y, endX, endY, 300);
         } else {
           throw new Error("SWIPE action requires targetCoordinates and swipeDirection");
         }
         break;
 
       case "BACK":
-        await driver.performBack();
+        await navigationPort.performBack();
         break;
 
       case "TEXT_INPUT":
         if (action.textInputValue) {
-          await driver.performTextInput(action.textInputValue);
+          await inputActionsPort.performTextInput(action.textInputValue);
         } else {
           throw new Error("TEXT_INPUT action requires textInputValue");
         }
@@ -85,7 +87,7 @@ export async function act(
 
       case "LONG_PRESS":
         if (action.targetCoordinates) {
-          await driver.performLongPress(
+          await inputActionsPort.performLongPress(
             action.targetCoordinates.x,
             action.targetCoordinates.y,
             1000,

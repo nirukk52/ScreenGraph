@@ -9,8 +9,8 @@ import {
 } from "../domain/events";
 import type { RunRecord, RunDbPort } from "../ports/run-db.port";
 import type { RunEventsDbPort } from "../ports/run-events.port";
-import type { AgentStateDbPort } from "../ports/agent-state.port";
-import type { RunOutboxDbPort } from "../ports/run-outbox.port";
+import type { AgentStateDbPort } from "../ports/db-ports/agent-state.port";
+import type { RunOutboxDbPort } from "../ports/db-ports/run-outbox.port";
 
 export class Orchestrator {
   private sequenceCounter = 0;

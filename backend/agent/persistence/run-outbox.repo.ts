@@ -1,5 +1,5 @@
 import db from "../../db";
-import type { RunOutboxDbPort } from "../ports/run-outbox.port";
+import type { RunOutboxDbPort } from "../ports/db-ports/run-outbox.port";
 
 /**
  * RunOutboxRepo implements RunOutboxDbPort using the run_outbox cursor table.
