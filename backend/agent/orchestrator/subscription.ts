@@ -5,6 +5,7 @@ import { Orchestrator } from "./orchestrator";
 import { RunDbRepo } from "../persistence/run-db.repo";
 import { RunEventsRepo } from "../persistence/run-events.repo";
 import { AgentStateRepo } from "../persistence/agent-state.repo";
+import { RunOutboxRepo } from "../persistence/run-outbox.repo";
 import type { Budgets } from "../domain/state";
 import { AgentWorker } from "./worker";
 
@@ -20,7 +21,8 @@ new Subscription(runJobTopic, "agent-orchestrator-worker", {
       const runDb = new RunDbRepo();
       const eventsDb = new RunEventsRepo();
       const agentStateDb = new AgentStateRepo();
-      const orchestrator = new Orchestrator(runDb, eventsDb, agentStateDb);
+      const outboxDb = new RunOutboxRepo();
+      const orchestrator = new Orchestrator(runDb, eventsDb, agentStateDb, outboxDb);
 
       const workerId = `worker-${process.env.HOSTNAME ?? "local"}-${Date.now()}`;
       const leaseDurationMs = 30_000;

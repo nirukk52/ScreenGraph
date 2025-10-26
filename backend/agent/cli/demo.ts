@@ -24,7 +24,7 @@ async function runDemo() {
   console.log("🚀 ScreenGraph Agent Demo Starting...\n");
 
   const repo = new InMemoryRepo();
-  const orchestrator = new Orchestrator(repo);
+  const orchestrator = new Orchestrator(repo, repo, repo, repo);
   const driver = new FakeDriver();
   const storage = new FakeStorage();
   const ocr = new FakeOCR();
@@ -177,9 +177,6 @@ async function runDemo() {
 
   await orchestrator.finalizeRun(state, "success");
   console.log(`   → Terminal disposition: ${stopResult.output.confirmedTerminalDisposition}\n`);
-
-  const published = orchestrator.publishEvents();
-  console.log(`📤 Published ${published.length} events in order\n`);
 
   const allEvents = await repo.getEvents(runId);
   console.log("📊 Final Stats:");

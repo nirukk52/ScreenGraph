@@ -10,6 +10,7 @@ import {
 import type { RunRecord, RunDbPort } from "../ports/run-db.port";
 import type { RunEventsDbPort } from "../ports/run-events.port";
 import type { AgentStateDbPort } from "../ports/agent-state.port";
+import type { RunOutboxDbPort } from "../ports/run-outbox.port";
 
 export class Orchestrator {
   private sequenceCounter = 0;
@@ -20,6 +21,7 @@ export class Orchestrator {
     private readonly runDb: RunDbPort,
     private readonly eventsDb: RunEventsDbPort,
     private readonly agentStateDb: AgentStateDbPort,
+    private readonly outboxDb: RunOutboxDbPort,
   ) {}
 
   async initialize(
@@ -29,6 +31,9 @@ export class Orchestrator {
     this.cachedRun = run;
     const latestSnapshot = await this.agentStateDb.getLatestSnapshot(run.runId);
     const lastSequence = await this.eventsDb.getLastEventSequence(run.runId);
+
+    // Ensure outbox cursor exists for this run
+    await this.outboxDb.ensureOutboxCursor(run.runId);
 
     if (latestSnapshot) {
       this.sequenceCounter = lastSequence;

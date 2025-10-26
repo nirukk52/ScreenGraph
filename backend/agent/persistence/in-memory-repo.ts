@@ -12,6 +12,7 @@ export class InMemoryRepo {
   private snapshots = new Map<string, Map<number, AgentState>>();
   private screens = new Map<string, ScreenRecord>();
   private actions = new Map<string, ActionRecord>();
+  private outboxCursors = new Map<string, { nextSeq: number; lastPublishedSeq: number }>();
 
   async createRun(runId: string, tenantId: string, projectId: string, now: string): Promise<void> {
     this.runs.set(runId, {
@@ -209,12 +210,31 @@ export class InMemoryRepo {
     return Array.from(this.actions.values());
   }
 
+  async ensureOutboxCursor(runId: string): Promise<void> {
+    if (!this.outboxCursors.has(runId)) {
+      this.outboxCursors.set(runId, { nextSeq: 1, lastPublishedSeq: 0 });
+    }
+  }
+
+  async getCursor(runId: string): Promise<{ nextSeq: number; lastPublishedSeq: number } | null> {
+    return this.outboxCursors.get(runId) ?? null;
+  }
+
+  async advanceCursor(runId: string, publishedSeq: number): Promise<void> {
+    const cursor = this.outboxCursors.get(runId);
+    if (cursor) {
+      cursor.lastPublishedSeq = publishedSeq;
+      cursor.nextSeq = publishedSeq + 1;
+    }
+  }
+
   reset(): void {
     this.runs.clear();
     this.events.clear();
     this.snapshots.clear();
     this.screens.clear();
     this.actions.clear();
+    this.outboxCursors.clear();
   }
 }
 

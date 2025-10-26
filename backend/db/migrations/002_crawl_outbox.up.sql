@@ -1,11 +1,9 @@
+-- Migration 002: Run Outbox cursor table
+-- This table implements the outbox pattern for reliable event publishing
+-- It tracks per-run publishing cursors (next_seq, last_published_seq)
 CREATE TABLE run_outbox (
-  id BIGSERIAL PRIMARY KEY,
-  run_id UUID NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
-  event_type VARCHAR(50) NOT NULL,
-  payload JSONB NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  published_at TIMESTAMP
+  run_id TEXT PRIMARY KEY,
+  next_seq BIGINT NOT NULL DEFAULT 1,
+  last_published_seq BIGINT NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
-CREATE INDEX idx_run_outbox_unpublished ON run_outbox(published_at, id) WHERE published_at IS NULL;
-CREATE INDEX idx_run_outbox_run_id ON run_outbox(run_id);

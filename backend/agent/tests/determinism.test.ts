@@ -9,7 +9,7 @@ describe("Determinism Tests", () => {
 
   beforeEach(() => {
     repo = new InMemoryRepo();
-    orchestrator = new Orchestrator(repo);
+    orchestrator = new Orchestrator(repo, repo, repo, repo);
   });
 
   it("should generate monotonic sequences", () => {
