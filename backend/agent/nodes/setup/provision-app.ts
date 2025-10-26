@@ -24,9 +24,10 @@ export interface ProvisionAppOutput extends CommonNodeOutput {
   };
 }
 
-export async function provisionApp(
-  input: ProvisionAppInput
-): Promise<{ output: ProvisionAppOutput; events: Array<{ kind: EventKind; payload: Record<string, unknown> }> }> {
+export async function provisionApp(input: ProvisionAppInput): Promise<{
+  output: ProvisionAppOutput;
+  events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
+}> {
   return {
     output: {
       runId: input.runId,

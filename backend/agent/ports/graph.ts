@@ -1,4 +1,8 @@
-import { ScreenRecordIdentity, ActionRecordIdentity, GraphPersistenceOutcome } from "../domain/graph";
+import {
+  ScreenRecordIdentity,
+  ActionRecordIdentity,
+  GraphPersistenceOutcome,
+} from "../domain/graph";
 import { ActionCandidate } from "../domain/actions";
 
 export interface GraphPort {
@@ -6,14 +10,14 @@ export interface GraphPort {
     perceptualHash: string,
     screenshotRefId: string,
     uiHierarchyXmlRefId: string,
-    metadata: Record<string, unknown>
+    metadata: Record<string, unknown>,
   ): Promise<ScreenRecordIdentity>;
 
   persistAction(
     sourceScreenId: string,
     targetScreenId: string,
     actionCandidate: ActionCandidate,
-    executionStatus: string
+    executionStatus: string,
   ): Promise<ActionRecordIdentity>;
 
   getGraphStatistics(): Promise<{

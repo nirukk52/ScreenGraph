@@ -25,7 +25,7 @@ describe("Determinism Tests", () => {
   it("should generate deterministic seeds", () => {
     orchestrator.reset();
     const seed1 = orchestrator.nextSeed();
-    
+
     orchestrator.reset();
     const seed2 = orchestrator.nextSeed();
 
@@ -45,7 +45,7 @@ describe("Determinism Tests", () => {
       "01TENANT00000000000000",
       "01PROJECT0000000000000",
       "01RUN00000000000000000",
-      budgets
+      budgets,
     );
 
     expect(state.runId).toBe("01RUN00000000000000000");

@@ -52,7 +52,10 @@ export interface VerificationAssessment {
   perceptualHammingDistance: number;
 }
 
-export type GraphPersistenceOperationKind = "UPSERTED_SCREEN_AND_ACTION" | "SCREEN_ALREADY_EXISTS" | "NO_CHANGE";
+export type GraphPersistenceOperationKind =
+  | "UPSERTED_SCREEN_AND_ACTION"
+  | "SCREEN_ALREADY_EXISTS"
+  | "NO_CHANGE";
 
 export interface GraphPersistenceOutcome {
   screenRecordIdentity: string;

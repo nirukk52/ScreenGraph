@@ -66,5 +66,5 @@ export const start = api<StartRunRequest, StartRunResponse>(
       createdAt: run.created_at,
       streamUrl,
     };
-  }
+  },
 );

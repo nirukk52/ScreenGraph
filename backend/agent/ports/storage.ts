@@ -3,7 +3,9 @@ export interface StoragePort {
     runId: string,
     artifactType: string,
     content: string | Buffer,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): Promise<{ refId: string }>;
-  retrieveArtifact(refId: string): Promise<{ content: string | Buffer; metadata: Record<string, unknown> }>;
+  retrieveArtifact(
+    refId: string,
+  ): Promise<{ content: string | Buffer; metadata: Record<string, unknown> }>;
 }

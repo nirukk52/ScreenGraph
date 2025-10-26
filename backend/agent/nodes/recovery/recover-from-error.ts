@@ -22,10 +22,12 @@ export interface RecoverFromErrorOutput extends CommonNodeOutput {
   recoveryDisposition: "RETRY_NEXT_NODE" | "ESCALATE_TO_RESTART" | "ABORT";
 }
 
-export async function recoverFromError(
-  input: RecoverFromErrorInput
-): Promise<{ output: RecoverFromErrorOutput; events: Array<{ kind: EventKind; payload: Record<string, unknown> }> }> {
-  const disposition = input.lastFailureContext.errorId === "DRIVER_TIMEOUT" ? "RETRY_NEXT_NODE" : "ABORT";
+export async function recoverFromError(input: RecoverFromErrorInput): Promise<{
+  output: RecoverFromErrorOutput;
+  events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
+}> {
+  const disposition =
+    input.lastFailureContext.errorId === "DRIVER_TIMEOUT" ? "RETRY_NEXT_NODE" : "ABORT";
 
   return {
     output: {

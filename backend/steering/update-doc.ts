@@ -39,5 +39,5 @@ export const updateDoc = api<UpdateDocParams, UpdateDocResponse>(
       }
       throw APIError.internal("Failed to update documentation file");
     }
-  }
+  },
 );

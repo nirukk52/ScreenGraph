@@ -15,9 +15,10 @@ export interface ResumeFromCheckpointOutput extends CommonNodeOutput {
   restoredAgentStateReference: string;
 }
 
-export async function resumeFromCheckpoint(
-  input: ResumeFromCheckpointInput
-): Promise<{ output: ResumeFromCheckpointOutput; events: Array<{ kind: EventKind; payload: Record<string, unknown> }> }> {
+export async function resumeFromCheckpoint(input: ResumeFromCheckpointInput): Promise<{
+  output: ResumeFromCheckpointOutput;
+  events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
+}> {
   return {
     output: {
       runId: input.runId,

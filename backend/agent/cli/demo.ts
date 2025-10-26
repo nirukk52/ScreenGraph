@@ -66,7 +66,7 @@ async function runDemo() {
       driverReusePolicy: "REUSE_OR_CREATE",
     },
     driver,
-    () => orchestrator.generateId()
+    () => orchestrator.generateId(),
   );
   state.deviceRuntimeContextId = deviceResult.output.deviceRuntimeContextId;
   await orchestrator.recordNodeEvents(state, "EnsureDevice", deviceResult.events);
@@ -88,7 +88,9 @@ async function runDemo() {
   });
   await orchestrator.recordNodeEvents(state, "ProvisionApp", provisionResult.events);
   await repo.saveSnapshot(runId, 1, state);
-  console.log(`   → App status: ${provisionResult.output.applicationProvisioningOutcome.appPresenceStatus}\n`);
+  console.log(
+    `   → App status: ${provisionResult.output.applicationProvisioningOutcome.appPresenceStatus}\n`,
+  );
 
   console.log("🚀 Step 3: LaunchOrAttach");
   const launchResult = await launchOrAttach(
@@ -102,12 +104,14 @@ async function runDemo() {
     },
     driver,
     deviceResult.output.deviceRuntimeContextId,
-    () => orchestrator.generateId()
+    () => orchestrator.generateId(),
   );
   state.applicationForegroundContextId = launchResult.output.applicationForegroundContextId;
   await orchestrator.recordNodeEvents(state, "LaunchOrAttach", launchResult.events);
   await repo.saveSnapshot(runId, 2, state);
-  console.log(`   → App foreground context: ${launchResult.output.applicationForegroundContextId}\n`);
+  console.log(
+    `   → App foreground context: ${launchResult.output.applicationForegroundContextId}\n`,
+  );
 
   console.log("⏳ Step 4: WaitIdle");
   const idleResult = await waitIdle(
@@ -119,14 +123,16 @@ async function runDemo() {
       },
     },
     driver,
-    deviceResult.output.deviceRuntimeContextId
+    deviceResult.output.deviceRuntimeContextId,
   );
   await orchestrator.recordNodeEvents(state, "WaitIdle", idleResult.events);
   await repo.saveSnapshot(runId, 3, state);
-  console.log(`   → Quiet window: ${idleResult.output.uiStabilityAssessment.quietWindowObservedMillis}ms\n`);
+  console.log(
+    `   → Quiet window: ${idleResult.output.uiStabilityAssessment.quietWindowObservedMillis}ms\n`,
+  );
 
   console.log("=== MAIN LOOP (Stubbed - 3 iterations) ===\n");
-  
+
   for (let i = 1; i <= 3; i++) {
     console.log(`🔄 Iteration ${i}`);
     state.iterationOrdinalNumber = i;

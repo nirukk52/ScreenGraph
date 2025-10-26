@@ -10,7 +10,7 @@ export interface DriverPort {
     startY: number,
     endX: number,
     endY: number,
-    durationMs: number
+    durationMs: number,
   ): Promise<void>;
   performBack(): Promise<void>;
   performTextInput(text: string): Promise<void>;

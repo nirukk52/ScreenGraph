@@ -19,9 +19,7 @@ export interface VerifyOutput extends CommonNodeOutput {
  * Verify node confirms that the action produced a UI change.
  * Compares pre/post perceptual hashes to detect visual changes.
  */
-export async function verify(
-  input: VerifyInput
-): Promise<{
+export async function verify(input: VerifyInput): Promise<{
   output: VerifyOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
 }> {

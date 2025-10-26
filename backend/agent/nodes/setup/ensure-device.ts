@@ -19,8 +19,11 @@ export interface EnsureDeviceOutput extends CommonNodeOutput {
 export async function ensureDevice(
   input: EnsureDeviceInput,
   driver: DriverPort,
-  generateId: () => string
-): Promise<{ output: EnsureDeviceOutput; events: Array<{ kind: EventKind; payload: Record<string, unknown> }> }> {
+  generateId: () => string,
+): Promise<{
+  output: EnsureDeviceOutput;
+  events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
+}> {
   const ctx = await driver.ensureDevice(input.deviceConfiguration);
   const contextId = generateId();
 

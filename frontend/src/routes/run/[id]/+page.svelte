@@ -1,48 +1,48 @@
 <script>
-    import { onMount, onDestroy } from 'svelte';
-    import { page } from '$app/state';
-    import autoAnimate from '@formkit/auto-animate';
-    import { streamRunEvents, cancelRun } from '$lib/api';
+import { onMount, onDestroy } from "svelte";
+import { page } from "$app/state";
+import autoAnimate from "@formkit/auto-animate";
+import { streamRunEvents, cancelRun } from "$lib/api";
 
-	let runId = $state('');
-	let events = $state([]);
-	let loading = $state(true);
-	let error = $state('');
-	let cleanup = $state(null);
+let runId = $state("");
+let events = $state([]);
+let loading = $state(true);
+let error = $state("");
+let cleanup = $state(null);
 
-    onMount(() => {
-        runId = page.params.id || '';
-        startStreaming();
+onMount(() => {
+  runId = page.params.id || "";
+  startStreaming();
+});
+
+onDestroy(() => {
+  if (cleanup) {
+    cleanup();
+  }
+});
+
+/** Handles subscribing to the run event stream so the timeline stays live. */
+async function startStreaming() {
+  try {
+    cleanup = await streamRunEvents(runId, (event) => {
+      events = [...events, event];
+      loading = false;
     });
+  } catch (e) {
+    error = e instanceof Error ? e.message : "Unknown error";
+    loading = false;
+  }
+}
 
-	onDestroy(() => {
-		if (cleanup) {
-			cleanup();
-		}
-	});
-
-    /** Handles subscribing to the run event stream so the timeline stays live. */
-    async function startStreaming() {
-        try {
-            cleanup = await streamRunEvents(runId, (event) => {
-                events = [...events, event];
-                loading = false;
-            });
-        } catch (e) {
-            error = e instanceof Error ? e.message : 'Unknown error';
-            loading = false;
-        }
-    }
-
-    /** Cancels the active run when the user no longer wants to continue processing. */
-    async function handleCancel() {
-		try {
-			await cancelRun(runId);
-			alert('Run cancelled');
-		} catch (e) {
-			error = e instanceof Error ? e.message : 'Unknown error';
-		}
-	}
+/** Cancels the active run when the user no longer wants to continue processing. */
+async function handleCancel() {
+  try {
+    await cancelRun(runId);
+    alert("Run cancelled");
+  } catch (e) {
+    error = e instanceof Error ? e.message : "Unknown error";
+  }
+}
 </script>
 
 <div class="container mx-auto p-8">

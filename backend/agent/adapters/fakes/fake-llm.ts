@@ -3,21 +3,29 @@ import { ActionCandidate } from "../../domain/entities";
 import { StoragePort } from "../../ports/storage.port";
 
 export class FakeLLM implements LLMPort {
-  constructor(private storage: StoragePort, private seed: number) {}
+  constructor(
+    private storage: StoragePort,
+    private seed: number,
+  ) {}
 
-  async enumerateActions(uiHierarchyXmlRefId: string, maxActions: number): Promise<ActionCandidate[]> {
+  async enumerateActions(
+    uiHierarchyXmlRefId: string,
+    maxActions: number,
+  ): Promise<ActionCandidate[]> {
     const xml = await this.storage.get(uiHierarchyXmlRefId);
     if (!xml) {
       return [];
     }
 
-    const clickableMatches = xml.matchAll(/clickable="true".*?bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/g);
+    const clickableMatches = xml.matchAll(
+      /clickable="true".*?bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/g,
+    );
     const candidates: ActionCandidate[] = [];
     let index = 0;
 
     for (const match of clickableMatches) {
       if (index >= maxActions) break;
-      
+
       const x = parseInt(match[1]);
       const y = parseInt(match[2]);
       const width = parseInt(match[3]) - x;
@@ -48,7 +56,7 @@ export class FakeLLM implements LLMPort {
     if (candidates.length === 0) {
       throw new Error("No candidates available");
     }
-    
+
     const seededIndex = this.seed % candidates.length;
     return candidates[seededIndex].actionCandidateId;
   }

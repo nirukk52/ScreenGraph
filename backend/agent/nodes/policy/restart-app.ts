@@ -25,9 +25,15 @@ export interface RestartAppOutput extends CommonNodeOutput {
 export async function restartApp(
   input: RestartAppInput,
   driver: DriverPort,
-  sessionId: string
-): Promise<{ output: RestartAppOutput; events: Array<{ kind: EventKind; payload: Record<string, unknown> }> }> {
-  const appFg = await driver.launchApp(sessionId, input.applicationUnderTestDescriptor.androidPackageId);
+  sessionId: string,
+): Promise<{
+  output: RestartAppOutput;
+  events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
+}> {
+  const appFg = await driver.launchApp(
+    sessionId,
+    input.applicationUnderTestDescriptor.androidPackageId,
+  );
 
   return {
     output: {

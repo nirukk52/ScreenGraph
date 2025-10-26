@@ -23,17 +23,17 @@ export async function showRun(repo: InMemoryRepo, runId: string): Promise<void> 
   events.forEach((evt: DomainEvent, idx: number) => {
     const icon = getEventIcon(evt.kind);
     console.log(`${icon} [${evt.sequence.toString().padStart(3, " ")}] ${evt.kind}`);
-    
+
     if (evt.kind === "agent.node.started" || evt.kind === "agent.node.finished") {
       const nodeName = (evt.payload as any).nodeName;
       console.log(`    └─ Node: ${nodeName}`);
     }
-    
+
     if (evt.kind === "agent.run.finished") {
       const stopReason = (evt.payload as any).stopReason;
       console.log(`    └─ Reason: ${stopReason}`);
     }
-    
+
     console.log();
   });
 
@@ -45,7 +45,7 @@ export async function showRun(repo: InMemoryRepo, runId: string): Promise<void> 
 
   console.log(`\nSnapshots: ${snapshots.length} saved`);
   console.log(`─────────────────────────────────────────────\n`);
-  
+
   snapshots.forEach(({ step, snap }) => {
     console.log(`📸 Step ${step}: ${snap.nodeName} (iter ${snap.iterationOrdinalNumber})`);
   });

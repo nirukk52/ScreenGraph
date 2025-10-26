@@ -23,7 +23,7 @@ export interface ChooseActionOutput extends CommonNodeOutput {
  */
 export async function chooseAction(
   input: ChooseActionInput,
-  llm: LLMPort
+  llm: LLMPort,
 ): Promise<{
   output: ChooseActionOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
@@ -39,7 +39,7 @@ export async function chooseAction(
       stepOrdinal: input.stepOrdinal,
       iterationOrdinal: input.iterationOrdinalNumber,
       randomSeed: input.randomSeed,
-    }
+    },
   );
 
   const selectionDurationMs = Date.now() - startTime;

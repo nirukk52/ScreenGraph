@@ -23,9 +23,7 @@ export interface ShouldContinueOutput extends CommonNodeOutput {
  * ShouldContinue node determines whether to continue exploration.
  * Checks budget constraints and progress state to decide next action.
  */
-export async function shouldContinue(
-  input: ShouldContinueInput
-): Promise<{
+export async function shouldContinue(input: ShouldContinueInput): Promise<{
   output: ShouldContinueOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
 }> {

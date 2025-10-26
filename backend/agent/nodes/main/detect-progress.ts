@@ -23,14 +23,14 @@ export interface DetectProgressOutput extends CommonNodeOutput {
  */
 export async function detectProgress(
   input: DetectProgressInput,
-  graph: GraphPort
+  graph: GraphPort,
 ): Promise<{
   output: DetectProgressOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
 }> {
   // Check for new screens discovered in this iteration
   const newScreensDiscoveredInIteration = await graph.getScreenDiscoveryCount(
-    input.iterationStartTimestampMs
+    input.iterationStartTimestampMs,
   );
 
   let progressState: ProgressState = "FORWARD_PROGRESS";
@@ -40,7 +40,7 @@ export async function detectProgress(
 
   if (newScreensDiscoveredInIteration === 0) {
     consecutiveStallCount++;
-    
+
     if (consecutiveStallCount >= 5) {
       progressState = "LOOP_DETECTED";
       loopDetectionDetails = `No new screens discovered in ${consecutiveStallCount} consecutive iterations`;

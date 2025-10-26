@@ -48,5 +48,5 @@ export const cancel = api<CancelRunRequest, CancelRunResponse>(
       status: "CANCELLED",
       cancelledAt: updatedRun.updated_at,
     };
-  }
+  },
 );

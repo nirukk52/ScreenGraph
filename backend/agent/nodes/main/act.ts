@@ -22,7 +22,7 @@ export interface ActOutput extends CommonNodeOutput {
  */
 export async function act(
   input: ActInput,
-  driver: DriverPort
+  driver: DriverPort,
 ): Promise<{
   output: ActOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
@@ -88,7 +88,7 @@ export async function act(
           await driver.performLongPress(
             action.targetCoordinates.x,
             action.targetCoordinates.y,
-            1000
+            1000,
           );
         } else {
           throw new Error("LONG_PRESS action requires targetCoordinates");

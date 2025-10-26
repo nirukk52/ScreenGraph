@@ -53,5 +53,5 @@ export const listDocs = api<void, ListDocsResponse>(
     } catch (error) {
       throw new Error("Failed to list documentation files");
     }
-  }
+  },
 );

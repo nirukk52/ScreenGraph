@@ -9,7 +9,7 @@ export async function runAgentLoop(
   apkPath: string,
   appiumServerUrl: string,
   packageName: string,
-  appActivity: string
+  appActivity: string,
 ): Promise<void> {
   const repo = new DBRepoPort();
   const orchestrator = new Orchestrator(repo);
@@ -34,7 +34,7 @@ export async function runAgentLoop(
     tenantId,
     projectId,
     orchestrator.nextSequence(),
-    now
+    now,
   );
 
   await orchestrator.recordEvent(startEvent);
@@ -92,7 +92,7 @@ export async function runAgentLoop(
 
     await repo.saveSnapshot(state.runId, state.stepOrdinal, state);
 
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
   state = {
@@ -111,7 +111,7 @@ async function emitSimpleEvent(
   orchestrator: Orchestrator,
   state: AgentState,
   kind: EventKind,
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
 ): Promise<void> {
   await orchestrator.recordNodeEvents(state, kind, [{ kind, payload }]);
 }

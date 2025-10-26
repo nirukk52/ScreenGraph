@@ -11,7 +11,7 @@ describe("Idempotency Tests", () => {
       "01RUN00000000000000000",
       "01TENANT00000000000000",
       "01PROJECT0000000000000",
-      new Date().toISOString()
+      new Date().toISOString(),
     );
   });
 
@@ -24,7 +24,7 @@ describe("Idempotency Tests", () => {
       1,
       new Date().toISOString(),
       "agent.node.started",
-      { nodeName: "Perceive" }
+      { nodeName: "Perceive" },
     );
 
     await repo.appendEvent(event1);
@@ -36,7 +36,7 @@ describe("Idempotency Tests", () => {
 
   it("should reject events with same sequence but different checksums", async () => {
     const ts = new Date().toISOString();
-    
+
     const event1 = createDomainEvent(
       "01EVENT000000000000001",
       "01RUN00000000000000000",
@@ -45,7 +45,7 @@ describe("Idempotency Tests", () => {
       1,
       ts,
       "agent.node.started",
-      { nodeName: "Perceive" }
+      { nodeName: "Perceive" },
     );
 
     const event2 = createDomainEvent(
@@ -56,7 +56,7 @@ describe("Idempotency Tests", () => {
       1,
       ts,
       "agent.node.started",
-      { nodeName: "EnumerateActions" }
+      { nodeName: "EnumerateActions" },
     );
 
     await repo.appendEvent(event1);
@@ -66,7 +66,7 @@ describe("Idempotency Tests", () => {
 
   it("should allow CAS on run status only once", async () => {
     const now = new Date().toISOString();
-    
+
     const success1 = await repo.updateRunStatus("01RUN00000000000000000", "completed", now);
     expect(success1).toBe(true);
 

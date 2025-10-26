@@ -10,12 +10,12 @@ export class Outbox {
 
   publishNext(): DomainEvent | null {
     if (this.queue.length === 0) return null;
-    
+
     this.queue.sort((a, b) => a.sequence - b.sequence);
-    
+
     const next = this.queue.find((e) => e.sequence === this.nextSeq);
     if (!next) return null;
-    
+
     this.nextSeq++;
     this.queue = this.queue.filter((e) => e.sequence !== next.sequence);
     return next;

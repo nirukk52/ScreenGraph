@@ -49,7 +49,7 @@ export function createNodeStartedEvent(
   sequence: number,
   ts: string,
   nodeName: string,
-  stepOrdinal: number
+  stepOrdinal: number,
 ): DomainEvent {
   const payload = { nodeName, stepOrdinal };
   return {
@@ -75,7 +75,7 @@ export function createNodeFinishedEvent(
   ts: string,
   nodeName: string,
   stepOrdinal: number,
-  outcomeStatus: string
+  outcomeStatus: string,
 ): DomainEvent {
   const payload = { nodeName, stepOrdinal, outcomeStatus };
   return {
@@ -98,7 +98,7 @@ export function createRunStartedEvent(
   tenantId: string,
   projectId: string,
   sequence: number,
-  ts: string
+  ts: string,
 ): DomainEvent {
   const payload = { startedAt: ts };
   return {
@@ -122,7 +122,7 @@ export function createRunFinishedEvent(
   projectId: string,
   sequence: number,
   ts: string,
-  stopReason: string
+  stopReason: string,
 ): DomainEvent {
   const payload = { finishedAt: ts, stopReason };
   return {
@@ -147,7 +147,7 @@ export function createDomainEvent(
   sequence: number,
   ts: string,
   kind: EventKind,
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
 ): DomainEvent {
   return {
     eventId,
@@ -168,7 +168,7 @@ function computeChecksum(
   runId: string,
   sequence: number,
   kind: string,
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
 ): string {
   const input = `${eventId}|${runId}|${sequence}|${kind}|${JSON.stringify(payload)}`;
   return `sha256:${Buffer.from(input).toString("base64").slice(0, 16)}`;

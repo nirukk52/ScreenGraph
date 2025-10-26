@@ -39,5 +39,5 @@ export const getDoc = api<GetDocParams, GetDocResponse>(
       }
       throw APIError.internal("Failed to read documentation file");
     }
-  }
+  },
 );

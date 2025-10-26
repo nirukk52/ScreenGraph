@@ -8,11 +8,16 @@
     "ulidx": "^2.4.1"
   },
   "devDependencies": {
-    "vitest": "^2.0.0",
-    "@types/node": "^22.0.0"
+    "@biomejs/biome": "1.9.2",
+    "@types/node": "^22.0.0",
+    "vitest": "^2.0.0"
   },
   "scripts": {
     "dev": "encore run",
+    "format": "bunx biome format --write .",
+    "format:check": "bunx biome format --write=false .",
+    "lint": "bunx biome lint .",
+    "lint:fix": "bunx biome lint --apply .",
     "build": "echo 'Build handled by Encore CI'",
     "test": "echo 'Tests handled by Encore CI'"
   }

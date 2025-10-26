@@ -42,7 +42,9 @@ async function publishBatch() {
 
     for (const event of events) {
       try {
-        console.log(`[OutboxPublisher] Publishing event ${event.id} (${event.event_type}) for run ${event.run_id}`);
+        console.log(
+          `[OutboxPublisher] Publishing event ${event.id} (${event.event_type}) for run ${event.run_id}`,
+        );
 
         await db.exec`
           UPDATE run_outbox 

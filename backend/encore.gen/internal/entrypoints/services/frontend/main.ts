@@ -5,8 +5,7 @@ import { availableParallelism } from "node:os";
 
 import * as frontend_service from "../../../../../frontend/encore.service";
 
-const handlers: Handler[] = [
-];
+const handlers: Handler[] = [];
 
 registerHandlers(handlers);
 

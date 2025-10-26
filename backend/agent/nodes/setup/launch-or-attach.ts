@@ -21,9 +21,15 @@ export async function launchOrAttach(
   input: LaunchOrAttachInput,
   driver: DriverPort,
   sessionId: string,
-  generateId: () => string
-): Promise<{ output: LaunchOrAttachOutput; events: Array<{ kind: EventKind; payload: Record<string, unknown> }> }> {
-  const appFg = await driver.launchApp(sessionId, input.applicationUnderTestDescriptor.androidPackageId);
+  generateId: () => string,
+): Promise<{
+  output: LaunchOrAttachOutput;
+  events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
+}> {
+  const appFg = await driver.launchApp(
+    sessionId,
+    input.applicationUnderTestDescriptor.androidPackageId,
+  );
   const contextId = generateId();
 
   return {

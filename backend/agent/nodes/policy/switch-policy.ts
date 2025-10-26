@@ -25,9 +25,10 @@ export interface SwitchPolicyOutput extends CommonNodeOutput {
   };
 }
 
-export async function switchPolicy(
-  input: SwitchPolicyInput
-): Promise<{ output: SwitchPolicyOutput; events: Array<{ kind: EventKind; payload: Record<string, unknown> }> }> {
+export async function switchPolicy(input: SwitchPolicyInput): Promise<{
+  output: SwitchPolicyOutput;
+  events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
+}> {
   return {
     output: {
       runId: input.runId,

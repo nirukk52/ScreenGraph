@@ -1,5 +1,11 @@
 import { AgentState, createInitialState, Budgets, RunStatus } from "../domain/state";
-import { createDomainEvent, createRunStartedEvent, createRunFinishedEvent, DomainEvent, EventKind } from "../domain/events";
+import {
+  createDomainEvent,
+  createRunStartedEvent,
+  createRunFinishedEvent,
+  DomainEvent,
+  EventKind,
+} from "../domain/events";
 import { RepoPort } from "../ports/repo.port";
 import { Outbox } from "./outbox";
 
@@ -14,7 +20,7 @@ export class Orchestrator {
     tenantId: string,
     projectId: string,
     runId: string,
-    budgets: Budgets
+    budgets: Budgets,
   ): Promise<AgentState> {
     const now = new Date().toISOString();
     await this.repo.createRun(runId, tenantId, projectId, now);
@@ -27,7 +33,7 @@ export class Orchestrator {
       tenantId,
       projectId,
       this.nextSequence(),
-      now
+      now,
     );
 
     await this.recordEvent(startEvent);
@@ -44,7 +50,7 @@ export class Orchestrator {
   async recordNodeEvents(
     state: AgentState,
     nodeName: string,
-    nodeEvents: Array<{ kind: EventKind; payload: Record<string, unknown> }>
+    nodeEvents: Array<{ kind: EventKind; payload: Record<string, unknown> }>,
   ): Promise<void> {
     const now = new Date().toISOString();
 
@@ -56,7 +62,7 @@ export class Orchestrator {
       this.nextSequence(),
       now,
       "agent.node.started",
-      { nodeName, stepOrdinal: state.stepOrdinal }
+      { nodeName, stepOrdinal: state.stepOrdinal },
     );
     await this.recordEvent(startEvent);
 
@@ -69,7 +75,7 @@ export class Orchestrator {
         this.nextSequence(),
         now,
         evt.kind,
-        evt.payload
+        evt.payload,
       );
       await this.recordEvent(domainEvent);
     }
@@ -82,7 +88,7 @@ export class Orchestrator {
       this.nextSequence(),
       now,
       "agent.node.finished",
-      { nodeName, stepOrdinal: state.stepOrdinal, outcomeStatus: "SUCCESS" }
+      { nodeName, stepOrdinal: state.stepOrdinal, outcomeStatus: "SUCCESS" },
     );
     await this.recordEvent(finishEvent);
   }
@@ -90,11 +96,7 @@ export class Orchestrator {
   async finalizeRun(state: AgentState, stopReason: string): Promise<void> {
     const now = new Date().toISOString();
 
-    const success = await this.repo.updateRunStatus(
-      state.runId,
-      "completed" as RunStatus,
-      now
-    );
+    const success = await this.repo.updateRunStatus(state.runId, "completed" as RunStatus, now);
 
     if (!success) {
       throw new Error("Failed to update run status (CAS violation)");
@@ -107,7 +109,7 @@ export class Orchestrator {
       state.projectId,
       this.nextSequence(),
       now,
-      stopReason
+      stopReason,
     );
 
     await this.recordEvent(finishedEvent);

@@ -1,52 +1,57 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import autoAnimate from '@formkit/auto-animate';
-    import { goto } from '$app/navigation';
-    import { getEncoreClient } from '$lib/getEncoreClient';
-    import { DEFAULT_APK_PATH, DEFAULT_APPIUM_SERVER_URL, DEFAULT_PACKAGE_NAME, DEFAULT_APP_ACTIVITY } from '$lib/constants';
+import { onMount } from "svelte";
+import autoAnimate from "@formkit/auto-animate";
+import { goto } from "$app/navigation";
+import { getEncoreClient } from "$lib/getEncoreClient";
+import {
+  DEFAULT_APK_PATH,
+  DEFAULT_APPIUM_SERVER_URL,
+  DEFAULT_PACKAGE_NAME,
+  DEFAULT_APP_ACTIVITY,
+} from "$lib/constants";
 
-    let isLoading = $state(true);
-    let showContent = $state(false);
-    let isStartingRun = $state(false);
-    let startError = $state('');
-    let lastRunId = $state('');
+let isLoading = $state(true);
+let showContent = $state(false);
+let isStartingRun = $state(false);
+let startError = $state("");
+let lastRunId = $state("");
 
-    onMount(() => {
-        const timer = setTimeout(() => {
-            isLoading = false;
-            showContent = true;
-        }, 500);
+onMount(() => {
+  const timer = setTimeout(() => {
+    isLoading = false;
+    showContent = true;
+  }, 500);
 
-        return () => clearTimeout(timer);
+  return () => clearTimeout(timer);
+});
+
+/** Kicks off the default demo run and routes the user to the live timeline. */
+async function handleConnect() {
+  if (isStartingRun) {
+    return;
+  }
+
+  isStartingRun = true;
+  startError = "";
+
+  try {
+    const client = getEncoreClient();
+    const response = await client.run.start({
+      apkPath: DEFAULT_APK_PATH,
+      appiumServerUrl: DEFAULT_APPIUM_SERVER_URL,
+      packageName: DEFAULT_PACKAGE_NAME,
+      appActivity: DEFAULT_APP_ACTIVITY,
     });
 
-    /** Kicks off the default demo run and routes the user to the live timeline. */
-    async function handleConnect() {
-        if (isStartingRun) {
-            return;
-        }
-
-        isStartingRun = true;
-        startError = '';
-
-        try {
-            const client = getEncoreClient();
-            const response = await client.run.start({
-                apkPath: DEFAULT_APK_PATH,
-                appiumServerUrl: DEFAULT_APPIUM_SERVER_URL,
-                packageName: DEFAULT_PACKAGE_NAME,
-                appActivity: DEFAULT_APP_ACTIVITY,
-            });
-
-            lastRunId = response.runId;
-            await goto(`/run/${response.runId}`);
-        } catch (error) {
-            console.error('Failed to start run', error);
-            startError = error instanceof Error ? error.message : 'Unknown error starting run';
-        } finally {
-            isStartingRun = false;
-        }
-    }
+    lastRunId = response.runId;
+    await goto(`/run/${response.runId}`);
+  } catch (error) {
+    console.error("Failed to start run", error);
+    startError = error instanceof Error ? error.message : "Unknown error starting run";
+  } finally {
+    isStartingRun = false;
+  }
+}
 </script>
 
 <svelte:head>

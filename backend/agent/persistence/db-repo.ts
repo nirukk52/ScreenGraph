@@ -48,7 +48,7 @@ export class DBRepoPort implements RepoPort {
   async updateRunStatus(runId: string, newStatus: RunStatus, now: string): Promise<boolean> {
     const result = await db.exec`
       UPDATE runs
-      SET status = ${newStatus}, updated_at = ${now}, stop_reason = ${newStatus === 'completed' ? 'success' : null}
+      SET status = ${newStatus}, updated_at = ${now}, stop_reason = ${newStatus === "completed" ? "success" : null}
       WHERE run_id = ${runId}
     `;
 
@@ -146,7 +146,7 @@ export class DBRepoPort implements RepoPort {
     screenId: string,
     perceptualHash64: string,
     screenshotRef: string,
-    xmlRef: string
+    xmlRef: string,
   ): Promise<void> {
     const run = await this.getRun(runId);
     if (!run) {
@@ -183,7 +183,7 @@ export class DBRepoPort implements RepoPort {
     actionId: string,
     fromScreenId: string,
     toScreenId: string,
-    actionKind: string
+    actionKind: string,
   ): Promise<void> {
     const run = await this.getRun(runId);
     if (!run) {

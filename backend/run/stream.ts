@@ -39,7 +39,7 @@ export const stream = api.streamOut<StreamHandshake, RunEventMessage>(
 
     try {
       console.log(`[Stream] Backfilling events from seq ${lastEventSeq} for run ${runId}`);
-      
+
       const backfillEvents: RunEventRow[] = [];
       for await (const event of db.query<RunEventRow>`
         SELECT seq, type, payload, created_at FROM run_events 
@@ -54,7 +54,7 @@ export const stream = api.streamOut<StreamHandshake, RunEventMessage>(
         const message: RunEventMessage = {
           seq: event.seq,
           type: event.type,
-          data: typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload,
+          data: typeof event.payload === "string" ? JSON.parse(event.payload) : event.payload,
           timestamp: event.created_at.toISOString(),
         };
         console.log(`[Stream] Sending backfill event ${event.seq} (${event.type}) to client`);
@@ -62,12 +62,11 @@ export const stream = api.streamOut<StreamHandshake, RunEventMessage>(
       }
 
       console.log(`[Stream] Starting live stream for run ${runId}`);
-      let lastCheckedSeq = backfillEvents.length > 0 
-        ? backfillEvents[backfillEvents.length - 1].seq 
-        : lastEventSeq;
+      let lastCheckedSeq =
+        backfillEvents.length > 0 ? backfillEvents[backfillEvents.length - 1].seq : lastEventSeq;
 
       while (true) {
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
         try {
           const newEvents: RunEventRow[] = [];
@@ -83,7 +82,7 @@ export const stream = api.streamOut<StreamHandshake, RunEventMessage>(
             const message: RunEventMessage = {
               seq: event.seq,
               type: event.type,
-              data: typeof event.payload === 'string' ? JSON.parse(event.payload) : event.payload,
+              data: typeof event.payload === "string" ? JSON.parse(event.payload) : event.payload,
               timestamp: event.created_at.toISOString(),
             };
             console.log(`[Stream] Sending live event ${event.seq} (${event.type}) to client`);
@@ -95,7 +94,9 @@ export const stream = api.streamOut<StreamHandshake, RunEventMessage>(
               event.type === "agent.run.failed" ||
               event.type === "agent.run.canceled"
             ) {
-              console.log(`[Stream] Terminal event ${event.type} reached, closing stream for run ${runId}`);
+              console.log(
+                `[Stream] Terminal event ${event.type} reached, closing stream for run ${runId}`,
+              );
               await stream.close();
               return;
             }
@@ -105,10 +106,9 @@ export const stream = api.streamOut<StreamHandshake, RunEventMessage>(
           break;
         }
       }
-
     } catch (err) {
       console.error(`[Stream] Error in stream for run ${runId}:`, err);
       throw err;
     }
-  }
+  },
 );

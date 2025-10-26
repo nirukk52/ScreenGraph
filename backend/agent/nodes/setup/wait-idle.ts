@@ -21,12 +21,15 @@ export interface WaitIdleOutput extends CommonNodeOutput {
 export async function waitIdle(
   input: WaitIdleInput,
   driver: DriverPort,
-  sessionId: string
-): Promise<{ output: WaitIdleOutput; events: Array<{ kind: EventKind; payload: Record<string, unknown> }> }> {
+  sessionId: string,
+): Promise<{
+  output: WaitIdleOutput;
+  events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
+}> {
   const quietMillis = await driver.waitIdle(
     sessionId,
     input.idleHeuristicsConfiguration.minQuietMillis,
-    input.idleHeuristicsConfiguration.maxWaitMillis
+    input.idleHeuristicsConfiguration.maxWaitMillis,
   );
 
   return {

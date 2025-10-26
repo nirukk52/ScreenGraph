@@ -1,5 +1,11 @@
 export type RunStatus = "running" | "paused" | "completed" | "failed" | "canceled";
-export type StopReason = "success" | "budget_exhausted" | "crash" | "no_progress" | "user_cancelled" | null;
+export type StopReason =
+  | "success"
+  | "budget_exhausted"
+  | "crash"
+  | "no_progress"
+  | "user_cancelled"
+  | null;
 export type NodeExecutionOutcomeStatus = "SUCCESS" | "FAILURE";
 
 export interface Timestamps {
@@ -42,12 +48,12 @@ export interface AgentState {
   resumeToken: string;
   randomSeed: number;
   timestamps: Timestamps;
-  
+
   deviceRuntimeContextId: string | null;
   applicationForegroundContextId: string | null;
-  
+
   perception: Perception;
-  
+
   availableActionCandidateIds: string[];
   chosenActionDecisionId: string | null;
   actionExecutionOutcomeId: string | null;
@@ -55,16 +61,16 @@ export interface AgentState {
   graphPersistenceOutcomeId: string | null;
   progressEvaluationId: string | null;
   continuationDecisionId: string | null;
-  
+
   recoveryDispositionId: string | null;
   checkpointRefId: string | null;
-  
+
   counters: Counters;
   budgets: Budgets;
-  
+
   status: RunStatus;
   stopReason: StopReason;
-  
+
   lastEventSequence: number;
   checksum: string | null;
 }
@@ -98,7 +104,7 @@ export function createInitialState(
   projectId: string,
   runId: string,
   budgets: Budgets,
-  now: string
+  now: string,
 ): AgentState {
   return {
     tenantId,
@@ -151,7 +157,7 @@ export function advanceStep(
   state: AgentState,
   nodeName: string,
   now: string,
-  seed: number
+  seed: number,
 ): AgentState {
   return {
     ...state,

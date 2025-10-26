@@ -23,7 +23,7 @@ export interface EnumerateActionsOutput extends CommonNodeOutput {
  */
 export async function enumerateActions(
   input: EnumerateActionsInput,
-  llm: LLMPort
+  llm: LLMPort,
 ): Promise<{
   output: EnumerateActionsOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
@@ -31,15 +31,11 @@ export async function enumerateActions(
   const startTime = Date.now();
 
   // Call LLM to enumerate possible actions
-  const actionCandidates = await llm.enumerateActions(
-    input.uiHierarchyXmlRefId,
-    input.maxActions,
-    {
-      runId: input.runId,
-      stepOrdinal: input.stepOrdinal,
-      iterationOrdinal: input.iterationOrdinalNumber,
-    }
-  );
+  const actionCandidates = await llm.enumerateActions(input.uiHierarchyXmlRefId, input.maxActions, {
+    runId: input.runId,
+    stepOrdinal: input.stepOrdinal,
+    iterationOrdinal: input.iterationOrdinalNumber,
+  });
 
   const enumerationDurationMs = Date.now() - startTime;
 

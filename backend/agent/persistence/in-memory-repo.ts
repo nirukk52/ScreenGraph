@@ -48,7 +48,9 @@ export class InMemoryRepo implements RepoPort {
     const existing = runEvents.find((e) => e.sequence === event.sequence);
     if (existing) {
       if (existing.checksum !== event.checksum) {
-        throw new Error(`Idempotency violation: duplicate sequence ${event.sequence} with different checksum`);
+        throw new Error(
+          `Idempotency violation: duplicate sequence ${event.sequence} with different checksum`,
+        );
       }
       return;
     }
@@ -81,7 +83,7 @@ export class InMemoryRepo implements RepoPort {
     screenId: string,
     perceptualHash64: string,
     screenshotRef: string,
-    xmlRef: string
+    xmlRef: string,
   ): Promise<void> {
     this.screens.set(screenId, {
       screenId,
@@ -98,7 +100,7 @@ export class InMemoryRepo implements RepoPort {
     actionId: string,
     fromScreenId: string,
     toScreenId: string,
-    actionKind: string
+    actionKind: string,
   ): Promise<void> {
     this.actions.set(actionId, {
       actionId,

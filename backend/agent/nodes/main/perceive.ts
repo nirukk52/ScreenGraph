@@ -23,7 +23,7 @@ export interface PerceiveOutput extends CommonNodeOutput {
 export async function perceive(
   input: PerceiveInput,
   driver: DriverPort,
-  storage: StoragePort
+  storage: StoragePort,
 ): Promise<{
   output: PerceiveOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
@@ -39,25 +39,15 @@ export async function perceive(
 
   // Store artifacts in object storage
   const [screenshotResult, uiHierarchyResult] = await Promise.all([
-    storage.storeArtifact(
-      input.runId,
-      "screenshot",
-      screenshotData.base64Image,
-      {
-        format: screenshotData.format,
-        widthPx: screenshotData.widthPx,
-        heightPx: screenshotData.heightPx,
-        captureTimestampMs,
-      }
-    ),
-    storage.storeArtifact(
-      input.runId,
-      "ui_hierarchy",
-      uiHierarchyData.xmlContent,
-      {
-        captureTimestampMs: uiHierarchyData.captureTimestampMs,
-      }
-    ),
+    storage.storeArtifact(input.runId, "screenshot", screenshotData.base64Image, {
+      format: screenshotData.format,
+      widthPx: screenshotData.widthPx,
+      heightPx: screenshotData.heightPx,
+      captureTimestampMs,
+    }),
+    storage.storeArtifact(input.runId, "ui_hierarchy", uiHierarchyData.xmlContent, {
+      captureTimestampMs: uiHierarchyData.captureTimestampMs,
+    }),
   ]);
 
   // Compute perceptual hash (simple checksum for MVP)

@@ -33,25 +33,25 @@ export class FakeDriver implements DriverPort {
     };
   }
 
-  async performTap(sessionId: string, x: number, y: number): Promise<void> {
-  }
+  async performTap(sessionId: string, x: number, y: number): Promise<void> {}
 
   async performSwipe(
     sessionId: string,
     startX: number,
     startY: number,
     endX: number,
-    endY: number
-  ): Promise<void> {
-  }
+    endY: number,
+  ): Promise<void> {}
 
-  async performBack(sessionId: string): Promise<void> {
-  }
+  async performBack(sessionId: string): Promise<void> {}
 
-  async performTextInput(sessionId: string, text: string): Promise<void> {
-  }
+  async performTextInput(sessionId: string, text: string): Promise<void> {}
 
-  async waitIdle(sessionId: string, minQuietMillis: number, maxWaitMillis: number): Promise<number> {
+  async waitIdle(
+    sessionId: string,
+    minQuietMillis: number,
+    maxWaitMillis: number,
+  ): Promise<number> {
     return minQuietMillis + 100;
   }
 }

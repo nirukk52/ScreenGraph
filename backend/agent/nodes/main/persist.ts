@@ -27,7 +27,7 @@ export interface PersistOutput extends CommonNodeOutput {
  */
 export async function persist(
   input: PersistInput,
-  graph: GraphPort
+  graph: GraphPort,
 ): Promise<{
   output: PersistOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
@@ -43,7 +43,7 @@ export async function persist(
       runId: input.runId,
       stepOrdinal: input.stepOrdinal,
       iterationOrdinal: input.iterationOrdinalNumber,
-    }
+    },
   );
 
   if (screenRecordIdentity.isNewDiscovery) {
@@ -60,18 +60,14 @@ export async function persist(
 
   // Persist action if present
   let actionRecordIdentity = null;
-  if (
-    input.actionCandidate &&
-    input.actionExecutionStatus &&
-    input.previousScreenPerceptualHash
-  ) {
+  if (input.actionCandidate && input.actionExecutionStatus && input.previousScreenPerceptualHash) {
     const previousScreen = await graph.findScreenByHash(input.previousScreenPerceptualHash);
     if (previousScreen) {
       actionRecordIdentity = await graph.persistAction(
         previousScreen.screenId,
         screenRecordIdentity.screenId,
         input.actionCandidate,
-        input.actionExecutionStatus
+        input.actionExecutionStatus,
       );
 
       events.push({

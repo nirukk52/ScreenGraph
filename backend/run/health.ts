@@ -17,7 +17,7 @@ export const health = api<void, HealthResponse>(
     try {
       // Check database connectivity
       await db.queryRow`SELECT 1`;
-      
+
       return {
         status: "healthy",
         database: "connected",
@@ -31,5 +31,5 @@ export const health = api<void, HealthResponse>(
         timestamp: new Date().toISOString(),
       };
     }
-  }
+  },
 );

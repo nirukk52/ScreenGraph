@@ -21,9 +21,10 @@ export interface StopOutput extends CommonNodeOutput {
   confirmedTerminalDisposition: "SUCCEEDED" | "FAILED";
 }
 
-export async function stop(
-  input: StopInput
-): Promise<{ output: StopOutput; events: Array<{ kind: EventKind; payload: Record<string, unknown> }> }> {
+export async function stop(input: StopInput): Promise<{
+  output: StopOutput;
+  events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
+}> {
   return {
     output: {
       runId: input.runId,

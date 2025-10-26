@@ -12,32 +12,32 @@ export interface RunRecord {
 
 export interface RepoPort {
   createRun(runId: string, tenantId: string, projectId: string, now: string): Promise<void>;
-  
+
   getRun(runId: string): Promise<RunRecord | null>;
-  
+
   updateRunStatus(runId: string, newStatus: RunStatus, now: string): Promise<boolean>;
-  
+
   appendEvent(event: DomainEvent): Promise<void>;
-  
+
   getEvents(runId: string): Promise<DomainEvent[]>;
-  
+
   saveSnapshot(runId: string, stepOrdinal: number, state: AgentState): Promise<void>;
-  
+
   getSnapshot(runId: string, stepOrdinal: number): Promise<AgentState | null>;
-  
+
   upsertScreen(
     runId: string,
     screenId: string,
     perceptualHash64: string,
     screenshotRef: string,
-    xmlRef: string
+    xmlRef: string,
   ): Promise<void>;
-  
+
   upsertAction(
     runId: string,
     actionId: string,
     fromScreenId: string,
     toScreenId: string,
-    actionKind: string
+    actionKind: string,
   ): Promise<void>;
 }
