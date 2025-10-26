@@ -1,6 +1,6 @@
-import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
-import { EventKind } from "../../domain/events";
-import { DriverPort } from "../../ports/driver.port";
+import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
+import type { EventKind } from "../../domain/events";
+import type { DriverPort } from "../../ports/driver.port";
 import { ApplicationForegroundContext } from "../../domain/entities";
 
 export interface LaunchOrAttachInput extends CommonNodeInput {

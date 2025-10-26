@@ -1,7 +1,7 @@
-import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
-import { EventKind } from "../../domain/events";
-import { ProgressEvaluation, ProgressState } from "../../domain/progress";
-import { GraphPort } from "../../ports/graph";
+import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
+import type { EventKind } from "../../domain/events";
+import type { ProgressEvaluation, ProgressState } from "../../domain/progress";
+import type { GraphPort } from "../../ports/graph";
 
 export interface DetectProgressInput extends CommonNodeInput {
   runId: string;

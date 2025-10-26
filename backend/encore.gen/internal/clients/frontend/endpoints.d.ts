@@ -1,4 +1,4 @@
-import { CallOpts } from "encore.dev/api";
+import type { CallOpts } from "encore.dev/api";
 
 type Parameters<T> = T extends (...args: infer P) => unknown ? P : never;
 type WithCallOpts<T extends (...args: any) => any> = (

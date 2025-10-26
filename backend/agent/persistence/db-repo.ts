@@ -1,6 +1,6 @@
-import { RepoPort, RunRecord } from "../ports/repo.port";
-import { AgentState, RunStatus } from "../domain/state";
-import { DomainEvent } from "../domain/events";
+import type { RepoPort, RunRecord } from "../ports/repo.port";
+import type { AgentState, RunStatus } from "../domain/state";
+import type { DomainEvent } from "../domain/events";
 import db from "../../db";
 import { ulid } from "ulidx";
 
@@ -56,13 +56,14 @@ export class DBRepoPort implements RepoPort {
   }
 
   async appendEvent(event: DomainEvent): Promise<void> {
+    const payload = event.payload as Record<string, unknown>;
     await db.exec`
       INSERT INTO run_events (run_id, seq, type, node_name, payload, created_at)
       VALUES (
         ${event.runId},
         ${event.sequence},
         ${event.kind},
-        ${(event.payload as any).nodeName || null},
+        ${payload.nodeName || null},
         ${JSON.stringify(event.payload)},
         ${event.ts}
       )
@@ -101,7 +102,7 @@ export class DBRepoPort implements RepoPort {
       projectId: "",
       sequence: row.seq,
       ts: row.created_at,
-      kind: row.type as any,
+      kind: row.type as DomainEvent["kind"],
       version: "1",
       payload: JSON.parse(row.payload),
       checksum: "",

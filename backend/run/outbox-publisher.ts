@@ -4,7 +4,7 @@ interface OutboxEvent {
   id: number;
   run_id: string;
   event_type: string;
-  payload: any;
+  payload: Record<string, unknown>;
   created_at: Date;
   published_at: Date | null;
 }

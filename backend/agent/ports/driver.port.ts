@@ -1,4 +1,4 @@
-import { DeviceRuntimeContext, ApplicationForegroundContext } from "../domain/entities";
+import type { DeviceRuntimeContext, ApplicationForegroundContext } from "../domain/entities";
 
 export interface DeviceConfiguration {
   platformName: string;

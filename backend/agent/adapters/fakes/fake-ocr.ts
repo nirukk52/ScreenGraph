@@ -1,4 +1,4 @@
-import { OCRPort } from "../../ports/ocr.port";
+import type { OCRPort } from "../../ports/ocr.port";
 
 export class FakeOCR implements OCRPort {
   async runOCR(screenshotRefId: string): Promise<string> {

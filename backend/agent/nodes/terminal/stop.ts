@@ -1,5 +1,5 @@
-import { CommonNodeInput, CommonNodeOutput, StopReason } from "../../domain/state";
-import { EventKind } from "../../domain/events";
+import { type CommonNodeInput, type CommonNodeOutput, StopReason } from "../../domain/state";
+import type { EventKind } from "../../domain/events";
 
 export interface StopInput extends CommonNodeInput {
   runId: string;

@@ -1,4 +1,4 @@
-import { StoragePort } from "../../ports/storage.port";
+import type { StoragePort } from "../../ports/storage.port";
 
 export class FakeStorage implements StoragePort {
   private store = new Map<string, string>();

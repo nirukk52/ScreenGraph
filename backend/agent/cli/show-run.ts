@@ -1,5 +1,5 @@
 import { InMemoryRepo } from "../persistence/in-memory-repo";
-import { DomainEvent } from "../domain/events";
+import type { DomainEvent } from "../domain/events";
 
 export async function showRun(repo: InMemoryRepo, runId: string): Promise<void> {
   const run = await repo.getRun(runId);
@@ -9,7 +9,7 @@ export async function showRun(repo: InMemoryRepo, runId: string): Promise<void> 
   }
 
   console.log(`\n📊 Run Timeline: ${runId}`);
-  console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
   console.log(`Status: ${run.status}`);
   console.log(`Created: ${run.createdAt}`);
   console.log(`Updated: ${run.updatedAt}\n`);
@@ -17,25 +17,29 @@ export async function showRun(repo: InMemoryRepo, runId: string): Promise<void> 
   const events = await repo.getEvents(runId);
   console.log(`Total Events: ${events.length}\n`);
 
-  console.log(`Event Timeline:`);
-  console.log(`─────────────────────────────────────────────\n`);
+  console.log("Event Timeline:");
+  console.log("─────────────────────────────────────────────\n");
 
-  events.forEach((evt: DomainEvent, idx: number) => {
+  for (const evt of events) {
     const icon = getEventIcon(evt.kind);
     console.log(`${icon} [${evt.sequence.toString().padStart(3, " ")}] ${evt.kind}`);
 
     if (evt.kind === "agent.node.started" || evt.kind === "agent.node.finished") {
-      const nodeName = (evt.payload as any).nodeName;
-      console.log(`    └─ Node: ${nodeName}`);
+      const payload = evt.payload as { nodeName?: string };
+      if (payload.nodeName) {
+        console.log(`    └─ Node: ${payload.nodeName}`);
+      }
     }
 
     if (evt.kind === "agent.run.finished") {
-      const stopReason = (evt.payload as any).stopReason;
-      console.log(`    └─ Reason: ${stopReason}`);
+      const payload = evt.payload as { stopReason?: string };
+      if (payload.stopReason) {
+        console.log(`    └─ Reason: ${payload.stopReason}`);
+      }
     }
 
     console.log();
-  });
+  }
 
   const snapshots = [];
   for (let i = 0; i <= 10; i++) {
@@ -44,11 +48,11 @@ export async function showRun(repo: InMemoryRepo, runId: string): Promise<void> 
   }
 
   console.log(`\nSnapshots: ${snapshots.length} saved`);
-  console.log(`─────────────────────────────────────────────\n`);
+  console.log("─────────────────────────────────────────────\n");
 
-  snapshots.forEach(({ step, snap }) => {
+  for (const { step, snap } of snapshots) {
     console.log(`📸 Step ${step}: ${snap.nodeName} (iter ${snap.iterationOrdinalNumber})`);
-  });
+  }
 
   console.log();
 }

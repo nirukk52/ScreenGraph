@@ -1,4 +1,4 @@
-import { ScreenshotData, UiHierarchyData } from "../domain/perception";
+import type { ScreenshotData, UiHierarchyData } from "../domain/perception";
 import { ActionKind } from "../domain/actions";
 
 export interface DriverPort {

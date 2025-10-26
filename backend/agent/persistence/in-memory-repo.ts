@@ -1,6 +1,6 @@
-import { RepoPort, RunRecord } from "../ports/repo.port";
-import { AgentState, RunStatus } from "../domain/state";
-import { DomainEvent } from "../domain/events";
+import type { RepoPort, RunRecord } from "../ports/repo.port";
+import type { AgentState, RunStatus } from "../domain/state";
+import type { DomainEvent } from "../domain/events";
 
 export class InMemoryRepo implements RepoPort {
   private runs = new Map<string, RunRecord>();

@@ -1,4 +1,4 @@
-import { api, APIError, StreamOut, Query } from "encore.dev/api";
+import { api, APIError, StreamOut, type Query } from "encore.dev/api";
 import db from "../db";
 
 interface StreamHandshake {
@@ -9,7 +9,7 @@ interface StreamHandshake {
 interface RunEventMessage {
   seq: number;
   type: string;
-  data: any;
+  data: Record<string, unknown>;
   timestamp: string;
 }
 

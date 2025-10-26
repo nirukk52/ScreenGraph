@@ -1,6 +1,6 @@
-import { LLMPort } from "../../ports/llm.port";
-import { ActionCandidate } from "../../domain/entities";
-import { StoragePort } from "../../ports/storage.port";
+import type { LLMPort } from "../../ports/llm.port";
+import type { ActionCandidate } from "../../domain/entities";
+import type { StoragePort } from "../../ports/storage.port";
 
 export class FakeLLM implements LLMPort {
   constructor(
@@ -26,10 +26,10 @@ export class FakeLLM implements LLMPort {
     for (const match of clickableMatches) {
       if (index >= maxActions) break;
 
-      const x = parseInt(match[1]);
-      const y = parseInt(match[2]);
-      const width = parseInt(match[3]) - x;
-      const height = parseInt(match[4]) - y;
+      const x = Number.parseInt(match[1]);
+      const y = Number.parseInt(match[2]);
+      const width = Number.parseInt(match[3]) - x;
+      const height = Number.parseInt(match[4]) - y;
 
       candidates.push({
         actionCandidateId: `01ACTCAND-${String(index + 1).padStart(2, "0")}`,

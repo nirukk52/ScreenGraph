@@ -1,5 +1,5 @@
-import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
-import { EventKind } from "../../domain/events";
+import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
+import type { EventKind } from "../../domain/events";
 
 export interface RecoverFromErrorInput extends CommonNodeInput {
   runId: string;

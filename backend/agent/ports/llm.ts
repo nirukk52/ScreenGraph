@@ -1,4 +1,4 @@
-import { ActionCandidate, ActionDecision } from "../domain/actions";
+import type { ActionCandidate, ActionDecision } from "../domain/actions";
 
 export interface LLMPort {
   enumerateActions(

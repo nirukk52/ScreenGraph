@@ -1,6 +1,6 @@
-import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
-import { EventKind } from "../../domain/events";
-import { VerificationAssessment } from "../../domain/verification";
+import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
+import type { EventKind } from "../../domain/events";
+import type { VerificationAssessment } from "../../domain/verification";
 
 export interface VerifyInput extends CommonNodeInput {
   runId: string;

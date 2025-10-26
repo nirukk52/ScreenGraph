@@ -1,9 +1,9 @@
-import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
-import { EventKind } from "../../domain/events";
-import { PerceptionArtifacts } from "../../domain/perception";
-import { DriverPort } from "../../ports/driver";
-import { StoragePort } from "../../ports/storage";
-import * as crypto from "crypto";
+import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
+import type { EventKind } from "../../domain/events";
+import type { PerceptionArtifacts } from "../../domain/perception";
+import type { DriverPort } from "../../ports/driver";
+import type { StoragePort } from "../../ports/storage";
+import * as crypto from "node:crypto";
 
 export interface PerceiveInput extends CommonNodeInput {
   runId: string;

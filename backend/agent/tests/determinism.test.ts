@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { Orchestrator } from "../orchestrator/orchestrator";
 import { InMemoryRepo } from "../persistence/in-memory-repo";
-import { Budgets } from "../domain/state";
+import type { Budgets } from "../domain/state";
 
 describe("Determinism Tests", () => {
   let repo: InMemoryRepo;

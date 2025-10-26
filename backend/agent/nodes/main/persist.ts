@@ -1,8 +1,8 @@
-import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
-import { EventKind } from "../../domain/events";
-import { GraphPersistenceOutcome } from "../../domain/graph";
-import { ActionCandidate } from "../../domain/actions";
-import { GraphPort } from "../../ports/graph";
+import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
+import type { EventKind } from "../../domain/events";
+import type { GraphPersistenceOutcome } from "../../domain/graph";
+import type { ActionCandidate } from "../../domain/actions";
+import type { GraphPort } from "../../ports/graph";
 
 export interface PersistInput extends CommonNodeInput {
   runId: string;

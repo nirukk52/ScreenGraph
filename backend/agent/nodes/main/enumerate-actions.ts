@@ -1,7 +1,7 @@
-import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
-import { EventKind } from "../../domain/events";
-import { ActionCandidate } from "../../domain/actions";
-import { LLMPort } from "../../ports/llm";
+import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
+import type { EventKind } from "../../domain/events";
+import type { ActionCandidate } from "../../domain/actions";
+import type { LLMPort } from "../../ports/llm";
 
 export interface EnumerateActionsInput extends CommonNodeInput {
   runId: string;

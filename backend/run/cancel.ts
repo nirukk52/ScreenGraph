@@ -1,6 +1,6 @@
 import { api, APIError } from "encore.dev/api";
 import db from "../db";
-import { CancelRunResponse, Run } from "./types";
+import type { CancelRunResponse, Run } from "./types";
 
 interface CancelRunRequest {
   id: string;

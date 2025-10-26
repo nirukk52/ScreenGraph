@@ -1,5 +1,5 @@
-import { RoutingDirective } from "../domain/entities";
-import { AgentState } from "../domain/state";
+import type { RoutingDirective } from "../domain/entities";
+import type { AgentState } from "../domain/state";
 
 export function routeNext(state: AgentState, directive: RoutingDirective): string {
   switch (directive) {

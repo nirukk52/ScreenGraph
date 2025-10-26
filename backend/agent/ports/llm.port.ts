@@ -1,4 +1,4 @@
-import { ActionCandidate } from "../domain/entities";
+import type { ActionCandidate } from "../domain/entities";
 
 export interface LLMPort {
   enumerateActions(uiHierarchyXmlRefId: string, maxActions: number): Promise<ActionCandidate[]>;

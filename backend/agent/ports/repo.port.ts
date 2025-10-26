@@ -1,5 +1,5 @@
-import { AgentState, RunStatus } from "../domain/state";
-import { DomainEvent } from "../domain/events";
+import type { AgentState, RunStatus } from "../domain/state";
+import type { DomainEvent } from "../domain/events";
 
 export interface RunRecord {
   runId: string;

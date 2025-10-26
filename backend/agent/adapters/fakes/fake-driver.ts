@@ -1,5 +1,5 @@
-import { DriverPort, DeviceConfiguration } from "../../ports/driver.port";
-import { DeviceRuntimeContext, ApplicationForegroundContext } from "../../domain/entities";
+import type { DriverPort, DeviceConfiguration } from "../../ports/driver.port";
+import type { DeviceRuntimeContext, ApplicationForegroundContext } from "../../domain/entities";
 
 export class FakeDriver implements DriverPort {
   private sessionCounter = 0;

@@ -4,7 +4,7 @@ import { FakeDriver } from "../adapters/fakes/fake-driver";
 import { FakeStorage } from "../adapters/fakes/fake-storage";
 import { FakeLLM } from "../adapters/fakes/fake-llm";
 import { FakeOCR } from "../adapters/fakes/fake-ocr";
-import { Budgets } from "../domain/state";
+import type { Budgets } from "../domain/state";
 const policyDefaults = {
   maxSteps: 50,
   maxTimeMs: 300000,
@@ -45,7 +45,7 @@ async function runDemo() {
   console.log(`📋 Run ID: ${runId}`);
   console.log(`🎯 Budgets: maxSteps=${budgets.maxSteps}, maxTimeMs=${budgets.maxTimeMs}ms\n`);
 
-  let state = await orchestrator.createRun(tenantId, projectId, runId, budgets);
+  const state = await orchestrator.createRun(tenantId, projectId, runId, budgets);
   console.log("✅ Run created\n");
 
   console.log("=== SETUP PHASE ===\n");
@@ -74,11 +74,14 @@ async function runDemo() {
   console.log(`   → Device session: ${deviceResult.output.deviceRuntimeContextId}\n`);
 
   console.log("📦 Step 2: ProvisionApp");
+  if (!state.deviceRuntimeContextId) {
+    throw new Error("Device runtime context ID is missing");
+  }
   const provisionResult = await provisionApp({
     runId,
     tenantId,
     projectId,
-    deviceRuntimeContextId: state.deviceRuntimeContextId!,
+    deviceRuntimeContextId: state.deviceRuntimeContextId,
     applicationUnderTestDescriptor: {
       androidPackageId: "com.example.app",
       apkStorageObjectReference: "s3://bucket/builds/app-1.2.3.apk",
@@ -93,10 +96,13 @@ async function runDemo() {
   );
 
   console.log("🚀 Step 3: LaunchOrAttach");
+  if (!state.deviceRuntimeContextId) {
+    throw new Error("Device runtime context ID is missing");
+  }
   const launchResult = await launchOrAttach(
     {
       runId,
-      deviceRuntimeContextId: state.deviceRuntimeContextId!,
+      deviceRuntimeContextId: state.deviceRuntimeContextId,
       applicationUnderTestDescriptor: {
         androidPackageId: "com.example.app",
       },
@@ -171,7 +177,7 @@ async function runDemo() {
   console.log(`📤 Published ${published.length} events in order\n`);
 
   const allEvents = await repo.getEvents(runId);
-  console.log(`📊 Final Stats:`);
+  console.log("📊 Final Stats:");
   console.log(`   - Total events: ${allEvents.length}`);
   console.log(`   - Total steps: ${state.counters.stepsTotal}`);
   console.log(`   - Status: ${state.status}`);

@@ -1,7 +1,7 @@
-import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
-import { EventKind } from "../../domain/events";
-import { ActionDecision, ActionExecutionResult } from "../../domain/actions";
-import { DriverPort } from "../../ports/driver";
+import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
+import type { EventKind } from "../../domain/events";
+import type { ActionDecision, ActionExecutionResult } from "../../domain/actions";
+import type { DriverPort } from "../../ports/driver";
 
 export interface ActInput extends CommonNodeInput {
   runId: string;

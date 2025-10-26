@@ -1,7 +1,7 @@
 import { api, APIError } from "encore.dev/api";
 import { Topic } from "encore.dev/pubsub";
 import db from "../db";
-import { StartRunRequest, StartRunResponse, Run, RunJob } from "./types";
+import type { StartRunRequest, StartRunResponse, Run, RunJob } from "./types";
 import { ulid } from "ulidx";
 
 export const runJobTopic = new Topic<RunJob>("run-job", {

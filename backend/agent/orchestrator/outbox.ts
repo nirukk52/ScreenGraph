@@ -1,4 +1,4 @@
-import { DomainEvent } from "../domain/events";
+import type { DomainEvent } from "../domain/events";
 
 export class Outbox {
   private queue: DomainEvent[] = [];

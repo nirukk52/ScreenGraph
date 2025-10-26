@@ -4,24 +4,32 @@
   "files": {
     "ignore": [
       "**/node_modules",
-      "backend/agent",
-      "backend/encore.gen",
-      "backend/run",
+      "**/encore.gen/**",
+      "**/.encore/**",
+      "**/.svelte-kit/**",
+      "**/.vercel/**",
+      "**/encore-client.ts",
+      "**/dist/**",
       "backend/steering",
-      "backend/dist",
       "backend/tmp",
-      "frontend/dist",
-      "frontend/.svelte-kit",
       "frontend/build",
-      "frontend/static",
-      "frontend/src/**/*.svelte"
+      "**/.idea/**",
+      "**/.vscode/**",
+      "**/coverage/**",
+      "**/build/**",
+      "**/.turbo/**",
+      "**/*.snap",
+      "**/*.log",
+      "**/.DS_Store"
     ]
   },
   "formatter": {
     "enabled": true,
     "indentWidth": 2,
     "indentStyle": "space",
-    "lineWidth": 100
+    "lineWidth": 100,
+    "lineEnding": "lf",
+    "formatWithErrors": true
   },
   "linter": {
     "enabled": true,
@@ -31,6 +39,11 @@
   },
   "organizeImports": {
     "enabled": true
+  },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
   }
 }
 

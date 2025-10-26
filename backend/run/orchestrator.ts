@@ -1,6 +1,6 @@
 import { Subscription } from "encore.dev/pubsub";
 import { runJobTopic } from "./start";
-import { RunJob } from "./types";
+import type { RunJob } from "./types";
 import { runAgentLoop } from "./agent-runner";
 
 new Subscription(runJobTopic, "orchestrator-worker", {
