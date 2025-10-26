@@ -1,11 +1,11 @@
-import { CommonNodeOutput } from "../../domain/state";
+import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import { EventKind } from "../../domain/events";
 import { PerceptionArtifacts } from "../../domain/perception";
 import { DriverPort } from "../../ports/driver";
 import { StoragePort } from "../../ports/storage";
 import * as crypto from "crypto";
 
-export interface PerceiveInput {
+export interface PerceiveInput extends CommonNodeInput {
   runId: string;
   stepOrdinal: number;
   iterationOrdinalNumber: number;

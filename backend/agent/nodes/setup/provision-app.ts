@@ -1,7 +1,7 @@
-import { CommonNodeOutput } from "../../domain/state";
+import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import { EventKind } from "../../domain/events";
 
-export interface ProvisionAppInput {
+export interface ProvisionAppInput extends CommonNodeInput {
   runId: string;
   tenantId: string;
   projectId: string;

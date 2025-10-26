@@ -1,7 +1,7 @@
-import { CommonNodeOutput } from "../../domain/state";
+import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import { EventKind } from "../../domain/events";
 
-export interface RecoverFromErrorInput {
+export interface RecoverFromErrorInput extends CommonNodeInput {
   runId: string;
   stepOrdinal: number;
   iterationOrdinalNumber: number;

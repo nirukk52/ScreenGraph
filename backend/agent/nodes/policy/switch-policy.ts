@@ -1,7 +1,7 @@
-import { CommonNodeOutput } from "../../domain/state";
+import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import { EventKind } from "../../domain/events";
 
-export interface SwitchPolicyInput {
+export interface SwitchPolicyInput extends CommonNodeInput {
   runId: string;
   stepOrdinal: number;
   iterationOrdinalNumber: number;

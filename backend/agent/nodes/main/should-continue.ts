@@ -1,8 +1,8 @@
-import { CommonNodeOutput } from "../../domain/state";
+import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import { EventKind } from "../../domain/events";
 import { ContinuationDecision, RoutingDirective, ProgressState } from "../../domain/progress";
 
-export interface ShouldContinueInput {
+export interface ShouldContinueInput extends CommonNodeInput {
   runId: string;
   stepOrdinal: number;
   iterationOrdinalNumber: number;

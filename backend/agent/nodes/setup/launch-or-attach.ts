@@ -1,9 +1,9 @@
-import { CommonNodeOutput } from "../../domain/state";
+import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import { EventKind } from "../../domain/events";
 import { DriverPort } from "../../ports/driver.port";
 import { ApplicationForegroundContext } from "../../domain/entities";
 
-export interface LaunchOrAttachInput {
+export interface LaunchOrAttachInput extends CommonNodeInput {
   runId: string;
   deviceRuntimeContextId: string;
   applicationUnderTestDescriptor: {

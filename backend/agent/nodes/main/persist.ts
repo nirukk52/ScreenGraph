@@ -1,10 +1,10 @@
-import { CommonNodeOutput } from "../../domain/state";
+import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import { EventKind } from "../../domain/events";
 import { GraphPersistenceOutcome } from "../../domain/graph";
 import { ActionCandidate } from "../../domain/actions";
 import { GraphPort } from "../../ports/graph";
 
-export interface PersistInput {
+export interface PersistInput extends CommonNodeInput {
   runId: string;
   stepOrdinal: number;
   iterationOrdinalNumber: number;

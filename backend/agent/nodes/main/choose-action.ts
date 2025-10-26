@@ -1,9 +1,9 @@
-import { CommonNodeOutput } from "../../domain/state";
+import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import { EventKind } from "../../domain/events";
 import { ActionCandidate, ActionDecision } from "../../domain/actions";
 import { LLMPort } from "../../ports/llm";
 
-export interface ChooseActionInput {
+export interface ChooseActionInput extends CommonNodeInput {
   runId: string;
   stepOrdinal: number;
   iterationOrdinalNumber: number;

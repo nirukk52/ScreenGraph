@@ -1,8 +1,8 @@
-import { AgentState, CommonNodeOutput } from "../../domain/state";
+import { AgentState, CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import { DriverPort, DeviceConfiguration } from "../../ports/driver.port";
 import { createDomainEvent, EventKind } from "../../domain/events";
 
-export interface EnsureDeviceInput {
+export interface EnsureDeviceInput extends CommonNodeInput {
   runId: string;
   tenantId: string;
   projectId: string;

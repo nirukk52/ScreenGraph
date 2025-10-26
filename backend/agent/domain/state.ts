@@ -69,6 +69,17 @@ export interface AgentState {
   checksum: string | null;
 }
 
+/**
+ * CommonNodeInput captures the shared run metadata provided to agent nodes.
+ * It keeps node inputs aligned on identifiers, sequencing, and randomness.
+ */
+export interface CommonNodeInput {
+  runId: string;
+  stepOrdinal?: number;
+  iterationOrdinalNumber?: number;
+  randomSeed?: number;
+}
+
 export interface CommonNodeOutput {
   nodeName: string;
   stepOrdinal: number;

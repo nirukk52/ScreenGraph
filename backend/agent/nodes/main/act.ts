@@ -1,9 +1,9 @@
-import { CommonNodeOutput } from "../../domain/state";
+import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import { EventKind } from "../../domain/events";
 import { ActionDecision, ActionExecutionResult } from "../../domain/actions";
 import { DriverPort } from "../../ports/driver";
 
-export interface ActInput {
+export interface ActInput extends CommonNodeInput {
   runId: string;
   stepOrdinal: number;
   iterationOrdinalNumber: number;

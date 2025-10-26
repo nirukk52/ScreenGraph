@@ -1,8 +1,8 @@
-import { CommonNodeOutput } from "../../domain/state";
+import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import { EventKind } from "../../domain/events";
 import { DriverPort } from "../../ports/driver.port";
 
-export interface RestartAppInput {
+export interface RestartAppInput extends CommonNodeInput {
   runId: string;
   stepOrdinal: number;
   iterationOrdinalNumber: number;

@@ -1,9 +1,9 @@
-import { CommonNodeOutput } from "../../domain/state";
+import { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import { EventKind } from "../../domain/events";
 import { ProgressEvaluation, ProgressState } from "../../domain/progress";
 import { GraphPort } from "../../ports/graph";
 
-export interface DetectProgressInput {
+export interface DetectProgressInput extends CommonNodeInput {
   runId: string;
   stepOrdinal: number;
   iterationOrdinalNumber: number;
