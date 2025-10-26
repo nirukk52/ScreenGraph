@@ -1,6 +1,6 @@
 import db from "../../db";
 import type { RunEventsDbPort } from "../ports/run-events.port";
-import type { DomainEvent } from "../domain/events";
+import type { DomainEvent, EventKind } from "../domain/events";
 import { ulid } from "ulidx";
 
 /**
@@ -14,7 +14,7 @@ export class RunEventsRepo implements RunEventsDbPort {
     const nodeName = "nodeName" in payload ? (payload.nodeName as string) : null;
 
     await db.exec`
-      INSERT INTO run_events (run_id, seq, type, node_name, payload, created_at)
+      INSERT INTO run_events (run_id, seq, kind, node_name, payload, created_at)
       VALUES (
         ${event.runId},
         ${event.sequence},
@@ -31,7 +31,7 @@ export class RunEventsRepo implements RunEventsDbPort {
     const rows: Array<{
       run_id: string;
       seq: number;
-      type: string;
+      kind: EventKind;
       payload: string;
       created_at: string;
     }> = [];
@@ -39,11 +39,11 @@ export class RunEventsRepo implements RunEventsDbPort {
     for await (const row of db.query<{
       run_id: string;
       seq: number;
-      type: string;
+      kind: EventKind;
       payload: string;
       created_at: string;
     }>`
-      SELECT run_id, seq, type, payload, created_at
+      SELECT run_id, seq, kind, payload, created_at
       FROM run_events
       WHERE run_id = ${runId}
       ORDER BY seq ASC
@@ -58,7 +58,7 @@ export class RunEventsRepo implements RunEventsDbPort {
       projectId: "",
       sequence: row.seq,
       ts: row.created_at,
-      kind: row.type as DomainEvent["kind"],
+      kind: row.kind as DomainEvent["kind"],
       version: "1",
       payload: JSON.parse(row.payload),
       checksum: "",

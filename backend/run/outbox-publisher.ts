@@ -1,10 +1,11 @@
 import db from "../db";
 import { RunOutboxRepo } from "../agent/persistence/run-outbox.repo";
+import type { EventKind } from "../agent/domain/events";
 
 interface RunEventRow {
   run_id: string;
   seq: number;
-  type: string;
+  kind: EventKind;
   payload: string | Record<string, unknown>;
   created_at: Date;
   published_at: Date | null;
@@ -56,7 +57,7 @@ async function publishBatch() {
     for (const cursor of cursors) {
       // Fetch unpublihed events for this run starting from next_seq
       const events = await db.queryAll<RunEventRow>`
-        SELECT run_id, seq, type, payload, created_at, published_at
+        SELECT run_id, seq, kind, payload, created_at, published_at
         FROM run_events
         WHERE run_id = ${cursor.run_id}
           AND seq >= ${cursor.next_seq}
@@ -78,7 +79,7 @@ async function publishBatch() {
       for (const event of events) {
         try {
           console.log(
-            `[OutboxPublisher] Publishing ${event.run_id}#${event.seq} (${event.type})`,
+            `[OutboxPublisher] Publishing ${event.run_id}#${event.seq} (${event.kind})`,
           );
 
           // TODO: Replace with real publish (emit to Redis topic/websocket/etc)

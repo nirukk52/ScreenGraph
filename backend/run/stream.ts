@@ -1,4 +1,5 @@
 import { api, APIError, StreamOut, type Query } from "encore.dev/api";
+import type { EventKind } from "../agent/domain/events";
 import db from "../db";
 
 interface StreamHandshake {
@@ -8,14 +9,14 @@ interface StreamHandshake {
 
 interface RunEventMessage {
   seq: number;
-  type: string;
+  kind: EventKind;
   data: Record<string, unknown>;
   timestamp: string;
 }
 
 interface RunEventRow {
   seq: number;
-  type: string;
+  kind: EventKind;
   payload: string;
   created_at: Date;
 }
@@ -42,7 +43,7 @@ export const stream = api.streamOut<StreamHandshake, RunEventMessage>(
 
       const backfillEvents: RunEventRow[] = [];
       for await (const event of db.query<RunEventRow>`
-        SELECT seq, type, payload, created_at FROM run_events 
+        SELECT seq, kind, payload, created_at FROM run_events 
         WHERE run_id = ${runId} AND seq > ${lastEventSeq}
         ORDER BY seq ASC
       `) {
@@ -53,11 +54,11 @@ export const stream = api.streamOut<StreamHandshake, RunEventMessage>(
       for (const event of backfillEvents) {
         const message: RunEventMessage = {
           seq: event.seq,
-          type: event.type,
+          kind: event.kind,
           data: typeof event.payload === "string" ? JSON.parse(event.payload) : event.payload,
           timestamp: event.created_at.toISOString(),
         };
-        console.log(`[Stream] Sending backfill event ${event.seq} (${event.type}) to client`);
+        console.log(`[Stream] Sending backfill event ${event.seq} (${event.kind}) to client`);
         await stream.send(message);
       }
 
@@ -71,7 +72,7 @@ export const stream = api.streamOut<StreamHandshake, RunEventMessage>(
         try {
           const newEvents: RunEventRow[] = [];
           for await (const event of db.query<RunEventRow>`
-            SELECT seq, type, payload, created_at FROM run_events 
+            SELECT seq, kind, payload, created_at FROM run_events 
             WHERE run_id = ${runId} AND seq > ${lastCheckedSeq}
             ORDER BY seq ASC
           `) {
@@ -81,21 +82,21 @@ export const stream = api.streamOut<StreamHandshake, RunEventMessage>(
           for (const event of newEvents) {
             const message: RunEventMessage = {
               seq: event.seq,
-              type: event.type,
+              kind: event.kind,
               data: typeof event.payload === "string" ? JSON.parse(event.payload) : event.payload,
               timestamp: event.created_at.toISOString(),
             };
-            console.log(`[Stream] Sending live event ${event.seq} (${event.type}) to client`);
+            console.log(`[Stream] Sending live event ${event.seq} (${event.kind}) to client`);
             await stream.send(message);
             lastCheckedSeq = event.seq;
 
             if (
-              event.type === "agent.run.finished" ||
-              event.type === "agent.run.failed" ||
-              event.type === "agent.run.canceled"
+              event.kind === "agent.run.finished" ||
+              event.kind === "agent.run.failed" ||
+              event.kind === "agent.run.canceled"
             ) {
               console.log(
-                `[Stream] Terminal event ${event.type} reached, closing stream for run ${runId}`,
+                `[Stream] Terminal event ${event.kind} reached, closing stream for run ${runId}`,
               );
               await stream.close();
               return;
