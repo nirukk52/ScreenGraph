@@ -1,6 +1,6 @@
 import type { AgentState, Budgets } from "../domain/state";
-import type { RepoPort, RunRecord, RunLifecycleStatus } from "../ports/repo.port";
-import { Orchestrator } from "./orchestrator";
+import type { RunRecord, RunLifecycleStatus, RunDbPort } from "../ports/run-db.port";
+import type { Orchestrator } from "./orchestrator";
 
 /**
  * AgentWorker owns the long-lived orchestration loop for a run, including lease heartbeats,
@@ -13,7 +13,8 @@ export class AgentWorker {
 
   constructor(private readonly options: AgentWorkerOptions) {
     const defaultHeartbeat = Math.max(Math.floor(options.leaseDurationMs / 3), 5_000);
-    this.heartbeatIntervalMs = options.heartbeatIntervalMs ?? Math.min(defaultHeartbeat, options.leaseDurationMs / 2);
+    this.heartbeatIntervalMs =
+      options.heartbeatIntervalMs ?? Math.min(defaultHeartbeat, options.leaseDurationMs / 2);
   }
 
   async run(): Promise<AgentWorkerResult> {
@@ -24,7 +25,6 @@ export class AgentWorker {
       initializeResult = await orchestrator.initialize(run, budgets);
     } catch (err) {
       await this.markFailed(err);
-      orchestrator.publishEvents();
       orchestrator.reset();
       throw err;
     }
@@ -38,16 +38,13 @@ export class AgentWorker {
       const outcome = await this.executeAgentLoop(state);
 
       if (outcome.status === "canceled") {
-        const emittedEventCount = orchestrator.publishEvents().length;
-        return { status: "canceled", emittedEventCount };
+        return { status: "canceled", emittedEventCount: 0 };
       }
 
       await orchestrator.finalizeRun(outcome.state, outcome.stopReason ?? "success");
-      const emittedEventCount = orchestrator.publishEvents().length;
-      return { status: "completed", emittedEventCount };
+      return { status: "completed", emittedEventCount: 0 };
     } catch (err) {
       await this.markFailed(err);
-      orchestrator.publishEvents();
       throw err;
     } finally {
       this.stopHeartbeat();
@@ -67,13 +64,8 @@ export class AgentWorker {
         stopReason: "user_cancelled",
         timestamps: { ...state.timestamps, updatedAt: now },
       };
-      await this.options.repo.updateRunStatus(
-        state.runId,
-        "canceled",
-        now,
-        state.stopReason,
-      );
-      await this.options.repo.saveSnapshot(state.runId, state.stepOrdinal, state);
+      await this.options.runDb.updateRunStatus(state.runId, "canceled", now, state.stopReason);
+      // Snapshot persistence is handled by Orchestrator during node/event recording.
       return { state, status: "canceled", stopReason: state.stopReason };
     }
 
@@ -85,14 +77,14 @@ export class AgentWorker {
       stopReason: "success",
       timestamps: { ...state.timestamps, updatedAt: now },
     };
-    await this.options.repo.saveSnapshot(state.runId, state.stepOrdinal, state);
+    // Snapshot persistence is handled by Orchestrator during node/event recording.
 
     return { state, status: "completed", stopReason: state.stopReason };
   }
 
   private startHeartbeat(): void {
     this.heartbeatTimer = setInterval(() => {
-      void this.options.repo
+      void this.options.runDb
         .extendLease(this.options.run.runId, this.options.workerId, this.options.leaseDurationMs)
         .then((extended) => {
           if (!extended) {
@@ -102,7 +94,10 @@ export class AgentWorker {
           }
         })
         .catch((err) => {
-          console.error(`[AgentWorker] Failed to extend lease for run ${this.options.run.runId}:`, err);
+          console.error(
+            `[AgentWorker] Failed to extend lease for run ${this.options.run.runId}:`,
+            err,
+          );
         });
     }, this.heartbeatIntervalMs);
 
@@ -117,13 +112,13 @@ export class AgentWorker {
   }
 
   private async isCancellationRequested(): Promise<boolean> {
-    const latest = await this.options.repo.getRun(this.options.run.runId);
+    const latest = await this.options.runDb.getRun(this.options.run.runId);
     return Boolean(latest?.cancelRequestedAt);
   }
 
   private async markFailed(err: unknown): Promise<void> {
     const reason = err instanceof Error ? err.message : "unknown_error";
-    await this.options.repo.updateRunStatus(
+    await this.options.runDb.updateRunStatus(
       this.options.run.runId,
       "failed",
       new Date().toISOString(),
@@ -134,7 +129,7 @@ export class AgentWorker {
 
 interface AgentWorkerOptions {
   orchestrator: Orchestrator;
-  repo: RepoPort;
+  runDb: RunDbPort;
   run: RunRecord;
   workerId: string;
   budgets: Budgets;
@@ -152,4 +147,3 @@ interface AgentWorkerExecutionResult {
   status: RunLifecycleStatus;
   stopReason: string | null;
 }
-

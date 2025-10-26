@@ -6,24 +6,28 @@ import {
   type DomainEvent,
   type EventKind,
 } from "../domain/events";
-import type { RepoPort, RunRecord } from "../ports/repo.port";
-import { Outbox } from "./outbox";
+import type { RunRecord, RunDbPort } from "../ports/run-db.port";
+import type { RunEventsDbPort } from "../ports/run-events.port";
+import type { AgentStateDbPort } from "../ports/agent-state.port";
 
 export class Orchestrator {
   private sequenceCounter = 0;
-  private outbox = new Outbox();
   private seedCounter = 123456;
   private cachedRun: RunRecord | null = null;
 
-  constructor(private repo: RepoPort) {}
+  constructor(
+    private readonly runDb: RunDbPort,
+    private readonly eventsDb: RunEventsDbPort,
+    private readonly agentStateDb: AgentStateDbPort,
+  ) {}
 
   async initialize(
     run: RunRecord,
     budgets: Budgets,
   ): Promise<{ state: AgentState; isResume: boolean }> {
     this.cachedRun = run;
-    const latestSnapshot = await this.repo.getLatestSnapshot(run.runId);
-    const lastSequence = await this.repo.getLastEventSequence(run.runId);
+    const latestSnapshot = await this.agentStateDb.getLatestSnapshot(run.runId);
+    const lastSequence = await this.eventsDb.getLastEventSequence(run.runId);
 
     if (latestSnapshot) {
       this.sequenceCounter = lastSequence;
@@ -44,14 +48,13 @@ export class Orchestrator {
     );
 
     await this.recordEvent(startEvent);
-    await this.repo.saveSnapshot(run.runId, 0, state);
+    await this.agentStateDb.saveSnapshot(run.runId, 0, state);
 
     return { state, isResume: false };
   }
 
   async recordEvent(event: DomainEvent): Promise<void> {
-    await this.repo.appendEvent(event);
-    this.outbox.enqueue(event);
+    await this.eventsDb.appendEvent(event);
   }
 
   async recordNodeEvents(
@@ -103,7 +106,7 @@ export class Orchestrator {
   async finalizeRun(state: AgentState, stopReason: string): Promise<void> {
     const now = new Date().toISOString();
 
-    const success = await this.repo.updateRunStatus(state.runId, "completed", now, stopReason);
+    const success = await this.runDb.updateRunStatus(state.runId, "completed", now, stopReason);
 
     if (!success) {
       throw new Error("Failed to update run status (CAS violation)");
@@ -122,10 +125,6 @@ export class Orchestrator {
     await this.recordEvent(finishedEvent);
   }
 
-  publishEvents(): DomainEvent[] {
-    return this.outbox.publishAll();
-  }
-
   nextSequence(): number {
     return ++this.sequenceCounter;
   }
@@ -141,7 +140,6 @@ export class Orchestrator {
 
   reset(): void {
     this.sequenceCounter = 0;
-    this.outbox.reset();
     this.seedCounter = 123456;
     this.cachedRun = null;
   }

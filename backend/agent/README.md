@@ -2,6 +2,8 @@
 
 Complete scaffolding for the ScreenGraph Agent System following **functional core, imperative shell** architecture with deterministic execution, event sourcing, and full replay support.
 
+https://chatgpt.com/g/g-p-68c870437ca0819195275f9bbbc56103-co-founder/shared/c/68fde20c-99e0-8330-b4f6-f6946dbb1faf?owner_user_id=user-GfWs3AJR2WbUgbsITOoW13pl
+
 ## Architecture Overview
 
 ### Design Principles
@@ -43,8 +45,7 @@ backend/agent/
 │   ├── fake-llm.ts      # Rule-based action enumeration
 │   └── fixtures/        # Static test data
 ├── persistence/         # In-memory repository
-│   ├── in-memory-repo.ts # Implements RepoPort; enforces idempotency
-│   └── schemas.ts       # Table contracts (runs, events, snapshots, graph)
+│   └── in-memory-repo.ts # Implements RepoPort; enforces idempotency
 ├── policies/            # Configuration
 │   └── default.json     # maxSteps, maxTimeMs, restartLimit, etc.
 ├── cli/                 # Command-line tools

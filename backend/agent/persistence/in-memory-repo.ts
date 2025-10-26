@@ -34,7 +34,11 @@ export class InMemoryRepo implements RepoPort {
     return this.runs.get(runId) ?? null;
   }
 
-  async claimRun(runId: string, workerId: string, leaseDurationMs: number): Promise<RunRecord | null> {
+  async claimRun(
+    runId: string,
+    workerId: string,
+    leaseDurationMs: number,
+  ): Promise<RunRecord | null> {
     const run = this.runs.get(runId);
     if (!run) return null;
 
@@ -43,7 +47,10 @@ export class InMemoryRepo implements RepoPort {
 
     if (
       run.status !== "queued" &&
-      !(run.status === "running" && (!run.leaseExpiresAt || new Date(run.leaseExpiresAt).getTime() < now))
+      !(
+        run.status === "running" &&
+        (!run.leaseExpiresAt || new Date(run.leaseExpiresAt).getTime() < now)
+      )
     ) {
       return null;
     }
@@ -140,7 +147,7 @@ export class InMemoryRepo implements RepoPort {
     }
 
     const maxKey = Math.max(...runSnapshots.keys());
-    if (maxKey === -Infinity) {
+    if (maxKey === Number.NEGATIVE_INFINITY) {
       return null;
     }
 

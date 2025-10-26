@@ -10,8 +10,13 @@ No shared code or node_modules between backend and frontend.
 No root package.json or encore.app`.
 Backend never imports frontend; frontend never touches backend code.
 
-Coding Rules:
+Non Negotiable Coding Rules:
 Every function class enum dto will have a comment about his purpose in the codebase.
+Absolutely no use of any is allowed in the codebase.
+Every class, function, or API endpoint must explicitly use typed DTOs (Data Transfer Objects).
+DTOs must be defined at the top of the file or imported from a shared contracts or types package.
+If dynamic data is expected, define a union or discriminated type instead of fallback to any.
+Temporary “loose” types must still be represented as { [key: string]: unknown } or Record<string, unknown> — never any.
 
 Type Safety Rules
 Always use Encore generated clients (~encore/clients).

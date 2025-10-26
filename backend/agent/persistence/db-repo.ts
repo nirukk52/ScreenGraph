@@ -105,7 +105,11 @@ export class DBRepoPort implements RepoPort {
     };
   }
 
-  async claimRun(runId: string, workerId: string, leaseDurationMs: number): Promise<RunRecord | null> {
+  async claimRun(
+    runId: string,
+    workerId: string,
+    leaseDurationMs: number,
+  ): Promise<RunRecord | null> {
     const now = new Date();
     const leaseUntil = new Date(now.getTime() + Math.min(leaseDurationMs, MAX_LEASE_EXTENSION_MS));
 

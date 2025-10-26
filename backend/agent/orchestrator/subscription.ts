@@ -2,7 +2,9 @@ import { Subscription } from "encore.dev/pubsub";
 import { runJobTopic } from "../../run/start";
 import type { RunJob } from "../../run/types";
 import { Orchestrator } from "./orchestrator";
-import { DBRepoPort } from "../persistence/db-repo";
+import { RunDbRepo } from "../persistence/run-db.repo";
+import { RunEventsRepo } from "../persistence/run-events.repo";
+import { AgentStateRepo } from "../persistence/agent-state.repo";
 import type { Budgets } from "../domain/state";
 import { AgentWorker } from "./worker";
 
@@ -15,13 +17,15 @@ new Subscription(runJobTopic, "agent-orchestrator-worker", {
     console.log(`[AgentOrchestrator] Starting run ${job.runId} with apk: ${job.apkPath}`);
 
     try {
-      const repo = new DBRepoPort();
-      const orchestrator = new Orchestrator(repo);
+      const runDb = new RunDbRepo();
+      const eventsDb = new RunEventsRepo();
+      const agentStateDb = new AgentStateRepo();
+      const orchestrator = new Orchestrator(runDb, eventsDb, agentStateDb);
 
       const workerId = `worker-${process.env.HOSTNAME ?? "local"}-${Date.now()}`;
       const leaseDurationMs = 30_000;
 
-      const claimed = await repo.claimRun(job.runId, workerId, leaseDurationMs);
+      const claimed = await runDb.claimRun(job.runId, workerId, leaseDurationMs);
       if (!claimed) {
         console.log(`[AgentOrchestrator] Run ${job.runId} already claimed, skipping`);
         return;
@@ -35,14 +39,7 @@ new Subscription(runJobTopic, "agent-orchestrator-worker", {
         restartLimit: 3,
       };
 
-      const worker = new AgentWorker({
-        orchestrator,
-        repo,
-        run: claimed,
-        workerId,
-        budgets,
-        leaseDurationMs,
-      });
+      const worker = new AgentWorker({ orchestrator, runDb, run: claimed, workerId, budgets, leaseDurationMs });
 
       const result = await worker.run();
       console.log(
