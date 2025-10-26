@@ -23,16 +23,50 @@ export type EventKind =
   | "agent.run.recovery_applied"
   | "agent.run.checkpoint_restored";
 
-export interface DomainEvent {
+/**
+ * Discriminated union mapping EventKind to its typed payload structure.
+ * Enforces type safety at compile time, preventing payload schema drift.
+ */
+export type EventPayloadMap = {
+  "agent.run.started": { startedAt: string };
+  "agent.run.finished": { finishedAt: string; stopReason: string };
+  "agent.run.failed": { reason: string };
+  "agent.run.canceled": { canceledAt: string };
+  "agent.run.continuation_decided": { action: string; rationale?: string };
+  "agent.node.started": { nodeName: string; stepOrdinal: number };
+  "agent.node.token_delta": { tokenCount: number; cumulativeCost: number };
+  "agent.node.finished": { nodeName: string; stepOrdinal: number; outcomeStatus: string };
+  "agent.event.screenshot_captured": { refId: string; width: number; height: number };
+  "agent.event.ui_hierarchy_captured": { refId: string; elementCount: number };
+  "agent.event.screen_perceived": { screenId: string; perceptualHash64: string };
+  "agent.event.actions_enumerated": { count: number; items: Array<{ key: string; verb: string }> };
+  "agent.event.action_selected": { actionKey: string; rationale?: string };
+  "agent.event.action_performed": { actionKey: string; success: boolean };
+  "agent.event.action_verification_completed": { passed: boolean; method: string };
+  "graph.screen.discovered": { screenId: string; appId: string };
+  "graph.action.created": { actionId: string; fromScreenId: string; toScreenId: string };
+  "graph.updated": { updateKind: string; details: Record<string, unknown> };
+  "agent.run.progress_evaluated": { verdict: string; score: number };
+  "agent.policy.switched": { fromVersion: number; toVersion: number };
+  "agent.app.restarted": { reason: string };
+  "agent.run.recovery_applied": { errorCode: string; actionTaken: string };
+  "agent.run.checkpoint_restored": { checkpointId: string; stepOrdinal: number };
+};
+
+/**
+ * Base event properties shared across all domain events.
+ * The payload field is a discriminated union keyed by EventKind for compile-time type safety.
+ */
+export interface DomainEvent<T extends EventKind = EventKind> {
   eventId: string;
   runId: string;
   tenantId: string;
   projectId: string;
   sequence: number;
   ts: string;
-  kind: EventKind;
+  kind: T;
   version: string;
-  payload: Record<string, unknown>;
+  payload: EventPayloadMap[T];
   checksum: string;
 }
 
@@ -139,16 +173,16 @@ export function createRunFinishedEvent(
   };
 }
 
-export function createDomainEvent(
+export function createDomainEvent<T extends EventKind>(
   eventId: string,
   runId: string,
   tenantId: string,
   projectId: string,
   sequence: number,
   ts: string,
-  kind: EventKind,
-  payload: Record<string, unknown>,
-): DomainEvent {
+  kind: T,
+  payload: EventPayloadMap[T],
+): DomainEvent<T> {
   return {
     eventId,
     runId,
@@ -159,7 +193,7 @@ export function createDomainEvent(
     kind,
     version: "1",
     payload,
-    checksum: computeChecksum(eventId, runId, sequence, kind, payload),
+    checksum: computeChecksum(eventId, runId, sequence, kind, payload as Record<string, unknown>),
   };
 }
 

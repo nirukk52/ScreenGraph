@@ -9,14 +9,17 @@ import { ulid } from "ulidx";
  */
 export class RunEventsRepo implements RunEventsDbPort {
   async appendEvent(event: DomainEvent): Promise<void> {
+    // Extract nodeName from payload if present (NodeStarted/Finished events)
     const payload = event.payload as Record<string, unknown>;
+    const nodeName = "nodeName" in payload ? (payload.nodeName as string) : null;
+
     await db.exec`
       INSERT INTO run_events (run_id, seq, type, node_name, payload, created_at)
       VALUES (
         ${event.runId},
         ${event.sequence},
         ${event.kind},
-        ${payload.nodeName || null},
+        ${nodeName},
         ${JSON.stringify(event.payload)},
         ${event.ts}
       )

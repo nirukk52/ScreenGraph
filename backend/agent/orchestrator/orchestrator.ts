@@ -5,6 +5,7 @@ import {
   createRunFinishedEvent,
   type DomainEvent,
   type EventKind,
+  type EventPayloadMap,
 } from "../domain/events";
 import type { RunRecord, RunDbPort } from "../ports/run-db.port";
 import type { RunEventsDbPort } from "../ports/run-events.port";
@@ -57,10 +58,10 @@ export class Orchestrator {
     await this.eventsDb.appendEvent(event);
   }
 
-  async recordNodeEvents(
+  async recordNodeEvents<K extends EventKind>(
     state: AgentState,
     nodeName: string,
-    nodeEvents: Array<{ kind: EventKind; payload: Record<string, unknown> }>,
+    nodeEvents: Array<{ kind: K; payload: EventPayloadMap[K] }>,
   ): Promise<void> {
     const now = new Date().toISOString();
 
