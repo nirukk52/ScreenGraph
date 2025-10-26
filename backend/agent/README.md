@@ -45,7 +45,7 @@ backend/agent/
 │   ├── fake-llm.ts      # Rule-based action enumeration
 │   └── fixtures/        # Static test data
 ├── persistence/         # In-memory repository
-│   └── in-memory-repo.ts # Implements RepoPort; enforces idempotency
+│   └── in-memory-repo.ts # In-memory test implementation combining all ports
 ├── policies/            # Configuration
 │   └── default.json     # maxSteps, maxTimeMs, restartLimit, etc.
 ├── cli/                 # Command-line tools

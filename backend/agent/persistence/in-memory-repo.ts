@@ -1,8 +1,12 @@
-import type { RepoPort, RunRecord, RunLifecycleStatus } from "../ports/repo.port";
+import type { RunRecord, RunLifecycleStatus } from "../ports/run-db.port";
 import type { AgentState } from "../domain/state";
 import type { DomainEvent } from "../domain/events";
 
-export class InMemoryRepo implements RepoPort {
+/**
+ * InMemoryRepo provides a test-friendly in-memory implementation that combines
+ * all focused ports into a single class. Used only in tests where convenient.
+ */
+export class InMemoryRepo {
   private runs = new Map<string, RunRecord>();
   private events = new Map<string, DomainEvent[]>();
   private snapshots = new Map<string, Map<number, AgentState>>();

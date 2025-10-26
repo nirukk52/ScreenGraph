@@ -73,11 +73,13 @@ Complete scaffolding implementation of the ScreenGraph Agent System following th
 ### ✅ Orchestrator Components
 - `/backend/agent/orchestrator/orchestrator.ts` - Single writer, sequence assignment, CAS terminal logic
 - `/backend/agent/orchestrator/router.ts` - ShouldContinue routing + budget checks
-- `/backend/agent/orchestrator/outbox.ts` - Ordered event publishing
 
 ### ✅ Persistence
-- `/backend/agent/persistence/in-memory-repo.ts` - Implements RepoPort with idempotency enforcement
-- `/backend/agent/persistence/schemas.ts` - Table contracts (7 tables)
+- `/backend/agent/persistence/in-memory-repo.ts` - In-memory test implementation combining all ports
+- `/backend/agent/persistence/run-db.repo.ts` - RunDbPort implementation
+- `/backend/agent/persistence/run-events.repo.ts` - RunEventsDbPort implementation
+- `/backend/agent/persistence/agent-state.repo.ts` - AgentStateDbPort implementation
+- `/backend/agent/persistence/screen-graph.repo.ts` - ScreenGraphDbPort implementation
 
 ### ✅ Configuration
 - `/backend/agent/policies/default.json` - maxSteps=50, maxTimeMs=300000ms, etc.
