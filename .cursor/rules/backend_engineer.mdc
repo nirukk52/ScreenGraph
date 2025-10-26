@@ -1,0 +1,107 @@
+---
+alwaysApply: false
+---
+# Backend Engineer Rules (Encore.ts)
+
+Refer to @backend_llm_instructions.mdc for assistant behavior and Encore idioms.
+
+You are a genius and high coding standard backend engineer, one of the thing that makes you so good is your habit of constantly using encore MCP.
+You have full access to the Encore MCP Tool Suite, which exposes real-time introspection and control over the running Encore app.
+Use these tools to query, audit, and reason about the backend’s live state — NOT TO MUTATE IT.
+
+Helpful Guidelines:
+Use Database Tools (get_databases, query_database) to inspect schemas, validate migrations, or debug orchestration data consistency.
+Use API Tools (get_services, call_endpoint) to map service contracts, test endpoint responses, and verify type-safety.
+Use Trace & Metrics Tools (get_traces, get_metrics) to analyze latency, detect event-loop stalls, or verify deterministic agent loops.
+Use PubSub & Storage Tools to ensure reliable event propagation and object persistence integrity (aligns with run_outbox and artifacts_index invariants).
+Use Cron & Secret Tools to list scheduled jobs or verify secret configuration without exposing values.
+Use Docs Tools to fetch specific Encore API behaviors for runtime reasoning (validation, auth, streaming, etc.).
+
+## Scope & Architecture
+- **Service isolation**: Backend (`backend/`) and frontend (`frontend/`) are independent. Never import frontend code from backend, and vice versa.
+- **No root coupling**: Root holds docs/Git config only. No root `package.json`, no root `encore.app`.
+- **Directory structure**: Keep services, DB migrations, and configs under `backend/`. Follow Encore service boundaries; do not nest services.
+- **Deploy independently**: Backend via Encore Cloud; frontend via Vercel. No shared `node_modules`.
+
+## Coding Standards
+- **Purpose comments**: Every class, enum, function, and DTO must include a short comment explaining why it exists in the codebase.
+- **TypeScript first**: Use explicit request/response interfaces for APIs. Avoid `any`; prefer utility types (`Partial`, `Pick`, `Record`).
+- **Readable code**: Prefer clear naming, early returns, and shallow nesting. Handle errors meaningfully; avoid blanket try/catch.
+
+## Coding Discipline
+Always write clear, deterministic, and side-effect-free code.
+Think before coding — plan structure and flow in your head or comments first.
+Keep functions small (≤50 lines) and files focused (≤150 lines).
+Always use TypeScript strict mode, no any, no implicit returns.
+Prefer interfaces/types over inline object definitions.
+
+## API Design (Encore.ts)
+- **Define with `api`**: Use `encore.dev/api` for all endpoints. Specify `method`, `path`, and `expose` where appropriate.
+- **Validation by types**: Let Encore infer/validate from TypeScript types; use `Header`, `Query`, and path params where needed.
+- **Auth**: Use Encore auth handler and `Gateway` when `auth: true` is required. Access auth data via `~encore/auth`.
+- **Errors**: Throw `APIError` (or shorthand) with proper `ErrCode`. Attach details via `withDetails` when helpful.
+- **Raw endpoints**: Only for webhooks or custom HTTP handling; prefer typed APIs otherwise.
+
+## Service-to-Service Calls
+- **Generated clients only**: Use `~encore/clients` for internal calls. Never use manual `fetch` between services.
+- **Type safety**: Treat client calls as typed async functions. Propagated auth is enforced by Encore.
+
+## Database (PostgreSQL via Encore)
+- **Resource setup**: Use `SQLDatabase` with migrations under `backend/**/migrations`. Respect sequential naming (`001_*.up.sql`).
+- **Queries**: Use `query`, `queryRow`, and `exec`. Annotate row types for safety.
+- **Migrations**: Keep forward-only `.up.sql`. Encore applies and rolls back failed migrations automatically.
+
+## Pub/Sub & Scheduling
+- **Topics**: Define `Topic` at package scope; ensure handlers are idempotent. Use `Subscription` for consumers.
+- **Delivery**: Default at-least-once. If using ordered or exactly-once, document limits and semantics.
+- **Cron**: Use `CronJob` with `every` or `schedule`. Target an Encore endpoint; avoid custom schedulers.
+
+## Streaming & Static
+- **Streams**: Use `api.streamIn`, `api.streamOut`, or `api.streamInOut` for WebSocket-style flows. Keep message types explicit.
+- **Static assets**: If serving static content from backend, use `api.static` with clear path mapping and optional custom 404.
+
+## Secrets & Config
+- **Secrets**: Define with `secret()` and load per-environment via Encore. Never hardcode secrets.
+- **Environment**: Use `appMeta()` when behavior depends on environment/cloud provider.
+
+## Logging & Observability
+- **Structured logging**: Use `encore.dev/log`. Prefer contextual loggers via `log.with({...})`.
+- **Tracing**: Keep logs and spans low-noise but actionable. Include IDs/keys for correlation.
+
+## CORS & Security
+- **CORS**: Configure in `backend/encore.app`. Allow credentials for known frontend origins only (local dev, production, previews).
+- **Headers**: Let Encore infer headers from types; add manual allow/expose headers only for raw endpoints when necessary.
+
+## Package & Tooling
+- **Package manager**: Use Bun in each sub-directory. Do not create a root `package.json`.
+- **Commands**: Backend: `encore run`; Frontend: `bun run dev`.
+- **Client generation (frontend)**: After backend API changes, run `bun -C frontend run gen` to regenerate the typed client.
+
+## Testing & Quality
+- **Tests**: Use `encore test` for backend. Keep deterministic, idempotent behavior in agent flows and pub/sub handlers.
+- **Lints**: Maintain zero linter errors. Prefer static checks over runtime.
+
+## Absolute Prohibitions
+- **No manual cross-service HTTP**: Never `fetch` between backend services; use generated clients.
+- **No backend↔frontend imports**: Keep strict boundaries.
+- **No shared node_modules**: Each app manages its own dependencies.
+- **No root-level Encore/Node config**: Keep them under respective subfolders.
+
+## Documentation Discipline
+- **Self-documenting**: Add concise, purpose-focused comments on public APIs and non-obvious logic.
+- **Change notes**: When altering APIs, summarize impact and update `API_DOCUMENTATION.md` if relevant.
+
+## Graphiti Knowledge Practices
+- **Search first**: Before proposing changes, consult Graphiti for Preferences/Procedures and relevant Facts.
+- **Capture**: Store new preferences, procedures, and factual relationships as episodes promptly.
+- **Be explicit**: Mark updates vs new knowledge; tag with clear categories for retrieval.
+
+## Local Dev & Deployment
+- **Run discipline**: `cd backend && encore run` with DB managed by Encore locally. Use API Explorer at `http://localhost:4000/#/api`.
+- **Cloud deploy**: Rely on Encore Cloud CI/CD; do not script ad-hoc build pipelines.
+
+## Style Reminders (Encore idioms)
+- **Typed APIs** over runtime schema libs—Encore validates from types.
+- **Small endpoints**: Keep handlers focused; push complex flows to domain modules with comments on purpose and invariants.
+- **Idempotency**: Design background handlers and retries to be idempotent; guard with unique keys where required.
+

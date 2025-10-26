@@ -1,23 +1,52 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import autoAnimate from '@formkit/auto-animate';
+    import { onMount } from 'svelte';
+    import autoAnimate from '@formkit/auto-animate';
+    import { goto } from '$app/navigation';
+    import { getEncoreClient } from '$lib/getEncoreClient';
+    import { DEFAULT_APK_PATH, DEFAULT_APPIUM_SERVER_URL, DEFAULT_PACKAGE_NAME, DEFAULT_APP_ACTIVITY } from '$lib/constants';
 
-	let isLoading = $state(true);
-	let showContent = $state(false);
+    let isLoading = $state(true);
+    let showContent = $state(false);
+    let isStartingRun = $state(false);
+    let startError = $state('');
+    let lastRunId = $state('');
 
-	onMount(() => {
-		const timer = setTimeout(() => {
-			isLoading = false;
-			showContent = true;
-		}, 1000);
+    onMount(() => {
+        const timer = setTimeout(() => {
+            isLoading = false;
+            showContent = true;
+        }, 500);
 
-		return () => clearTimeout(timer);
-	});
+        return () => clearTimeout(timer);
+    });
 
-	function handleConnect() {
-		// No navigation yet; logs demonstrate interaction wiring
-		console.log('Connect Your App clicked');
-	}
+    /** Kicks off the default demo run and routes the user to the live timeline. */
+    async function handleConnect() {
+        if (isStartingRun) {
+            return;
+        }
+
+        isStartingRun = true;
+        startError = '';
+
+        try {
+            const client = getEncoreClient();
+            const response = await client.run.start({
+                apkPath: DEFAULT_APK_PATH,
+                appiumServerUrl: DEFAULT_APPIUM_SERVER_URL,
+                packageName: DEFAULT_PACKAGE_NAME,
+                appActivity: DEFAULT_APP_ACTIVITY,
+            });
+
+            lastRunId = response.runId;
+            await goto(`/run/${response.runId}`);
+        } catch (error) {
+            console.error('Failed to start run', error);
+            startError = error instanceof Error ? error.message : 'Unknown error starting run';
+        } finally {
+            isStartingRun = false;
+        }
+    }
 </script>
 
 <svelte:head>
@@ -47,14 +76,23 @@
 						</p>
 					</div>
 
-					<div class="flex justify-center">
-						<button
-							onclick={handleConnect}
-							class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 px-8 py-4 text-lg font-semibold text-slate-900 shadow-lg shadow-sky-500/30 transition-transform duration-200 hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-300"
-						>
-							Connect Your App
-						</button>
-					</div>
+                    <div class="flex flex-col items-center gap-4">
+                        <button
+                            onclick={handleConnect}
+                            class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 px-8 py-4 text-lg font-semibold text-slate-900 shadow-lg shadow-sky-500/30 transition-transform duration-200 hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-300 disabled:opacity-60 disabled:hover:scale-100"
+                            disabled={isStartingRun}
+                        >
+                            {isStartingRun ? 'Connecting…' : 'Connect Your App'}
+                        </button>
+
+                        {#if startError}
+                            <p class="text-sm text-red-300">{startError}</p>
+                        {/if}
+
+                        {#if lastRunId}
+                            <p class="text-xs text-slate-400">Last run ID: {lastRunId}</p>
+                        {/if}
+                    </div>
 
 					<div class="grid gap-6 sm:grid-cols-3 text-sm text-slate-400">
 						<div class="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">

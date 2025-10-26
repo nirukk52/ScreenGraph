@@ -8,7 +8,6 @@ This project uses Encore.ts for the backend and SvelteKit for the frontend, foll
 
 ```
 /ScreenGraph/
-├── package.json             # Backend dependencies
 ├── tsconfig.json           # Unified TypeScript config
 ├── backend/                # Encore backend services
 │   ├── encore.app          # Backend config

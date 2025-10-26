@@ -3,10 +3,13 @@ import { DBRepoPort } from "../agent/persistence/db-repo";
 import { Budgets, AgentState, advanceStep, createInitialState } from "../agent/domain/state";
 import { EventKind, createRunStartedEvent } from "../agent/domain/events";
 
+/** Drives the agent orchestration loop for a given run using the provided app configuration. */
 export async function runAgentLoop(
   runId: string,
   apkPath: string,
-  appiumServerUrl: string
+  appiumServerUrl: string,
+  packageName: string,
+  appActivity: string
 ): Promise<void> {
   const repo = new DBRepoPort();
   const orchestrator = new Orchestrator(repo);
@@ -41,6 +44,8 @@ export async function runAgentLoop(
     stepOrdinal: state.stepOrdinal,
     apkPath,
     appiumServerUrl,
+    packageName,
+    appActivity,
   });
 
   for (let i = 0; i < budgets.maxSteps; i++) {

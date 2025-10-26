@@ -103,6 +103,8 @@ export namespace run {
     export interface StartRunRequest {
         apkPath: string
         appiumServerUrl: string
+        packageName: string
+        appActivity: string
         maxSteps?: number
         goal?: string
     }

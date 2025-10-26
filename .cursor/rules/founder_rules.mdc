@@ -10,6 +10,9 @@ No shared code or node_modules between backend and frontend.
 No root package.json or encore.app`.
 Backend never imports frontend; frontend never touches backend code.
 
+Coding Rules:
+Every function class enum dto will have a comment about his purpose in the codebase.
+
 Type Safety Rules
 Always use Encore generated clients (~encore/clients).
 Never use manual fetch() calls.

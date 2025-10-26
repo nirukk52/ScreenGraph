@@ -24,9 +24,12 @@ export const start = api<StartRunRequest, StartRunResponse>(
     const runId = ulid();
     const tenantId = "tenant-default";
     const projectId = "project-default";
+    //todo : this needs to be a separate table in the database
     const appConfigId = JSON.stringify({
       apkPath: req.apkPath,
       appiumServerUrl: req.appiumServerUrl,
+      packageName: req.packageName,
+      appActivity: req.appActivity,
       maxSteps: req.maxSteps ?? 100,
       goal: req.goal,
     });
@@ -46,7 +49,13 @@ export const start = api<StartRunRequest, StartRunResponse>(
     console.log(`[POST /run] Created run ${run.run_id}`);
 
     console.log(`[POST /run] Publishing run job to topic for run ${run.run_id}`);
-    await runJobTopic.publish({ runId: run.run_id, apkPath: req.apkPath, appiumServerUrl: req.appiumServerUrl });
+    await runJobTopic.publish({
+      runId: run.run_id,
+      apkPath: req.apkPath,
+      appiumServerUrl: req.appiumServerUrl,
+      packageName: req.packageName,
+      appActivity: req.appActivity,
+    });
 
     const streamUrl = `/run/${run.run_id}/stream`;
     console.log(`[POST /run] Run ${run.run_id} initiated, stream URL: ${streamUrl}`);
