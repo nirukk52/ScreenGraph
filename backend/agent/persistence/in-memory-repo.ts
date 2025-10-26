@@ -1,5 +1,5 @@
-import type { RepoPort, RunRecord } from "../ports/repo.port";
-import type { AgentState, RunStatus } from "../domain/state";
+import type { RepoPort, RunRecord, RunLifecycleStatus } from "../ports/repo.port";
+import type { AgentState } from "../domain/state";
 import type { DomainEvent } from "../domain/events";
 
 export class InMemoryRepo implements RepoPort {
@@ -14,9 +14,17 @@ export class InMemoryRepo implements RepoPort {
       runId,
       tenantId,
       projectId,
-      status: "running",
+      status: "queued",
       createdAt: now,
       updatedAt: now,
+      appConfigId: "default",
+      processingBy: null,
+      leaseExpiresAt: null,
+      heartbeatAt: null,
+      startedAt: null,
+      finishedAt: null,
+      cancelRequestedAt: null,
+      stopReason: null,
     });
     this.events.set(runId, []);
     this.snapshots.set(runId, new Map());
@@ -26,16 +34,63 @@ export class InMemoryRepo implements RepoPort {
     return this.runs.get(runId) ?? null;
   }
 
-  async updateRunStatus(runId: string, newStatus: RunStatus, now: string): Promise<boolean> {
+  async claimRun(runId: string, workerId: string, leaseDurationMs: number): Promise<RunRecord | null> {
     const run = this.runs.get(runId);
-    if (!run) return false;
+    if (!run) return null;
 
-    if (run.status === "completed" || run.status === "failed" || run.status === "canceled") {
+    const now = Date.now();
+    const leaseUntil = new Date(now + leaseDurationMs).toISOString();
+
+    if (
+      run.status !== "queued" &&
+      !(run.status === "running" && (!run.leaseExpiresAt || new Date(run.leaseExpiresAt).getTime() < now))
+    ) {
+      return null;
+    }
+
+    run.status = "running";
+    run.processingBy = workerId;
+    run.leaseExpiresAt = leaseUntil;
+    run.heartbeatAt = new Date(now).toISOString();
+    run.startedAt = run.startedAt ?? new Date(now).toISOString();
+    run.updatedAt = new Date(now).toISOString();
+    this.runs.set(runId, run);
+    return run;
+  }
+
+  async extendLease(runId: string, workerId: string, leaseDurationMs: number): Promise<boolean> {
+    const run = this.runs.get(runId);
+    if (!run || run.processingBy !== workerId || run.status !== "running") {
       return false;
     }
 
+    const now = Date.now();
+    const leaseUntil = new Date(now + leaseDurationMs).toISOString();
+    run.leaseExpiresAt = leaseUntil;
+    run.heartbeatAt = new Date(now).toISOString();
+    run.updatedAt = new Date(now).toISOString();
+    this.runs.set(runId, run);
+    return true;
+  }
+
+  async updateRunStatus(
+    runId: string,
+    newStatus: RunLifecycleStatus,
+    now: string,
+    stopReason?: string | null,
+  ): Promise<boolean> {
+    const run = this.runs.get(runId);
+    if (!run) return false;
+
     run.status = newStatus;
     run.updatedAt = now;
+    if (newStatus === "completed" || newStatus === "failed" || newStatus === "canceled") {
+      run.finishedAt = now;
+    }
+    if (stopReason) {
+      run.stopReason = stopReason;
+    }
+    this.runs.set(runId, run);
     return true;
   }
 
@@ -76,6 +131,29 @@ export class InMemoryRepo implements RepoPort {
     if (!runSnapshots) return null;
     const snapshot = runSnapshots.get(stepOrdinal);
     return snapshot ? JSON.parse(JSON.stringify(snapshot)) : null;
+  }
+
+  async getLatestSnapshot(runId: string): Promise<AgentState | null> {
+    const runSnapshots = this.snapshots.get(runId);
+    if (!runSnapshots) {
+      return null;
+    }
+
+    const maxKey = Math.max(...runSnapshots.keys());
+    if (maxKey === -Infinity) {
+      return null;
+    }
+
+    const snapshot = runSnapshots.get(maxKey);
+    return snapshot ? JSON.parse(JSON.stringify(snapshot)) : null;
+  }
+
+  async getLastEventSequence(runId: string): Promise<number> {
+    const runEvents = this.events.get(runId) ?? [];
+    if (runEvents.length === 0) {
+      return 0;
+    }
+    return runEvents[runEvents.length - 1].sequence;
   }
 
   async upsertScreen(

@@ -1,14 +1,44 @@
-import type { RepoPort, RunRecord } from "../ports/repo.port";
-import type { AgentState, RunStatus } from "../domain/state";
+import type { RepoPort, RunRecord, RunLifecycleStatus } from "../ports/repo.port";
+import type { AgentState } from "../domain/state";
 import type { DomainEvent } from "../domain/events";
 import db from "../../db";
 import { ulid } from "ulidx";
 
+const MAX_LEASE_EXTENSION_MS = 30_000;
+
 export class DBRepoPort implements RepoPort {
   async createRun(runId: string, tenantId: string, projectId: string, now: string): Promise<void> {
     await db.exec`
-      INSERT INTO runs (run_id, tenant_id, project_id, app_config_id, status, created_at, updated_at)
-      VALUES (${runId}, ${tenantId}, ${projectId}, 'default', 'running', ${now}, ${now})
+      INSERT INTO runs (
+        run_id,
+        tenant_id,
+        project_id,
+        app_config_id,
+        status,
+        created_at,
+        updated_at,
+        processing_by,
+        lease_expires_at,
+        heartbeat_at,
+        started_at,
+        finished_at,
+        cancel_requested_at
+      )
+      VALUES (
+        ${runId},
+        ${tenantId},
+        ${projectId},
+        'default',
+        'queued',
+        ${now},
+        ${now},
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+      )
     `;
 
     await db.exec`
@@ -22,11 +52,33 @@ export class DBRepoPort implements RepoPort {
       run_id: string;
       tenant_id: string;
       project_id: string;
-      status: RunStatus;
+      status: RunLifecycleStatus;
       created_at: string;
       updated_at: string;
+      app_config_id: string;
+      processing_by: string | null;
+      lease_expires_at: string | null;
+      heartbeat_at: string | null;
+      started_at: string | null;
+      finished_at: string | null;
+      cancel_requested_at: string | null;
+      stop_reason: string | null;
     }>`
-      SELECT run_id, tenant_id, project_id, status, created_at, updated_at
+      SELECT
+        run_id,
+        tenant_id,
+        project_id,
+        status,
+        created_at,
+        updated_at,
+        app_config_id,
+        processing_by,
+        lease_expires_at,
+        heartbeat_at,
+        started_at,
+        finished_at,
+        cancel_requested_at,
+        stop_reason
       FROM runs
       WHERE run_id = ${runId}
     `;
@@ -42,14 +94,114 @@ export class DBRepoPort implements RepoPort {
       status: row.status,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
+      appConfigId: row.app_config_id,
+      processingBy: row.processing_by,
+      leaseExpiresAt: row.lease_expires_at,
+      heartbeatAt: row.heartbeat_at,
+      startedAt: row.started_at,
+      finishedAt: row.finished_at,
+      cancelRequestedAt: row.cancel_requested_at,
+      stopReason: row.stop_reason ?? null,
     };
   }
 
-  async updateRunStatus(runId: string, newStatus: RunStatus, now: string): Promise<boolean> {
-    const result = await db.exec`
+  async claimRun(runId: string, workerId: string, leaseDurationMs: number): Promise<RunRecord | null> {
+    const now = new Date();
+    const leaseUntil = new Date(now.getTime() + Math.min(leaseDurationMs, MAX_LEASE_EXTENSION_MS));
+
+    const claimed = await db.queryRow<{
+      run_id: string;
+      tenant_id: string;
+      project_id: string;
+      status: RunLifecycleStatus;
+      created_at: string;
+      updated_at: string;
+      app_config_id: string;
+      processing_by: string | null;
+      lease_expires_at: string | null;
+      heartbeat_at: string | null;
+      started_at: string | null;
+      finished_at: string | null;
+      cancel_requested_at: string | null;
+      stop_reason: string | null;
+    }>`
+      WITH claimed AS (
+        UPDATE runs
+        SET
+          status = 'running',
+          processing_by = ${workerId},
+          lease_expires_at = ${leaseUntil.toISOString()},
+          heartbeat_at = ${now.toISOString()},
+          started_at = COALESCE(started_at, ${now.toISOString()}),
+          updated_at = ${now.toISOString()}
+        WHERE run_id = ${runId}
+          AND (
+            status = 'queued'
+            OR (status = 'running' AND (lease_expires_at IS NULL OR lease_expires_at < ${now.toISOString()}))
+          )
+        RETURNING *
+      )
+      SELECT * FROM claimed
+    `;
+
+    if (!claimed) {
+      return null;
+    }
+
+    return {
+      runId: claimed.run_id,
+      tenantId: claimed.tenant_id,
+      projectId: claimed.project_id,
+      status: claimed.status,
+      createdAt: claimed.created_at,
+      updatedAt: claimed.updated_at,
+      appConfigId: claimed.app_config_id,
+      processingBy: claimed.processing_by,
+      leaseExpiresAt: claimed.lease_expires_at,
+      heartbeatAt: claimed.heartbeat_at,
+      startedAt: claimed.started_at,
+      finishedAt: claimed.finished_at,
+      cancelRequestedAt: claimed.cancel_requested_at,
+    };
+  }
+
+  async extendLease(runId: string, workerId: string, leaseDurationMs: number): Promise<boolean> {
+    const now = new Date();
+    const leaseUntil = new Date(now.getTime() + Math.min(leaseDurationMs, MAX_LEASE_EXTENSION_MS));
+
+    await db.exec`
       UPDATE runs
-      SET status = ${newStatus}, updated_at = ${now}, stop_reason = ${newStatus === "completed" ? "success" : null}
+      SET
+        lease_expires_at = ${leaseUntil.toISOString()},
+        heartbeat_at = ${now.toISOString()},
+        updated_at = ${now.toISOString()}
       WHERE run_id = ${runId}
+        AND processing_by = ${workerId}
+        AND status = 'running'
+        AND (lease_expires_at IS NULL OR lease_expires_at >= ${now.toISOString()})
+    `;
+
+    return true;
+  }
+
+  async updateRunStatus(
+    runId: string,
+    newStatus: RunLifecycleStatus,
+    now: string,
+    stopReason?: string | null,
+  ): Promise<boolean> {
+    await db.exec`
+      UPDATE runs
+      SET
+        status = ${newStatus},
+        updated_at = ${now},
+        stop_reason = ${stopReason ?? null},
+        finished_at = CASE
+          WHEN ${newStatus} IN ('completed', 'failed', 'canceled') THEN ${now}
+          ELSE finished_at
+        END
+      WHERE run_id = ${runId}
+        AND status NOT IN ('completed', 'failed', 'canceled')
     `;
 
     return true;
@@ -140,6 +292,34 @@ export class DBRepoPort implements RepoPort {
     }
 
     return JSON.parse(row.state_json);
+  }
+
+  async getLatestSnapshot(runId: string): Promise<AgentState | null> {
+    const row = await db.queryRow<{ state_json: string }>`
+      SELECT state_json
+      FROM agent_state_snapshots
+      WHERE run_id = ${runId}
+      ORDER BY step_ordinal DESC
+      LIMIT 1
+    `;
+
+    if (!row) {
+      return null;
+    }
+
+    return JSON.parse(row.state_json);
+  }
+
+  async getLastEventSequence(runId: string): Promise<number> {
+    const row = await db.queryRow<{ seq: number }>`
+      SELECT seq
+      FROM run_events
+      WHERE run_id = ${runId}
+      ORDER BY seq DESC
+      LIMIT 1
+    `;
+
+    return row?.seq ?? 0;
   }
 
   async upsertScreen(

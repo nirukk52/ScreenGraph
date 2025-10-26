@@ -7,7 +7,6 @@ import { cancel as cancelImpl0 } from "../../../../../run/cancel";
 import { health as healthImpl1 } from "../../../../../run/health";
 import { start as startImpl2 } from "../../../../../run/start";
 import { stream as streamImpl3 } from "../../../../../run/stream";
-import "../../../../../run/orchestrator";
 import * as run_service from "../../../../../run/encore.service";
 
 const handlers: Handler[] = [

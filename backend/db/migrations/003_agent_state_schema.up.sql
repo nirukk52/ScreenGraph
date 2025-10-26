@@ -11,6 +11,12 @@ CREATE TABLE runs (
   policy_version INT NOT NULL DEFAULT 1,
   status TEXT NOT NULL DEFAULT 'running',
   stop_reason TEXT NULL,
+  processing_by TEXT NULL,
+  lease_expires_at TIMESTAMPTZ NULL,
+  heartbeat_at TIMESTAMPTZ NULL,
+  started_at TIMESTAMPTZ NULL,
+  finished_at TIMESTAMPTZ NULL,
+  cancel_requested_at TIMESTAMPTZ NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

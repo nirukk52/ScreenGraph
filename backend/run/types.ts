@@ -35,6 +35,12 @@ export interface Run {
   stop_reason: string | null;
   created_at: Date;
   updated_at: Date;
+  processing_by: string | null;
+  lease_expires_at: Date | null;
+  heartbeat_at: Date | null;
+  started_at: Date | null;
+  finished_at: Date | null;
+  cancel_requested_at: Date | null;
 }
 
 /** Defines the parameters dispatched to the orchestrator worker for a run. */
@@ -44,4 +50,5 @@ export interface RunJob {
   appiumServerUrl: string;
   packageName: string;
   appActivity: string;
+  maxSteps?: number;
 }

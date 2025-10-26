@@ -1,4 +1,4 @@
-import { type AgentState, createInitialState, type Budgets, type RunStatus } from "../domain/state";
+import { type AgentState, createInitialState, type Budgets } from "../domain/state";
 import {
   createDomainEvent,
   createRunStartedEvent,
@@ -6,40 +6,47 @@ import {
   type DomainEvent,
   type EventKind,
 } from "../domain/events";
-import type { RepoPort } from "../ports/repo.port";
+import type { RepoPort, RunRecord } from "../ports/repo.port";
 import { Outbox } from "./outbox";
 
 export class Orchestrator {
   private sequenceCounter = 0;
   private outbox = new Outbox();
   private seedCounter = 123456;
+  private cachedRun: RunRecord | null = null;
 
   constructor(private repo: RepoPort) {}
 
-  async createRun(
-    tenantId: string,
-    projectId: string,
-    runId: string,
+  async initialize(
+    run: RunRecord,
     budgets: Budgets,
-  ): Promise<AgentState> {
-    const now = new Date().toISOString();
-    await this.repo.createRun(runId, tenantId, projectId, now);
+  ): Promise<{ state: AgentState; isResume: boolean }> {
+    this.cachedRun = run;
+    const latestSnapshot = await this.repo.getLatestSnapshot(run.runId);
+    const lastSequence = await this.repo.getLastEventSequence(run.runId);
 
-    const state = createInitialState(tenantId, projectId, runId, budgets, now);
+    if (latestSnapshot) {
+      this.sequenceCounter = lastSequence;
+      this.seedCounter = latestSnapshot.randomSeed;
+      return { state: latestSnapshot, isResume: true };
+    }
+
+    const now = new Date().toISOString();
+    const state = createInitialState(run.tenantId, run.projectId, run.runId, budgets, now);
 
     const startEvent = createRunStartedEvent(
       this.generateId(),
-      runId,
-      tenantId,
-      projectId,
+      run.runId,
+      run.tenantId,
+      run.projectId,
       this.nextSequence(),
       now,
     );
 
     await this.recordEvent(startEvent);
-    await this.repo.saveSnapshot(runId, 0, state);
+    await this.repo.saveSnapshot(run.runId, 0, state);
 
-    return state;
+    return { state, isResume: false };
   }
 
   async recordEvent(event: DomainEvent): Promise<void> {
@@ -96,7 +103,7 @@ export class Orchestrator {
   async finalizeRun(state: AgentState, stopReason: string): Promise<void> {
     const now = new Date().toISOString();
 
-    const success = await this.repo.updateRunStatus(state.runId, "completed" as RunStatus, now);
+    const success = await this.repo.updateRunStatus(state.runId, "completed", now, stopReason);
 
     if (!success) {
       throw new Error("Failed to update run status (CAS violation)");
@@ -136,5 +143,6 @@ export class Orchestrator {
     this.sequenceCounter = 0;
     this.outbox.reset();
     this.seedCounter = 123456;
+    this.cachedRun = null;
   }
 }

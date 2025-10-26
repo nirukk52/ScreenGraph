@@ -1,0 +1,19 @@
+ALTER TABLE runs
+  ADD COLUMN IF NOT EXISTS processing_by TEXT NULL,
+  ADD COLUMN IF NOT EXISTS lease_expires_at TIMESTAMPTZ NULL,
+  ADD COLUMN IF NOT EXISTS heartbeat_at TIMESTAMPTZ NULL,
+  ADD COLUMN IF NOT EXISTS started_at TIMESTAMPTZ NULL,
+  ADD COLUMN IF NOT EXISTS finished_at TIMESTAMPTZ NULL,
+  ADD COLUMN IF NOT EXISTS cancel_requested_at TIMESTAMPTZ NULL;
+
+ALTER TABLE runs
+  ALTER COLUMN status SET DEFAULT 'queued';
+
+UPDATE runs
+SET status = 'queued'
+WHERE status = 'running';
+
+UPDATE runs
+SET updated_at = NOW()
+WHERE TRUE;
+

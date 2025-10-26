@@ -45,7 +45,12 @@ async function runDemo() {
   console.log(`📋 Run ID: ${runId}`);
   console.log(`🎯 Budgets: maxSteps=${budgets.maxSteps}, maxTimeMs=${budgets.maxTimeMs}ms\n`);
 
-  const state = await orchestrator.createRun(tenantId, projectId, runId, budgets);
+  const runRecord = await repo.claimRun(runId, "demo-worker", 30_000);
+  if (!runRecord) {
+    throw new Error("Failed to claim run in demo");
+  }
+
+  const { state } = await orchestrator.initialize(runRecord, budgets);
   console.log("✅ Run created\n");
 
   console.log("=== SETUP PHASE ===\n");

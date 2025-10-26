@@ -36,8 +36,38 @@ export const start = api<StartRunRequest, StartRunResponse>(
 
     console.log("[POST /run] Creating runs record");
     const run = await db.queryRow<Run>`
-      INSERT INTO runs (run_id, tenant_id, project_id, app_config_id, status, created_at, updated_at)
-      VALUES (${runId}, ${tenantId}, ${projectId}, ${appConfigId}, 'running', NOW(), NOW())
+      INSERT INTO runs (
+        run_id,
+        tenant_id,
+        project_id,
+        app_config_id,
+        status,
+        created_at,
+        updated_at,
+        processing_by,
+        lease_expires_at,
+        heartbeat_at,
+        started_at,
+        finished_at,
+        cancel_requested_at,
+        stop_reason
+      )
+      VALUES (
+        ${runId},
+        ${tenantId},
+        ${projectId},
+        ${appConfigId},
+        'queued',
+        NOW(),
+        NOW(),
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+      )
       RETURNING *
     `;
 
@@ -55,6 +85,7 @@ export const start = api<StartRunRequest, StartRunResponse>(
       appiumServerUrl: req.appiumServerUrl,
       packageName: req.packageName,
       appActivity: req.appActivity,
+      maxSteps: req.maxSteps,
     });
 
     const streamUrl = `/run/${run.run_id}/stream`;
