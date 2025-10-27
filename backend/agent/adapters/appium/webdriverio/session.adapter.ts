@@ -3,6 +3,8 @@ import type { DeviceRuntimeContext } from "../../../domain/entities";
 import type { SessionPort, DeviceConfiguration } from "../../../ports/appium/session.port";
 import { DeviceOfflineError, TimeoutError } from "../errors";
 import type { SessionContext } from "./session-context";
+import log from "encore.dev/log";
+import { MODULES, AGENT_ACTORS } from "../../../logging/logger";
 
 interface RemoteOptions {
   hostname: string;
@@ -72,18 +74,25 @@ export class WebDriverIOSessionAdapter implements SessionPort {
    *   TimeoutError: If connection timeout exceeded
    */
   async ensureDevice(config: DeviceConfiguration): Promise<DeviceRuntimeContext> {
+    const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR, nodeName: "EnsureDevice" });
+    logger.info("WebDriverIOSessionAdapter.ensureDevice - Config", { config });
+    
     try {
       // If already connected, return existing context
       if (this.context?.driver) {
         const sessionId = this.context.driver.sessionId || "unknown";
-        return {
+        const existingContext = {
           driverSessionId: sessionId,
           deviceId: config.deviceName,
           capabilitiesEcho: (this.context.capabilities as Record<string, unknown>) || {},
-          healthProbeStatus: "HEALTHY",
+          healthProbeStatus: "HEALTHY" as const,
         };
+        logger.info("WebDriverIOSessionAdapter.ensureDevice - Reusing existing context", { existingContext });
+        return existingContext;
       }
 
+      logger.info("WebDriverIOSessionAdapter.ensureDevice - Creating new WebDriverIO session");
+      
       // Create new WebDriverIO session
       const driver = await remote({
         hostname: this.extractHostname(config.appiumServerUrl),
@@ -100,10 +109,11 @@ export class WebDriverIOSessionAdapter implements SessionPort {
           "appium:ignoreHiddenApiPolicyError": true,
           "appium:disableWindowAnimation": true,
         },
-        connectionRetryCount: 3,
+        connectionRetryCount: 5,
         connectionRetryTimeout: this.timeoutMs,
       });
       const sessionId = driver.sessionId || "unknown";
+      logger.info("WebDriverIOSessionAdapter.ensureDevice - New session created", { sessionId });
 
       const capabilities = {
         platformName: config.platformName,
@@ -117,13 +127,17 @@ export class WebDriverIOSessionAdapter implements SessionPort {
         capabilities,
       };
 
-      return {
+      const newContext = {
         driverSessionId: sessionId,
         deviceId: config.deviceName,
         capabilitiesEcho: capabilities as Record<string, unknown>,
-        healthProbeStatus: "HEALTHY",
+        healthProbeStatus: "HEALTHY" as const,
       };
+      
+      logger.info("WebDriverIOSessionAdapter.ensureDevice - New context", { newContext });
+      return newContext;
     } catch (error) {
+      logger.error("WebDriverIOSessionAdapter.ensureDevice - Error", { error });
       if (error instanceof Error) {
         if (error.message.includes("ECONNREFUSED") || error.message.includes("ECONNRESET")) {
           throw new DeviceOfflineError(`Cannot connect to device: ${error.message}`);

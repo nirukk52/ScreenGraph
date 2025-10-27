@@ -95,15 +95,13 @@ export class AgentWorker {
       return { state, status: "canceled", stopReason: state.stopReason };
     }
 
-    // Minimal loop skeleton: honor budgets/cancel; engine usage deferred until nodes are registered
-    const startMs = Date.parse(state.timestamps.createdAt);
     // Ensure we have a base snapshot at entry
     await this.options.orchestrator.saveSnapshot(state);
 
-    // Budget checks (no node execution yet)
-    const nowIso = new Date().toISOString();
+    const startMs = Date.parse(state.timestamps.createdAt);
     const elapsedMs = Date.now() - startMs;
     const { budgets } = this.options;
+    const nowPreNodeIso = new Date().toISOString();
     const budgetExceeded =
       state.counters.stepsTotal >= budgets.maxSteps ||
       elapsedMs >= budgets.maxTimeMs ||
@@ -117,21 +115,57 @@ export class AgentWorker {
         ...state,
         status: "failed",
         stopReason: "budget_exhausted",
-        timestamps: { ...state.timestamps, updatedAt: nowIso },
+        timestamps: { ...state.timestamps, updatedAt: nowPreNodeIso },
       };
       await this.options.orchestrator.saveSnapshot(state);
       return { state, status: "failed", stopReason: state.stopReason };
     }
 
-    // With no handlers registered yet, finish successfully (scaffold complete)
-    state = {
-      ...state,
+    // Execute EnsureDevice node via engine and transition on success
+    const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.WORKER, runId: state.runId, workerId: this.options.workerId });
+    logger.info("About to run EnsureDevice node", { state, ctx });
+    
+    const engineResult = await engine.runOnce({
+      state,
+      nowIso: nowPreNodeIso,
+      seed: this.options.orchestrator.nextSeed(),
+      ports,
+      ctx,
+      currentNode: "EnsureDevice",
+    });
+
+    logger.info("Engine result", { engineResult });
+
+    await this.options.orchestrator.recordNodeEvents(engineResult.state, engineResult.nodeName, engineResult.events as never);
+
+    if (engineResult.outcome === "FAILURE") {
+      logger.error("Node execution failed");
+      const failedState: AgentState = {
+        ...engineResult.state,
+        status: "failed",
+        stopReason: engineResult.state.stopReason ?? "crash",
+        timestamps: { ...engineResult.state.timestamps, updatedAt: nowPreNodeIso },
+      };
+      await this.options.orchestrator.saveSnapshot(failedState);
+      return { state: failedState, status: "failed", stopReason: failedState.stopReason };
+    }
+
+    logger.info("Node execution succeeded, transitioning", { nextNode: engineResult.nextNode });
+    const transitionedState: AgentState = engineResult.nextNode
+      ? { ...engineResult.state, nodeName: engineResult.nextNode }
+      : engineResult.state;
+
+    const completionIso = new Date().toISOString();
+    const finalState: AgentState = {
+      ...transitionedState,
       status: "completed",
       stopReason: "success",
-      timestamps: { ...state.timestamps, updatedAt: nowIso },
+      timestamps: { ...transitionedState.timestamps, updatedAt: completionIso },
     };
-    await this.options.orchestrator.saveSnapshot(state);
-    return { state, status: "completed", stopReason: state.stopReason };
+
+    logger.info("Final state", { finalState });
+    await this.options.orchestrator.saveSnapshot(finalState);
+    return { state: finalState, status: "completed", stopReason: finalState.stopReason };
   }
 
   private startHeartbeat(): void {

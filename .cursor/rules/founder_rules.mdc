@@ -2,6 +2,8 @@
 alwaysApply: true
 ---
 
+This document is personally managed by the founder. Keep it short clear to the point and always bulletpoints/surgical edits.
+
 # Founder Rules
 Architecture & Boundary Rules
 Backend (backend/) and frontend (frontend/) are completely independent services.

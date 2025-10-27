@@ -1,24 +1,31 @@
 import type { SetupPhaseContext } from "../types";
 import type { RunRecord } from "../../../ports/db-ports/run-db.port";
+import log from "encore.dev/log";
+import { MODULES, AGENT_ACTORS } from "../../../logging/logger";
 
 /**
  * Builds SetupPhaseContext from run app config.
  * PURPOSE: Extracts phase-specific config from run record without parsing JSON in registry.
  */
 export function buildSetupContext(run: RunRecord): SetupPhaseContext {
+  const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR, runId: run.runId });
+  logger.info("buildSetupContext - RunRecord", { run });
+  
   const appConfig = JSON.parse(run.appConfigId) as {
     appiumServerUrl: string;
     packageName: string;
     apkPath: string;
     appActivity?: string;
   };
+  
+  logger.info("buildSetupContext - Parsed AppConfig", { appConfig });
 
-  return {
+  const context: SetupPhaseContext = {
     ensureDevice: {
       deviceConfiguration: {
         platformName: "Android",
-        deviceName: "Android Device",
-        platformVersion: "11.0",
+        deviceName: "",
+        platformVersion: "",
         appiumServerUrl: appConfig.appiumServerUrl,
       },
       driverReusePolicy: "REUSE_OR_CREATE",
@@ -32,5 +39,9 @@ export function buildSetupContext(run: RunRecord): SetupPhaseContext {
       },
     },
   };
+  
+  logger.info("buildSetupContext - Built Context", { context });
+  
+  return context;
 }
 

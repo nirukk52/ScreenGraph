@@ -80,3 +80,15 @@
 - **API Docs**: [backend/API_DOCUMENTATION.md](backend/API_DOCUMENTATION.md)
 - **Logging Guide**: [backend/logging/CLAUDE.md](backend/logging/CLAUDE.md)
 - **Agent Architecture**: [backend/agent/CLAUDE.md](backend/agent/CLAUDE.md)
+
+
+# Todo 1
+@https://svelteflow.dev/api-reference/svelte-flow 
+@https://github.com/xyflow/xyflow/tree/main/packages/svelte 
+
+ npm install @xyflow/svelte
+
+@frontend_engineer.mdc 
+add this to my frontend stack and start creating a mock ui for the run screen which loads an url 
+
+# todo 2
