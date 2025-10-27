@@ -21,6 +21,7 @@
     "lint": "bunx biome lint .",
     "lint:fix": "bunx biome lint --apply .",
     "build": "echo 'Build handled by Encore CI'",
-    "test": "echo 'Tests handled by Encore CI'"
+    "test": "bunx vitest run",
+    "test:watch": "bunx vitest"
   }
 }

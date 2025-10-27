@@ -27,6 +27,7 @@ Use Docs Tools to fetch specific Encore API behaviors for runtime reasoning (val
 - **Purpose comments**: Every class, enum, function, and DTO must include a short comment explaining why it exists in the codebase.
 - **TypeScript first**: Use explicit request/response interfaces for APIs. Avoid `any`; prefer utility types (`Partial`, `Pick`, `Record`).
 - **Readable code**: Prefer clear naming, early returns, and shallow nesting. Handle errors meaningfully; avoid blanket try/catch.
+- **No magic strings**: model identifiers and states as literal unions or enums; never compare raw strings inline.
 
 ## Coding Discipline
 Always write clear, deterministic, and side-effect-free code.
