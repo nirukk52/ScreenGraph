@@ -3,7 +3,7 @@ import type { DeviceConfiguration } from "../../ports/appium/driver.port";
 import type { SessionPort } from "../../ports/appium/session.port";
 import { createDomainEvent, type EventKind } from "../../domain/events";
 import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../logging/logger";
+import { MODULES, AGENT_ACTORS } from "../../../logging/logger";
 
 export interface EnsureDeviceInput extends CommonNodeInput {
   runId: string;
