@@ -1,7 +1,7 @@
-import { AgentState, type CommonNodeInput, type CommonNodeOutput } from "../../domain/state";
+import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import type { DeviceConfiguration } from "../../ports/appium/driver.port";
 import type { SessionPort } from "../../ports/appium/session.port";
-import { createDomainEvent, type EventKind } from "../../domain/events";
+import type { EventKind } from "../../domain/events";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../../logging/logger";
 
@@ -19,6 +19,10 @@ export interface EnsureDeviceOutput extends CommonNodeOutput {
   deviceRuntimeContextId: string;
 }
 
+/**
+ * ensureDevice orchestrates session acquisition via SessionPort and emits deterministic node output.
+ * PURPOSE: Wraps adapter interactions and guarantees SUCCESS/FAILURE outputs for engine transitions.
+ */
 export async function ensureDevice(
   input: EnsureDeviceInput,
   sessionPort: SessionPort,
@@ -30,31 +34,61 @@ export async function ensureDevice(
   const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR, runId: input.runId, nodeName: "EnsureDevice" });
   logger.info("EnsureDevice INPUT", { input });
   
-  const ctx = await sessionPort.ensureDevice(input.deviceConfiguration);
-  logger.info("DeviceRuntimeContext received", { ctx });
-  
-  const contextId = generateId();
-  logger.info("Generated contextId", { contextId });
+  try {
+    const ctx = await sessionPort.ensureDevice(input.deviceConfiguration);
+    logger.info("DeviceRuntimeContext received", { ctx });
+    
+    const contextId = generateId();
+    logger.info("Generated contextId", { contextId });
 
-  const output: EnsureDeviceOutput = {
-    runId: input.runId,
-    deviceRuntimeContextId: contextId,
-    nodeName: "EnsureDevice",
-    stepOrdinal: 0,
-    iterationOrdinalNumber: input.iterationOrdinalNumber,
-    policyVersion: 1,
-    resumeToken: `${input.runId}-000`,
-    randomSeed: 987654,
-    nodeExecutionOutcomeStatus: "SUCCESS",
-    errorId: null,
-    retryable: null,
-    humanReadableFailureSummary: null,
-  };
+    const output: EnsureDeviceOutput = {
+      runId: input.runId,
+      deviceRuntimeContextId: contextId,
+      nodeName: "EnsureDevice",
+      stepOrdinal: 0,
+      iterationOrdinalNumber: input.iterationOrdinalNumber,
+      policyVersion: 1,
+      resumeToken: `${input.runId}-000`,
+      randomSeed: 987654,
+      nodeExecutionOutcomeStatus: "SUCCESS",
+      errorId: null,
+      retryable: null,
+      humanReadableFailureSummary: null,
+    };
 
-  logger.info("EnsureDevice OUTPUT", { output });
+    logger.info("EnsureDevice OUTPUT", { output });
 
-  return {
-    output,
-    events: [],
-  };
+    return {
+      output,
+      events: [],
+    };
+  } catch (error) {
+    logger.error("EnsureDevice failure", { error });
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorName = error instanceof Error && error.name ? error.name : "UnknownError";
+    const isRetryable = errorName === "DeviceOfflineError" || errorName === "TimeoutError";
+
+    const failureOutput: EnsureDeviceOutput = {
+      runId: input.runId,
+      deviceRuntimeContextId: "",
+      nodeName: "EnsureDevice",
+      stepOrdinal: 0,
+      iterationOrdinalNumber: input.iterationOrdinalNumber,
+      policyVersion: 1,
+      resumeToken: `${input.runId}-000`,
+      randomSeed: 987654,
+      nodeExecutionOutcomeStatus: "FAILURE",
+      errorId: errorName,
+      retryable: isRetryable,
+      humanReadableFailureSummary: errorMessage,
+    };
+
+    logger.info("EnsureDevice FAILURE OUTPUT", { failureOutput });
+
+    return {
+      output: failureOutput,
+      events: [],
+    };
+  }
 }

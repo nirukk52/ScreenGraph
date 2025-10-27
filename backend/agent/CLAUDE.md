@@ -3,6 +3,10 @@
 ## Overview
 The agent subsystem orchestrates mobile test automation through a deterministic node execution engine with persistent state snapshots.
 
+## Flow
+RunJob → Worker ↓ Worker creates: sessionPort, registry, context, engine ↓ Engine.runOnce(currentNode="EnsureDevice") ↓ Handler.buildInput(state, context) → EnsureDeviceInput ↓ Handler.execute(input, ports) → EnsureDeviceOutput + events ↓ Handler.applyOutput(state, output) → Updated AgentState ↓ Engine decides transition: SUCCESS → "ProvisionApp" ↓ Worker persists events and snapshot ↓ Repeat for next node...
+
+
 ## Architecture
 
 ### Core Components

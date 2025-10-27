@@ -1,7 +1,7 @@
 import type { SetupPhaseContext } from "../types";
 import type { RunRecord } from "../../../ports/db-ports/run-db.port";
 import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../../logging/logger";
+import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
 
 /**
  * Builds SetupPhaseContext from run app config.

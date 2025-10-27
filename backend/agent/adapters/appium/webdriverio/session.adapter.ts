@@ -4,7 +4,7 @@ import type { SessionPort, DeviceConfiguration } from "../../../ports/appium/ses
 import { DeviceOfflineError, TimeoutError } from "../errors";
 import type { SessionContext } from "./session-context";
 import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../../logging/logger";
+import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
 
 interface RemoteOptions {
   hostname: string;

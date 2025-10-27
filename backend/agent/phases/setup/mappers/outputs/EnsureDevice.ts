@@ -1,7 +1,7 @@
 import type { AgentState } from "../../../../domain/state";
 import type { EnsureDeviceOutput } from "../../../../nodes/setup/ensure-device";
 import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
+import { MODULES, AGENT_ACTORS } from "../../../../../logging/logger";
 
 /**
  * Applies EnsureDeviceOutput to AgentState, updating device runtime context.
@@ -15,7 +15,9 @@ export function applyEnsureDeviceOutput(prev: AgentState, output: EnsureDeviceOu
   
   const updatedState: AgentState = {
     ...prev,
-    deviceRuntimeContextId: output.deviceRuntimeContextId,
+    deviceRuntimeContextId: output.deviceRuntimeContextId || prev.deviceRuntimeContextId,
+    iterationOrdinalNumber: output.iterationOrdinalNumber ?? prev.iterationOrdinalNumber,
+    stopReason: output.nodeExecutionOutcomeStatus === "FAILURE" ? "crash" : prev.stopReason,
   };
   
   logger.info("applyEnsureDeviceOutput - Updated State", { updatedState });

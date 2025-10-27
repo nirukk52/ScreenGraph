@@ -26,8 +26,9 @@ NO MAGIC NUMBERS!
 
 Logging Rules:
 Use ONLY encore.dev/log for all logging — never console.log, never stdout.
-All logs must be structured with proper context: module, actor, runId, nodeName, stepOrdinal.
-Use log.with({ module, actor, ... }) to create contextual loggers with proper fields.
+Always create contextual loggers via log.with({ module, actor, runId?, workerId?, nodeName?, stepOrdinal?, eventSeq? }).
+Every log payload must remain structured JSON; attach additional data as objects, never unstructured strings.
+Include stopReason and err.* fields on failures; capture snapshot state when transitions occur.
 NO console.log — structured Encore logs only.
 
 Type Safety Rules

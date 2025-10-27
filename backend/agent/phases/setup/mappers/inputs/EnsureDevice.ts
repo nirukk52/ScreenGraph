@@ -2,7 +2,7 @@ import type { AgentState } from "../../../../domain/state";
 import type { EnsureDeviceInput } from "../../../../nodes/setup/ensure-device";
 import type { SetupPhaseContext } from "../../types";
 import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
+import { MODULES, AGENT_ACTORS } from "../../../../../logging/logger";
 
 /**
  * Maps AgentState and SetupPhaseContext to EnsureDeviceInput.

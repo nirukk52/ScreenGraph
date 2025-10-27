@@ -26,6 +26,7 @@ export class NodeEngine<N extends string, P, C> {
     const updated = handler.applyOutput(advanced, output as NodeOutputBase);
 
     const outcome = output.nodeExecutionOutcomeStatus;
+    const retryable = (output as NodeOutputBase & { retryable?: boolean | null }).retryable ?? null;
 
     if (outcome === "SUCCESS") {
       return {
@@ -42,7 +43,8 @@ export class NodeEngine<N extends string, P, C> {
 
     const attempt = (state.iterationOrdinalNumber ?? 0) + 1;
     const { retry, backtrackTo } = handler.onFailure;
-    if (attempt < retry.maxAttempts) {
+    const canRetry = retryable !== false;
+    if (attempt < retry.maxAttempts && canRetry) {
       const retryDelayMs = computeBackoffDelayMs(attempt, retry.baseDelayMs, retry.maxDelayMs, seed);
       return {
         state: { ...updated, iterationOrdinalNumber: attempt },
@@ -63,6 +65,7 @@ export class NodeEngine<N extends string, P, C> {
           nodeName: backtrackTo,
           iterationOrdinalNumber: 0,
           counters: { ...updated.counters, restartsUsed: updated.counters.restartsUsed + 1 },
+          stopReason: updated.stopReason,
         },
         nodeName: handler.name,
         outcome,
@@ -75,13 +78,13 @@ export class NodeEngine<N extends string, P, C> {
     }
 
     return {
-      state: { ...updated, status: "failed", stopReason: "crash" },
+      state: { ...updated, status: "failed", stopReason: updated.stopReason ?? "crash" },
       nodeName: handler.name,
       outcome,
       nextNode: null,
       backtracked: false,
       retryDelayMs: null,
-      stopReason: "crash",
+      stopReason: updated.stopReason ?? "crash",
       events,
     };
   }
