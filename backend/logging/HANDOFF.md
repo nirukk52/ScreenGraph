@@ -318,6 +318,13 @@ The following memories were created in the Graphiti knowledge graph:
 8. **Encore Import Syntax Fix - Log Module** - Critical import fix documentation
 9. **Live Event Streaming Implementation** - Stream and heartbeat implementation
 
+### EnsureDevice Node Wiring (Latest Session)
+10. **EnsureDevice node wiring complete** - Successfully wired EnsureDevice node into agent engine with complete I/O logging using structured Encore logging
+11. **Logging rules enforcement** - Added strict logging rules to founder rules: Use ONLY encore.dev/log for all logging, never console.log or stdout
+12. **EnsureDevice I/O logging structure** - Complete I/O flow logging with structured Encore logging and proper context fields
+13. **Appium device configuration approach** - When Appium connection fails, set empty deviceName and platformVersion to allow auto-detection
+14. **EnsureDevice import path fix** - Fixed import path from "../../logging/logger" to "../../../logging/logger"
+
 These episodes capture the procedures, preferences, and facts established during implementation sessions and can be retrieved for future reference using Graphiti MCP search tools.
 
 ---
