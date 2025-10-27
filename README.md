@@ -10,19 +10,27 @@ ScreenGraph enables autonomous agents to explore and understand mobile applicati
 ┌─────────────────┐         ┌─────────────────┐
 │   SvelteKit     │────────▶│   Encore Backend │
 │   Frontend      │  REST   │   Services      │
-│   (Vercel)      │  +WS    │   (Encore Cloud)│
+│   (Vercel)      │  +SSE   │   (Encore Cloud)│
 └─────────────────┘         └─────────────────┘
                                        │
                                        ▼
                               ┌─────────────────┐
                               │   PostgreSQL    │
-                              │   Database      │
+                              │   + Event Store │
                               └─────────────────┘
 ```
 
-- **Frontend:** SvelteKit app deployed on Vercel
-- **Backend:** Encore.ts services deployed on Encore Cloud
-- **Database:** PostgreSQL managed by Encore
+### Core Components
+- **Frontend:** SvelteKit 2 (Svelte 5) deployed on Vercel
+- **Backend:** Encore.ts microservices on Encore Cloud
+- **Agent:** NodeEngine orchestration with persistent state snapshots
+- **Logging:** Unified structured logs with module/actor organization
+- **Database:** PostgreSQL with event sourcing and snapshot persistence
+
+### Recent Milestones ✅
+- **Agent Orchestration**: Complete NodeEngine with retry/backtrack
+- **Structured Logging**: Production-ready log-based QA methodology
+- **Type Safety**: End-to-end via Encore generated clients
 
 ---
 
@@ -261,39 +269,60 @@ In Vercel Dashboard → Settings → Environment Variables:
 
 ```
 ScreenGraph/
-├── backend/                  # Encore backend services
-│   ├── run/                 # Run service (agent orchestration)
-│   │   ├── start.ts        # Start new run endpoint
-│   │   ├── stream.ts       # WebSocket streaming
-│   │   ├── cancel.ts       # Cancel run endpoint
-│   │   └── health.ts       # Health check
-│   ├── steering/            # Steering service (documentation)
-│   │   ├── list-docs.ts
-│   │   ├── get-doc.ts
-│   │   └── update-doc.ts
-│   ├── agent/               # Agent domain logic
+├── docs/                    # Documentation
+│   ├── LOGGING_PLAN.md     # Logging implementation plan
+│   └── FOUNDER_QA_METHODOLOGY.md  # Log-based QA guide
+├── backend/                 # Encore backend services
+│   ├── CLAUDE.md           # Backend engineering context
+│   ├── run/                # Run service (agent orchestration API)
+│   │   ├── CLAUDE.md       # Run service documentation
+│   │   ├── start.ts        # POST /run - Start new run
+│   │   ├── stream.ts       # GET /run/:id/stream - SSE events
+│   │   ├── cancel.ts       # POST /run/:id/cancel
+│   │   └── health.ts       # GET /health
+│   ├── agent/              # Agent domain logic
+│   │   ├── CLAUDE.md       # Agent architecture guide
+│   │   ├── orchestrator/   # Orchestration engine
+│   │   │   ├── node-engine.ts      # Control plane
+│   │   │   ├── node-registry.ts    # Handler factory
+│   │   │   ├── orchestrator.ts     # Persistence
+│   │   │   ├── worker.ts           # Execution loop
+│   │   │   ├── subscription.ts     # Pub/Sub handler
+│   │   │   └── README.md           # Architecture overview
 │   │   ├── domain/         # Core business logic
 │   │   ├── nodes/          # Agent nodes
-│   │   ├── orchestrator/   # Orchestration
+│   │   │   ├── setup/      # EnsureDevice, ProvisionApp, etc.
+│   │   │   ├── main/       # Perceive, Act, Verify cycle
+│   │   │   ├── policy/     # Policy switching
+│   │   │   ├── recovery/   # Error recovery
+│   │   │   └── terminal/   # Completion nodes
+│   │   ├── ports/          # Abstract interfaces
+│   │   ├── adapters/       # Concrete implementations
+│   │   ├── persistence/    # Repository implementations
 │   │   └── tests/          # Agent tests
-│   ├── db/                  # Database migrations
+│   ├── logging/            # Structured logging
+│   │   ├── CLAUDE.md       # Logging guide
+│   │   ├── logger.ts       # Logger helpers
+│   │   └── HANDOFF.md      # Implementation summary
+│   ├── db/                 # Database migrations
 │   │   └── migrations/
-│   └── steering-docs/      # Documentation files
-├── frontend/                 # SvelteKit frontend
+│   └── steering-docs/      # Documentation content
+├── frontend/               # SvelteKit frontend
+│   ├── CLAUDE.md          # Frontend engineering context
 │   ├── src/
-│   │   ├── routes/         # SvelteKit routes
+│   │   ├── routes/        # SvelteKit routes
 │   │   │   ├── +page.svelte              # Start run
 │   │   │   ├── run/[id]/+page.svelte     # Run timeline
 │   │   │   └── steering/+page.svelte     # Steering wheel
 │   │   └── lib/
-│   │       ├── api.ts      # API client
-│   │       └── components/ # UI components
+│   │       ├── encore-client.ts  # Generated Encore client
+│   │       └── components/       # UI components
 │   ├── svelte.config.js
-│   ├── vercel.json
 │   └── package.json
-├── encore.app               # Encore configuration
-├── package.json             # Root dependencies
-└── README.md               # This file
+├── PROJECT_STATUS.md       # Current status and next steps
+├── CLAUDE.md              # Encore + SvelteKit integration guide
+├── LOCAL_SETUP.md         # Local development setup
+└── README.md             # This file
 ```
 
 ---
@@ -358,12 +387,29 @@ Full API documentation: [backend/API_DOCUMENTATION.md](backend/API_DOCUMENTATION
 
 ### Key Endpoints
 
+**Run Management:**
 - `POST /run` - Start new agent run
-- `WS /run/:id/stream` - Stream run events
-- `POST /run/:id/cancel` - Cancel run
+- `GET /run/:id/stream` - Server-Sent Events stream of run events
+- `POST /run/:id/cancel` - Cancel running job
 - `GET /health` - Health check
+
+**Documentation (Steering):**
 - `GET /steering/docs` - List documentation
 - `GET /steering/docs/:category/:filename` - Get documentation
+
+### Logging & Observability
+
+All components use structured logging with `module` and `actor` fields for filtering:
+
+**Dashboard Search Examples:**
+```
+module:"agent" AND actor:"worker" AND runId:<ID>
+module:"run" AND actor:"start" AND runId:<ID>
+actor:"orchestrator" AND runId:<ID>
+level:ERROR AND runId:<ID>
+```
+
+See [backend/logging/CLAUDE.md](backend/logging/CLAUDE.md) for complete logging guide.
 
 ---
 
@@ -465,17 +511,21 @@ git push origin feature/my-feature
 
 ### Documentation
 
-- [Encore.ts Docs](https://encore.dev/docs)
-- [SvelteKit Docs](https://kit.svelte.dev/docs)
-- [Vercel Docs](https://vercel.com/docs)
-- [API Documentation](backend/API_DOCUMENTATION.md)
+- **[Encore.ts Docs](https://encore.dev/docs)** - Backend framework
+- **[SvelteKit Docs](https://kit.svelte.dev/docs)** - Frontend framework
+- **[API Documentation](backend/API_DOCUMENTATION.md)** - Complete API reference
+- **[Logging Guide](backend/logging/CLAUDE.md)** - Structured logging reference
+- **[Agent Architecture](backend/agent/CLAUDE.md)** - Orchestration design
+- **[Backend Engineering](backend/CLAUDE.md)** - Backend standards
+- **[Frontend Engineering](frontend/CLAUDE.md)** - Frontend standards
 
 ### Development Guides
 
-- [DEVELOPMENT.md](DEVELOPMENT.md) - Detailed development guide
-- [SPLIT_REPO_MILESTONES.md](SPLIT_REPO_MILESTONES.md) - Repository split plan
-- [MILESTONE_2_STATUS.md](MILESTONE_2_STATUS.md) - Backend hardening status
-- [MILESTONE_3_STATUS.md](MILESTONE_3_STATUS.md) - Frontend migration status
+- **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - Current status and next steps
+- **[LOCAL_SETUP.md](LOCAL_SETUP.md)** - Detailed setup instructions
+- **[CLAUDE.md](CLAUDE.md)** - Encore + SvelteKit integration
+- **[docs/LOGGING_PLAN.md](docs/LOGGING_PLAN.md)** - Logging implementation plan
+- **[docs/FOUNDER_QA_METHODOLOGY.md](docs/FOUNDER_QA_METHODOLOGY.md)** - Log-based QA guide
 
 ### External Services
 
@@ -529,12 +579,24 @@ Set in Vercel Dashboard:
 
 ## 🎯 Milestones & Roadmap
 
-See [SPLIT_REPO_MILESTONES.md](SPLIT_REPO_MILESTONES.md) for current milestones:
+See [PROJECT_STATUS.md](PROJECT_STATUS.md) for current status.
 
-- ✅ Milestone 1: Repo split strategy
-- ✅ Milestone 2: Backend hardening
-- 🟡 Milestone 3: SvelteKit migration (in progress)
-- ⏳ Milestone 4: Integration & cutover
+### ✅ Completed
+- Agent orchestration infrastructure (NodeEngine, Worker, Orchestrator)
+- Structured logging with module/actor organization
+- Type-safe API contracts with Encore generated clients
+- Event sourcing and snapshot persistence
+- Run lifecycle management (start, cancel, stream)
+
+### 🟡 In Progress
+- Node handler implementation (wiring to real Appium/LLM calls)
+- Main loop nodes (Perceive → Act → Verify cycle)
+
+### ⏳ Upcoming
+- LangGraph.js integration for decision loop
+- Policy switching and recovery nodes
+- Frontend timeline UI for run visualization
+- Performance optimization and monitoring
 
 ---
 
