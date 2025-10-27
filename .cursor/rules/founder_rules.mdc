@@ -18,11 +18,17 @@ Absolutely no use of any is allowed in the codebase.
 Every class, function, or API endpoint must explicitly use typed DTOs (Data Transfer Objects).
 DTOs must be defined at the top of the file or imported from a shared contracts or types package.
 If dynamic data is expected, define a union or discriminated type instead of fallback to any.
-Temporary “loose” types must still be represented as { [key: string]: unknown } or Record<string, unknown> — never any.
+Temporary "loose" types must still be represented as { [key: string]: unknown } or Record<string, unknown> — never any.
 No magic strings for identifiers or states — define literal unions or enums.
 Prefer discriminated unions or enums over free-form string comparisons in control flow.
 NO MAGIC STRINGS!
 NO MAGIC NUMBERS!
+
+Logging Rules:
+Use ONLY encore.dev/log for all logging — never console.log, never stdout.
+All logs must be structured with proper context: module, actor, runId, nodeName, stepOrdinal.
+Use log.with({ module, actor, ... }) to create contextual loggers with proper fields.
+NO console.log — structured Encore logs only.
 
 Type Safety Rules
 Always use Encore generated clients (~encore/clients).
