@@ -303,13 +303,22 @@ curl http://localhost:4002/health
 
 The following memories were created in the Graphiti knowledge graph:
 
-1. **ScreenGraph Structured Logging Implementation** - Core logging implementation summary
-2. **Log Context Fields Convention - Actor Based** - Field conventions documentation
-3. **Encore Dashboard Log Search Queries** - Operational search patterns
-4. **Encore Import Syntax Fix - Log Module** - Critical import fix documentation
-5. **Live Event Streaming Implementation** - Stream and heartbeat implementation
+### Orchestration Architecture (Session 2)
+1. **Agent Orchestration Architecture** - NodeEngine control plane, registry factory, orchestrator persistence, worker loop
+2. **Orchestration Implementation Details** - Files created/modified, type imports, retry/backtrack implementation
 
-These episodes capture the procedures, preferences, and facts established during this implementation session and can be retrieved for future reference using Graphiti MCP search tools.
+### Structured Logging (Session 2)
+3. **Structured Logging Standards** - Log context fields, logger helper, dashboard search patterns
+4. **Founder QA Methodology - Log-Based** - Verification checklist, development requirements, success criteria
+
+### Previous Session
+5. **ScreenGraph Structured Logging Implementation** - Core logging implementation summary
+6. **Log Context Fields Convention - Actor Based** - Field conventions documentation
+7. **Encore Dashboard Log Search Queries** - Operational search patterns
+8. **Encore Import Syntax Fix - Log Module** - Critical import fix documentation
+9. **Live Event Streaming Implementation** - Stream and heartbeat implementation
+
+These episodes capture the procedures, preferences, and facts established during implementation sessions and can be retrieved for future reference using Graphiti MCP search tools.
 
 ---
 
