@@ -327,4 +327,74 @@ export function streamRunEvents(runId: string, onEvent: (event: RunEvent) => voi
 
 ---
 
+---
+
+## Logging & Observability
+
+### Structured Logging
+
+All components use Encore's structured logging (`encore.dev/log`) with consistent context fields for correlation.
+
+### Log Context Fields
+
+Every log includes standard fields for filtering and correlation:
+
+- `actor`: Source actor (`agent.subscription`, `agent.worker`, `agent.orchestrator`, `api.run`)
+- `runId`: Always included for run correlation
+- `workerId`: Included in worker/subscription logs
+- `nodeName`: Included when node context available
+- `stepOrdinal`: Included when step context available
+- `eventSeq`: Included for event logging
+- `retryAttempt`, `retryDelayMs`: Optional retry tracking
+
+### Encore Dashboard Log Search
+
+Use these query patterns in the Encore dashboard to filter logs:
+
+**Filter by Run:**
+```
+runId:01ABC123XYZ
+```
+
+**Filter by Worker:**
+```
+workerId:worker-localhost-1234567890
+```
+
+**Filter by Actor:**
+```
+actor:agent.worker
+actor:agent.orchestrator
+actor:api.run
+```
+
+**Filter Failures:**
+```
+level:ERROR
+```
+
+**Filter by Node:**
+```
+nodeName:EnsureDevice
+nodeName:ProvisionApp
+```
+
+**Combined Filters:**
+```
+runId:01ABC123XYZ AND actor:agent.worker
+runId:01ABC123XYZ AND level:ERROR
+```
+
+### Example Log Flow
+
+A typical run produces logs in this sequence:
+
+1. **API Request** (`actor:api.run`): Request received, validation, DB insert, publish
+2. **Subscription** (`actor:agent.subscription`): Job received, run claimed, worker started
+3. **Worker** (`actor:agent.worker`): Execution begin, loop iterations, budget checks, completion
+4. **Orchestrator** (`actor:agent.orchestrator`): Initialize, record events, save snapshots, finalize
+5. **Worker** (`actor:agent.worker`): Heartbeat stopped, reset complete
+
+All logs share the same `runId` for full trace correlation.
+
 **Last Updated:** 2025-01-16

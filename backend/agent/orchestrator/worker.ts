@@ -1,6 +1,9 @@
 import type { AgentState, Budgets } from "../domain/state";
-import type { RunRecord, RunLifecycleStatus, RunDbPort } from "../ports/run-db.port";
+import type { RunRecord, RunLifecycleStatus, RunDbPort } from "../ports/db-ports/run-db.port";
 import type { Orchestrator } from "./orchestrator";
+import { NodeEngine, createEmptyRegistry } from "./node-engine";
+import log from "encore.dev/log";
+import { MODULES, AGENT_ACTORS } from "../../logging/logger";
 
 /**
  * AgentWorker owns the long-lived orchestration loop for a run, including lease heartbeats,
@@ -19,6 +22,7 @@ export class AgentWorker {
 
   async run(): Promise<AgentWorkerResult> {
     const { orchestrator, run, budgets } = this.options;
+    const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.WORKER, runId: run.runId, workerId: this.options.workerId });
     let initializeResult: { state: AgentState; isResume: boolean };
 
     try {
@@ -30,7 +34,7 @@ export class AgentWorker {
     }
 
     const { state, isResume } = initializeResult;
-    console.log(`[AgentWorker] Run ${run.runId} ${isResume ? "resuming" : "starting"} execution`);
+    logger.with({ isResume }).info("Worker execution begin");
 
     this.startHeartbeat();
 
@@ -38,25 +42,39 @@ export class AgentWorker {
       const outcome = await this.executeAgentLoop(state);
 
       if (outcome.status === "canceled") {
+        logger.info("Worker completed with cancellation");
         return { status: "canceled", emittedEventCount: 0 };
       }
 
+      if (outcome.status === "failed") {
+        await this.markFailed(new Error(outcome.stopReason ?? "failed"));
+        logger.error("Worker completed with failure");
+        return { status: "failed", emittedEventCount: 0 };
+      }
+
       await orchestrator.finalizeRun(outcome.state, outcome.stopReason ?? "success");
+      logger.info("Worker finalized run successfully");
       return { status: "completed", emittedEventCount: 0 };
     } catch (err) {
       await this.markFailed(err);
+      logger.error("Worker error during execution", err as Error);
       throw err;
     } finally {
       this.stopHeartbeat();
       orchestrator.reset();
+      logger.info("Worker heartbeat stopped and orchestrator reset");
     }
   }
 
   private async executeAgentLoop(initialState: AgentState): Promise<AgentWorkerExecutionResult> {
     let state = initialState;
+    // Engine wiring (registry empty for now per scope; nodes will be added later)
+    const engine = new NodeEngine(createEmptyRegistry());
 
     if (await this.isCancellationRequested()) {
-      console.log(`[AgentWorker] Cancellation requested for run ${state.runId}`);
+      log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.WORKER, runId: state.runId, workerId: this.options.workerId }).warn(
+        "Cancellation requested",
+      );
       const now = new Date().toISOString();
       state = {
         ...state,
@@ -69,35 +87,58 @@ export class AgentWorker {
       return { state, status: "canceled", stopReason: state.stopReason };
     }
 
-    // TODO: implement full agent graph execution loop here.
-    const now = new Date().toISOString();
+    // Minimal loop skeleton: honor budgets/cancel; engine usage deferred until nodes are registered
+    const startMs = Date.parse(state.timestamps.createdAt);
+    // Ensure we have a base snapshot at entry
+    await this.options.orchestrator.saveSnapshot(state);
+
+    // Budget checks (no node execution yet)
+    const nowIso = new Date().toISOString();
+    const elapsedMs = Date.now() - startMs;
+    const { budgets } = this.options;
+    const budgetExceeded =
+      state.counters.stepsTotal >= budgets.maxSteps ||
+      elapsedMs >= budgets.maxTimeMs ||
+      state.counters.restartsUsed >= budgets.restartLimit;
+
+    if (budgetExceeded) {
+      log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.WORKER, runId: state.runId, workerId: this.options.workerId }).info(
+        "Budget exhausted",
+      );
+      state = {
+        ...state,
+        status: "failed",
+        stopReason: "budget_exhausted",
+        timestamps: { ...state.timestamps, updatedAt: nowIso },
+      };
+      await this.options.orchestrator.saveSnapshot(state);
+      return { state, status: "failed", stopReason: state.stopReason };
+    }
+
+    // With no handlers registered yet, finish successfully (scaffold complete)
     state = {
       ...state,
       status: "completed",
       stopReason: "success",
-      timestamps: { ...state.timestamps, updatedAt: now },
+      timestamps: { ...state.timestamps, updatedAt: nowIso },
     };
-    // Snapshot persistence is handled by Orchestrator during node/event recording.
-
+    await this.options.orchestrator.saveSnapshot(state);
     return { state, status: "completed", stopReason: state.stopReason };
   }
 
   private startHeartbeat(): void {
+    const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.WORKER, runId: this.options.run.runId, workerId: this.options.workerId });
+    logger.info("Heartbeat started");
     this.heartbeatTimer = setInterval(() => {
       void this.options.runDb
         .extendLease(this.options.run.runId, this.options.workerId, this.options.leaseDurationMs)
-        .then((extended) => {
+        .then((extended: boolean) => {
           if (!extended) {
-            console.warn(
-              `[AgentWorker] Lease extension rejected for run ${this.options.run.runId}; continuing until completion`,
-            );
+            logger.warn("Lease extension rejected; continuing until completion");
           }
         })
-        .catch((err) => {
-          console.error(
-            `[AgentWorker] Failed to extend lease for run ${this.options.run.runId}:`,
-            err,
-          );
+        .catch((err: unknown) => {
+          logger.error("Failed to extend lease", err as Error);
         });
     }, this.heartbeatIntervalMs);
 

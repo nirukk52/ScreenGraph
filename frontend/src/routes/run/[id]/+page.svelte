@@ -68,11 +68,17 @@ async function handleCancel() {
 	
     <div class="space-y-4" use:autoAnimate>
 		{#each events as event}
-			<div class="p-4 border rounded-lg">
-				<div class="font-semibold">{event.type}</div>
-				<div class="text-sm text-gray-600">{event.timestamp}</div>
-				{#if event.message}
-					<div class="mt-2">{event.message}</div>
+			<div class="p-4 border rounded-lg bg-white dark:bg-gray-800">
+				<div class="flex justify-between items-start mb-2">
+					<div class="font-semibold text-lg">{event.kind}</div>
+					<div class="text-xs text-gray-500">#{event.seq}</div>
+				</div>
+				<div class="text-sm text-gray-600 mb-2">{event.timestamp}</div>
+				{#if event.data}
+					<details class="mt-2">
+						<summary class="text-sm text-blue-600 cursor-pointer hover:text-blue-800">View data</summary>
+						<pre class="mt-2 p-2 bg-gray-100 dark:bg-gray-900 rounded text-xs overflow-x-auto">{JSON.stringify(event.data, null, 2)}</pre>
+					</details>
 				{/if}
 			</div>
 		{/each}

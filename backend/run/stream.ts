@@ -28,6 +28,14 @@ export const stream = api.streamOut<StreamHandshake, RunEventMessage>(
     const lastEventSeq = handshake.lastEventSeq ?? 0;
 
     console.log(`[Stream] Client connected to run ${runId} stream, lastEventSeq: ${lastEventSeq}`);
+    
+    // Send immediate heartbeat to confirm connection
+    await stream.send({
+      seq: 0,
+      kind: "agent.run.heartbeat",
+      data: { ts: new Date().toISOString(), message: "Stream connected" },
+      timestamp: new Date().toISOString(),
+    });
 
     const run = await db.queryRow<{ run_id: string }>`
       SELECT run_id FROM runs WHERE run_id = ${runId}

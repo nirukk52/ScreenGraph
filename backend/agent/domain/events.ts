@@ -21,7 +21,8 @@ export type EventKind =
   | "agent.policy.switched"
   | "agent.app.restarted"
   | "agent.run.recovery_applied"
-  | "agent.run.checkpoint_restored";
+  | "agent.run.checkpoint_restored"
+  | "agent.run.heartbeat";
 
 /**
  * Discriminated union mapping EventKind to its typed payload structure.
@@ -51,6 +52,7 @@ export type EventPayloadMap = {
   "agent.app.restarted": { reason: string };
   "agent.run.recovery_applied": { errorCode: string; actionTaken: string };
   "agent.run.checkpoint_restored": { checkpointId: string; stepOrdinal: number };
+  "agent.run.heartbeat": { ts: string };
 };
 
 /**

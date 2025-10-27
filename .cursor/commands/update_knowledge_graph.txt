@@ -1,4 +1,7 @@
 You will create a comprehensive summary of rules, facts, procedures and preferences 
 established during the session/milestone/chat/task/todo/bug and update Graphiti MCP Memory System.
+
+After the memories are created add the ids into any running handoff documents known to you.
+
 If the graphiti memory system is down you will create a session_summary.md with a logical name
 and alert the user by using exccesive RED DANGER emojis in your reply.

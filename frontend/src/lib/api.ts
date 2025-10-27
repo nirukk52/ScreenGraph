@@ -10,7 +10,7 @@ export async function streamRunEvents(
   onEvent: (event: run.RunEventMessage) => void,
 ) {
   const client = getEncoreClient();
-  const stream = await client.run.stream(runId, {});
+  const stream = await client.run.stream(runId, { lastEventSeq: 0 });
   let active = true;
 
   const streamPump = (async () => {

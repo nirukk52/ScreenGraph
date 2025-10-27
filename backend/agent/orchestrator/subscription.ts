@@ -1,4 +1,5 @@
 import { Subscription } from "encore.dev/pubsub";
+import log from "encore.dev/log";
 import { runJobTopic } from "../../run/start";
 import type { RunJob } from "../../run/types";
 import { Orchestrator } from "./orchestrator";
@@ -8,6 +9,7 @@ import { AgentStateRepo } from "../persistence/agent-state.repo";
 import { RunOutboxRepo } from "../persistence/run-outbox.repo";
 import type { Budgets } from "../domain/state";
 import { AgentWorker } from "./worker";
+import { MODULES, AGENT_ACTORS } from "../../logging/logger";
 
 /**
  * Encore subscription that listens for RunJob messages and executes agent runs.
@@ -15,7 +17,8 @@ import { AgentWorker } from "./worker";
  */
 new Subscription(runJobTopic, "agent-orchestrator-worker", {
   handler: async (job: RunJob) => {
-    console.log(`[AgentOrchestrator] Starting run ${job.runId} with apk: ${job.apkPath}`);
+    const subLog = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.SUBSCRIPTION, runId: job.runId });
+    subLog.info("Run job received", { apkPath: job.apkPath, maxSteps: job.maxSteps });
 
     try {
       const runDb = new RunDbRepo();
@@ -27,9 +30,11 @@ new Subscription(runJobTopic, "agent-orchestrator-worker", {
       const workerId = `worker-${process.env.HOSTNAME ?? "local"}-${Date.now()}`;
       const leaseDurationMs = 30_000;
 
+      const logger = subLog.with({ workerId });
+      logger.info("Attempting to claim run");
       const claimed = await runDb.claimRun(job.runId, workerId, leaseDurationMs);
       if (!claimed) {
-        console.log(`[AgentOrchestrator] Run ${job.runId} already claimed, skipping`);
+        subLog.info("Run already claimed, skipping");
         return;
       }
 
@@ -41,14 +46,13 @@ new Subscription(runJobTopic, "agent-orchestrator-worker", {
         restartLimit: 3,
       };
 
+      logger.info("Run claimed; starting worker", { ts: new Date().toISOString() } as Record<string, unknown>);
       const worker = new AgentWorker({ orchestrator, runDb, run: claimed, workerId, budgets, leaseDurationMs });
 
       const result = await worker.run();
-      console.log(
-        `[AgentOrchestrator] Run ${job.runId} completed with status ${result.status} and ${result.emittedEventCount} events`,
-      );
+      logger.info("Run completed", { status: result.status, emittedEventCount: result.emittedEventCount });
     } catch (err) {
-      console.error(`[AgentOrchestrator] Run ${job.runId} failed:`, err);
+      subLog.error("Run failed", err as Error);
       throw err;
     }
   },
