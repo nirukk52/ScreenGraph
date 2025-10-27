@@ -1,7 +1,10 @@
 import type { AgentState, Budgets } from "../domain/state";
 import type { RunRecord, RunLifecycleStatus, RunDbPort } from "../ports/db-ports/run-db.port";
 import type { Orchestrator } from "./orchestrator";
-import { NodeEngine, createEmptyRegistry } from "./node-engine";
+import { NodeEngine } from "../engine/node-engine";
+import { buildRegistry, buildContext } from "../phases/setup";
+import type { SetupPhasePorts, SetupNodeName } from "../phases/setup/types";
+import { WebDriverIOSessionAdapter } from "../adapters/appium/webdriverio/session.adapter";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../logging/logger";
 
@@ -68,8 +71,13 @@ export class AgentWorker {
 
   private async executeAgentLoop(initialState: AgentState): Promise<AgentWorkerExecutionResult> {
     let state = initialState;
-    // Engine wiring (registry empty for now per scope; nodes will be added later)
-    const engine = new NodeEngine(createEmptyRegistry());
+    
+    // Wire setup phase ports, registry, and context
+    const sessionPort = new WebDriverIOSessionAdapter();
+    const ports: SetupPhasePorts = { sessionPort };
+    const registry = buildRegistry(this.options.orchestrator.generateId.bind(this.options.orchestrator));
+    const ctx = buildContext(this.options.run);
+    const engine = new NodeEngine<SetupNodeName, SetupPhasePorts, typeof ctx>(registry);
 
     if (await this.isCancellationRequested()) {
       log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.WORKER, runId: state.runId, workerId: this.options.workerId }).warn(
