@@ -9,36 +9,17 @@ import type { AgentNodeName, AgentPorts, AgentContext } from "../nodes/types";
 import { WebDriverIOSessionAdapter } from "../adapters/appium/webdriverio/session.adapter";
 import { WebDriverIOAppLifecycleAdapter } from "../adapters/appium/webdriverio/app-lifecycle.adapter";
 import { WebDriverIOIdleDetectorAdapter } from "../adapters/appium/webdriverio/idle-detector.adapter";
-import { WebDriverSessionAdapter } from "../adapters/appium/webdriver/session.adapter";
-import { WebDriverAppLifecycleAdapter } from "../adapters/appium/webdriver/app-lifecycle.adapter";
-import { WebDriverIdleDetectorAdapter } from "../adapters/appium/webdriver/idle-detector.adapter";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../logging/logger";
 
 /**
- * DriverImpl: Selector for driver implementation to use.
- * Default to WebDriverStandalone for deterministic POC/MVP runs.
- */
-export enum DriverImpl {
-  WebDriverStandalone = "WebDriverStandalone",
-  WebdriverIO = "WebdriverIO",
-}
-
-/**
- * Build AgentPorts based on selected driver implementation.
- * PURPOSE: Configure which adapter family (WebDriver standalone vs WebDriverIO) to use.
+ * Build AgentPorts using the WebDriverIO adapter family so the agent relies on a single
+ * automation stack across the codebase.
  *
  * Note: The session context will be null initially and populated after ensureDevice runs.
  * The adapters use context provider functions to lazily access the session context.
  */
-function buildAgentPorts(impl: DriverImpl = DriverImpl.WebDriverStandalone): AgentPorts {
-  if (impl === DriverImpl.WebDriverStandalone) {
-    const sessionPort = new WebDriverSessionAdapter();
-    const contextProvider = () => sessionPort.getContext();
-    const appLifecyclePort = new WebDriverAppLifecycleAdapter(contextProvider);
-    const idleDetectorPort = new WebDriverIdleDetectorAdapter(contextProvider);
-    return { sessionPort, appLifecyclePort, idleDetectorPort };
-  }
+function buildAgentPorts(): AgentPorts {
   const sessionPort = new WebDriverIOSessionAdapter();
   const contextProvider = () => sessionPort.getContext();
   const appLifecyclePort = new WebDriverIOAppLifecycleAdapter(contextProvider);
@@ -120,8 +101,8 @@ export class AgentWorker {
       workerId: this.options.workerId,
     });
 
-    // Wire agent ports based on selected driver implementation (default: WebDriverStandalone)
-    const ports = buildAgentPorts(this.options.driverImpl);
+// Wire agent ports using the unified WebDriverIO adapter stack
+    const ports = buildAgentPorts();
     const registry = buildNodeRegistry(
       this.options.orchestrator.generateId.bind(this.options.orchestrator),
     );
@@ -256,6 +237,10 @@ export class AgentWorker {
   }
 }
 
+/**
+ * AgentWorkerOptions: Configuration inputs that tailor each worker run while keeping the driver
+ * stack fixed to WebDriverIO.
+ */
 interface AgentWorkerOptions {
   orchestrator: Orchestrator;
   runDb: RunDbPort;
@@ -264,7 +249,6 @@ interface AgentWorkerOptions {
   budgets: Budgets;
   leaseDurationMs: number;
   heartbeatIntervalMs?: number;
-  driverImpl?: DriverImpl;
 }
 
 export interface AgentWorkerResult {

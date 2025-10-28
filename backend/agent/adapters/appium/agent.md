@@ -2,47 +2,46 @@
 
 ## Overview
 
-This directory contains two adapter implementations for Appium mobile automation:
-
-- **`webdriver/`** - **RECOMMENDED** - Thin WebDriver client (standalone)
-- **`webdriverio/`** - **DEPRECATED** - WebDriverIO testrunner (stubbed for post-MVP)
+This directory contains the WebDriverIO adapter implementations for Appium mobile automation.
 
 ## Current Status (POC/MVP)
 
-**Use the `webdriver/` adapters for all new development.**
+**Use the `webdriverio/` adapters for all development.**
 
-The agent defaults to `DriverImpl.WebDriverStandalone` which uses the thin WebDriver client. This provides:
+The agent relies exclusively on the WebDriverIO stack. This provides:
 
-- ✅ Direct W3C WebDriver protocol access
-- ✅ No testrunner overhead
-- ✅ Deterministic timing control in domain layer
-- ✅ Better error handling and retry control
-- ✅ Cleaner separation of concerns
+- ✅ Consistent client behavior across the agent
+- ✅ Mature driver lifecycle management
+- ✅ Rich helper APIs for gestures and session control
 
 ## Quick Start
 
-### Using WebDriver Adapters (Recommended)
+### Using WebDriverIO Adapters
 
 ```typescript
-import { WebDriverSessionAdapter } from "./webdriver/session.adapter";
-import { WebDriverInputActionsAdapter } from "./webdriver/input-actions.adapter";
-import { WebDriverPerceptionAdapter } from "./webdriver/perception.adapter";
+import {
+  WebDriverIOSessionAdapter,
+  WebDriverIOInputActionsAdapter,
+  WebDriverIOPerceptionAdapter,
+  WebDriverIOAppLifecycleAdapter,
+  WebDriverIOIdleDetectorAdapter,
+} from "./webdriverio";
 
 // Session management
-const sessionPort = new WebDriverSessionAdapter();
+const sessionPort = new WebDriverIOSessionAdapter();
 await sessionPort.ensureDevice({
   platformName: "Android",
   deviceName: "emulator-5554",
   platformVersion: "14",
-  appiumServerUrl: "http://localhost:4723"
+  appiumServerUrl: "http://localhost:4723",
 });
 
-// Input actions using W3C performActions
-const inputPort = new WebDriverInputActionsAdapter(() => sessionPort.getContext());
-await inputPort.performTap(100, 200);
+// Input actions using WebDriverIO helpers
+const inputPort = new WebDriverIOInputActionsAdapter(() => sessionPort.getContext());
+await inputPort.performTap({ x: 100, y: 200 });
 
 // UI capture
-const perceptionPort = new WebDriverPerceptionAdapter(() => sessionPort.getContext());
+const perceptionPort = new WebDriverIOPerceptionAdapter(() => sessionPort.getContext());
 const screenshot = await perceptionPort.captureScreenshot();
 ```
 
@@ -50,13 +49,13 @@ const screenshot = await perceptionPort.captureScreenshot();
 
 | Adapter | Purpose | Key Methods |
 |---------|---------|-------------|
-| `WebDriverSessionAdapter` | Session lifecycle | `ensureDevice()`, `closeSession()` |
-| `WebDriverInputActionsAdapter` | Touch gestures | `performTap()`, `performSwipe()`, `performLongPress()`, `performTextInput()` |
-| `WebDriverNavigationAdapter` | System navigation | `performBack()`, `pressHome()` |
-| `WebDriverPerceptionAdapter` | UI capture | `captureScreenshot()`, `dumpUiHierarchy()` |
-| `WebDriverDeviceInfoAdapter` | Device queries | `getScreenDimensions()`, `isDeviceReady()` |
-| `WebDriverIdleDetectorAdapter` | UI stability | `waitIdle()` |
-| `WebDriverAppLifecycleAdapter` | App management | `launchApp()`, `restartApp()`, `getCurrentApp()` |
+| `WebDriverIOSessionAdapter` | Session lifecycle | `ensureDevice()`, `closeSession()` |
+| `WebDriverIOInputActionsAdapter` | Touch gestures | `performTap()`, `performSwipe()`, `performLongPress()`, `inputText()` |
+| `WebDriverIONavigationAdapter` | System navigation | `performBack()`, `pressHome()` |
+| `WebDriverIOPerceptionAdapter` | UI capture | `captureScreenshot()`, `dumpUiHierarchy()` |
+| `WebDriverIODeviceInfoAdapter` | Device queries | `getScreenDimensions()`, `isDeviceReady()` |
+| `WebDriverIOIdleDetectorAdapter` | UI stability | `waitIdle()` |
+| `WebDriverIOAppLifecycleAdapter` | App management | `launchApp()`, `restartApp()`, `getCurrentApp()` |
 
 ## Protocol Implementation
 
@@ -104,66 +103,18 @@ const adapter = new WebDriverInputActionsAdapter(contextProvider);
 
 ```typescript
 // Clear mobile semantics
-import type { MobileDriver } from "./webdriver/session-context";
+import type { MobileDriver } from "./webdriverio/session-context";
 
-// No "Browser" confusion - this is a mobile app driver
 interface SessionContext {
-  driver: MobileDriver;  // Clear naming
+  driver: MobileDriver; // Clear naming
   capabilities: Record<string, unknown>;
 }
 ```
 
-## Migration from WebDriverIO
+## Migration Notes
 
-If you're currently using WebDriverIO adapters:
-
-1. **Update imports**:
-   ```typescript
-   // Old
-   import { WebDriverIOSessionAdapter } from "./webdriverio/session.adapter";
-   
-   // New
-   import { WebDriverSessionAdapter } from "./webdriver/session.adapter";
-   ```
-
-2. **Update constructor calls**:
-   ```typescript
-   // Old
-   const adapter = new WebDriverIOInputActionsAdapter(context);
-   
-   // New
-   const adapter = new WebDriverInputActionsAdapter(contextProvider);
-   ```
-
-3. **Protocol differences**:
-   ```typescript
-   // WebDriverIO helpers (deprecated)
-   await driver.touchAction({ action: "tap", x, y });
-   
-   // W3C Actions (recommended)
-   await driver.performActions([{
-     type: "pointer",
-     id: "finger1",
-     parameters: { pointerType: "touch" },
-     actions: [
-       { type: "pointerMove", duration: 0, x, y },
-       { type: "pointerDown", button: 0 },
-       { type: "pointerUp", button: 0 }
-     ]
-   }]);
-   ```
-
-## Configuration
-
-### Driver Selection
-
-```typescript
-// In worker.ts - defaults to WebDriverStandalone
-const ports = buildAgentPorts(DriverImpl.WebDriverStandalone);
-
-// To use WebDriverIO (not recommended for POC/MVP)
-const ports = buildAgentPorts(DriverImpl.WebdriverIO);
-```
+If you find legacy references to the old standalone WebDriver adapters, replace them with their
+WebDriverIO equivalents to keep the agent on a single automation stack.
 
 ### Android Capabilities
 
@@ -219,8 +170,8 @@ const fakeSession = new FakeSessionPort();
 ### Integration Tests
 
 ```typescript
-// Use real WebDriver adapters with test devices
-const sessionPort = new WebDriverSessionAdapter();
+// Use real WebDriverIO adapters with test devices
+const sessionPort = new WebDriverIOSessionAdapter();
 // Test against actual Android emulator/iOS simulator
 ```
 
@@ -232,7 +183,7 @@ const sessionPort = new WebDriverSessionAdapter();
 - [ ] Artifact storage integration
 
 ### Post-MVP
-- [ ] WebDriverIO adapter removal
+- [ ] Multi-device support
 - [ ] Multi-device support
 - [ ] Performance optimizations
 
