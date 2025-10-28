@@ -2,6 +2,8 @@ import type { NodeRegistry } from "../engine/types";
 import type { AgentContext, AgentNodeName, AgentPorts } from "./types";
 import { createEnsureDeviceHandler } from "./setup/EnsureDevice/handler";
 import { createProvisionAppHandler } from "./setup/ProvisionApp/handler";
+import { createLaunchOrAttachHandler } from "./setup/LaunchOrAttach/handler";
+import { createWaitIdleHandler } from "./setup/WaitIdle/handler";
 
 /**
  * Builds a fully-wired registry with all agent node handlers.
@@ -13,6 +15,8 @@ export function buildNodeRegistry(
   return {
     EnsureDevice: createEnsureDeviceHandler(generateId),
     ProvisionApp: createProvisionAppHandler(),
+    LaunchOrAttach: createLaunchOrAttachHandler(),
+    WaitIdle: createWaitIdleHandler(),
   };
 }
 

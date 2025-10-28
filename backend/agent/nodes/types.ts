@@ -1,10 +1,13 @@
 import type { DeviceConfiguration } from "../ports/appium/session.port";
+import type { SessionPort } from "../ports/appium/session.port";
+import type { AppLifecyclePort } from "../ports/appium/app-lifecycle.port";
+import type { IdleDetectorPort } from "../ports/appium/idle-detector.port";
 
 /**
  * AgentNodeName enumerates all nodes available in the agent execution graph.
  * PURPOSE: Drives typed routing for node execution and transitions across all phases.
  */
-export type AgentNodeName = "EnsureDevice" | "ProvisionApp" | "LaunchOrAttach" | "WaitIdle" | "SwitchPolicy" | "RestartApp";
+export type AgentNodeName = "EnsureDevice" | "ProvisionApp" | "LaunchOrAttach" | "WaitIdle" | "Perceive" | "SwitchPolicy" | "RestartApp";
 
 /**
  * AgentContext captures all configuration inputs needed by nodes across the agent graph.
@@ -23,6 +26,18 @@ export interface AgentContext {
       expectedBuildSignatureSha256: string;
     };
   };
+  launchOrAttach: {
+    applicationUnderTestDescriptor: {
+      androidPackageId: string;
+    };
+    launchAttachMode: "LAUNCH_OR_ATTACH";
+  };
+  waitIdle: {
+    idleHeuristicsConfiguration: {
+      minQuietMillis: number;
+      maxWaitMillis: number;
+    };
+  };
 }
 
 /**
@@ -30,9 +45,9 @@ export interface AgentContext {
  * PURPOSE: Centralizes allowed IO (e.g., Appium session) for dependency injection across nodes.
  */
 export interface AgentPorts {
-  sessionPort: {
-    ensureDevice(config: DeviceConfiguration): Promise<unknown>;
-  };
+  sessionPort: SessionPort;
+  appLifecyclePort: AppLifecyclePort;
+  idleDetectorPort: IdleDetectorPort;
 }
 
 

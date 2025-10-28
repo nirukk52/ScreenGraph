@@ -38,6 +38,18 @@ export function buildAgentContext(run: RunRecord): AgentContext {
         expectedBuildSignatureSha256: "default-sha256",
       },
     },
+    launchOrAttach: {
+      applicationUnderTestDescriptor: {
+        androidPackageId: appConfig.packageName,
+      },
+      launchAttachMode: "LAUNCH_OR_ATTACH",
+    },
+    waitIdle: {
+      idleHeuristicsConfiguration: {
+        minQuietMillis: 400,
+        maxWaitMillis: 5000,
+      },
+    },
   };
   
   logger.info("buildAgentContext - Built Context", { context });

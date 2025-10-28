@@ -1,0 +1,96 @@
+import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
+import type { AppLifecyclePort } from "../../../ports/appium/app-lifecycle.port";
+import type { EventKind } from "../../../domain/events";
+import { ApplicationForegroundContext } from "../../../domain/entities";
+import log from "encore.dev/log";
+import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
+
+export interface LaunchOrAttachInput extends CommonNodeInput {
+  runId: string;
+  tenantId: string;
+  projectId: string;
+  applicationUnderTestDescriptor: {
+    androidPackageId: string;
+  };
+  launchAttachMode: "LAUNCH_OR_ATTACH";
+}
+
+export interface LaunchOrAttachOutput extends CommonNodeOutput {
+  runId: string;
+  applicationForegroundContext: ApplicationForegroundContext;
+}
+
+/**
+ * launchOrAttach orchestrates app launch via AppLifecyclePort and emits deterministic node output.
+ * PURPOSE: Wraps adapter interactions and guarantees SUCCESS/FAILURE outputs for engine transitions.
+ */
+export async function launchOrAttach(
+  input: LaunchOrAttachInput,
+  appLifecyclePort: AppLifecyclePort,
+): Promise<{
+  output: LaunchOrAttachOutput;
+  events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
+}> {
+  const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR, runId: input.runId, nodeName: "LaunchOrAttach" });
+  logger.info("LaunchOrAttach INPUT", { input });
+  
+  try {
+    const foregroundCtx = await appLifecyclePort.launchApp(input.applicationUnderTestDescriptor.androidPackageId);
+    logger.info("ApplicationForegroundContext received", { foregroundCtx });
+
+    const output: LaunchOrAttachOutput = {
+      runId: input.runId,
+      applicationForegroundContext: foregroundCtx,
+      nodeName: "LaunchOrAttach",
+      stepOrdinal: 2,
+      iterationOrdinalNumber: 0,
+      policyVersion: 1,
+      resumeToken: `${input.runId}-002`,
+      randomSeed: 222222,
+      nodeExecutionOutcomeStatus: "SUCCESS",
+      errorId: null,
+      retryable: null,
+      humanReadableFailureSummary: null,
+    };
+
+    logger.info("LaunchOrAttach OUTPUT", { output });
+
+    return {
+      output,
+      events: [],
+    };
+  } catch (error) {
+    logger.error("LaunchOrAttach failure", { error });
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorName = error instanceof Error && error.name ? error.name : "UnknownError";
+    const isRetryable = errorName === "AppNotInstalledError" || errorName === "TimeoutError";
+
+    const failureOutput: LaunchOrAttachOutput = {
+      runId: input.runId,
+      applicationForegroundContext: {
+        currentPackageId: "",
+        currentActivityName: "",
+        appBroughtToForegroundTimestamp: new Date().toISOString(),
+      },
+      nodeName: "LaunchOrAttach",
+      stepOrdinal: 2,
+      iterationOrdinalNumber: 0,
+      policyVersion: 1,
+      resumeToken: `${input.runId}-002`,
+      randomSeed: 222222,
+      nodeExecutionOutcomeStatus: "FAILURE",
+      errorId: errorName,
+      retryable: isRetryable,
+      humanReadableFailureSummary: errorMessage,
+    };
+
+    logger.info("LaunchOrAttach FAILURE OUTPUT", { failureOutput });
+
+    return {
+      output: failureOutput,
+      events: [],
+    };
+  }
+}
+
