@@ -63,7 +63,9 @@ export interface NodeHandler<InputT, OutputT extends NodeOutputBase, N extends s
  * NodeRegistry maintains handlers for each orchestrated node.
  * PURPOSE: Central source of truth for node wiring and policies per phase.
  */
-export type NodeRegistry<N extends string, P, C> = Partial<Record<N, NodeHandler<unknown, NodeOutputBase, N, P, C>>>;
+export type NodeRegistry<N extends string, P, C> = Partial<
+  Record<N, NodeHandler<unknown, NodeOutputBase, N, P, C>>
+>;
 
 /**
  * EngineRunOnceArgs contains inputs required to execute a single engine step.
@@ -91,5 +93,3 @@ export interface EngineRunOnceResult<N extends string> {
   stopReason: StopReason;
   events: NodeEvent[];
 }
-
-

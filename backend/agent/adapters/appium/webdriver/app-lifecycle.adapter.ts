@@ -4,10 +4,15 @@ import { AppNotInstalledError, AppCrashedError, TimeoutError } from "../errors";
 import type { SessionContext } from "./session-context";
 
 /**
- * WebDriverIO-based app lifecycle adapter implementing AppLifecyclePort.
- * Launches, restarts, and manages app lifecycles using WebDriverIO.
+ * WebDriver-based app lifecycle adapter implementing AppLifecyclePort.
+ * Launches, restarts, and manages app lifecycles using Appium mobile extensions.
+ *
+ * PURPOSE:
+ * --------
+ * Implements AppLifecyclePort using Appium mobile commands for Android.
+ * iOS support will be added in MVP phase (XCUITest scaffolding).
  */
-export class WebDriverIOAppLifecycleAdapter implements AppLifecyclePort {
+export class WebDriverAppLifecycleAdapter implements AppLifecyclePort {
   constructor(private contextProvider: () => SessionContext | null) {}
 
   private get context(): SessionContext {
@@ -19,7 +24,7 @@ export class WebDriverIOAppLifecycleAdapter implements AppLifecyclePort {
   }
 
   /**
-   * Launch app by package name.
+   * Launch app by package name using Appium mobile extension.
    *
    * Args:
    *   packageId: Android package name (e.g., com.example.app)
@@ -34,13 +39,16 @@ export class WebDriverIOAppLifecycleAdapter implements AppLifecyclePort {
    */
   async launchApp(packageId: string): Promise<ApplicationForegroundContext> {
     try {
-      await this.context.driver.activateApp(packageId);
-      const currentPackage = await this.context.driver.getCurrentPackage();
-      const currentActivity = await this.context.driver.getCurrentActivity();
+      // Android: activate app via mobile extension
+      await this.context.driver.execute("mobile: activateApp", { appId: packageId });
+
+      // Get current package and activity via mobile extension
+      const currentPackage = await this.context.driver.execute("mobile: getCurrentPackage", {});
+      const currentActivity = await this.context.driver.execute("mobile: getCurrentActivity", {});
 
       return {
-        currentPackageId: currentPackage || packageId,
-        currentActivityName: currentActivity || `${packageId}.MainActivity`,
+        currentPackageId: (currentPackage as string) || packageId,
+        currentActivityName: (currentActivity as string) || `${packageId}.MainActivity`,
         appBroughtToForegroundTimestamp: new Date().toISOString(),
       };
     } catch (error) {
@@ -60,7 +68,7 @@ export class WebDriverIOAppLifecycleAdapter implements AppLifecyclePort {
   }
 
   /**
-   * Force stop and relaunch app.
+   * Force stop and relaunch app using Appium mobile extensions.
    *
    * Args:
    *   packageId: Package name
@@ -74,8 +82,9 @@ export class WebDriverIOAppLifecycleAdapter implements AppLifecyclePort {
    */
   async restartApp(packageId: string): Promise<boolean> {
     try {
-      await this.context.driver.terminateApp(packageId);
-      await this.context.driver.activateApp(packageId);
+      // Android: terminate and activate via mobile extensions
+      await this.context.driver.execute("mobile: terminateApp", { appId: packageId });
+      await this.context.driver.execute("mobile: activateApp", { appId: packageId });
       return true;
     } catch (error) {
       if (error instanceof Error) {
@@ -91,15 +100,15 @@ export class WebDriverIOAppLifecycleAdapter implements AppLifecyclePort {
   }
 
   /**
-   * Get foreground app package name.
+   * Get foreground app package name using Appium mobile extension.
    *
    * Returns:
    *   Package name (e.g., com.android.launcher)
    */
   async getCurrentApp(): Promise<string> {
     try {
-      const packageName = await this.context.driver.getCurrentPackage();
-      return packageName || "unknown";
+      const packageName = await this.context.driver.execute("mobile: getCurrentPackage", {});
+      return (packageName as string) || "unknown";
     } catch (error) {
       return "unknown";
     }

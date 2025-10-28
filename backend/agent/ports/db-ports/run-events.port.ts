@@ -14,5 +14,3 @@ export interface RunEventsDbPort {
   /** Returns the last (max) sequence number recorded for the run; 0 if none. */
   getLastEventSequence(runId: string): Promise<number>;
 }
-
-

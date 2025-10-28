@@ -44,5 +44,3 @@ export interface RunRecord {
   cancelRequestedAt: string | null;
   stopReason: string | null;
 }
-
-

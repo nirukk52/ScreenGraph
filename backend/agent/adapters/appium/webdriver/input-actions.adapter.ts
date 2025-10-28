@@ -3,10 +3,15 @@ import { TimeoutError } from "../errors";
 import type { SessionContext } from "./session-context";
 
 /**
- * WebDriverIO-based input actions adapter implementing InputActionsPort.
- * Performs touch gestures and text input using WebDriverIO.
+ * WebDriver-based input actions adapter implementing InputActionsPort.
+ * Performs touch gestures and text input using W3C WebDriver actions.
+ *
+ * PURPOSE:
+ * --------
+ * Implements InputActionsPort using W3C performActions protocol for deterministic gestures.
+ * No WebDriverIO helper methods; direct W3C protocol access for mobile automation.
  */
-export class WebDriverIOInputActionsAdapter implements InputActionsPort {
+export class WebDriverInputActionsAdapter implements InputActionsPort {
   constructor(private contextProvider: () => SessionContext | null) {}
 
   private get context(): SessionContext {
@@ -18,7 +23,7 @@ export class WebDriverIOInputActionsAdapter implements InputActionsPort {
   }
 
   /**
-   * Tap at specific coordinates.
+   * Tap at specific coordinates using W3C pointer actions.
    *
    * Args:
    *   x: Horizontal position in pixels
@@ -29,11 +34,19 @@ export class WebDriverIOInputActionsAdapter implements InputActionsPort {
    */
   async performTap(x: number, y: number): Promise<void> {
     try {
-      await this.context.driver.touchAction({
-        action: "tap",
-        x,
-        y,
-      });
+      await this.context.driver.performActions([
+        {
+          type: "pointer",
+          id: "finger1",
+          parameters: { pointerType: "touch" },
+          actions: [
+            { type: "pointerMove", duration: 0, x, y },
+            { type: "pointerDown", button: 0 },
+            { type: "pointerUp", button: 0 },
+          ],
+        },
+      ]);
+      await this.context.driver.releaseActions();
     } catch (error) {
       if (error instanceof Error && error.message.includes("timeout")) {
         throw new TimeoutError(`Tap timed out: ${error.message}`);
@@ -43,7 +56,7 @@ export class WebDriverIOInputActionsAdapter implements InputActionsPort {
   }
 
   /**
-   * Swipe from start to end coordinates.
+   * Swipe from start to end coordinates using W3C pointer actions.
    *
    * Args:
    *   startX, startY: Start position in pixels
@@ -61,25 +74,21 @@ export class WebDriverIOInputActionsAdapter implements InputActionsPort {
     durationMs: number,
   ): Promise<void> {
     try {
-      await this.context.driver.touchAction([
+      await this.context.driver.performActions([
         {
-          action: "press",
-          x: startX,
-          y: startY,
-        },
-        {
-          action: "wait",
-          ms: durationMs,
-        },
-        {
-          action: "moveTo",
-          x: endX,
-          y: endY,
-        },
-        {
-          action: "release",
+          type: "pointer",
+          id: "finger1",
+          parameters: { pointerType: "touch" },
+          actions: [
+            { type: "pointerMove", duration: 0, x: startX, y: startY },
+            { type: "pointerDown", button: 0 },
+            { type: "pause", duration: 50 },
+            { type: "pointerMove", duration: durationMs, x: endX, y: endY },
+            { type: "pointerUp", button: 0 },
+          ],
         },
       ]);
+      await this.context.driver.releaseActions();
     } catch (error) {
       if (error instanceof Error && error.message.includes("timeout")) {
         throw new TimeoutError(`Swipe timed out: ${error.message}`);
@@ -89,7 +98,7 @@ export class WebDriverIOInputActionsAdapter implements InputActionsPort {
   }
 
   /**
-   * Long press at specific coordinates.
+   * Long press at specific coordinates using W3C pointer actions.
    *
    * Args:
    *   x: Horizontal position in pixels
@@ -101,20 +110,20 @@ export class WebDriverIOInputActionsAdapter implements InputActionsPort {
    */
   async performLongPress(x: number, y: number, durationMs: number): Promise<void> {
     try {
-      await this.context.driver.touchAction([
+      await this.context.driver.performActions([
         {
-          action: "press",
-          x,
-          y,
-        },
-        {
-          action: "wait",
-          ms: durationMs,
-        },
-        {
-          action: "release",
+          type: "pointer",
+          id: "finger1",
+          parameters: { pointerType: "touch" },
+          actions: [
+            { type: "pointerMove", duration: 0, x, y },
+            { type: "pointerDown", button: 0 },
+            { type: "pause", duration: durationMs },
+            { type: "pointerUp", button: 0 },
+          ],
         },
       ]);
+      await this.context.driver.releaseActions();
     } catch (error) {
       if (error instanceof Error && error.message.includes("timeout")) {
         throw new TimeoutError(`Long press timed out: ${error.message}`);
@@ -124,7 +133,7 @@ export class WebDriverIOInputActionsAdapter implements InputActionsPort {
   }
 
   /**
-   * Type text into focused element.
+   * Type text into focused element using W3C actions.
    *
    * Args:
    *   text: Text to type
@@ -134,7 +143,17 @@ export class WebDriverIOInputActionsAdapter implements InputActionsPort {
    */
   async performTextInput(text: string): Promise<void> {
     try {
-      await this.context.driver.sendKeys(text);
+      await this.context.driver.performActions([
+        {
+          type: "key",
+          id: "keyboard",
+          actions: text.split("").map((char) => ({
+            type: "keyDown",
+            value: char,
+          })),
+        },
+      ]);
+      await this.context.driver.releaseActions();
     } catch (error) {
       if (error instanceof Error && error.message.includes("timeout")) {
         throw new TimeoutError(`Text input timed out: ${error.message}`);

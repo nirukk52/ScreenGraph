@@ -30,7 +30,11 @@ export class Orchestrator {
     run: RunRecord,
     budgets: Budgets,
   ): Promise<{ state: AgentState; isResume: boolean }> {
-    const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR, runId: run.runId });
+    const logger = log.with({
+      module: MODULES.AGENT,
+      actor: AGENT_ACTORS.ORCHESTRATOR,
+      runId: run.runId,
+    });
     logger.info("Initialize start");
     this.cachedRun = run;
     const latestSnapshot = await this.agentStateDb.getLatestSnapshot(run.runId);
@@ -66,7 +70,12 @@ export class Orchestrator {
   }
 
   async recordEvent(event: DomainEvent): Promise<void> {
-    const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR, runId: event.runId, eventSeq: event.sequence });
+    const logger = log.with({
+      module: MODULES.AGENT,
+      actor: AGENT_ACTORS.ORCHESTRATOR,
+      runId: event.runId,
+      eventSeq: event.sequence,
+    });
     await this.eventsDb.appendEvent(event);
     logger.info(`Event recorded: ${event.kind}`);
   }
@@ -77,7 +86,13 @@ export class Orchestrator {
     nodeEvents: Array<{ kind: K; payload: EventPayloadMap[K] }>,
   ): Promise<void> {
     const now = new Date().toISOString();
-    const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR, runId: state.runId, nodeName, stepOrdinal: state.stepOrdinal });
+    const logger = log.with({
+      module: MODULES.AGENT,
+      actor: AGENT_ACTORS.ORCHESTRATOR,
+      runId: state.runId,
+      nodeName,
+      stepOrdinal: state.stepOrdinal,
+    });
 
     const startEvent = createDomainEvent(
       this.generateId(),
@@ -122,7 +137,11 @@ export class Orchestrator {
 
   async finalizeRun(state: AgentState, stopReason: string): Promise<void> {
     const now = new Date().toISOString();
-    const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR, runId: state.runId });
+    const logger = log.with({
+      module: MODULES.AGENT,
+      actor: AGENT_ACTORS.ORCHESTRATOR,
+      runId: state.runId,
+    });
 
     const success = await this.runDb.updateRunStatus(state.runId, "completed", now, stopReason);
 
@@ -150,7 +169,12 @@ export class Orchestrator {
    * PURPOSE: Exposes controlled persistence to the Worker after node execution.
    */
   async saveSnapshot(state: AgentState): Promise<void> {
-    const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR, runId: state.runId, stepOrdinal: state.stepOrdinal });
+    const logger = log.with({
+      module: MODULES.AGENT,
+      actor: AGENT_ACTORS.ORCHESTRATOR,
+      runId: state.runId,
+      stepOrdinal: state.stepOrdinal,
+    });
     await this.agentStateDb.saveSnapshot(state.runId, state.stepOrdinal, state);
     logger.info("Snapshot saved", {
       snapshot: {
@@ -183,6 +207,8 @@ export class Orchestrator {
     this.sequenceCounter = 0;
     this.seedCounter = 123456;
     this.cachedRun = null;
-    log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR }).info("Reset orchestrator state");
+    log
+      .with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR })
+      .info("Reset orchestrator state");
   }
 }

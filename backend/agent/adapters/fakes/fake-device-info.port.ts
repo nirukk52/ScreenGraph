@@ -16,4 +16,3 @@ export class FakeDeviceInfoPort implements DeviceInfoPort {
     return true;
   }
 }
-

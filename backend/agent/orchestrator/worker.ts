@@ -7,8 +7,44 @@ import { buildNodeRegistry } from "../nodes/registry";
 import { buildAgentContext } from "../nodes/context";
 import type { AgentNodeName, AgentPorts, AgentContext } from "../nodes/types";
 import { WebDriverIOSessionAdapter } from "../adapters/appium/webdriverio/session.adapter";
+import { WebDriverIOAppLifecycleAdapter } from "../adapters/appium/webdriverio/app-lifecycle.adapter";
+import { WebDriverIOIdleDetectorAdapter } from "../adapters/appium/webdriverio/idle-detector.adapter";
+import { WebDriverSessionAdapter } from "../adapters/appium/webdriver/session.adapter";
+import { WebDriverAppLifecycleAdapter } from "../adapters/appium/webdriver/app-lifecycle.adapter";
+import { WebDriverIdleDetectorAdapter } from "../adapters/appium/webdriver/idle-detector.adapter";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../logging/logger";
+
+/**
+ * DriverImpl: Selector for driver implementation to use.
+ * Default to WebDriverStandalone for deterministic POC/MVP runs.
+ */
+export enum DriverImpl {
+  WebDriverStandalone = "WebDriverStandalone",
+  WebdriverIO = "WebdriverIO",
+}
+
+/**
+ * Build AgentPorts based on selected driver implementation.
+ * PURPOSE: Configure which adapter family (WebDriver standalone vs WebDriverIO) to use.
+ *
+ * Note: The session context will be null initially and populated after ensureDevice runs.
+ * The adapters use context provider functions to lazily access the session context.
+ */
+function buildAgentPorts(impl: DriverImpl = DriverImpl.WebDriverStandalone): AgentPorts {
+  if (impl === DriverImpl.WebDriverStandalone) {
+    const sessionPort = new WebDriverSessionAdapter();
+    const contextProvider = () => sessionPort.getContext();
+    const appLifecyclePort = new WebDriverAppLifecycleAdapter(contextProvider);
+    const idleDetectorPort = new WebDriverIdleDetectorAdapter(contextProvider);
+    return { sessionPort, appLifecyclePort, idleDetectorPort };
+  }
+  const sessionPort = new WebDriverIOSessionAdapter();
+  const contextProvider = () => sessionPort.getContext();
+  const appLifecyclePort = new WebDriverIOAppLifecycleAdapter(contextProvider);
+  const idleDetectorPort = new WebDriverIOIdleDetectorAdapter(contextProvider);
+  return { sessionPort, appLifecyclePort, idleDetectorPort };
+}
 
 /**
  * AgentWorker owns the long-lived orchestration loop for a run, including lease heartbeats,
@@ -27,7 +63,12 @@ export class AgentWorker {
 
   async run(): Promise<AgentWorkerResult> {
     const { orchestrator, run, budgets } = this.options;
-    const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.WORKER, runId: run.runId, workerId: this.options.workerId });
+    const logger = log.with({
+      module: MODULES.AGENT,
+      actor: AGENT_ACTORS.WORKER,
+      runId: run.runId,
+      workerId: this.options.workerId,
+    });
     let initializeResult: { state: AgentState; isResume: boolean };
 
     try {
@@ -72,12 +113,18 @@ export class AgentWorker {
   }
 
   private async executeAgentLoop(initialState: AgentState): Promise<AgentWorkerExecutionResult> {
-    const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.WORKER, runId: initialState.runId, workerId: this.options.workerId });
-    
-    // Wire agent ports, registry, and context
-    const sessionPort = new WebDriverIOSessionAdapter();
-    const ports: AgentPorts = { sessionPort };
-    const registry = buildNodeRegistry(this.options.orchestrator.generateId.bind(this.options.orchestrator));
+    const logger = log.with({
+      module: MODULES.AGENT,
+      actor: AGENT_ACTORS.WORKER,
+      runId: initialState.runId,
+      workerId: this.options.workerId,
+    });
+
+    // Wire agent ports based on selected driver implementation (default: WebDriverStandalone)
+    const ports = buildAgentPorts(this.options.driverImpl);
+    const registry = buildNodeRegistry(
+      this.options.orchestrator.generateId.bind(this.options.orchestrator),
+    );
     const ctx = buildAgentContext(this.options.run);
     const engine = new NodeEngine<AgentNodeName, AgentPorts, AgentContext>(registry);
     const runner = new AgentRunner(engine);
@@ -101,7 +148,12 @@ export class AgentWorker {
             stopReason: "user_cancelled" as const,
             timestamps: { ...initialState.timestamps, updatedAt: now },
           };
-          await this.options.runDb.updateRunStatus(initialState.runId, "canceled", now, canceledState.stopReason);
+          await this.options.runDb.updateRunStatus(
+            initialState.runId,
+            "canceled",
+            now,
+            canceledState.stopReason,
+          );
           await this.options.orchestrator.saveSnapshot(canceledState);
           return { stop: true, reason: "user_cancelled" as const };
         }
@@ -130,11 +182,11 @@ export class AgentWorker {
       },
       callbacks: {
         onAttempt: async (result) => {
-          logger.info("Agent runner attempt completed", { 
-            nodeName: result.nodeName, 
+          logger.info("Agent runner attempt completed", {
+            nodeName: result.nodeName,
             outcome: result.outcome,
             nextNode: result.nextNode,
-            backtracked: result.backtracked 
+            backtracked: result.backtracked,
           });
         },
         onPersist: async (state, events, nodeName) => {
@@ -144,7 +196,11 @@ export class AgentWorker {
       },
     });
 
-    logger.info("Agent runner completed", { status: result.status, stopReason: result.stopReason, lastNode: result.lastNode });
+    logger.info("Agent runner completed", {
+      status: result.status,
+      stopReason: result.stopReason,
+      lastNode: result.lastNode,
+    });
 
     return {
       state: result.state,
@@ -154,7 +210,12 @@ export class AgentWorker {
   }
 
   private startHeartbeat(): void {
-    const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.WORKER, runId: this.options.run.runId, workerId: this.options.workerId });
+    const logger = log.with({
+      module: MODULES.AGENT,
+      actor: AGENT_ACTORS.WORKER,
+      runId: this.options.run.runId,
+      workerId: this.options.workerId,
+    });
     logger.info("Heartbeat started");
     this.heartbeatTimer = setInterval(() => {
       void this.options.runDb
@@ -203,6 +264,7 @@ interface AgentWorkerOptions {
   budgets: Budgets;
   leaseDurationMs: number;
   heartbeatIntervalMs?: number;
+  driverImpl?: DriverImpl;
 }
 
 export interface AgentWorkerResult {

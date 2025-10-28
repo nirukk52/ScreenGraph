@@ -8,7 +8,8 @@ import type { PerceptionPort } from "../../ports/appium/perception.port";
 export class FakePerceptionPort implements PerceptionPort {
   async captureScreenshot(): Promise<ScreenshotData> {
     return {
-      base64Image: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+      base64Image:
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
       format: "png",
       widthPx: 1080,
       heightPx: 1920,
@@ -22,4 +23,3 @@ export class FakePerceptionPort implements PerceptionPort {
     };
   }
 }
-

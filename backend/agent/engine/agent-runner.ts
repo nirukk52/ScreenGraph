@@ -1,5 +1,5 @@
 import type { AgentState, StopReason } from "../domain/state";
-import { NodeEngine } from "./node-engine";
+import type { NodeEngine } from "./node-engine";
 import type { NodeRegistry, EngineRunOnceResult } from "./types";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../logging/logger";
@@ -10,7 +10,11 @@ import { MODULES, AGENT_ACTORS } from "../../logging/logger";
  */
 export interface AgentRunnerCallbacks<N extends string> {
   onAttempt: (result: EngineRunOnceResult<N>) => Promise<void>;
-  onPersist: (state: AgentState, events: Array<{ kind: string; payload: Record<string, unknown> }>, nodeName: N) => Promise<void>;
+  onPersist: (
+    state: AgentState,
+    events: Array<{ kind: string; payload: Record<string, unknown> }>,
+    nodeName: N,
+  ) => Promise<void>;
 }
 
 /**
@@ -45,8 +49,12 @@ export class AgentRunner<N extends string, P, C> {
     callbacks: AgentRunnerCallbacks<N>;
   }): Promise<AgentRunnerResult<N>> {
     const { state, entryNode, ports, ctx, seed, shouldStop, callbacks } = opts;
-    const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.WORKER, runId: state.runId });
-    
+    const logger = log.with({
+      module: MODULES.AGENT,
+      actor: AGENT_ACTORS.WORKER,
+      runId: state.runId,
+    });
+
     let currentNode: N = entryNode;
     let currentState = state;
 
@@ -65,7 +73,7 @@ export class AgentRunner<N extends string, P, C> {
 
       // Execute current node via engine
       logger.info("Running node", { currentNode, attempt: currentState.iterationOrdinalNumber });
-      
+
       const nowIso = new Date().toISOString();
       const engineResult = await this.engine.runOnce({
         state: currentState,
@@ -76,12 +84,12 @@ export class AgentRunner<N extends string, P, C> {
         currentNode,
       });
 
-      logger.info("Engine result", { 
-        nodeName: engineResult.nodeName, 
-        outcome: engineResult.outcome, 
+      logger.info("Engine result", {
+        nodeName: engineResult.nodeName,
+        outcome: engineResult.outcome,
         nextNode: engineResult.nextNode,
         retryDelayMs: engineResult.retryDelayMs,
-        backtracked: engineResult.backtracked 
+        backtracked: engineResult.backtracked,
       });
 
       // Persist events and snapshot
@@ -92,7 +100,10 @@ export class AgentRunner<N extends string, P, C> {
 
       // Handle retry with backoff
       if (engineResult.retryDelayMs !== null && engineResult.nextNode === currentNode) {
-        logger.warn("Retrying node with backoff", { delayMs: engineResult.retryDelayMs, attempt: currentState.iterationOrdinalNumber });
+        logger.warn("Retrying node with backoff", {
+          delayMs: engineResult.retryDelayMs,
+          attempt: currentState.iterationOrdinalNumber,
+        });
         await new Promise((resolve) => setTimeout(resolve, engineResult.retryDelayMs ?? 0));
         continue;
       }
@@ -117,7 +128,11 @@ export class AgentRunner<N extends string, P, C> {
       if (engineResult.outcome === "FAILURE" && engineResult.nextNode === null) {
         logger.error("Node execution failed without recovery");
         return {
-          state: { ...currentState, status: "failed", stopReason: engineResult.stopReason ?? "crash" },
+          state: {
+            ...currentState,
+            status: "failed",
+            stopReason: engineResult.stopReason ?? "crash",
+          },
           status: "failed",
           stopReason: engineResult.stopReason ?? "crash",
           lastNode: currentNode,
@@ -146,6 +161,3 @@ export class AgentRunner<N extends string, P, C> {
     }
   }
 }
-
-
-

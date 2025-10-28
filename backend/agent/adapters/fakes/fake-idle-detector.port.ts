@@ -9,4 +9,3 @@ export class FakeIdleDetectorPort implements IdleDetectorPort {
     return minQuietMillis + 100;
   }
 }
-

@@ -28,7 +28,7 @@ export const stream = api.streamOut<StreamHandshake, RunEventMessage>(
     const lastEventSeq = handshake.lastEventSeq ?? 0;
 
     console.log(`[Stream] Client connected to run ${runId} stream, lastEventSeq: ${lastEventSeq}`);
-    
+
     // Send immediate heartbeat to confirm connection
     await stream.send({
       seq: 0,

@@ -17,7 +17,11 @@ import { MODULES, AGENT_ACTORS } from "../../logging/logger";
  */
 new Subscription(runJobTopic, "agent-orchestrator-worker", {
   handler: async (job: RunJob) => {
-    const subLog = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.SUBSCRIPTION, runId: job.runId });
+    const subLog = log.with({
+      module: MODULES.AGENT,
+      actor: AGENT_ACTORS.SUBSCRIPTION,
+      runId: job.runId,
+    });
     subLog.info("Run job received", { apkPath: job.apkPath, maxSteps: job.maxSteps });
 
     try {
@@ -46,11 +50,24 @@ new Subscription(runJobTopic, "agent-orchestrator-worker", {
         restartLimit: 3,
       };
 
-      logger.info("Run claimed; starting worker", { ts: new Date().toISOString() } as Record<string, unknown>);
-      const worker = new AgentWorker({ orchestrator, runDb, run: claimed, workerId, budgets, leaseDurationMs });
+      logger.info("Run claimed; starting worker", { ts: new Date().toISOString() } as Record<
+        string,
+        unknown
+      >);
+      const worker = new AgentWorker({
+        orchestrator,
+        runDb,
+        run: claimed,
+        workerId,
+        budgets,
+        leaseDurationMs,
+      });
 
       const result = await worker.run();
-      logger.info("Run completed", { status: result.status, emittedEventCount: result.emittedEventCount });
+      logger.info("Run completed", {
+        status: result.status,
+        emittedEventCount: result.emittedEventCount,
+      });
     } catch (err) {
       subLog.error("Run failed", err as Error);
       throw err;

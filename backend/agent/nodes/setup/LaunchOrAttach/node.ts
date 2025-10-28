@@ -1,7 +1,7 @@
 import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
 import type { AppLifecyclePort } from "../../../ports/appium/app-lifecycle.port";
 import type { EventKind } from "../../../domain/events";
-import { ApplicationForegroundContext } from "../../../domain/entities";
+import type { ApplicationForegroundContext } from "../../../domain/entities";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
 
@@ -31,11 +31,18 @@ export async function launchOrAttach(
   output: LaunchOrAttachOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
 }> {
-  const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR, runId: input.runId, nodeName: "LaunchOrAttach" });
+  const logger = log.with({
+    module: MODULES.AGENT,
+    actor: AGENT_ACTORS.ORCHESTRATOR,
+    runId: input.runId,
+    nodeName: "LaunchOrAttach",
+  });
   logger.info("LaunchOrAttach INPUT", { input });
-  
+
   try {
-    const foregroundCtx = await appLifecyclePort.launchApp(input.applicationUnderTestDescriptor.androidPackageId);
+    const foregroundCtx = await appLifecyclePort.launchApp(
+      input.applicationUnderTestDescriptor.androidPackageId,
+    );
     logger.info("ApplicationForegroundContext received", { foregroundCtx });
 
     const output: LaunchOrAttachOutput = {
@@ -93,4 +100,3 @@ export async function launchOrAttach(
     };
   }
 }
-

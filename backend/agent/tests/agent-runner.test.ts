@@ -33,7 +33,13 @@ const BASE_BUDGETS: Budgets = {
  * PURPOSE: Ensures deterministic starting conditions without orchestrator setup.
  */
 function createState(nodeName: TestNodeName, iterationOrdinalNumber = 0): AgentState {
-  const base = createInitialState("tenant-test", "project-test", "run-test", BASE_BUDGETS, new Date().toISOString());
+  const base = createInitialState(
+    "tenant-test",
+    "project-test",
+    "run-test",
+    BASE_BUDGETS,
+    new Date().toISOString(),
+  );
   return {
     ...base,
     nodeName,
@@ -45,10 +51,13 @@ function createState(nodeName: TestNodeName, iterationOrdinalNumber = 0): AgentS
  * createSuccessHandler creates a handler that always succeeds.
  * PURPOSE: Provides a deterministic node for testing transitions.
  */
-function createSuccessHandler(name: TestNodeName, onSuccess: TestNodeName): NodeHandler<never, SuccessOutput, TestNodeName, TestPorts, TestContext> {
+function createSuccessHandler(
+  name: TestNodeName,
+  onSuccess: TestNodeName,
+): NodeHandler<never, SuccessOutput, TestNodeName, TestPorts, TestContext> {
   return {
     name,
-    buildInput: () => ({} as never),
+    buildInput: () => ({}) as never,
     execute: async () => ({
       output: { nodeExecutionOutcomeStatus: "SUCCESS", marker: "success" },
       events: [],
@@ -63,17 +72,24 @@ function createSuccessHandler(name: TestNodeName, onSuccess: TestNodeName): Node
  * createFailureHandler creates a handler that fails with retryable flag.
  * PURPOSE: Tests retry and backtrack behavior in AgentRunner.
  */
-function createFailureHandler(name: TestNodeName, attempt: number, retryable: boolean): NodeHandler<never, FailureOutput, TestNodeName, TestPorts, TestContext> {
+function createFailureHandler(
+  name: TestNodeName,
+  attempt: number,
+  retryable: boolean,
+): NodeHandler<never, FailureOutput, TestNodeName, TestPorts, TestContext> {
   return {
     name,
-    buildInput: () => ({} as never),
+    buildInput: () => ({}) as never,
     execute: async () => ({
       output: { nodeExecutionOutcomeStatus: "FAILURE", marker: "failure", retryable },
       events: [],
     }),
     applyOutput: (prev) => ({ ...prev, iterationOrdinalNumber: attempt }),
     onSuccess: "NodeB",
-    onFailure: { retry: { maxAttempts: 3, baseDelayMs: 100, maxDelayMs: 500 }, backtrackTo: undefined },
+    onFailure: {
+      retry: { maxAttempts: 3, baseDelayMs: 100, maxDelayMs: 500 },
+      backtrackTo: undefined,
+    },
   };
 }
 
@@ -110,11 +126,15 @@ describe("AgentRunner", () => {
     const registry: NodeRegistry<TestNodeName, TestPorts, TestContext> = {
       NodeA: {
         name: "NodeA",
-        buildInput: () => ({} as never),
+        buildInput: () => ({}) as never,
         execute: async () => {
           attempt++;
           return {
-            output: { nodeExecutionOutcomeStatus: attempt < 2 ? "FAILURE" : "SUCCESS", marker: attempt < 2 ? "failure" : "success", retryable: true },
+            output: {
+              nodeExecutionOutcomeStatus: attempt < 2 ? "FAILURE" : "SUCCESS",
+              marker: attempt < 2 ? "failure" : "success",
+              retryable: true,
+            },
             events: [],
           };
         },
@@ -216,6 +236,3 @@ describe("AgentRunner", () => {
     expect(result.stopReason).toBe("budget_exhausted");
   });
 });
-
-
-

@@ -1,4 +1,4 @@
-import { remote } from "webdriverio";
+import { remote } from "webdriver";
 import type { DeviceRuntimeContext } from "../../../domain/entities";
 import type { SessionPort, DeviceConfiguration } from "../../../ports/appium/session.port";
 import { DeviceOfflineError, TimeoutError } from "../errors";
@@ -6,30 +6,21 @@ import type { SessionContext } from "./session-context";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
 
-interface RemoteOptions {
-  hostname: string;
-  port: number;
-  path: string;
-  capabilities: Record<string, unknown>;
-  connectionRetryCount?: number;
-  connectionRetryTimeout?: number;
-  logLevel?: string;
-}
-
 /**
- * WebDriverIO-based session adapter implementing SessionPort.
- * Creates and manages Appium driver sessions using WebDriverIO.
+ * WebDriver-based session adapter implementing SessionPort.
+ * Creates and manages Appium driver sessions using the standalone WebDriver client.
  *
  * PURPOSE:
  * --------
- * Implements SessionPort interface using WebDriverIO WebDriver.
- * Wraps existing Appium tooling and maps to clean architecture contracts.
+ * Implements SessionPort interface using the thin WebDriver client from WDIO monorepo.
+ * Provides direct W3C WebDriver protocol access without WebDriverIO testrunner.
+ * Enables deterministic timing and retry control in the domain layer.
  *
  * RESPONSIBILITIES:
  * -----------------
- * - Implement all SessionPort methods
- * - Map WebDriverIO exceptions to domain errors
- * - Add retry logic for transient failures
+ * - Create/destroy Appium sessions via WebDriver
+ * - Map WebDriver exceptions to domain errors
+ * - No implicit retries/timeouts (domain controls these)
  * - Return domain types, not SDK types
  *
  * IMMUTABILITY:
@@ -37,9 +28,10 @@ interface RemoteOptions {
  * - No mutable state except connection handle
  *
  * TIMEOUTS:
- * - All operations have bounded timeouts (default 10s, max 30s)
+ * - Pass-through to WebDriver config
+ * - Domain layer enforces budgets via AgentState
  */
-export class WebDriverIOSessionAdapter implements SessionPort {
+export class WebDriverSessionAdapter implements SessionPort {
   private context: SessionContext | null = null;
   private readonly timeoutMs: number;
   private readonly maxTimeoutMs: number;
@@ -79,27 +71,27 @@ export class WebDriverIOSessionAdapter implements SessionPort {
       actor: AGENT_ACTORS.ORCHESTRATOR,
       nodeName: "EnsureDevice",
     });
-    logger.info("WebDriverIOSessionAdapter.ensureDevice - Config", { config });
+    logger.info("WebDriverSessionAdapter.ensureDevice - Config", { config });
 
     try {
       // If already connected, return existing context
       if (this.context?.driver) {
-        const sessionId = this.context.driver.sessionId || "unknown";
+        const sessionId = (await this.context.driver.getSessionId()) || "unknown";
         const existingContext = {
           driverSessionId: sessionId,
           deviceId: config.deviceName,
           capabilitiesEcho: (this.context.capabilities as Record<string, unknown>) || {},
           healthProbeStatus: "HEALTHY" as const,
         };
-        logger.info("WebDriverIOSessionAdapter.ensureDevice - Reusing existing context", {
+        logger.info("WebDriverSessionAdapter.ensureDevice - Reusing existing context", {
           existingContext,
         });
         return existingContext;
       }
 
-      logger.info("WebDriverIOSessionAdapter.ensureDevice - Creating new WebDriverIO session");
+      logger.info("WebDriverSessionAdapter.ensureDevice - Creating new WebDriver session");
 
-      // Create new WebDriverIO session
+      // Create new WebDriver session
       const driver = await remote({
         hostname: this.extractHostname(config.appiumServerUrl),
         port: this.extractPort(config.appiumServerUrl),
@@ -118,8 +110,9 @@ export class WebDriverIOSessionAdapter implements SessionPort {
         connectionRetryCount: 5,
         connectionRetryTimeout: this.timeoutMs,
       });
-      const sessionId = driver.sessionId || "unknown";
-      logger.info("WebDriverIOSessionAdapter.ensureDevice - New session created", { sessionId });
+
+      const sessionId = (await driver.getSessionId()) || "unknown";
+      logger.info("WebDriverSessionAdapter.ensureDevice - New session created", { sessionId });
 
       const capabilities = {
         platformName: config.platformName,
@@ -140,10 +133,10 @@ export class WebDriverIOSessionAdapter implements SessionPort {
         healthProbeStatus: "HEALTHY" as const,
       };
 
-      logger.info("WebDriverIOSessionAdapter.ensureDevice - New context", { newContext });
+      logger.info("WebDriverSessionAdapter.ensureDevice - New context", { newContext });
       return newContext;
     } catch (error) {
-      logger.error("WebDriverIOSessionAdapter.ensureDevice - Error", { error });
+      logger.error("WebDriverSessionAdapter.ensureDevice - Error", { error });
       if (error instanceof Error) {
         if (error.message.includes("ECONNREFUSED") || error.message.includes("ECONNRESET")) {
           throw new DeviceOfflineError(`Cannot connect to device: ${error.message}`);

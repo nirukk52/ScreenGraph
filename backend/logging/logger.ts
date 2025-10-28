@@ -3,13 +3,13 @@ import log from "encore.dev/log";
 /**
  * LogContext defines standard fields to correlate logs across runs and workers.
  * PURPOSE: Provides a typed, shared shape for structured logging in the backend.
- * 
+ *
  * Modules represent high-level subsystems:
  * - "run": Run API endpoints and lifecycle management
  * - "agent": Agent orchestration, worker, and subscription logic
  * - "db": Database operations and repositories
  * - "pubsub": Pub/Sub message handling
- * 
+ *
  * Actors represent specific sub-components within a module:
  * - In "run": "start", "stream", "health", "cancel"
  * - In "agent": "orchestrator", "worker", "subscription"
@@ -68,5 +68,3 @@ export const RUN_ACTORS = {
   HEALTH: "health",
   OUTBOX_PUBLISHER: "outbox-publisher",
 } as const;
-
-

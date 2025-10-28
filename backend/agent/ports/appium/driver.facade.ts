@@ -1,4 +1,8 @@
-import type { DeviceConfiguration, DeviceRuntimeContext, ApplicationForegroundContext } from "../../domain/entities";
+import type {
+  DeviceConfiguration,
+  DeviceRuntimeContext,
+  ApplicationForegroundContext,
+} from "../../domain/entities";
 import type { ScreenshotData, UiHierarchyData } from "../../domain/perception";
 import type { SessionPort } from "./session.port";
 import type { AppLifecyclePort } from "./app-lifecycle.port";
@@ -101,4 +105,3 @@ export class DriverPortFacade {
     return this.idleDetectorPort.waitIdle(minQuietMillis, maxWaitMillis);
   }
 }
-

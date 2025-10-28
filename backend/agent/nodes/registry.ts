@@ -19,6 +19,3 @@ export function buildNodeRegistry(
     WaitIdle: createWaitIdleHandler(),
   };
 }
-
-
-

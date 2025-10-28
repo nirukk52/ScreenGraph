@@ -32,4 +32,3 @@ export function createLaunchOrAttachHandler(): NodeHandler<
     onFailure: LaunchOrAttachPolicy,
   };
 }
-

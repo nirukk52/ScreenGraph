@@ -31,13 +31,18 @@ export async function ensureDevice(
   output: EnsureDeviceOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
 }> {
-  const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR, runId: input.runId, nodeName: "EnsureDevice" });
+  const logger = log.with({
+    module: MODULES.AGENT,
+    actor: AGENT_ACTORS.ORCHESTRATOR,
+    runId: input.runId,
+    nodeName: "EnsureDevice",
+  });
   logger.info("EnsureDevice INPUT", { input });
-  
+
   try {
     const ctx = await sessionPort.ensureDevice(input.deviceConfiguration);
     logger.info("DeviceRuntimeContext received", { ctx });
-    
+
     const contextId = generateId();
     logger.info("Generated contextId", { contextId });
 
@@ -92,6 +97,3 @@ export async function ensureDevice(
     };
   }
 }
-
-
-

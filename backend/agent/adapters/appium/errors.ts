@@ -7,7 +7,7 @@
  * Device is permanently offline or unreachable.
  */
 export class DeviceOfflineError extends Error {
-  constructor(message: string = "Device is offline or unreachable") {
+  constructor(message = "Device is offline or unreachable") {
     super(message);
     this.name = "DeviceOfflineError";
   }
@@ -17,7 +17,7 @@ export class DeviceOfflineError extends Error {
  * App package not found or not installed.
  */
 export class AppNotInstalledError extends Error {
-  constructor(message: string = "App not installed") {
+  constructor(message = "App not installed") {
     super(message);
     this.name = "AppNotInstalledError";
   }
@@ -27,7 +27,7 @@ export class AppNotInstalledError extends Error {
  * App crashed unexpectedly during operation.
  */
 export class AppCrashedError extends Error {
-  constructor(message: string = "App crashed unexpectedly") {
+  constructor(message = "App crashed unexpectedly") {
     super(message);
     this.name = "AppCrashedError";
   }
@@ -37,7 +37,7 @@ export class AppCrashedError extends Error {
  * Operation exceeded timeout threshold.
  */
 export class TimeoutError extends Error {
-  constructor(message: string = "Operation timed out") {
+  constructor(message = "Operation timed out") {
     super(message);
     this.name = "TimeoutError";
   }
@@ -47,7 +47,7 @@ export class TimeoutError extends Error {
  * Element not found or not visible.
  */
 export class ElementNotFoundError extends Error {
-  constructor(message: string = "Element not found") {
+  constructor(message = "Element not found") {
     super(message);
     this.name = "ElementNotFoundError";
   }
@@ -57,9 +57,8 @@ export class ElementNotFoundError extends Error {
  * Invalid argument or parameter.
  */
 export class InvalidArgumentError extends Error {
-  constructor(message: string = "Invalid argument") {
+  constructor(message = "Invalid argument") {
     super(message);
     this.name = "InvalidArgumentError";
   }
 }
-

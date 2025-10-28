@@ -95,10 +95,10 @@ export const start = api<StartRunRequest, StartRunResponse>(
     });
 
     // Build full stream URL from request headers
-    const protocol = rawRequest?.headers['x-forwarded-proto'] || 'ws';
-    const host = rawRequest?.headers.host || 'localhost:4002';
+    const protocol = rawRequest?.headers["x-forwarded-proto"] || "ws";
+    const host = rawRequest?.headers.host || "localhost:4002";
     const baseUrl = `${protocol}://${host}`;
-    
+
     const streamUrl = `${baseUrl}/run/${run.run_id}/stream`;
     logger.info("Run initiated", { streamUrl });
 

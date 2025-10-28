@@ -17,10 +17,10 @@ const DEFAULT_BACKOFF_MS = [100, 200, 400];
 /**
  * Retry decorator for async operations.
  * Retries on transient failures (DeviceOfflineError, TimeoutError).
- * 
+ *
  * Args:
  *   options: Retry configuration (maxAttempts, backoffMs)
- * 
+ *
  * Returns:
  *   Decorated function with retry logic
  */
@@ -28,11 +28,7 @@ export function retryOnTransient(options: RetryOptions = {}) {
   const maxAttempts = options.maxAttempts || DEFAULT_MAX_ATTEMPTS;
   const backoffMs = options.backoffMs || DEFAULT_BACKOFF_MS;
 
-  return function (
-    target: unknown,
-    propertyKey: string,
-    descriptor: PropertyDescriptor,
-  ) {
+  return (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: unknown[]) {
@@ -72,10 +68,10 @@ export function retryOnTransient(options: RetryOptions = {}) {
 
 /**
  * Check if an error is transient (should be retried).
- * 
+ *
  * Args:
  *   error: Error to check
- * 
+ *
  * Returns:
  *   True if error is transient, False otherwise
  */
@@ -93,4 +89,3 @@ export function isTransientError(error: Error): boolean {
     error.message.toLowerCase().includes(pattern.toLowerCase()),
   );
 }
-

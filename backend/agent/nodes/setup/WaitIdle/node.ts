@@ -31,9 +31,14 @@ export async function waitIdle(
   output: WaitIdleOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
 }> {
-  const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR, runId: input.runId, nodeName: "WaitIdle" });
+  const logger = log.with({
+    module: MODULES.AGENT,
+    actor: AGENT_ACTORS.ORCHESTRATOR,
+    runId: input.runId,
+    nodeName: "WaitIdle",
+  });
   logger.info("WaitIdle INPUT", { input });
-  
+
   try {
     const quietWindowMillis = await idleDetectorPort.waitIdle(
       input.idleHeuristicsConfiguration.minQuietMillis,
@@ -98,4 +103,3 @@ export async function waitIdle(
     };
   }
 }
-

@@ -76,5 +76,3 @@ export class RunEventsRepo implements RunEventsDbPort {
     return row?.seq ?? 0;
   }
 }
-
-

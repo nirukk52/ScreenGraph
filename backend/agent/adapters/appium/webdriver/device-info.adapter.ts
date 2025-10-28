@@ -3,10 +3,15 @@ import { DeviceOfflineError, TimeoutError } from "../errors";
 import type { SessionContext } from "./session-context";
 
 /**
- * WebDriverIO-based device info adapter implementing DeviceInfoPort.
- * Queries device information (screen size, readiness) using WebDriverIO.
+ * WebDriver-based device info adapter implementing DeviceInfoPort.
+ * Queries device information (screen size, readiness) using W3C WebDriver commands.
+ *
+ * PURPOSE:
+ * --------
+ * Implements DeviceInfoPort using W3C WebDriver commands for device state queries.
+ * Enables screen dimension checks and device health verification.
  */
-export class WebDriverIODeviceInfoAdapter implements DeviceInfoPort {
+export class WebDriverDeviceInfoAdapter implements DeviceInfoPort {
   constructor(private contextProvider: () => SessionContext | null) {}
 
   private get context(): SessionContext {
@@ -18,7 +23,7 @@ export class WebDriverIODeviceInfoAdapter implements DeviceInfoPort {
   }
 
   /**
-   * Get current screen size in pixels.
+   * Get current screen size in pixels using W3C command.
    *
    * Returns:
    *   Object with widthPx and heightPx
@@ -42,7 +47,7 @@ export class WebDriverIODeviceInfoAdapter implements DeviceInfoPort {
   }
 
   /**
-   * Check if device is connected and responsive.
+   * Check if device is connected and responsive using page source health check.
    *
    * Returns:
    *   True if device is ready, False otherwise

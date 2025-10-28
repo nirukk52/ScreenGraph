@@ -3,10 +3,15 @@ import { TimeoutError } from "../errors";
 import type { SessionContext } from "./session-context";
 
 /**
- * WebDriverIO-based idle detector adapter implementing IdleDetectorPort.
- * Detects UI stability/idle state using heuristics.
+ * WebDriver-based idle detector adapter implementing IdleDetectorPort.
+ * Detects UI stability/idle state using page source change heuristics.
+ *
+ * PURPOSE:
+ * --------
+ * Implements IdleDetectorPort using simple page source polling.
+ * Domain layer controls all timing budgets; no implicit waits in adapter.
  */
-export class WebDriverIOIdleDetectorAdapter implements IdleDetectorPort {
+export class WebDriverIdleDetectorAdapter implements IdleDetectorPort {
   constructor(private contextProvider: () => SessionContext | null) {}
 
   private get context(): SessionContext {
@@ -18,7 +23,7 @@ export class WebDriverIOIdleDetectorAdapter implements IdleDetectorPort {
   }
 
   /**
-   * Wait for UI to become idle (no activity detected).
+   * Wait for UI to become idle by detecting stable page source.
    *
    * Args:
    *   minQuietMillis: Minimum milliseconds of quiet window required
@@ -49,7 +54,7 @@ export class WebDriverIOIdleDetectorAdapter implements IdleDetectorPort {
           return quietWindow;
         }
 
-        // Small delay before next check
+        // Small delay before next check (domain controls timing)
         await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (error) {
         if (error instanceof Error && error.message.includes("timeout")) {

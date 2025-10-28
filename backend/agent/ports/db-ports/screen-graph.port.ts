@@ -21,5 +21,3 @@ export interface ScreenGraphDbPort {
     actionKind: string,
   ): Promise<void>;
 }
-
-

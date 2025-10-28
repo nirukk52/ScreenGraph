@@ -32,6 +32,3 @@ export function createProvisionAppHandler(): NodeHandler<
     onFailure: ProvisionAppPolicy,
   };
 }
-
-
-

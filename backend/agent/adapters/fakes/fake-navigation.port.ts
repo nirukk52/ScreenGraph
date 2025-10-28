@@ -13,4 +13,3 @@ export class FakeNavigationPort implements NavigationPort {
     // No-op for testing
   }
 }
-

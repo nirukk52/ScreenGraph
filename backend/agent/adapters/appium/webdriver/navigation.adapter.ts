@@ -3,10 +3,15 @@ import { TimeoutError } from "../errors";
 import type { SessionContext } from "./session-context";
 
 /**
- * WebDriverIO-based navigation adapter implementing NavigationPort.
- * Performs system-level navigation (back, home) using WebDriverIO.
+ * WebDriver-based navigation adapter implementing NavigationPort.
+ * Performs system-level navigation (back, home) using W3C WebDriver commands.
+ *
+ * PURPOSE:
+ * --------
+ * Implements NavigationPort using W3C commands and Appium mobile extensions.
+ * Direct protocol access without WebDriverIO helper methods.
  */
-export class WebDriverIONavigationAdapter implements NavigationPort {
+export class WebDriverNavigationAdapter implements NavigationPort {
   constructor(private contextProvider: () => SessionContext | null) {}
 
   private get context(): SessionContext {
@@ -18,7 +23,7 @@ export class WebDriverIONavigationAdapter implements NavigationPort {
   }
 
   /**
-   * Navigate back (hardware or software back button).
+   * Navigate back (hardware or software back button) using W3C command.
    *
    * Raises:
    *   TimeoutError: If navigation timed out
@@ -35,14 +40,15 @@ export class WebDriverIONavigationAdapter implements NavigationPort {
   }
 
   /**
-   * Go to home screen.
+   * Go to home screen using Appium mobile extension (Android KEYCODE_HOME = 3).
    *
    * Raises:
    *   TimeoutError: If navigation timed out
    */
   async pressHome(): Promise<void> {
     try {
-      await this.context.driver.pressKeyCode(3); // KEYCODE_HOME
+      // Android keycode 3 = KEYCODE_HOME
+      await this.context.driver.execute("mobile: pressKey", { keycode: 3 });
     } catch (error) {
       if (error instanceof Error && error.message.includes("timeout")) {
         throw new TimeoutError(`Home navigation timed out: ${error.message}`);

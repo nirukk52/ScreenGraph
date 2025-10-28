@@ -78,9 +78,7 @@ async function publishBatch() {
 
       for (const event of events) {
         try {
-          console.log(
-            `[OutboxPublisher] Publishing ${event.run_id}#${event.seq} (${event.kind})`,
-          );
+          console.log(`[OutboxPublisher] Publishing ${event.run_id}#${event.seq} (${event.kind})`);
 
           // TODO: Replace with real publish (emit to Redis topic/websocket/etc)
           // await redis.publish(`run:${event.run_id}`, JSON.stringify(event.payload));
@@ -96,10 +94,7 @@ async function publishBatch() {
           lastPublishedSeq = event.seq;
           totalEventsPublished++;
         } catch (err) {
-          console.error(
-            `[OutboxPublisher] Failed to publish ${event.run_id}#${event.seq}:`,
-            err,
-          );
+          console.error(`[OutboxPublisher] Failed to publish ${event.run_id}#${event.seq}:`, err);
           // Stop processing this batch if we hit an error
           break;
         }

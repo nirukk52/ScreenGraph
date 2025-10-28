@@ -7,7 +7,14 @@ import type { IdleDetectorPort } from "../ports/appium/idle-detector.port";
  * AgentNodeName enumerates all nodes available in the agent execution graph.
  * PURPOSE: Drives typed routing for node execution and transitions across all phases.
  */
-export type AgentNodeName = "EnsureDevice" | "ProvisionApp" | "LaunchOrAttach" | "WaitIdle" | "Perceive" | "SwitchPolicy" | "RestartApp";
+export type AgentNodeName =
+  | "EnsureDevice"
+  | "ProvisionApp"
+  | "LaunchOrAttach"
+  | "WaitIdle"
+  | "Perceive"
+  | "SwitchPolicy"
+  | "RestartApp";
 
 /**
  * AgentContext captures all configuration inputs needed by nodes across the agent graph.
@@ -49,6 +56,3 @@ export interface AgentPorts {
   appLifecyclePort: AppLifecyclePort;
   idleDetectorPort: IdleDetectorPort;
 }
-
-
-

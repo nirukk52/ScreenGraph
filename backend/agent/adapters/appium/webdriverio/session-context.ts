@@ -9,4 +9,3 @@ export interface SessionContext {
   driver: Browser;
   capabilities: RemoteOptions["capabilities"];
 }
-

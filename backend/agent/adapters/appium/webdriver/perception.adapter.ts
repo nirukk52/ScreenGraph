@@ -4,10 +4,15 @@ import { TimeoutError } from "../errors";
 import type { SessionContext } from "./session-context";
 
 /**
- * WebDriverIO-based perception adapter implementing PerceptionPort.
- * Captures screenshots and UI hierarchy using WebDriverIO.
+ * WebDriver-based perception adapter implementing PerceptionPort.
+ * Captures screenshots and UI hierarchy using W3C WebDriver commands.
+ *
+ * PURPOSE:
+ * --------
+ * Implements PerceptionPort using W3C WebDriver commands for UI capture.
+ * Returns raw data (domain will handle storage/lazy loading of artifacts in MVP).
  */
-export class WebDriverIOPerceptionAdapter implements PerceptionPort {
+export class WebDriverPerceptionAdapter implements PerceptionPort {
   constructor(private contextProvider: () => SessionContext | null) {}
 
   private get context(): SessionContext {
@@ -19,7 +24,7 @@ export class WebDriverIOPerceptionAdapter implements PerceptionPort {
   }
 
   /**
-   * Capture a full-screen screenshot.
+   * Capture a full-screen screenshot using W3C command.
    *
    * Returns:
    *   ScreenshotData with base64 PNG image and dimensions
@@ -52,7 +57,7 @@ export class WebDriverIOPerceptionAdapter implements PerceptionPort {
   }
 
   /**
-   * Capture UI hierarchy as XML/JSON.
+   * Capture UI hierarchy as XML using W3C command.
    *
    * Returns:
    *   UiHierarchyData with XML string and capture timestamp

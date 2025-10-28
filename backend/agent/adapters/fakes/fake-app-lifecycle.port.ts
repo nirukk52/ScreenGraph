@@ -22,4 +22,3 @@ export class FakeAppLifecyclePort implements AppLifecyclePort {
     return "com.android.launcher";
   }
 }
-

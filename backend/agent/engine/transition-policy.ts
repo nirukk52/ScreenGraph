@@ -14,5 +14,3 @@ export function computeBackoffDelayMs(
   const jittered = Math.floor(capped * (0.75 + 0.25 * jitter));
   return Math.max(baseDelayMs, Math.min(jittered, maxDelayMs));
 }
-
-

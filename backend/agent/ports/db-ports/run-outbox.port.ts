@@ -21,4 +21,3 @@ export interface RunOutboxDbPort {
    */
   advanceCursor(runId: string, publishedSeq: number): Promise<void>;
 }
-

@@ -31,7 +31,13 @@ const BASE_BUDGETS: Budgets = {
  * PURPOSE: Ensures deterministic starting conditions without orchestrator setup.
  */
 function createState(nodeName: TestNodeName, iterationOrdinalNumber = 0): AgentState {
-  const base = createInitialState("tenant-test", "project-test", "run-test", BASE_BUDGETS, new Date().toISOString());
+  const base = createInitialState(
+    "tenant-test",
+    "project-test",
+    "run-test",
+    BASE_BUDGETS,
+    new Date().toISOString(),
+  );
   return {
     ...base,
     nodeName,
@@ -43,7 +49,9 @@ function createState(nodeName: TestNodeName, iterationOrdinalNumber = 0): AgentS
  * createEngine constructs a NodeEngine with the given registry.
  * PURPOSE: Keeps tests concise by centralizing engine instantiation.
  */
-function createEngine(registry: NodeRegistry<TestNodeName, TestPorts, TestContext>): NodeEngine<TestNodeName, TestPorts, TestContext> {
+function createEngine(
+  registry: NodeRegistry<TestNodeName, TestPorts, TestContext>,
+): NodeEngine<TestNodeName, TestPorts, TestContext> {
   return new NodeEngine<TestNodeName, TestPorts, TestContext>(registry);
 }
 
@@ -91,23 +99,24 @@ describe("NodeEngine", () => {
   });
 
   it("retries the same node on failure within attempt budget", async () => {
-    const failingHandler: NodeHandler<void, FailureOutput, "FailingNode", TestPorts, TestContext> = {
-      name: "FailingNode",
-      buildInput: () => undefined,
-      async execute(): Promise<NodeExecutorResult<FailureOutput>> {
-        return {
-          output: { nodeExecutionOutcomeStatus: "FAILURE", marker: "failure" },
-          events: [],
-        };
-      },
-      applyOutput(prev: AgentState): AgentState {
-        return prev;
-      },
-      onSuccess: "RecoveryNode",
-      onFailure: {
-        retry: { maxAttempts: 3, baseDelayMs: 100, maxDelayMs: 500 },
-      },
-    };
+    const failingHandler: NodeHandler<void, FailureOutput, "FailingNode", TestPorts, TestContext> =
+      {
+        name: "FailingNode",
+        buildInput: () => undefined,
+        async execute(): Promise<NodeExecutorResult<FailureOutput>> {
+          return {
+            output: { nodeExecutionOutcomeStatus: "FAILURE", marker: "failure" },
+            events: [],
+          };
+        },
+        applyOutput(prev: AgentState): AgentState {
+          return prev;
+        },
+        onSuccess: "RecoveryNode",
+        onFailure: {
+          retry: { maxAttempts: 3, baseDelayMs: 100, maxDelayMs: 500 },
+        },
+      };
 
     const registry: NodeRegistry<TestNodeName, TestPorts, TestContext> = {
       FailingNode: failingHandler,
@@ -133,7 +142,13 @@ describe("NodeEngine", () => {
   });
 
   it("backtracks when retry budget is exhausted", async () => {
-    const backtrackingHandler: NodeHandler<void, FailureOutput, "FailingNode", TestPorts, TestContext> = {
+    const backtrackingHandler: NodeHandler<
+      void,
+      FailureOutput,
+      "FailingNode",
+      TestPorts,
+      TestContext
+    > = {
       name: "FailingNode",
       buildInput: () => undefined,
       async execute(): Promise<NodeExecutorResult<FailureOutput>> {
@@ -176,5 +191,3 @@ describe("NodeEngine", () => {
     expect(result.state.iterationOrdinalNumber).toBe(0);
   });
 });
-
-

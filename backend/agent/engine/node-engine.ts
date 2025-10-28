@@ -14,7 +14,9 @@ export class NodeEngine<N extends string, P, C> {
   /**
    * runOnce executes the current node and returns the next transition decision.
    */
-  async runOnce(args: EngineRunOnceArgs<P, C> & { currentNode: N }): Promise<EngineRunOnceResult<N>> {
+  async runOnce(
+    args: EngineRunOnceArgs<P, C> & { currentNode: N },
+  ): Promise<EngineRunOnceResult<N>> {
     const { state, nowIso, seed, ports, ctx, currentNode } = args;
 
     const handler = this.resolveHandler(currentNode);
@@ -45,7 +47,12 @@ export class NodeEngine<N extends string, P, C> {
     const { retry, backtrackTo } = handler.onFailure;
     const canRetry = retryable !== false;
     if (attempt < retry.maxAttempts && canRetry) {
-      const retryDelayMs = computeBackoffDelayMs(attempt, retry.baseDelayMs, retry.maxDelayMs, seed);
+      const retryDelayMs = computeBackoffDelayMs(
+        attempt,
+        retry.baseDelayMs,
+        retry.maxDelayMs,
+        seed,
+      );
       return {
         state: { ...updated, iterationOrdinalNumber: attempt },
         nodeName: handler.name,
@@ -95,5 +102,3 @@ export class NodeEngine<N extends string, P, C> {
     return handler as any;
   }
 }
-
-

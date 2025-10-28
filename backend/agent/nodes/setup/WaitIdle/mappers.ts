@@ -25,4 +25,3 @@ export function applyWaitIdleOutput(prev: AgentState, _output: WaitIdleOutput): 
     // but doesn't update AgentState fields yet
   };
 }
-

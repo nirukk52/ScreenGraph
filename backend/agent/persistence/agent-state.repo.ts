@@ -48,5 +48,3 @@ export class AgentStateRepo implements AgentStateDbPort {
     return JSON.parse(row.state_json);
   }
 }
-
-

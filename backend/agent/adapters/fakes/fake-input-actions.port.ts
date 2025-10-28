@@ -27,4 +27,3 @@ export class FakeInputActionsPort implements InputActionsPort {
     // No-op for testing
   }
 }
-

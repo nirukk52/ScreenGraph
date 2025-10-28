@@ -14,5 +14,3 @@ export interface AgentStateDbPort {
   /** Returns the most recent snapshot for a run; null when none exist. */
   getLatestSnapshot(runId: string): Promise<AgentState | null>;
 }
-
-

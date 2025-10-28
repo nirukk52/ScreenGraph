@@ -8,16 +8,20 @@ import { MODULES, AGENT_ACTORS } from "../../logging/logger";
  * PURPOSE: Extracts node-specific config from run record without parsing JSON in registry.
  */
 export function buildAgentContext(run: RunRecord): AgentContext {
-  const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR, runId: run.runId });
+  const logger = log.with({
+    module: MODULES.AGENT,
+    actor: AGENT_ACTORS.ORCHESTRATOR,
+    runId: run.runId,
+  });
   logger.info("buildAgentContext - RunRecord", { run });
-  
+
   const appConfig = JSON.parse(run.appConfigId) as {
     appiumServerUrl: string;
     packageName: string;
     apkPath: string;
     appActivity?: string;
   };
-  
+
   logger.info("buildAgentContext - Parsed AppConfig", { appConfig });
 
   const context: AgentContext = {
@@ -51,11 +55,8 @@ export function buildAgentContext(run: RunRecord): AgentContext {
       },
     },
   };
-  
+
   logger.info("buildAgentContext - Built Context", { context });
-  
+
   return context;
 }
-
-
-

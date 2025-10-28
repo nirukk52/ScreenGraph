@@ -29,4 +29,3 @@ export class FakeSessionPort implements SessionPort {
     this.isClosed = true;
   }
 }
-
