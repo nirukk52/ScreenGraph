@@ -31,10 +31,26 @@ export class WebDriverIOPackageManagerAdapter implements PackageManagerPort {
    */
   async isInstalled(packageId: string): Promise<PackageInfo> {
     try {
-      // TODO: Implement actual WebDriverIO package query when ProvisionApp is wired
-      return {
-        installed: false,
-      };
+      const installed = await this.context.driver.isAppInstalled(packageId);
+      if (!installed) return { installed: false };
+
+      // Attempt to retrieve version info via dumpsys package
+      try {
+        const result = await this.context.driver.execute("mobile: shell", {
+          command: "dumpsys",
+          args: ["package", packageId],
+        });
+        const output = typeof result === "string" ? result : JSON.stringify(result);
+        const versionNameMatch = output.match(/versionName=([^\s\n]+)/);
+        // versionCode may appear as "versionCode=123" or "versionCode=123 targetSdk=..."
+        const versionCodeMatch = output.match(/versionCode=(\d+)/);
+        const versionName = versionNameMatch ? versionNameMatch[1] : undefined;
+        const versionCode = versionCodeMatch ? Number.parseInt(versionCodeMatch[1], 10) : undefined;
+        return { installed: true, versionName, versionCode };
+      } catch {
+        // If parsing fails, still report installed=true without version details
+        return { installed: true };
+      }
     } catch (error) {
       if (error instanceof Error && error.message.includes("timeout")) {
         throw new TimeoutError(`Package query timed out: ${error.message}`);
@@ -57,17 +73,13 @@ export class WebDriverIOPackageManagerAdapter implements PackageManagerPort {
    *   TimeoutError: If installation timed out
    *   InvalidArgumentError: If APK is invalid or corrupted
    */
-  async installFromObjectStorage(ref: string, expectedSha256?: string): Promise<{ packageId: string }> {
+  async installFromObjectStorage(ref: string, _expectedSha256?: string): Promise<{ packageId: string }> {
     try {
-      // TODO: Implement actual WebDriverIO APK installation when ProvisionApp is wired
-      if (expectedSha256 && ref.includes("invalid")) {
-        throw new InvalidArgumentError("APK signature mismatch");
-      }
-      return { packageId: "com.example.app" };
+      // WebDriverIO will upload and install the APK located at ref (path accessible to Appium server)
+      await this.context.driver.installApp(ref);
+      // The caller already knows the packageId; return placeholder to satisfy interface
+      return { packageId: "" };
     } catch (error) {
-      if (error instanceof InvalidArgumentError) {
-        throw error;
-      }
       if (error instanceof Error && error.message.includes("timeout")) {
         throw new TimeoutError(`Installation timed out: ${error.message}`);
       }
@@ -90,11 +102,27 @@ export class WebDriverIOPackageManagerAdapter implements PackageManagerPort {
    */
   async getSignatureSha256(packageId: string): Promise<string> {
     try {
-      // TODO: Implement actual WebDriverIO signature query when ProvisionApp is wired
-      if (packageId === "com.example.nonexistent") {
+      const installed = await this.context.driver.isAppInstalled(packageId);
+      if (!installed) {
         throw new AppNotInstalledError(`Package not found: ${packageId}`);
       }
-      return "a1b2c3d4e5f6";
+      const result = await this.context.driver.execute("mobile: shell", {
+        command: "dumpsys",
+        args: ["package", packageId],
+      });
+      const output = typeof result === "string" ? result : JSON.stringify(result);
+      // Look for a line like: "SHA-256 digest: ABCDEF..."
+      const shaMatch = output.match(/SHA-256 digest:\s*([A-Fa-f0-9:]+)/);
+      if (shaMatch && shaMatch[1]) {
+        // Normalize to lowercase without colons
+        return shaMatch[1].replace(/:/g, "").toLowerCase();
+      }
+      // Fallback: attempt to parse legacy signature lines
+      const legacyMatch = output.match(/signatures=\[([A-Fa-f0-9:]+)\]/);
+      if (legacyMatch && legacyMatch[1]) {
+        return legacyMatch[1].replace(/:/g, "").toLowerCase();
+      }
+      throw new InvalidArgumentError("Unable to parse SHA-256 signature from dumpsys output");
     } catch (error) {
       if (error instanceof AppNotInstalledError) {
         throw error;
@@ -102,7 +130,20 @@ export class WebDriverIOPackageManagerAdapter implements PackageManagerPort {
       if (error instanceof Error && error.message.includes("timeout")) {
         throw new TimeoutError(`Signature query timed out: ${error.message}`);
       }
-      throw new AppNotInstalledError(`Failed to get signature: ${error}`);
+      throw new InvalidArgumentError(`Failed to get signature: ${error}`);
+    }
+  }
+
+  async uninstall(packageId: string): Promise<boolean> {
+    try {
+      await this.context.driver.removeApp(packageId);
+      return true;
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("timeout")) {
+        throw new TimeoutError(`Uninstall timed out: ${error.message}`);
+      }
+      // Consider uninstall non-fatal; surface as invalid argument if e.g. not installed
+      throw new InvalidArgumentError(`Failed to uninstall package: ${error}`);
     }
   }
 }

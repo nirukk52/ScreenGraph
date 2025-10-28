@@ -36,10 +36,13 @@ export function buildAgentContext(run: RunRecord): AgentContext {
     },
     provisionApp: {
       installationPolicy: "INSTALL_IF_MISSING",
+      reinstallIfOlder: true,
       applicationUnderTestDescriptor: {
         androidPackageId: appConfig.packageName,
         apkStorageObjectReference: appConfig.apkPath,
         expectedBuildSignatureSha256: "default-sha256",
+        expectedVersionCode: appConfig.expectedVersionCode ?? null,
+        expectedVersionName: appConfig.expectedVersionName ?? null,
       },
     },
     launchOrAttach: {

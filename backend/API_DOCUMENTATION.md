@@ -329,6 +329,74 @@ export function streamRunEvents(runId: string, onEvent: (event: RunEvent) => voi
 
 ---
 
+## Artifacts Service (Internal)
+
+The artifacts service manages persistent storage for agent-generated artifacts like screenshots and UI XML dumps.
+
+### 8. Store Artifact
+
+**POST** `/artifacts` (Internal only)
+
+Store an artifact (screenshot or UI XML) with deterministic content-addressed reference.
+
+**Request Body:**
+```typescript
+{
+  runId: string;
+  kind: "screenshot" | "ui_xml";
+  contentBase64: string;
+  format?: "png" | "jpg";           // For screenshots
+  widthPx?: number;                  // For screenshots
+  heightPx?: number;                 // For screenshots
+  captureTimestampMs?: number;
+}
+```
+
+**Response:** `200 OK`
+```typescript
+{
+  refId: string;                     // Deterministic reference
+  byteSize: number;
+  contentHashSha256: string;
+}
+```
+
+**Reference Format:**
+```
+obj://artifacts/{runId}/{kind}/{sha256}.{ext}
+```
+
+**Idempotency:** Same content produces same `refId`; duplicate inserts are ignored.
+
+**Database Index:** Metadata stored in `artifacts_index` table with `(artifact_ref_id)` primary key.
+
+---
+
+### 9. Get Artifact Metadata
+
+**GET** `/artifacts/:refId` (Internal only)
+
+Retrieve indexed metadata for a stored artifact.
+
+**Path Parameters:**
+- `refId` (string): Artifact reference ID
+
+**Response:** `200 OK`
+```typescript
+{
+  refId: string;
+  runId: string;
+  kind: "screenshot" | "ui_xml";
+  byteSize: number | null;
+  contentHashSha256: string | null;
+  createdAt: string;
+}
+```
+
+**Error:** `404 not_found` if artifact not indexed.
+
+---
+
 ## Logging & Observability
 
 ### Structured Logging

@@ -54,6 +54,20 @@ export interface PackageManagerPort {
   installFromObjectStorage(ref: string, expectedSha256?: string): Promise<{ packageId: string }>;
 
   /**
+   * Uninstall package from device if present.
+   *
+   * Args:
+   *   packageId: Android package name
+   *
+   * Returns:
+   *   True if uninstall attempt completed
+   *
+   * Raises:
+   *   TimeoutError: If uninstall timed out
+   */
+  uninstall?(packageId: string): Promise<boolean>;
+
+  /**
    * Get SHA-256 signature of installed package.
    *
    * Args:

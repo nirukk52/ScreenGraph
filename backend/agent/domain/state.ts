@@ -29,6 +29,51 @@ export interface Counters {
   errors: number;
 }
 
+export type SignatureValidationStatus = "MATCHED" | "MISMATCHED";
+
+export interface ProvisionedAppState {
+  /**
+   * packageId identifies the Android application currently provisioned on device.
+   * PURPOSE: Enables downstream nodes to know which app build is active without re-querying the device.
+   */
+  packageId: string;
+  /**
+   * expectedVersionName echoes the desired semantic version of the build when provided.
+   * PURPOSE: Captures policy intent for telemetry and debugging.
+   */
+  expectedVersionName: string | null;
+  /**
+   * expectedVersionCode captures the desired integer version code when supplied.
+   * PURPOSE: Allows numeric comparisons against installed version codes.
+   */
+  expectedVersionCode: number | null;
+  /**
+   * installedVersionName records the semantic version returned by the package manager.
+   * PURPOSE: Surfaces the actual installed build for analytics and retries.
+   */
+  installedVersionName: string | null;
+  /**
+   * installedVersionCode records the build code returned by the package manager.
+   * PURPOSE: Enables deterministic comparison with expected version code.
+   */
+  installedVersionCode: number | null;
+  /**
+   * installedJustNow indicates whether the node performed an install during this execution.
+   * PURPOSE: Helps Launch node choose cold or warm start semantics.
+   */
+  installedJustNow: boolean;
+  /**
+   * signatureValidationStatus reflects whether APK signature matched expectation.
+   * PURPOSE: Guards against tampered builds before launch.
+   */
+  signatureValidationStatus: SignatureValidationStatus;
+  /**
+   * lastProvisionedAt records ISO timestamp when provisioning completed.
+   * PURPOSE: Supports auditing and timeout analysis downstream.
+   */
+  lastProvisionedAt: string;
+}
+
 export interface Budgets {
   maxSteps: number;
   maxTimeMs: number;

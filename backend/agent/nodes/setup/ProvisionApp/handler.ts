@@ -20,8 +20,8 @@ export function createProvisionAppHandler(): NodeHandler<
   return {
     name: "ProvisionApp",
     buildInput: buildProvisionAppInput,
-    async execute(input, _ports) {
-      const result = await provisionApp(input);
+    async execute(input, ports) {
+      const result = await provisionApp(input, ports.packageManagerPort);
       return {
         output: result.output,
         events: result.events.map((evt) => ({ kind: evt.kind, payload: evt.payload })),

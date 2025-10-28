@@ -17,6 +17,10 @@ export function buildProvisionAppInput(state: AgentState, ctx: AgentContext): Pr
     deviceRuntimeContextId: state.deviceRuntimeContextId,
     applicationUnderTestDescriptor: ctx.provisionApp.applicationUnderTestDescriptor,
     installationPolicy: ctx.provisionApp.installationPolicy,
+    reinstallIfOlder: ctx.provisionApp.reinstallIfOlder,
+    stepOrdinal: state.stepOrdinal + 1,
+    iterationOrdinalNumber: state.iterationOrdinalNumber,
+    randomSeed: state.randomSeed,
   };
 }
 
@@ -25,10 +29,8 @@ export function buildProvisionAppInput(state: AgentState, ctx: AgentContext): Pr
  * PURPOSE: Separates output mutation from handler wiring to keep registry declarative.
  * Current implementation is a no-op; future versions may persist app provisioning outcome.
  */
-export function applyProvisionAppOutput(prev: AgentState, _output: ProvisionAppOutput): AgentState {
+export function applyProvisionAppOutput(prev: AgentState, output: ProvisionAppOutput): AgentState {
   return {
     ...prev,
-    // No direct state mutation for now; ProvisionApp output contains applicationProvisioningOutcome
-    // but doesn't update AgentState fields yet
   };
 }

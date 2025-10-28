@@ -9,6 +9,7 @@ import type { AgentNodeName, AgentPorts, AgentContext } from "../nodes/types";
 import { WebDriverIOSessionAdapter } from "../adapters/appium/webdriverio/session.adapter";
 import { WebDriverIOAppLifecycleAdapter } from "../adapters/appium/webdriverio/app-lifecycle.adapter";
 import { WebDriverIOIdleDetectorAdapter } from "../adapters/appium/webdriverio/idle-detector.adapter";
+import { WebDriverIOPackageManagerAdapter } from "../adapters/appium/webdriverio/package-manager.adapter";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../logging/logger";
 
@@ -24,7 +25,8 @@ function buildAgentPorts(): AgentPorts {
   const contextProvider = () => sessionPort.getContext();
   const appLifecyclePort = new WebDriverIOAppLifecycleAdapter(contextProvider);
   const idleDetectorPort = new WebDriverIOIdleDetectorAdapter(contextProvider);
-  return { sessionPort, appLifecyclePort, idleDetectorPort };
+  const packageManagerPort = new WebDriverIOPackageManagerAdapter(contextProvider);
+  return { sessionPort, appLifecyclePort, idleDetectorPort, packageManagerPort };
 }
 
 /**

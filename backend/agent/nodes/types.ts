@@ -2,6 +2,7 @@ import type { DeviceConfiguration } from "../ports/appium/session.port";
 import type { SessionPort } from "../ports/appium/session.port";
 import type { AppLifecyclePort } from "../ports/appium/app-lifecycle.port";
 import type { IdleDetectorPort } from "../ports/appium/idle-detector.port";
+import type { PackageManagerPort } from "../ports/appium/package-manager.port";
 
 /**
  * AgentNodeName enumerates all nodes available in the agent execution graph.
@@ -27,10 +28,13 @@ export interface AgentContext {
   };
   provisionApp: {
     installationPolicy: "INSTALL_IF_MISSING";
+    reinstallIfOlder: boolean;
     applicationUnderTestDescriptor: {
       androidPackageId: string;
       apkStorageObjectReference: string;
-      expectedBuildSignatureSha256: string;
+      expectedBuildSignatureSha256: string | null;
+      expectedVersionCode: number | null;
+      expectedVersionName: string | null;
     };
   };
   launchOrAttach: {
@@ -55,4 +59,5 @@ export interface AgentPorts {
   sessionPort: SessionPort;
   appLifecyclePort: AppLifecyclePort;
   idleDetectorPort: IdleDetectorPort;
+  packageManagerPort: PackageManagerPort;
 }
