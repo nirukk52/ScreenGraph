@@ -119,7 +119,6 @@ TypeScript requires `resolveJsonModule: true` in tsconfig.json. Not enabled in b
 
 #### Description
 BatchGenerate created duplicate port files with different method signatures than manual ports:
-- `/backend/agent/ports/driver.ts` (duplicate of `driver.port.ts`)
 - `/backend/agent/ports/storage.ts` (duplicate of `storage.port.ts`)
 - `/backend/agent/ports/llm.ts` (duplicate of `llm.port.ts`)
 - `/backend/agent/ports/graph.ts` (new)

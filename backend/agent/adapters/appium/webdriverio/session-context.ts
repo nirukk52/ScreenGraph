@@ -8,4 +8,9 @@ import type Browser from "webdriverio/build/index.js";
 export interface SessionContext {
   driver: Browser;
   capabilities: RemoteOptions["capabilities"];
+  /**
+   * Stable identifier referencing the device runtime context inside ScreenGraph domain.
+   * PURPOSE: Keeps adapters aware of domain context without exposing Appium session IDs.
+   */
+  deviceRuntimeContextId: string;
 }

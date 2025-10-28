@@ -86,7 +86,7 @@ export class WebDriverIOSessionAdapter implements SessionPort {
       if (this.context?.driver) {
         const sessionId = this.context.driver.sessionId || "unknown";
         const existingContext = {
-          driverSessionId: sessionId,
+          deviceRuntimeContextId: this.context.deviceRuntimeContextId,
           deviceId: config.deviceName,
           capabilitiesEcho: (this.context.capabilities as Record<string, unknown>) || {},
           healthProbeStatus: "HEALTHY" as const,
@@ -128,13 +128,16 @@ export class WebDriverIOSessionAdapter implements SessionPort {
         "appium:automationName": "UiAutomator2",
       };
 
+      const deviceRuntimeContextId = `wdio-${sessionId}`;
+
       this.context = {
         driver,
         capabilities,
+        deviceRuntimeContextId,
       };
 
       const newContext = {
-        driverSessionId: sessionId,
+        deviceRuntimeContextId,
         deviceId: config.deviceName,
         capabilitiesEcho: capabilities as Record<string, unknown>,
         healthProbeStatus: "HEALTHY" as const,

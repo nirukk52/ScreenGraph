@@ -1,6 +1,7 @@
 import type { ApplicationForegroundContext } from "../../../domain/entities";
-import type { AppLifecyclePort } from "../../../ports/appium/app-lifecycle.port";
+import type { AppLifecyclePort, AppLifecycleBudget } from "../../../ports/appium/app-lifecycle.port";
 import { AppNotInstalledError, AppCrashedError, TimeoutError } from "../errors";
+import { DriverErrorKind, mapAdapterErrorToDriverErrorKind } from "../error-kinds";
 import type { SessionContext } from "./session-context";
 
 /**
@@ -32,7 +33,10 @@ export class WebDriverIOAppLifecycleAdapter implements AppLifecyclePort {
    *   AppCrashedError: If app crashed on launch
    *   TimeoutError: If launch timed out
    */
-  async launchApp(packageId: string): Promise<ApplicationForegroundContext> {
+  async launchApp(
+    packageId: string,
+    _budget: AppLifecycleBudget,
+  ): Promise<ApplicationForegroundContext> {
     try {
       await this.context.driver.activateApp(packageId);
       const currentPackage = await this.context.driver.getCurrentPackage();
@@ -44,6 +48,7 @@ export class WebDriverIOAppLifecycleAdapter implements AppLifecyclePort {
         appBroughtToForegroundTimestamp: new Date().toISOString(),
       };
     } catch (error) {
+      const errorKind = mapAdapterErrorToDriverErrorKind(error);
       if (error instanceof Error) {
         if (error.message.includes("not found") || error.message.includes("not installed")) {
           throw new AppNotInstalledError(`App not installed: ${packageId}`);
@@ -55,7 +60,9 @@ export class WebDriverIOAppLifecycleAdapter implements AppLifecyclePort {
           throw new TimeoutError(`App launch timed out: ${error.message}`);
         }
       }
-      throw new AppNotInstalledError(`Failed to launch app: ${error}`);
+      const normalizedError = new AppCrashedError(`Launch failed with ${errorKind}`);
+      (normalizedError as Error & { errorKind: DriverErrorKind }).errorKind = errorKind;
+      throw normalizedError;
     }
   }
 
@@ -72,12 +79,13 @@ export class WebDriverIOAppLifecycleAdapter implements AppLifecyclePort {
    *   AppCrashedError: If app crashed on restart
    *   TimeoutError: If restart timed out
    */
-  async restartApp(packageId: string): Promise<boolean> {
+  async restartApp(packageId: string, _budget: AppLifecycleBudget): Promise<boolean> {
     try {
       await this.context.driver.terminateApp(packageId);
       await this.context.driver.activateApp(packageId);
       return true;
     } catch (error) {
+      const errorKind = mapAdapterErrorToDriverErrorKind(error);
       if (error instanceof Error) {
         if (error.message.includes("crash") || error.message.includes("stopped")) {
           throw new AppCrashedError(`App crashed on restart: ${packageId}`);
@@ -86,7 +94,9 @@ export class WebDriverIOAppLifecycleAdapter implements AppLifecyclePort {
           throw new TimeoutError(`App restart timed out: ${error.message}`);
         }
       }
-      throw new AppCrashedError(`Failed to restart app: ${error}`);
+      const normalizedError = new AppCrashedError(`Restart failed with ${errorKind}`);
+      (normalizedError as Error & { errorKind: DriverErrorKind }).errorKind = errorKind;
+      throw normalizedError;
     }
   }
 

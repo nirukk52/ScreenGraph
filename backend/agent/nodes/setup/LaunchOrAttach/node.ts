@@ -13,6 +13,7 @@ export interface LaunchOrAttachInput extends CommonNodeInput {
     androidPackageId: string;
   };
   launchAttachMode: "LAUNCH_OR_ATTACH";
+  appLaunchTimeoutMs: number;
 }
 
 export interface LaunchOrAttachOutput extends CommonNodeOutput {
@@ -42,6 +43,7 @@ export async function launchOrAttach(
   try {
     const foregroundCtx = await appLifecyclePort.launchApp(
       input.applicationUnderTestDescriptor.androidPackageId,
+      { launchTimeoutMs: input.appLaunchTimeoutMs },
     );
     logger.info("ApplicationForegroundContext received", { foregroundCtx });
 

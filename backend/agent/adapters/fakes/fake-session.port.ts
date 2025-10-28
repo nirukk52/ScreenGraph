@@ -1,4 +1,5 @@
 import type { DeviceConfiguration, DeviceRuntimeContext } from "../../domain/entities";
+import type { DeviceRuntimeContextRef } from "../../ports/appium/session.port";
 import type { SessionPort } from "../../ports/appium/session.port";
 
 /**
@@ -9,19 +10,19 @@ export class FakeSessionPort implements SessionPort {
   private sessionCounter = 0;
   private isClosed = false;
 
-  async ensureDevice(config: DeviceConfiguration): Promise<DeviceRuntimeContext> {
+  async ensureDevice(config: DeviceConfiguration): Promise<DeviceRuntimeContext & DeviceRuntimeContextRef> {
     if (this.isClosed) {
       this.sessionCounter++;
       this.isClosed = false;
     }
     return {
-      driverSessionId: `fake-session-${this.sessionCounter}`,
       deviceId: config.deviceName,
       capabilitiesEcho: {
         platformName: config.platformName,
         automationName: "UiAutomator2",
       },
       healthProbeStatus: "HEALTHY",
+      deviceRuntimeContextId: `fake-context-${this.sessionCounter}`,
     };
   }
 

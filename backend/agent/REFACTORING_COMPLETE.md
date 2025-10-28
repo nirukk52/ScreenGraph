@@ -175,7 +175,6 @@ backend/agent/
 │   ├── input-actions.port.ts        (54 lines)
 │   ├── navigation.port.ts           (23 lines)
 │   ├── idle-detector.port.ts        (29 lines)
-│   ├── driver.port.ts               (legacy, kept for now)
 │   └── driver.facade.ts             (108 lines)
 ├── adapters/appium/
 │   ├── errors.ts                    (55 lines)

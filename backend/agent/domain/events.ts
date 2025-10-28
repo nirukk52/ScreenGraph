@@ -22,7 +22,12 @@ export type EventKind =
   | "agent.app.restarted"
   | "agent.run.recovery_applied"
   | "agent.run.checkpoint_restored"
-  | "agent.run.heartbeat";
+  | "agent.run.heartbeat"
+  | "agent.app.install_checked"
+  | "agent.app.signature_verified"
+  | "agent.app.launch_started"
+  | "agent.app.launch_completed"
+  | "agent.app.launch_failed";
 
 /**
  * Discriminated union mapping EventKind to its typed payload structure.
@@ -53,6 +58,11 @@ export type EventPayloadMap = {
   "agent.run.recovery_applied": { errorCode: string; actionTaken: string };
   "agent.run.checkpoint_restored": { checkpointId: string; stepOrdinal: number };
   "agent.run.heartbeat": { ts: string };
+  "agent.app.install_checked": { correlationId: string; packageId: string; installed: boolean; versionName?: string; versionCode?: number };
+  "agent.app.signature_verified": { correlationId: string; packageId: string; expectedSha256: string; actualSha256: string; matched: boolean };
+  "agent.app.launch_started": { correlationId: string; packageId: string; attempt: number };
+  "agent.app.launch_completed": { correlationId: string; packageId: string; durationMs: number };
+  "agent.app.launch_failed": { correlationId: string; packageId: string; attempt: number; errorKind: string; durationMs: number };
 };
 
 /**

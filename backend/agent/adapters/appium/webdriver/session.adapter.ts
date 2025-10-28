@@ -1,4 +1,4 @@
-import { remote } from "webdriver";
+import { remote } from "webdriverio";
 import type { DeviceRuntimeContext } from "../../../domain/entities";
 import type { SessionPort, DeviceConfiguration } from "../../../ports/appium/session.port";
 import { DeviceOfflineError, TimeoutError } from "../errors";
@@ -76,9 +76,8 @@ export class WebDriverSessionAdapter implements SessionPort {
     try {
       // If already connected, return existing context
       if (this.context?.driver) {
-        const sessionId = (await this.context.driver.getSessionId()) || "unknown";
         const existingContext = {
-          driverSessionId: sessionId,
+          deviceRuntimeContextId: this.context.deviceRuntimeContextId,
           deviceId: config.deviceName,
           capabilitiesEcho: (this.context.capabilities as Record<string, unknown>) || {},
           healthProbeStatus: "HEALTHY" as const,
@@ -111,7 +110,7 @@ export class WebDriverSessionAdapter implements SessionPort {
         connectionRetryTimeout: this.timeoutMs,
       });
 
-      const sessionId = (await driver.getSessionId()) || "unknown";
+      const sessionId = driver.sessionId || "unknown";
       logger.info("WebDriverSessionAdapter.ensureDevice - New session created", { sessionId });
 
       const capabilities = {
@@ -121,16 +120,19 @@ export class WebDriverSessionAdapter implements SessionPort {
         "appium:automationName": "UiAutomator2",
       };
 
+      const deviceRuntimeContextId = `wd-${sessionId}`;
+
       this.context = {
         driver,
         capabilities,
+        deviceRuntimeContextId,
       };
 
       const newContext = {
-        driverSessionId: sessionId,
         deviceId: config.deviceName,
         capabilitiesEcho: capabilities as Record<string, unknown>,
         healthProbeStatus: "HEALTHY" as const,
+        deviceRuntimeContextId,
       };
 
       logger.info("WebDriverSessionAdapter.ensureDevice - New context", { newContext });
@@ -157,13 +159,21 @@ export class WebDriverSessionAdapter implements SessionPort {
    *   DeviceOfflineError: If driver is already disconnected
    */
   async closeSession(): Promise<void> {
+    const logger = log.with({
+      module: MODULES.AGENT,
+      actor: AGENT_ACTORS.ORCHESTRATOR,
+      nodeName: "EnsureDevice",
+    });
+
     if (!this.context?.driver) {
       throw new DeviceOfflineError("No active session to close");
     }
 
     try {
+      const sessionId = this.context.driver.sessionId;
       await this.context.driver.deleteSession();
       this.context = null;
+      logger.info("WebDriverSessionAdapter.closeSession - Session closed", { sessionId });
     } catch (error) {
       throw new DeviceOfflineError(`Failed to close session: ${error}`);
     }

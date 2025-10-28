@@ -35,6 +35,8 @@ export interface Budgets {
   maxTaps: number;
   outsideAppLimit: number;
   restartLimit: number;
+  appLaunchTimeoutMs: number;
+  appRestartTimeoutMs: number;
 }
 
 export interface AgentState {

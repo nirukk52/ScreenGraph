@@ -25,7 +25,6 @@ export interface RestartAppOutput extends CommonNodeOutput {
 export async function restartApp(
   input: RestartAppInput,
   appLifecyclePort: AppLifecyclePort,
-  sessionId: string,
 ): Promise<{
   output: RestartAppOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;

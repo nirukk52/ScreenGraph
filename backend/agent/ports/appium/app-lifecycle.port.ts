@@ -17,12 +17,21 @@ import type { ApplicationForegroundContext } from "../../domain/entities";
  * - NO Appium SDK imports
  * - NO concrete driver implementations
  */
+export interface AppLifecycleBudget {
+  /**
+   * Maximum milliseconds to allow for application launch before timing out.
+   * PURPOSE: Ensures deterministic time budgets flow from AgentState to adapter.
+   */
+  launchTimeoutMs: number;
+}
+
 export interface AppLifecyclePort {
   /**
    * Launch app by package name.
    *
    * Args:
    *   packageId: Android package name (e.g., com.example.app)
+   *   budget: Deterministic time budget controlling launch timeout
    *
    * Returns:
    *   ApplicationForegroundContext with current package, activity, and timestamp
@@ -32,7 +41,7 @@ export interface AppLifecyclePort {
    *   AppCrashedError: If app crashed on launch
    *   TimeoutError: If launch timed out
    */
-  launchApp(packageId: string): Promise<ApplicationForegroundContext>;
+  launchApp(packageId: string, budget: AppLifecycleBudget): Promise<ApplicationForegroundContext>;
 
   /**
    * Force stop and relaunch app.
@@ -47,7 +56,7 @@ export interface AppLifecyclePort {
    *   AppCrashedError: If app crashed on restart
    *   TimeoutError: If restart timed out
    */
-  restartApp(packageId: string): Promise<boolean>;
+  restartApp(packageId: string, budget: AppLifecycleBudget): Promise<boolean>;
 
   /**
    * Get foreground app package name.

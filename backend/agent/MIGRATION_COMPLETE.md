@@ -106,7 +106,7 @@ interface IdleDetectorPort { waitIdle() }
 3. Remove old `DriverPort` references from orchestrator
 
 ### Future Cleanup
-1. After full integration testing, remove legacy `driver.port.ts` and `driver.ts`
+1. After full integration testing, remove legacy `driver.ts`
 2. Remove `driver.facade.ts` (no longer needed)
 3. Update documentation to reflect new architecture
 

@@ -43,7 +43,6 @@
 
 ### 📋 Phase 5: Cleanup (PENDING)
 
-- [ ] Remove legacy `driver.port.ts` after orchestrator update
 - [ ] Remove legacy `driver.ts` after orchestrator update
 - [ ] Remove `driver.facade.ts` after full migration
 - [ ] Update README to reflect new architecture
@@ -103,7 +102,6 @@
 
 ### Legacy Files (To be removed after Phase 5)
 
-- `ports/appium/driver.port.ts` - Old monolithic interface
 - `ports/appium/driver.ts` - Old simplified interface
 - `ports/appium/driver.facade.ts` - Temporary compatibility layer
 - `adapters/fakes/fake-driver.ts` - Old fake implementation

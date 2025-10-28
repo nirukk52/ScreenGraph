@@ -33,7 +33,6 @@ backend/agent/
 │   ├── router.ts        # ShouldContinue routing
 │   └── outbox.ts        # Ordered publishing (append-only discipline)
 ├── ports/               # Interface contracts for all I/O
-│   ├── driver.port.ts   # Device/UI automation
 │   ├── ocr.port.ts      # OCR processing
 │   ├── repo.port.ts     # Persistence operations
 │   ├── storage.port.ts  # Object storage

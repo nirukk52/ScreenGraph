@@ -1,6 +1,6 @@
 import { Orchestrator } from "../orchestrator/orchestrator";
 import { InMemoryRepo } from "../persistence/in-memory-repo";
-import { FakeDriver } from "../adapters/fakes/fake-driver";
+import { FakeSessionPort } from "../adapters/fakes/fake-session.port";
 import { FakeStorage } from "../adapters/fakes/fake-storage";
 import { FakeLLM } from "../adapters/fakes/fake-llm";
 import { FakeOCR } from "../adapters/fakes/fake-ocr";
@@ -26,7 +26,7 @@ async function runDemo() {
 
   const repo = new InMemoryRepo();
   const orchestrator = new Orchestrator(repo, repo, repo, repo);
-  const driver = new FakeDriver();
+  const sessionPort = new FakeSessionPort();
   const storage = new FakeStorage();
   const ocr = new FakeOCR();
   const llm = new FakeLLM(storage, 42);
@@ -41,6 +41,8 @@ async function runDemo() {
     maxTaps: policyDefaults.maxTaps,
     outsideAppLimit: policyDefaults.outsideAppLimit,
     restartLimit: policyDefaults.restartLimit,
+    appLaunchTimeoutMs: 30000,
+    appRestartTimeoutMs: 15000,
   };
 
   console.log(`📋 Run ID: ${runId}`);
@@ -71,7 +73,7 @@ async function runDemo() {
       },
       driverReusePolicy: "REUSE_OR_CREATE",
     },
-    driver,
+    sessionPort,
     () => orchestrator.generateId(),
   );
   state.deviceRuntimeContextId = deviceResult.output.deviceRuntimeContextId;

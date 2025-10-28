@@ -1,5 +1,9 @@
 export interface DeviceRuntimeContext {
-  driverSessionId: string;
+  /**
+   * Stable identifier used by the agent to reference this runtime context without leaking vendor session IDs.
+   * PURPOSE: Decouples domain logic from adapter-specific identifiers while enabling deterministic lookups.
+   */
+  deviceRuntimeContextId: string;
   deviceId: string;
   capabilitiesEcho: Record<string, unknown>;
   healthProbeStatus: "HEALTHY" | "UNHEALTHY";

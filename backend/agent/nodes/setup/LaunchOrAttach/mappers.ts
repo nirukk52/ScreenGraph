@@ -16,6 +16,7 @@ export function buildLaunchOrAttachInput(
     projectId: state.projectId,
     applicationUnderTestDescriptor: ctx.launchOrAttach.applicationUnderTestDescriptor,
     launchAttachMode: ctx.launchOrAttach.launchAttachMode,
+    appLaunchTimeoutMs: state.budgets.appLaunchTimeoutMs,
   };
 }
 

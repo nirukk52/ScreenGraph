@@ -1,5 +1,5 @@
 import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
-import type { DeviceConfiguration } from "../../../ports/appium/driver.port";
+import type { DeviceConfiguration } from "../../../ports/appium/session.port";
 import type { SessionPort } from "../../../ports/appium/session.port";
 import type { EventKind } from "../../../domain/events";
 import log from "encore.dev/log";
@@ -43,8 +43,8 @@ export async function ensureDevice(
     const ctx = await sessionPort.ensureDevice(input.deviceConfiguration);
     logger.info("DeviceRuntimeContext received", { ctx });
 
-    const contextId = generateId();
-    logger.info("Generated contextId", { contextId });
+    const contextId = ctx.deviceRuntimeContextId || generateId();
+    logger.info("Resolved contextId", { contextId });
 
     const output: EnsureDeviceOutput = {
       runId: input.runId,
