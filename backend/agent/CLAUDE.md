@@ -10,8 +10,9 @@ RunJob → Worker ↓ Worker creates: sessionPort, registry, context, engine ↓
 ## Architecture
 
 ### Core Components
-- **`/orchestrator`**: NodeEngine control plane, Worker loop, Orchestrator persistence
-- **`/nodes`**: Pure node executors (setup, main, policy, recovery, terminal)
+- **`/engine`**: NodeEngine execution control, AgentRunner orchestration loop
+- **`/nodes`**: Node capsules organized by category (setup, main, policy, recovery, terminal)
+- **`/orchestrator`**: Worker coordination, Orchestrator persistence, Subscription Pub/Sub
 - **`/ports`**: Abstract interfaces for Appium, DB, LLM, OCR, storage
 - **`/adapters`**: Concrete implementations (WebDriverIO, fake mocks)
 - **`/domain`**: Core types (state, events, entities, actions, perception)
@@ -19,18 +20,25 @@ RunJob → Worker ↓ Worker creates: sessionPort, registry, context, engine ↓
 
 ## Key Files
 
-### `/orchestrator`
-- **`node-engine.ts`**: NodeEngine, TransitionPolicy, retry/backtrack logic
-- **`node-registry.ts`**: Factory for wiring typed node handlers
-- **`orchestrator.ts`**: Persistence spine (IDs, events, snapshots)
-- **`worker.ts`**: Long-lived loop with lease heartbeats, budgets, cancellation
-- **`subscription.ts`**: Pub/Sub handler for run jobs
-- **`README.md`**: Architecture overview and usage examples
+### `/engine`
+- **`node-engine.ts`**: NodeEngine for executing nodes and deciding transitions
+- **`agent-runner.ts`**: AgentRunner loop for orchestrating next/retry/backtrack
+- **`types.ts`**: Core engine types (NodeHandler, TransitionPolicy, etc.)
+- **`transition-policy.ts`**: Retry/backtrack policy computation
 
 ### `/nodes`
-- **`setup/`**: EnsureDevice, ProvisionApp, LaunchOrAttach, WaitIdle
-- **`main/`**: Perceive, EnumerateActions, ChooseAction, Act, Verify, DetectProgress, ShouldContinue, Persist
-- **`policy/`, `recovery/`, `terminal/`**: Future node categories
+- **`types.ts`**: AgentNodeName union, AgentContext, AgentPorts
+- **`context.ts`**: AgentContext builder from run data
+- **`registry.ts`**: Unified NodeRegistry builder for all nodes
+- **`setup/EnsureDevice/`**: Node capsule (node.ts, handler.ts, mappers.ts, policy.ts)
+- **`setup/ProvisionApp/`**: Node capsule (node.ts, handler.ts, mappers.ts, policy.ts)
+- **`main/`, `policy/`, `recovery/`, `terminal/`**: Future node categories
+
+### `/orchestrator`
+- **`worker.ts`**: AgentWorker with AgentRunner integration, lease heartbeats, budgets
+- **`orchestrator.ts`**: Persistence spine (IDs, events, snapshots)
+- **`subscription.ts`**: Pub/Sub handler for run jobs
+- **`README.md`**: Architecture overview and usage examples
 
 ### `/ports`
 - **`appium/`**: SessionPort, AppLifecyclePort, PerceptionPort, InputActionsPort, etc.
@@ -55,10 +63,12 @@ RunJob → Worker ↓ Worker creates: sessionPort, registry, context, engine ↓
 1. Subscription receives RunJob from Pub/Sub topic
 2. Worker claims run with lease
 3. Orchestrator initializes from snapshot or creates initial state
-4. Worker loop: cancel check → budget check → engine.runOnce() → persist
-5. NodeEngine: resolve handler → build input → execute → apply output → decide transition
-6. Orchestrator: record events, save snapshot
-7. Worker: finalize or retry/backtrack
+4. Worker creates AgentRunner with NodeEngine, AgentPorts, AgentContext
+5. AgentRunner loop: shouldStop check → engine.runOnce() → persist → handle retry/backtrack/next
+6. NodeEngine: resolve handler → build input → execute → apply output → decide transition
+7. Orchestrator: record events, save snapshot via callbacks
+8. AgentRunner: loop until termination (retry with backoff, backtrack, or next node)
+9. Worker: finalize run status
 
 ## State Management
 - **AgentState**: Single source of truth (stepOrdinal, iterationOrdinalNumber, nodeName, counters, budgets, status)

@@ -1,11 +1,10 @@
-import type { AgentState } from "../../../../domain/state";
-import type { ProvisionAppInput, ProvisionAppOutput } from "../../../../nodes/setup/provision-app";
-import { provisionApp } from "../../../../nodes/setup/provision-app";
-import type { NodeHandler, NodeExecutorResult } from "../../../../engine/types";
-import type { SetupPhaseContext, SetupPhasePorts, SetupNodeName } from "../../types";
-import { buildProvisionAppInput } from "../../mappers/inputs/ProvisionApp";
-import { applyProvisionAppOutput } from "../../mappers/outputs/ProvisionApp";
-import { ProvisionAppPolicy } from "../../policies/defaults";
+import type { AgentState } from "../../../domain/state";
+import type { ProvisionAppInput, ProvisionAppOutput } from "./node";
+import { provisionApp } from "./node";
+import type { NodeHandler, NodeExecutorResult } from "../../../engine/types";
+import type { AgentContext, AgentNodeName, AgentPorts } from "../../types";
+import { buildProvisionAppInput, applyProvisionAppOutput } from "./mappers";
+import { ProvisionAppPolicy } from "./policy";
 
 /**
  * Creates the ProvisionApp node handler wired with mappers and policies.
@@ -14,9 +13,9 @@ import { ProvisionAppPolicy } from "../../policies/defaults";
 export function createProvisionAppHandler(): NodeHandler<
   ProvisionAppInput,
   ProvisionAppOutput,
-  SetupNodeName,
-  SetupPhasePorts,
-  SetupPhaseContext
+  AgentNodeName,
+  AgentPorts,
+  AgentContext
 > {
   return {
     name: "ProvisionApp",
@@ -33,4 +32,6 @@ export function createProvisionAppHandler(): NodeHandler<
     onFailure: ProvisionAppPolicy,
   };
 }
+
+
 

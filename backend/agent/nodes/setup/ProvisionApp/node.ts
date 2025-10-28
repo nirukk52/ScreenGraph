@@ -1,5 +1,5 @@
-import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
-import type { EventKind } from "../../domain/events";
+import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
+import type { EventKind } from "../../../domain/events";
 
 export interface ProvisionAppInput extends CommonNodeInput {
   runId: string;
@@ -24,6 +24,10 @@ export interface ProvisionAppOutput extends CommonNodeOutput {
   };
 }
 
+/**
+ * provisionApp orchestrates app provisioning and emits deterministic node output.
+ * PURPOSE: Wraps adapter interactions and guarantees SUCCESS/FAILURE outputs for engine transitions.
+ */
 export async function provisionApp(input: ProvisionAppInput): Promise<{
   output: ProvisionAppOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
@@ -51,3 +55,6 @@ export async function provisionApp(input: ProvisionAppInput): Promise<{
     events: [],
   };
 }
+
+
+

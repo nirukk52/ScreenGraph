@@ -1,15 +1,15 @@
-import type { SetupPhaseContext } from "../types";
-import type { RunRecord } from "../../../ports/db-ports/run-db.port";
+import type { AgentContext } from "./types";
+import type { RunRecord } from "../ports/db-ports/run-db.port";
 import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
+import { MODULES, AGENT_ACTORS } from "../../logging/logger";
 
 /**
- * Builds SetupPhaseContext from run app config.
- * PURPOSE: Extracts phase-specific config from run record without parsing JSON in registry.
+ * Builds AgentContext from run app config.
+ * PURPOSE: Extracts node-specific config from run record without parsing JSON in registry.
  */
-export function buildSetupContext(run: RunRecord): SetupPhaseContext {
+export function buildAgentContext(run: RunRecord): AgentContext {
   const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.ORCHESTRATOR, runId: run.runId });
-  logger.info("buildSetupContext - RunRecord", { run });
+  logger.info("buildAgentContext - RunRecord", { run });
   
   const appConfig = JSON.parse(run.appConfigId) as {
     appiumServerUrl: string;
@@ -18,9 +18,9 @@ export function buildSetupContext(run: RunRecord): SetupPhaseContext {
     appActivity?: string;
   };
   
-  logger.info("buildSetupContext - Parsed AppConfig", { appConfig });
+  logger.info("buildAgentContext - Parsed AppConfig", { appConfig });
 
-  const context: SetupPhaseContext = {
+  const context: AgentContext = {
     ensureDevice: {
       deviceConfiguration: {
         platformName: "Android",
@@ -40,8 +40,10 @@ export function buildSetupContext(run: RunRecord): SetupPhaseContext {
     },
   };
   
-  logger.info("buildSetupContext - Built Context", { context });
+  logger.info("buildAgentContext - Built Context", { context });
   
   return context;
 }
+
+
 
