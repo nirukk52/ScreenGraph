@@ -74,6 +74,19 @@ This document captures the working mental models for the current app, and immedi
 - Design for idempotency and at-least-once delivery first; layer exactly-once only if needed.
 - Keep the founder doc short and actionable; update alongside meaningful behavior changes.
 
+### Agent Handoff Workflow (Enforced)
+- Maintain a single, living handoff at root: `HANDOFF.md`.
+- Before editing code with uncommitted changes present, agents MUST read `HANDOFF.md` to understand in-flight work.
+- Before switching tasks or ending a session, agents MUST append/update their section in `HANDOFF.md` using the template:
+  - What I am doing (short paragraph)
+  - What is pending (Code/Tests/Manual review checkboxes)
+  - What I plan to do next (bullets)
+  - Modules I am touching (paths)
+  - Work status rating (0–5) — 5 means module + tests + manual review complete; 2 mid-way; 1/0 blocked/abandoned
+  - Graphiti episode IDs (names + UUIDs)
+- Agents should reference related docs (designs, summaries) in the entry.
+- CI/Code review guideline: PRs referencing active work MUST link the corresponding `HANDOFF.md` entry.
+
 ## Encore Rapid Dev Best Practices
 - **Tight dev loop**
   - Use `encore run --watch` during local development for auto-reload.

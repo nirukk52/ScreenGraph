@@ -55,7 +55,7 @@ export interface NodeHandler<InputT, OutputT extends NodeOutputBase, N extends s
   buildInput(state: AgentState, ctx: C): InputT;
   execute(input: InputT, ports: P): Promise<NodeExecutorResult<OutputT>>;
   applyOutput(prev: AgentState, output: OutputT): AgentState;
-  onSuccess: N;
+  onSuccess: N | null;
   onFailure: TransitionPolicy<N>;
 }
 

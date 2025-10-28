@@ -1,5 +1,5 @@
-import { type CommonNodeInput, type CommonNodeOutput, StopReason } from "../../domain/state";
-import type { EventKind } from "../../domain/events";
+import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
+import type { EventKind } from "../../../domain/events";
 
 export interface StopInput extends CommonNodeInput {
   runId: string;
@@ -21,25 +21,33 @@ export interface StopOutput extends CommonNodeOutput {
   confirmedTerminalDisposition: "SUCCEEDED" | "FAILED";
 }
 
-export async function stop(input: StopInput): Promise<{
+/**
+ * stop finalizes the run and emits terminal disposition telemetry.
+ * PURPOSE: Provides a deterministic completion point for the agent orchestration loop.
+ */
+export async function stop(
+  input: StopInput,
+): Promise<{
   output: StopOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
 }> {
+  const output: StopOutput = {
+    runId: input.runId,
+    confirmedTerminalDisposition: input.intendedTerminalDisposition,
+    nodeName: "Stop",
+    stepOrdinal: input.stepOrdinal,
+    iterationOrdinalNumber: input.iterationOrdinalNumber,
+    policyVersion: 1,
+    resumeToken: `${input.runId}-${String(input.stepOrdinal).padStart(3, "0")}`,
+    randomSeed: input.randomSeed,
+    nodeExecutionOutcomeStatus: "SUCCESS",
+    errorId: null,
+    retryable: null,
+    humanReadableFailureSummary: null,
+  };
+
   return {
-    output: {
-      runId: input.runId,
-      confirmedTerminalDisposition: input.intendedTerminalDisposition,
-      nodeName: "Stop",
-      stepOrdinal: input.stepOrdinal,
-      iterationOrdinalNumber: input.iterationOrdinalNumber,
-      policyVersion: 1,
-      resumeToken: `${input.runId}-${String(input.stepOrdinal).padStart(3, "0")}`,
-      randomSeed: input.randomSeed,
-      nodeExecutionOutcomeStatus: "SUCCESS",
-      errorId: null,
-      retryable: null,
-      humanReadableFailureSummary: null,
-    },
+    output,
     events: [
       {
         kind: "agent.run.finished",
@@ -52,3 +60,4 @@ export async function stop(input: StopInput): Promise<{
     ],
   };
 }
+

@@ -20,6 +20,12 @@ export function buildAgentContext(run: RunRecord): AgentContext {
     packageName: string;
     apkPath: string;
     appActivity?: string;
+    perceiveDelayMs?: number;
+    expectedVersionCode?: number;
+    expectedVersionName?: string;
+    expectedBuildSignatureSha256?: string;
+    strategyName?: string;
+    policyVersion?: number;
   };
 
   logger.info("buildAgentContext - Parsed AppConfig", { appConfig });
@@ -40,7 +46,7 @@ export function buildAgentContext(run: RunRecord): AgentContext {
       applicationUnderTestDescriptor: {
         androidPackageId: appConfig.packageName,
         apkStorageObjectReference: appConfig.apkPath,
-        expectedBuildSignatureSha256: "default-sha256",
+        expectedBuildSignatureSha256: appConfig.expectedBuildSignatureSha256 ?? "default-sha256",
         expectedVersionCode: appConfig.expectedVersionCode ?? null,
         expectedVersionName: appConfig.expectedVersionName ?? null,
       },
@@ -51,11 +57,35 @@ export function buildAgentContext(run: RunRecord): AgentContext {
       },
       launchAttachMode: "LAUNCH_OR_ATTACH",
     },
+    perceive: {
+      captureDirectives: {
+        includeScreenshotPng: true,
+        includeUiHierarchyXml: true,
+        delayBeforeCaptureMs: appConfig.perceiveDelayMs ?? 500,
+      },
+    },
     waitIdle: {
       idleHeuristicsConfiguration: {
         minQuietMillis: 400,
         maxWaitMillis: 5000,
       },
+    },
+    policy: {
+      switchPolicy: {
+        currentStrategyConfiguration: {
+          strategyName: appConfig.strategyName ?? "baseline",
+          policyVersion: appConfig.policyVersion ?? 1,
+        },
+        requestedStrategyConfiguration: {
+          strategyName: appConfig.strategyName ?? "baseline",
+          policyVersion: appConfig.policyVersion ?? 1,
+        },
+        reasonPlaintext: "Initial splash capture complete",
+      },
+    },
+    terminal: {
+      intendedTerminalDisposition: "SUCCEEDED",
+      terminalizationBasis: "splash_capture_complete",
     },
   };
 

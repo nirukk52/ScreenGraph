@@ -3,6 +3,9 @@ import type { SessionPort } from "../ports/appium/session.port";
 import type { AppLifecyclePort } from "../ports/appium/app-lifecycle.port";
 import type { IdleDetectorPort } from "../ports/appium/idle-detector.port";
 import type { PackageManagerPort } from "../ports/appium/package-manager.port";
+import type { PerceptionPort } from "../ports/appium/perception.port";
+import type { DeviceInfoPort } from "../ports/appium/device-info.port";
+import type { StoragePort } from "../ports/storage";
 
 /**
  * AgentNodeName enumerates all nodes available in the agent execution graph.
@@ -15,7 +18,8 @@ export type AgentNodeName =
   | "WaitIdle"
   | "Perceive"
   | "SwitchPolicy"
-  | "RestartApp";
+  | "RestartApp"
+  | "Stop";
 
 /**
  * AgentContext captures all configuration inputs needed by nodes across the agent graph.
@@ -43,11 +47,35 @@ export interface AgentContext {
     };
     launchAttachMode: "LAUNCH_OR_ATTACH";
   };
+  perceive: {
+    captureDirectives: {
+      includeScreenshotPng: boolean;
+      includeUiHierarchyXml: boolean;
+      delayBeforeCaptureMs: number;
+    };
+  };
   waitIdle: {
     idleHeuristicsConfiguration: {
       minQuietMillis: number;
       maxWaitMillis: number;
     };
+  };
+  policy: {
+    switchPolicy: {
+      currentStrategyConfiguration: {
+        strategyName: string;
+        policyVersion: number;
+      };
+      requestedStrategyConfiguration: {
+        strategyName: string;
+        policyVersion: number;
+      };
+      reasonPlaintext: string;
+    };
+  };
+  terminal: {
+    intendedTerminalDisposition: "SUCCEEDED" | "FAILED";
+    terminalizationBasis: string;
   };
 }
 
@@ -60,4 +88,7 @@ export interface AgentPorts {
   appLifecyclePort: AppLifecyclePort;
   idleDetectorPort: IdleDetectorPort;
   packageManagerPort: PackageManagerPort;
+  perceptionPort: PerceptionPort;
+  deviceInfoPort: DeviceInfoPort;
+  storagePort: StoragePort;
 }

@@ -19,7 +19,7 @@ import { provisionApp } from "../nodes/setup/ProvisionApp/node";
 // TODO: Create LaunchOrAttach and WaitIdle capsules
 // import { launchOrAttach } from "../nodes/setup/LaunchOrAttach/node";
 // import { waitIdle } from "../nodes/setup/WaitIdle/node";
-import { stop } from "../nodes/terminal/stop";
+import { stop } from "../nodes/terminal/Stop/node";
 
 async function runDemo() {
   console.log("🚀 ScreenGraph Agent Demo Starting...\n");

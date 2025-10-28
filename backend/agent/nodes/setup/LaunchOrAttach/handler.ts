@@ -28,7 +28,7 @@ export function createLaunchOrAttachHandler(): NodeHandler<
       };
     },
     applyOutput: applyLaunchOrAttachOutput,
-    onSuccess: "WaitIdle",
+    onSuccess: "Perceive",
     onFailure: LaunchOrAttachPolicy,
   };
 }

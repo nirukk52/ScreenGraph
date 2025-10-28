@@ -10,6 +10,9 @@ import { WebDriverIOSessionAdapter } from "../adapters/appium/webdriverio/sessio
 import { WebDriverIOAppLifecycleAdapter } from "../adapters/appium/webdriverio/app-lifecycle.adapter";
 import { WebDriverIOIdleDetectorAdapter } from "../adapters/appium/webdriverio/idle-detector.adapter";
 import { WebDriverIOPackageManagerAdapter } from "../adapters/appium/webdriverio/package-manager.adapter";
+import { WebDriverIOPerceptionAdapter } from "../adapters/appium/webdriverio/perception.adapter";
+import { WebDriverIODeviceInfoAdapter } from "../adapters/appium/webdriverio/device-info.adapter";
+import { EncoreStorageAdapter } from "../adapters/storage/encore-storage.adapter";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../logging/logger";
 
@@ -26,7 +29,18 @@ function buildAgentPorts(): AgentPorts {
   const appLifecyclePort = new WebDriverIOAppLifecycleAdapter(contextProvider);
   const idleDetectorPort = new WebDriverIOIdleDetectorAdapter(contextProvider);
   const packageManagerPort = new WebDriverIOPackageManagerAdapter(contextProvider);
-  return { sessionPort, appLifecyclePort, idleDetectorPort, packageManagerPort };
+  const perceptionPort = new WebDriverIOPerceptionAdapter(contextProvider);
+  const deviceInfoPort = new WebDriverIODeviceInfoAdapter(contextProvider);
+  const storagePort = new EncoreStorageAdapter();
+  return {
+    sessionPort,
+    appLifecyclePort,
+    idleDetectorPort,
+    packageManagerPort,
+    perceptionPort,
+    deviceInfoPort,
+    storagePort,
+  };
 }
 
 /**

@@ -150,6 +150,19 @@ export class AgentRunner<N extends string, P, C> {
         };
       }
 
+      // Quick check: Stop after WaitIdle node and report success 
+      // These checks are for development purposes only. 
+      // We will mark end at the node we are wotking on.
+      if (currentNode === "WaitIdle" && engineResult.outcome === "SUCCESS") {
+        logger.info("Stopping after WaitIdle node completion", { currentNode });
+        return {
+          state: { ...currentState, status: "completed", stopReason: "success" },
+          status: "completed",
+          stopReason: "success",
+          lastNode: currentNode,
+        };
+      }
+
       // Should never reach here
       logger.error("Unexpected engine result state", { engineResult });
       return {

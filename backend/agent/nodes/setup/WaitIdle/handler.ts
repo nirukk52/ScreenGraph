@@ -28,7 +28,7 @@ export function createWaitIdleHandler(): NodeHandler<
       };
     },
     applyOutput: applyWaitIdleOutput,
-    onSuccess: "Perceive",
+    onSuccess: "SwitchPolicy",
     onFailure: WaitIdlePolicy,
   };
 }
