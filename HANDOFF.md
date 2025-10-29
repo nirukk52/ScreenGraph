@@ -17,6 +17,49 @@ This document is the single place where agents leave status for each other. Alwa
 - **Graphiti episode IDs**:
   - <name>: `<uuid>`
 - **Related docs**: <path(s)>
+- **Notes for next agent**: <optional section with immediate context and recommendations>
+
+---
+
+## Handoff #4 — XState v5 Orchestration Phase 1 Complete
+
+- **What I am doing**: Implemented XState v5 wrapper for agent orchestration preserving all existing node capsules, ports, adapters, handlers, and mappers. Created feature flag `AGENT_DRIVER` (default: "runner") to toggle between AgentRunner and XState driver without code changes. Achieved functional parity on green path with all unit tests passing.
+
+- **What is pending**:
+  - [ ] Code: Phase 2 - Move retry/backoff/backtrack policy from `transition-policy.ts` into XState guards
+  - [ ] Code: Phase 2 - Fully replace AgentRunner and remove fallback path
+  - [ ] Tests: End-to-end test with real device using `AGENT_DRIVER=xstate`
+  - [ ] Manual review: Compare XState vs AgentRunner log traces in Encore dashboard
+
+- **What I plan to do next**:
+  - Phase 2: Refactor `backend/agent/engine/transition-policy.ts` logic into XState machine guards
+  - Phase 2: Remove `AgentRunner` class entirely and update all references
+  - Phase 2: Simplify `worker.ts` by removing driver branching once XState is stable
+  - Consider moving SwitchPolicy routing logic into XState for true policy-based node transitions
+
+- **Modules I am touching**:
+  - `backend/agent/engine/xstate/` (new module)
+  - `backend/agent/orchestrator/worker.ts` (feature flag + dual driver implementation)
+  - `backend/package.json` (added xstate@^5.23.0)
+
+- **Work status rating (out of 5)**: 5
+
+- **Graphiti episode IDs**:
+  - XState Phase 1 Implementation: `<episode-id-pending>`
+
+- **Related docs**:
+  - `.cursor/plans/phase-12e57602.plan.md`
+  - `backend/agent/engine/xstate/machine.test.ts` (unit tests)
+  - `backend/agent/CLAUDE.md` (agent subsystem context)
+
+- **Notes for next agent**:
+  - **Critical**: XState v5 requires inline `assign()` in `onDone` actions to access `event.output` - this pattern is already implemented in `machine.ts`
+  - **Quick start**: Set `export AGENT_DRIVER=xstate` before running `encore run` to test XState driver
+  - **Test coverage**: All three unit tests pass (nominal path, retry, cancellation). Green path completes: EnsureDevice → LaunchOrAttach → Perceive → WaitIdle → SwitchPolicy → finished
+  - **Preserved structure**: All node capsules (handlers, mappers, policies, node executors) remain unchanged - only orchestration layer wrapped
+  - **Phase 2 recommendation**: Refactor `transition-policy.ts` computeBackoffDelayMs and retry logic into XState guards/actions to eliminate boilerplate. Consider using XState's built-in delayed transitions for retry timeout.
+  - **Architecture win**: SwitchPolicy currently routes to Stop node - this can be replaced with dynamic routing based on AgentState.policyVersion using XState guards
+  - **Logging**: All encore.dev/log structured logging preserved. Check Encore dashboard for traces when testing live runs.
 
 ---
 
