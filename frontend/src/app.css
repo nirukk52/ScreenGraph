@@ -10,10 +10,55 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    
+    /* Retro-Modern Design System Colors */
+    --color-sky-blue: #B4D4E1;
+    --color-sky-blue-light: #C9E3ED;
+    --color-neutral-gray: #E5E5E5;
+    --color-neutral-gray-light: #F0F0F0;
+    --color-warm-tan: #D9B89C;
+    --color-warm-orange: #E8C4A8;
+    --color-soft-pink: #E5C9C9;
+    --color-soft-rose: #F0D9D9;
+    --color-charcoal: #2D2D2D;
+    --color-charcoal-dark: #1F1F1F;
+    --color-text-secondary: #5A5A5A;
   }
 
   body {
     margin: 0;
     min-height: 100vh;
+  }
+}
+
+/* Retro Shadow Utilities */
+@layer utilities {
+  .retro-shadow {
+    box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+    border: 2px solid rgba(0, 0, 0, 1);
+  }
+
+  .retro-shadow-sm {
+    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+    border: 2px solid rgba(0, 0, 0, 1);
+  }
+
+  .retro-shadow-lg {
+    box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+    border: 2px solid rgba(0, 0, 0, 1);
+  }
+
+  .retro-shadow-hover {
+    transition: all 0.2s ease;
+  }
+
+  .retro-shadow-hover:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+  }
+
+  .retro-shadow-hover:active {
+    transform: translate(6px, 6px);
+    box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 1);
   }
 }

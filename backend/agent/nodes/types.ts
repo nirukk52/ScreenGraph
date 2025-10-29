@@ -46,6 +46,7 @@ export interface AgentContext {
       androidPackageId: string;
     };
     launchAttachMode: "LAUNCH_OR_ATTACH";
+    installOrRestart: "INSTALL" | "RESTART";
   };
   perceive: {
     captureDirectives: {

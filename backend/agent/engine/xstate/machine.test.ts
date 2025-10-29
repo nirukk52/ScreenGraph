@@ -71,6 +71,7 @@ const testContext: AgentContext = {
       androidPackageId: "com.example.app",
     },
     launchAttachMode: "LAUNCH_OR_ATTACH",
+    installOrRestart: "RESTART",
   },
   perceive: {
     captureDirectives: {

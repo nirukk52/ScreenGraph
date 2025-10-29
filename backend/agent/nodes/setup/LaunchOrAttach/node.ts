@@ -13,6 +13,7 @@ export interface LaunchOrAttachInput extends CommonNodeInput {
     androidPackageId: string;
   };
   launchAttachMode: "LAUNCH_OR_ATTACH";
+  installOrRestart: "INSTALL" | "RESTART";
   appLaunchTimeoutMs: number;
 }
 
@@ -41,10 +42,34 @@ export async function launchOrAttach(
   logger.info("LaunchOrAttach INPUT", { input });
 
   try {
-    const foregroundCtx = await appLifecyclePort.launchApp(
-      input.applicationUnderTestDescriptor.androidPackageId,
-      { launchTimeoutMs: input.appLaunchTimeoutMs },
-    );
+    let foregroundCtx: ApplicationForegroundContext;
+    
+    if (input.installOrRestart === "RESTART") {
+      logger.info("Restarting app", { packageId: input.applicationUnderTestDescriptor.androidPackageId });
+      const restartSuccess = await appLifecyclePort.restartApp(
+        input.applicationUnderTestDescriptor.androidPackageId,
+        { launchTimeoutMs: input.appLaunchTimeoutMs },
+      );
+      
+      if (!restartSuccess) {
+        throw new Error("App restart failed");
+      }
+      
+      // After restart, get the current app context
+      const currentPackageId = await appLifecyclePort.getCurrentApp();
+      foregroundCtx = {
+        currentPackageId,
+        currentActivityName: "", // Activity name not available from getCurrentApp
+        appBroughtToForegroundTimestamp: new Date().toISOString(),
+      };
+    } else {
+      logger.info("Launching app", { packageId: input.applicationUnderTestDescriptor.androidPackageId });
+      foregroundCtx = await appLifecyclePort.launchApp(
+        input.applicationUnderTestDescriptor.androidPackageId,
+        { launchTimeoutMs: input.appLaunchTimeoutMs },
+      );
+    }
+    
     logger.info("ApplicationForegroundContext received", { foregroundCtx });
 
     const output: LaunchOrAttachOutput = {

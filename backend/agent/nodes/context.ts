@@ -56,6 +56,7 @@ export function buildAgentContext(run: RunRecord): AgentContext {
         androidPackageId: appConfig.packageName,
       },
       launchAttachMode: "LAUNCH_OR_ATTACH",
+      installOrRestart: "RESTART",
     },
     perceive: {
       captureDirectives: {
