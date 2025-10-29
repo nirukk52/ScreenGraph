@@ -1,4 +1,6 @@
-# Node Capsules + AgentRunner Implementation Complete
+# Agent Runner Implementation Complete
+
+> **Superseded:** The AgentRunner implementation has since been replaced by the consolidated XState agent machine (`engine/xstate/agent.machine.ts`). Details below remain for historical tracking.
 
 ## Summary
 Successfully removed phase concept and implemented node capsules architecture with AgentRunner orchestration.

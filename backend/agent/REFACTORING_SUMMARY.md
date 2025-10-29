@@ -1,5 +1,7 @@
 # Node Capsules + AgentRunner Refactoring Summary
 
+> **Superseded:** The current agent runner has been replaced by the consolidated XState machine (`engine/xstate/agent.machine.ts`). This document remains for historical context.
+
 ## Overview
 Successfully refactored agent architecture to remove phase concept and implement node capsules with AgentRunner orchestration.
 

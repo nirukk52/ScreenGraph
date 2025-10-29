@@ -1,5 +1,7 @@
 # Agent Orchestration: NodeEngine + Worker Loop
 
+> **Superseded:** The NodeEngine-based loop has been replaced by the unified XState agent machine (`engine/xstate/agent.machine.ts`). Historical notes below are preserved for reference.
+
 ## Overview
 
 The orchestration system coordinates agent node execution with forward progression, bounded retries, and backtracking. It preserves deterministic control flow through persistent snapshots and typed transitions.

@@ -1,8 +1,6 @@
 import type { AgentState, StopReason } from "../../domain/state";
 import type { AgentNodeName, AgentContext, AgentPorts } from "../../nodes/types";
-import type { EngineNodeExecutionResult } from "../types";
-import type { AgentRunnerCallbacks } from "../agent-runner";
-import type { NodeEngine } from "../node-engine";
+import type { EngineNodeExecutionResult, NodeEvent, NodeRegistry } from "../types";
 import type log from "encore.dev/log";
 
 /**
@@ -22,7 +20,7 @@ export type ShouldStopFn = (state: AgentState) => Promise<ShouldStopResult>;
 
 /**
  * AgentMachineContext stores mutable orchestration state shared across XState transitions.
- * PURPOSE: Tracks the latest agent snapshot and decision outputs while preserving NodeEngine execution.
+ * PURPOSE: Tracks the latest agent snapshot and decision outputs while executing node handlers directly.
  */
 export interface AgentMachineContext {
   agentState: AgentState;
@@ -79,24 +77,39 @@ export interface AgentMachineOutput {
 }
 
 /**
- * ComputeNextNodeFn determines the next node given current state.
- * PURPOSE: Enables routing decisions without SwitchPolicy in green path.
+ * AgentMachineAttemptTelemetry captures per-node metadata surfaced to the worker.
+ * PURPOSE: Preserves structured logging and analytics outside the machine.
  */
-export type ComputeNextNodeFn = (state: AgentState) => AgentNodeName | null;
+export interface AgentMachineAttemptTelemetry {
+  nodeName: AgentNodeName;
+  outcome: "SUCCESS" | "FAILURE";
+  nextNode: AgentNodeName | null;
+  backtracked: boolean;
+  attempt: number;
+}
+
+/**
+ * AgentMachineCallbacks provide persistence and telemetry hooks owned by the worker.
+ * PURPOSE: Keeps machine pure while allowing side effects via orchestrator.
+ */
+export interface AgentMachineCallbacks {
+  onPersist: (state: AgentState, events: NodeEvent[], nodeName: AgentNodeName) => Promise<void>;
+  onAttempt: (attempt: AgentMachineAttemptTelemetry) => Promise<void>;
+}
 
 /**
  * AgentMachineDependencies encapsulates shared orchestration dependencies needed by the machine.
  * PURPOSE: Ensures a single wiring surface when constructing the XState actor.
  */
 export interface AgentMachineDependencies {
-  engine: NodeEngine<AgentNodeName, AgentPorts, AgentContext>;
+  registry: NodeRegistry<AgentNodeName, AgentPorts, AgentContext>;
   ports: AgentPorts;
   ctx: AgentContext;
-  callbacks: AgentRunnerCallbacks<AgentNodeName>;
+  callbacks: AgentMachineCallbacks;
   seed: () => number;
   shouldStop: ShouldStopFn;
-  computeNextNode: ComputeNextNodeFn;
   logger: ReturnType<typeof log.with>;
+  now: () => string;
 }
 
 /**

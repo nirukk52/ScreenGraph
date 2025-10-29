@@ -1,10 +1,10 @@
 import type { AgentState, Budgets } from "../domain/state";
 import type { RunRecord, RunLifecycleStatus, RunDbPort } from "../ports/db-ports/run-db.port";
 import type { Orchestrator } from "./orchestrator";
-import { NodeEngine } from "../engine/node-engine";
 import { buildNodeRegistry } from "../nodes/registry";
 import { buildAgentContext } from "../nodes/context";
 import type { AgentNodeName, AgentPorts, AgentContext } from "../nodes/types";
+import type { NodeRegistry } from "../engine/types";
 import { WebDriverIOSessionAdapter } from "../adapters/appium/webdriverio/session.adapter";
 import { WebDriverIOAppLifecycleAdapter } from "../adapters/appium/webdriverio/app-lifecycle.adapter";
 import { WebDriverIOIdleDetectorAdapter } from "../adapters/appium/webdriverio/idle-detector.adapter";
@@ -16,14 +16,8 @@ import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../logging/logger";
 import { createActor } from "xstate";
 import { createBrowserInspector } from "@statelyai/inspect";
-import { createAgentMachine } from "../engine/xstate/machine";
-import { computeNextNodeFromState } from "../engine/xstate/router";
-import type {
-  AgentMachineDependencies,
-  AgentMachineOutput,
-  AgentMachineContext,
-  ShouldStopResult,
-} from "../engine/xstate/types";
+import { createAgentMachine } from "../engine/xstate/agent.machine";
+import type { AgentMachineDependencies, AgentMachineOutput, AgentMachineContext, ShouldStopResult } from "../engine/xstate/types";
 // Inspector available in dev via @statelyai/inspect
 
 /**
@@ -132,30 +126,28 @@ export class AgentWorker {
       this.options.orchestrator.generateId.bind(this.options.orchestrator),
     );
     const ctx = buildAgentContext(this.options.run);
-    const engine = new NodeEngine<AgentNodeName, AgentPorts, AgentContext>(registry);
-
     await this.options.orchestrator.saveSnapshot(initialState);
 
     return this.runWithXState({
       initialState,
-      engine,
       ports,
       ctx,
+      registry,
       logger,
     });
   }
 
   private async runWithXState(params: AgentDriverParams): Promise<AgentWorkerExecutionResult> {
-    const { initialState, engine, ports, ctx, logger } = params;
+    const { initialState, ports, ctx, registry, logger } = params;
 
     const dependencies: AgentMachineDependencies = {
-      engine,
+      registry,
       ports,
       ctx,
       seed: this.options.orchestrator.nextSeed.bind(this.options.orchestrator),
       shouldStop: async (state) => this.evaluateShouldStop(state),
-      computeNextNode: computeNextNodeFromState,
       logger,
+      now: () => new Date().toISOString(),
       callbacks: {
         onAttempt: async (attempt) => {
           logger.info("Agent runner attempt completed", {
@@ -163,6 +155,7 @@ export class AgentWorker {
             outcome: attempt.outcome,
             nextNode: attempt.nextNode,
             backtracked: attempt.backtracked,
+            attempt: attempt.attempt,
           });
         },
         onPersist: async (state, events, nodeName) => {
@@ -258,27 +251,6 @@ export class AgentWorker {
       await this.options.orchestrator.saveSnapshot(canceledState);
       return { stop: true, reason: "user_cancelled" };
     }
-
-    const startMs = Date.parse(state.timestamps.createdAt);
-    const elapsedMs = Date.now() - startMs;
-    const { budgets } = this.options;
-    const budgetExceeded =
-      state.counters.stepsTotal >= budgets.maxSteps ||
-      elapsedMs >= budgets.maxTimeMs ||
-      state.counters.restartsUsed >= budgets.restartLimit;
-
-    if (budgetExceeded) {
-      const now = new Date().toISOString();
-      const failedState: AgentState = {
-        ...state,
-        status: "failed",
-        stopReason: "budget_exhausted",
-        timestamps: { ...state.timestamps, updatedAt: now },
-      };
-      await this.options.orchestrator.saveSnapshot(failedState);
-      return { stop: true, reason: "budget_exhausted" };
-    }
-
     return { stop: false, reason: null };
   }
 
@@ -356,8 +328,8 @@ interface AgentWorkerExecutionResult {
 
 interface AgentDriverParams {
   initialState: AgentState;
-  engine: NodeEngine<AgentNodeName, AgentPorts, AgentContext>;
   ports: AgentPorts;
   ctx: AgentContext;
+  registry: NodeRegistry<AgentNodeName, AgentPorts, AgentContext>;
   logger: ReturnType<typeof log.with>;
 }

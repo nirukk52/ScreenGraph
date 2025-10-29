@@ -1,41 +1,57 @@
 import { describe, expect, it, vi } from "vitest";
 import { createActor } from "xstate";
-import { createAgentMachine } from "./machine";
+import { createAgentMachine } from "./agent.machine";
 import type { AgentMachineDependencies, AgentMachineOutput } from "./types";
-import type { AgentNodeName, AgentPorts, AgentContext } from "../../nodes/types";
-import type { EngineRunOnceResult, NodeEvent } from "../types";
-import type { AgentState } from "../../domain/state";
+import type { AgentContext, AgentNodeName, AgentPorts } from "../../nodes/types";
+import type { NodeHandler, NodeOutputBase, NodeRegistry } from "../types";
 import { createInitialState } from "../../domain/state";
+import type { AgentState, StopReason } from "../../domain/state";
 
-class FakeEngine {
-  constructor(private readonly results: EngineRunOnceResult<AgentNodeName>[]) {}
-
-  async runOnce(): Promise<EngineRunOnceResult<AgentNodeName>> {
-    const next = this.results.shift();
-    if (!next) {
-      throw new Error("No engine result available");
-    }
-    return next;
-  }
+interface StubOutcome {
+  status: "SUCCESS" | "FAILURE";
+  retryable?: boolean | null;
 }
+
+type StubOutput = NodeOutputBase & { retryable?: boolean | null };
+
+type OutcomeScript = StubOutcome[];
 
 const baseBudgets = {
   maxSteps: 100,
-  maxTimeMs: 60_000,
-  maxTaps: 100,
-  outsideAppLimit: 10,
+  maxTimeMs: 600_000,
+  maxTaps: 500,
+  outsideAppLimit: 20,
   restartLimit: 3,
-  appLaunchTimeoutMs: 10_000,
-  appRestartTimeoutMs: 10_000,
+  appLaunchTimeoutMs: 30_000,
+  appRestartTimeoutMs: 30_000,
+} as const;
+
+const transitionMap: Record<AgentNodeName, AgentNodeName | null> = {
+  EnsureDevice: "ProvisionApp",
+  ProvisionApp: "LaunchOrAttach",
+  LaunchOrAttach: "Perceive",
+  Perceive: "WaitIdle",
+  WaitIdle: "SwitchPolicy",
+  SwitchPolicy: "Stop",
+  RestartApp: "WaitIdle",
+  Stop: null,
+};
+
+const defaultPolicy = {
+  retry: {
+    maxAttempts: 3,
+    baseDelayMs: 1_000,
+    maxDelayMs: 5_000,
+  },
 } as const;
 
 const testContext: AgentContext = {
   ensureDevice: {
     deviceConfiguration: {
       platformName: "android",
-      deviceName: "test-device",
+      deviceName: "pixel-test",
       platformVersion: "15",
-      automationName: "UiAutomator2",
+      appiumServerUrl: "http://localhost:4723",
     },
     driverReusePolicy: "REUSE_OR_CREATE",
   },
@@ -44,7 +60,7 @@ const testContext: AgentContext = {
     reinstallIfOlder: false,
     applicationUnderTestDescriptor: {
       androidPackageId: "com.example.app",
-      apkStorageObjectReference: "apk-ref",
+      apkStorageObjectReference: "apk://example",
       expectedBuildSignatureSha256: null,
       expectedVersionCode: null,
       expectedVersionName: null,
@@ -69,105 +85,211 @@ const testContext: AgentContext = {
       maxWaitMillis: 5_000,
     },
   },
-} as const;
-
-const events: NodeEvent[] = [];
-
-function withStep(state: AgentState, nodeName: AgentNodeName): AgentState {
-  const nextOrdinal = state.stepOrdinal + 1;
-  return {
-    ...state,
-    nodeName,
-    stepOrdinal: nextOrdinal,
-    resumeToken: `${state.runId}-${String(nextOrdinal).padStart(3, "0")}`,
-    counters: {
-      ...state.counters,
-      stepsTotal: state.counters.stepsTotal + 1,
+  policy: {
+    switchPolicy: {
+      currentStrategyConfiguration: {
+        strategyName: "BASIC",
+        policyVersion: 1,
+      },
+      requestedStrategyConfiguration: {
+        strategyName: "BASIC",
+        policyVersion: 1,
+      },
+      reasonPlaintext: "default",
     },
-    timestamps: {
-      ...state.timestamps,
-      updatedAt: new Date(Date.parse(state.timestamps.updatedAt) + 1_000).toISOString(),
+  },
+  terminal: {
+    intendedTerminalDisposition: "SUCCEEDED",
+    terminalizationBasis: "test",
+  },
+};
+
+function createStubHandler(
+  name: AgentNodeName,
+  nextNode: AgentNodeName | null,
+  script: OutcomeScript,
+): NodeHandler<undefined, StubOutput, AgentNodeName, AgentPorts, AgentContext> {
+  const outcomes = script.length > 0 ? script : [{ status: "SUCCESS", retryable: null }];
+  let index = 0;
+
+  return {
+    name,
+    buildInput() {
+      return undefined;
+    },
+    async execute() {
+      const outcome = outcomes[Math.min(index, outcomes.length - 1)];
+      index += 1;
+      const output: StubOutput = {
+        nodeExecutionOutcomeStatus: outcome.status,
+        retryable: outcome.retryable ?? null,
+      };
+      return { output, events: [] };
+    },
+    applyOutput(prev) {
+      return prev;
+    },
+    onSuccess: nextNode,
+    onFailure: defaultPolicy,
+  };
+}
+
+function createStubRegistry(
+  scripts: Partial<Record<AgentNodeName, OutcomeScript>> = {},
+): NodeRegistry<AgentNodeName, AgentPorts, AgentContext> {
+  const registry: NodeRegistry<AgentNodeName, AgentPorts, AgentContext> = {};
+  (Object.keys(transitionMap) as AgentNodeName[]).forEach((node) => {
+    const sequence = scripts[node] ?? [{ status: "SUCCESS", retryable: null }];
+    registry[node] = createStubHandler(node, transitionMap[node], sequence);
+  });
+  return registry;
+}
+
+function createStubPorts(): AgentPorts {
+  return {
+    sessionPort: {
+      ensureDevice: async () => ({
+        deviceRuntimeContextId: "context-1",
+        deviceId: "device-1",
+        capabilitiesEcho: {},
+        healthProbeStatus: "HEALTHY",
+      }),
+      closeSession: async () => {},
+    },
+    appLifecyclePort: {
+      launchApp: async () => ({
+        currentPackageId: "com.example.app",
+        currentActivityName: "MainActivity",
+        appBroughtToForegroundTimestamp: new Date().toISOString(),
+      }),
+      restartApp: async () => true,
+      getCurrentApp: async () => "com.example.app",
+    },
+    idleDetectorPort: {
+      waitIdle: async () => 250,
+    },
+    packageManagerPort: {
+      isInstalled: async () => ({ installed: true }),
+      installFromObjectStorage: async () => ({ packageId: "com.example.app" }),
+      getSignatureSha256: async () => "deadbeef",
+      uninstall: async () => true,
+    },
+    perceptionPort: {
+      captureScreenshot: async () => ({
+        base64Image: "",
+        format: "png",
+        widthPx: 1080,
+        heightPx: 1920,
+      }),
+      dumpUiHierarchy: async () => ({
+        xmlContent: "<hierarchy />",
+        captureTimestampMs: Date.now(),
+      }),
+    },
+    deviceInfoPort: {
+      getScreenDimensions: async () => ({ widthPx: 1080, heightPx: 1920 }),
+      isDeviceReady: async () => true,
+    },
+    storagePort: {
+      storeArtifact: async () => ({ refId: "artifact-ref" }),
+      retrieveArtifact: async () => ({ content: "", metadata: {} }),
     },
   };
 }
 
+interface BuiltDependencies {
+  dependencies: AgentMachineDependencies;
+  callbacks: {
+    onAttempt: ReturnType<typeof vi.fn>;
+    onPersist: ReturnType<typeof vi.fn>;
+  };
+  logger: {
+    info: ReturnType<typeof vi.fn>;
+    warn: ReturnType<typeof vi.fn>;
+    error: ReturnType<typeof vi.fn>;
+  };
+}
+
 function buildDependencies(
-  engine: FakeEngine,
-  shouldStopImpl: AgentMachineDependencies["shouldStop"],
-): AgentMachineDependencies {
-  const loggerMocks = {
+  registry: NodeRegistry<AgentNodeName, AgentPorts, AgentContext>,
+  overrides: {
+    shouldStop?: AgentMachineDependencies["shouldStop"];
+    now?: () => string;
+  } = {},
+): BuiltDependencies {
+  let seedValue = 123456;
+  let currentTimeMs = Date.parse("2025-01-01T00:00:00.000Z");
+
+  const logger = {
     info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
   };
 
-  const callbackMocks = {
+  const callbacks = {
     onAttempt: vi.fn().mockResolvedValue(undefined),
     onPersist: vi.fn().mockResolvedValue(undefined),
   };
 
-  return Object.assign(
-    {
-      engine: engine as unknown as AgentMachineDependencies["engine"],
-      ports: {} as AgentPorts,
-      ctx: testContext,
-      seed: () => 42,
-      shouldStop: shouldStopImpl,
-      logger: loggerMocks as unknown as AgentMachineDependencies["logger"],
-      callbacks: callbackMocks,
+  const dependencies: AgentMachineDependencies = {
+    registry,
+    ports: createStubPorts(),
+    ctx: testContext,
+    seed: () => {
+      seedValue = (seedValue * 1103515245 + 12345) & 0x7fffffff;
+      return seedValue;
     },
-    { __loggerMocks: loggerMocks, __callbackMocks: callbackMocks },
-  ) as AgentMachineDependencies;
+    shouldStop: overrides.shouldStop ?? (async () => ({ stop: false, reason: null })),
+    logger: logger as unknown as AgentMachineDependencies["logger"],
+    callbacks,
+    now:
+      overrides.now ??
+      (() => {
+        currentTimeMs += 1_000;
+        return new Date(currentTimeMs).toISOString();
+      }),
+  };
+
+  return { dependencies, callbacks, logger };
 }
 
-async function runMachine(machineDeps: {
-  initialState: AgentState;
-  dependencies: AgentMachineDependencies;
-}): Promise<
-  AgentMachineOutput & {
-    history: Array<{ value: unknown; status: AgentState["status"]; latestNode: AgentNodeName | null; decision: string | null }>;
-  }
-> {
+async function runMachine(
+  initialState: AgentState,
+  machineDependencies: AgentMachineDependencies,
+): Promise<{
+  output: AgentMachineOutput;
+  history: Array<{ status: AgentState["status"]; latestNode: AgentNodeName | null; decision: string | null }>;
+}> {
   const machine = createAgentMachine({
-    initialState: machineDeps.initialState,
+    initialState,
     entryNode: "EnsureDevice",
-    dependencies: machineDeps.dependencies,
+    dependencies: machineDependencies,
   });
 
   const actor = createActor(machine);
-  const history: Array<{
-    value: unknown;
-    status: AgentState["status"];
-    latestNode: AgentNodeName | null;
-    decision: string | null;
-  }> = [];
+  const history: Array<{ status: AgentState["status"]; latestNode: AgentNodeName | null; decision: string | null }> = [];
 
-  const outputPromise = new Promise<AgentMachineOutput>((resolve, reject) => {
+  const completion = new Promise<AgentMachineOutput>((resolve, reject) => {
     const subscription = actor.subscribe({
       next: (snapshot) => {
         history.push({
-          value: snapshot.value,
           status: snapshot.context.agentState.status,
-          latestNode: snapshot.context.latestResult?.nodeName ?? null,
+          latestNode: snapshot.context.latestExecution?.nodeName ?? null,
           decision: snapshot.context.lastDecision ?? null,
-          latestResultExists: Boolean(snapshot.context.latestResult),
-          currentNode: snapshot.context.currentNode,
-          nextNodeFromResult: snapshot.context.latestResult?.nextNode ?? null,
         });
         if (snapshot.status === "done") {
           subscription.unsubscribe?.();
-          const derived: AgentMachineOutput =
-            (snapshot.output as AgentMachineOutput | undefined) ?? {
-              state: snapshot.context.agentState,
-              status:
-                snapshot.context.agentState.status === "canceled"
+          const derived = snapshot.output ?? {
+            state: snapshot.context.agentState,
+            status:
+              snapshot.context.agentState.status === "completed"
+                ? "completed"
+                : snapshot.context.agentState.status === "canceled"
                   ? "canceled"
-                  : snapshot.context.agentState.status === "failed"
-                    ? "failed"
-                    : "completed",
-              stopReason: snapshot.context.agentState.stopReason ?? null,
-              lastNode: snapshot.context.latestResult?.nodeName ?? snapshot.context.currentNode,
-            };
+                  : "failed",
+            stopReason: snapshot.context.agentState.stopReason ?? null,
+            lastNode: snapshot.context.latestExecution?.nodeName ?? snapshot.context.currentNode,
+          };
           resolve(derived);
         }
       },
@@ -180,159 +302,77 @@ async function runMachine(machineDeps: {
 
   actor.start();
   actor.send({ type: "START" });
-
-  const output = await outputPromise;
+  const finalOutput = await completion;
   actor.stop();
-  return { ...output, history };
+  return { output: finalOutput, history };
+}
+
+function createState(overrides?: Partial<AgentState>, budgetsOverride?: Partial<AgentState["budgets"]>) {
+  const createdAt = new Date("2025-01-01T00:00:00.000Z").toISOString();
+  const state = createInitialState("tenant", "project", "run", { ...baseBudgets, ...budgetsOverride }, createdAt);
+  return { ...state, ...overrides };
 }
 
 describe("createAgentMachine", () => {
-  it("completes the nominal setup path", async () => {
-    const initialState = createInitialState(
-      "tenant",
-      "project",
-      "run",
-      { ...baseBudgets },
-      new Date("2025-01-01T00:00:00.000Z").toISOString(),
-    );
+  it("completes the nominal orchestration path", async () => {
+    const registry = createStubRegistry();
+    const built = buildDependencies(registry);
+    const initialState = createState();
 
-    const ensureDeviceState = withStep(initialState, "EnsureDevice");
-    const launchState = withStep(ensureDeviceState, "LaunchOrAttach");
-    const perceiveState = withStep(launchState, "Perceive");
-    const waitIdleState = withStep(perceiveState, "WaitIdle");
-    const switchPolicyState = withStep(waitIdleState, "SwitchPolicy");
+    const { output } = await runMachine(initialState, built.dependencies);
 
-    const engine = new FakeEngine([
-      {
-        state: ensureDeviceState,
-        nodeName: "EnsureDevice",
-        outcome: "SUCCESS",
-        nextNode: "LaunchOrAttach",
-        backtracked: false,
-        retryDelayMs: null,
-        stopReason: null,
-        events,
-      },
-      {
-        state: launchState,
-        nodeName: "LaunchOrAttach",
-        outcome: "SUCCESS",
-        nextNode: "Perceive",
-        backtracked: false,
-        retryDelayMs: null,
-        stopReason: null,
-        events,
-      },
-      {
-        state: perceiveState,
-        nodeName: "Perceive",
-        outcome: "SUCCESS",
-        nextNode: "WaitIdle",
-        backtracked: false,
-        retryDelayMs: null,
-        stopReason: null,
-        events,
-      },
-      {
-        state: waitIdleState,
-        nodeName: "WaitIdle",
-        outcome: "SUCCESS",
-        nextNode: "SwitchPolicy",
-        backtracked: false,
-        retryDelayMs: null,
-        stopReason: null,
-        events,
-      },
-      {
-        state: switchPolicyState,
-        nodeName: "SwitchPolicy",
-        outcome: "SUCCESS",
-        nextNode: null,
-        backtracked: false,
-        retryDelayMs: null,
-        stopReason: null,
-        events,
-      },
-    ]);
-
-    const dependencies = buildDependencies(engine, async () => ({ stop: false, reason: null }));
-
-    const output = await runMachine({ initialState, dependencies });
     expect(output.status).toBe("completed");
     expect(output.stopReason).toBe("success");
-    expect(output.lastNode).toBe("SwitchPolicy");
-    expect(dependencies.callbacks.onPersist).toHaveBeenCalledTimes(5);
-    expect(dependencies.callbacks.onAttempt).toHaveBeenCalledTimes(5);
+    expect(output.lastNode).toBe("Stop");
+    expect(built.callbacks.onPersist).toHaveBeenCalledTimes(7);
+    expect(built.callbacks.onAttempt).toHaveBeenCalledTimes(7);
   });
 
-  it("respects external stop requests before execution", async () => {
-    const initialState = createInitialState(
-      "tenant",
-      "project",
-      "run",
-      { ...baseBudgets },
-      new Date("2025-01-01T00:00:00.000Z").toISOString(),
-    );
+  it("stops before execution when shouldStop requests cancellation", async () => {
+    const registry = createStubRegistry();
+    const built = buildDependencies(registry, {
+      shouldStop: async () => ({ stop: true, reason: "user_cancelled" as StopReason }),
+    });
+    const initialState = createState();
 
-    const engine = new FakeEngine([]);
-    const dependencies = buildDependencies(engine, async () => ({
-      stop: true,
-      reason: "user_cancelled",
-    }));
-
-    const output = await runMachine({ initialState, dependencies });
+    const { output } = await runMachine(initialState, built.dependencies);
 
     expect(output.status).toBe("canceled");
     expect(output.stopReason).toBe("user_cancelled");
-    expect(dependencies.callbacks.onPersist).not.toHaveBeenCalled();
-    expect(dependencies.callbacks.onAttempt).not.toHaveBeenCalled();
+    expect(built.callbacks.onPersist).not.toHaveBeenCalled();
+    expect(built.callbacks.onAttempt).not.toHaveBeenCalled();
   });
 
-  it("retries and then succeeds when engine indicates retry", async () => {
-    const initialState = createInitialState(
-      "tenant",
-      "project",
-      "run",
-      { ...baseBudgets },
-      new Date("2025-01-01T00:00:00.000Z").toISOString(),
-    );
+  it("retries a node before succeeding", async () => {
+    const registry = createStubRegistry({
+      EnsureDevice: [
+        { status: "FAILURE", retryable: true },
+        { status: "SUCCESS", retryable: null },
+      ],
+    });
+    const built = buildDependencies(registry);
+    const initialState = createState();
 
-    const ensureDeviceState = withStep(initialState, "EnsureDevice");
-    const retryState: AgentState = {
-      ...ensureDeviceState,
-      iterationOrdinalNumber: 1,
-    };
-    const successState = withStep(retryState, "EnsureDevice");
-
-    const engine = new FakeEngine([
-      {
-        state: retryState,
-        nodeName: "EnsureDevice",
-        outcome: "FAILURE",
-        nextNode: "EnsureDevice",
-        backtracked: false,
-        retryDelayMs: 0,
-        stopReason: null,
-        events,
-      },
-      {
-        state: successState,
-        nodeName: "EnsureDevice",
-        outcome: "SUCCESS",
-        nextNode: null,
-        backtracked: false,
-        retryDelayMs: null,
-        stopReason: null,
-        events,
-      },
-    ]);
-
-    const dependencies = buildDependencies(engine, async () => ({ stop: false, reason: null }));
-
-    const output = await runMachine({ initialState, dependencies });
+    const { output } = await runMachine(initialState, built.dependencies);
 
     expect(output.status).toBe("completed");
-    expect(dependencies.callbacks.onPersist).toHaveBeenCalledTimes(2);
+    expect(built.callbacks.onPersist).toHaveBeenCalledTimes(8);
+    expect(built.callbacks.onAttempt).toHaveBeenCalledWith(
+      expect.objectContaining({ nodeName: "EnsureDevice", backtracked: false }),
+    );
+  });
+
+  it("fails when budgets are exhausted", async () => {
+    const registry = createStubRegistry();
+    const built = buildDependencies(registry);
+    const initialState = createState(undefined, { maxSteps: 0 });
+
+    const { output } = await runMachine(initialState, built.dependencies);
+
+    expect(output.status).toBe("failed");
+    expect(output.stopReason).toBe("budget_exhausted");
+    expect(output.lastNode).toBe("EnsureDevice");
+    expect(built.callbacks.onPersist).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -23,12 +23,12 @@ ScreenGraph enables autonomous agents to explore and understand mobile applicati
 ### Core Components
 - **Frontend:** SvelteKit 2 (Svelte 5) deployed on Vercel
 - **Backend:** Encore.ts microservices on Encore Cloud
-- **Agent:** NodeEngine orchestration with persistent state snapshots
+- **Agent:** XState-driven orchestration (`backend/agent/engine/xstate/agent.machine.ts`) with persistent state snapshots
 - **Logging:** Unified structured logs with module/actor organization
 - **Database:** PostgreSQL with event sourcing and snapshot persistence
 
 ### Recent Milestones ✅
-- **Agent Orchestration**: Complete NodeEngine with retry/backtrack
+- **Agent Orchestration**: XState-first machine with integrated retry/backtrack
 - **Structured Logging**: Production-ready log-based QA methodology
 - **Type Safety**: End-to-end via Encore generated clients
 
@@ -582,7 +582,7 @@ Set in Vercel Dashboard:
 See [PROJECT_STATUS.md](PROJECT_STATUS.md) for current status.
 
 ### ✅ Completed
-- Agent orchestration infrastructure (NodeEngine, Worker, Orchestrator)
+- Agent orchestration infrastructure (Agent Machine, Worker, Orchestrator)
 - Structured logging with module/actor organization
 - Type-safe API contracts with Encore generated clients
 - Event sourcing and snapshot persistence

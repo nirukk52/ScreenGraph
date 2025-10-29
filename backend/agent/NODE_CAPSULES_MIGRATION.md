@@ -1,4 +1,6 @@
-# Node Capsules Architecture Migration
+# Node Capsules Migration Plan
+
+> **Update:** The orchestrator now uses the XState agent machine (`engine/xstate/agent.machine.ts`). Capsule guidance below still applies to handler structure.
 
 ## Summary
 Removed phase concept and refactored to node capsules with unified AgentRunner orchestration.

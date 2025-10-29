@@ -1,16 +1,16 @@
 # Agent Subsystem Context
 
 ## Overview
-The agent subsystem orchestrates mobile test automation through a deterministic node execution engine with persistent state snapshots.
+The agent subsystem orchestrates mobile test automation through a deterministic XState machine backed by persistent state snapshots.
 
 ## Flow
-RunJob → Worker ↓ Worker creates: sessionPort, registry, context, engine ↓ Engine.runOnce(currentNode="EnsureDevice") ↓ Handler.buildInput(state, context) → EnsureDeviceInput ↓ Handler.execute(input, ports) → EnsureDeviceOutput + events ↓ Handler.applyOutput(state, output) → Updated AgentState ↓ Engine decides transition: SUCCESS → "ProvisionApp" ↓ Worker persists events and snapshot ↓ Repeat for next node...
+RunJob → Worker ↓ Worker creates: sessionPort, registry, context, machine ↓ Machine.run(currentNode="EnsureDevice") ↓ Handler.buildInput(state, context) → EnsureDeviceInput ↓ Handler.execute(input, ports) → EnsureDeviceOutput + events ↓ Handler.applyOutput(state, output) → Updated AgentState ↓ Machine decides transition: SUCCESS → "ProvisionApp" ↓ Worker persists events and snapshot ↓ Repeat for next node...
 
 
 ## Architecture
 
 ### Core Components
-- **`/engine`**: NodeEngine execution control, AgentRunner orchestration loop
+- **`/engine`**: XState agent machine (`xstate/agent.machine.ts`) plus shared types
 - **`/nodes`**: Node capsules organized by category (setup, main, policy, recovery, terminal)
 - **`/orchestrator`**: Worker coordination, Orchestrator persistence, Subscription Pub/Sub
 - **`/ports`**: Abstract interfaces for Appium, DB, LLM, OCR, storage
@@ -21,10 +21,9 @@ RunJob → Worker ↓ Worker creates: sessionPort, registry, context, engine ↓
 ## Key Files
 
 ### `/engine`
-- **`node-engine.ts`**: NodeEngine for executing nodes and deciding transitions
-- **`agent-runner.ts`**: AgentRunner loop for orchestrating next/retry/backtrack
-- **`types.ts`**: Core engine types (NodeHandler, TransitionPolicy, etc.)
-- **`transition-policy.ts`**: Retry/backtrack policy computation
+- **`xstate/agent.machine.ts`**: Primary orchestration state machine wiring handlers → retries/backtracks → persistence
+- **`xstate/types.ts`**: Core machine types (context, decisions, callbacks)
+- **`types.ts`**: Node handler and registry contracts shared across nodes
 
 ### `/nodes`
 - **`types.ts`**: AgentNodeName union, AgentContext, AgentPorts
@@ -35,7 +34,7 @@ RunJob → Worker ↓ Worker creates: sessionPort, registry, context, engine ↓
 - **`main/`, `policy/`, `recovery/`, `terminal/`**: Future node categories
 
 ### `/orchestrator`
-- **`worker.ts`**: AgentWorker with AgentRunner integration, lease heartbeats, budgets
+- **`worker.ts`**: Thin AgentWorker that boots the machine, maintains lease heartbeats, evaluates cancellation
 - **`orchestrator.ts`**: Persistence spine (IDs, events, snapshots)
 - **`subscription.ts`**: Pub/Sub handler for run jobs
 - **`README.md`**: Architecture overview and usage examples
@@ -45,7 +44,7 @@ RunJob → Worker ↓ Worker creates: sessionPort, registry, context, engine ↓
 - **`db-ports/`**: RunDbPort, RunEventsDbPort, AgentStateDbPort, RunOutboxDbPort
 - **`llm.port.ts`**: LLM interface for decision nodes
 - **`ocr.port.ts`**: OCR for screen text extraction
-- **`storage.port.ts`**: Artifact storage (screenshots, XML)
+- **`storage.ts`**: Artifact storage (screenshots, XML)
 
 ## Node Handler Pattern
 ```typescript
@@ -63,14 +62,10 @@ RunJob → Worker ↓ Worker creates: sessionPort, registry, context, engine ↓
 1. Subscription receives RunJob from Pub/Sub topic
 2. Worker claims run with lease
 3. Orchestrator initializes from snapshot or creates initial state
-4. Worker creates XState machine with NodeEngine, AgentPorts, AgentContext
-5. XState machine loop: shouldStop check → runNode raw execution → policy.computeTransitionDecision → persist → transition
-6. NodeEngine.runNode: resolve handler → build input → execute → apply output → return raw execution result
-7. Policy module: compute retry/backtrack/advance decision based on outcome + policy
-8. Machine guards: check decision.kind (retry/backtrack/advance/terminalSuccess/terminalFailure)
-9. Machine actions: apply state updates (retry delay, backtrack target, advance nextNode)
-10. Orchestrator: record events, save snapshot via callbacks
-11. Worker: finalize run status
+4. Worker instantiates the agent machine with registry, ports, context, persistence callbacks
+5. Machine loop: shouldStop check → resolve handler → build input → execute → apply output → compute transition decision → persist events/snapshot → transition
+6. Machine guards: check decision.kind (retry/backtrack/advance/terminalSuccess/terminalFailure)
+7. Worker: finalize run status when machine reaches terminal state
 
 ## State Management
 - **AgentState**: Single source of truth (stepOrdinal, iterationOrdinalNumber, nodeName, counters, budgets, status)
@@ -79,32 +74,33 @@ RunJob → Worker ↓ Worker creates: sessionPort, registry, context, engine ↓
 - **Transitions**: Forward (success), Retry (bounded attempts), Backtrack (to recovery node)
 
 ## Retry/Backtrack
-- **Policy module**: `backend/agent/engine/xstate/policy.ts` computes transition decisions
+- **Integrated policy**: `agent.machine.ts` computes retry/backtrack/advance decisions using handler policies and deterministic backoff
 - **Max 3 attempts** per node with exponential backoff (1s base, 5s max)
 - **Deterministic jitter** using `randomSeed` from execution result
 - **Backtracking**: ProvisionApp → EnsureDevice after retries exhausted
-- **Counters**: `restartsUsed` incremented on backtrack via `applyTransitionToState`
+- **Counters**: `restartsUsed` incremented on backtrack via machine decision application
 
 ## Routing
-- **Router**: `backend/agent/engine/xstate/router.ts` returns next node based on current state
-- **SwitchPolicy**: Now only for explicit policy switches (BFS/DFS/MaxCoverage/Focused/GoalOriented)
-- **Green path**: Router determines EnsureDevice → ProvisionApp → LaunchOrAttach → Perceive → WaitIdle → Perceive (loop)
+- **On-success targets**: Handlers declare `onSuccess` transition; machine reads registry to determine next node
+- **SwitchPolicy**: Remains for explicit policy switches (BFS/DFS/MaxCoverage/Focused/GoalOriented)
+- **Green path**: EnsureDevice → ProvisionApp → LaunchOrAttach → Perceive → WaitIdle → SwitchPolicy → Stop
 
 ## Logging
-- **Module**: `"agent"`
-- **Actors**: `"orchestrator"`, `"worker"`, `"subscription"`
+- **Module**: "agent"
+- **Actors**: "orchestrator", "worker", "subscription"
 - **Context**: Always include `runId`, `workerId`, `nodeName`, `stepOrdinal`
 - **Snapshots**: Log full AgentState for debugging
 
 ## Budget Enforcement
-- **maxSteps**: Total step limit
-- **maxTimeMs**: Wall-clock time limit
+- **maxSteps**: Total step limit enforced in-machine
+- **maxTimeMs**: Wall-clock time limit computed via machine `now()` dependency
 - **maxTaps**: Interaction limit
 - **outsideAppLimit**: Off-app action limit
 - **restartLimit**: Backtrack/restart limit
 
 ## Testing
 - Nodes are pure functions (testable in isolation)
+- Machine unit tests reside in `engine/xstate/machine.test.ts`
 - Integration testing via log verification in Encore dashboard
 - Use fake adapters for unit tests
 
