@@ -7,6 +7,7 @@ import type { PerceptionPort } from "../ports/appium/perception.port";
 import type { DeviceInfoPort } from "../ports/appium/device-info.port";
 import type { StoragePort } from "../ports/storage";
 import type { LLMPort } from "../ports/llm";
+import type { GraphPort } from "../ports/graph";
 
 /**
  * AgentNodeName enumerates all nodes available in the agent execution graph.
@@ -19,6 +20,7 @@ export type AgentNodeName =
   | "WaitIdle"
   | "Perceive"
   | "ChooseAction"
+  | "DetectProgress"
   | "SwitchPolicy"
   | "RestartApp"
   | "Stop";
@@ -95,4 +97,5 @@ export interface AgentPorts {
   deviceInfoPort: DeviceInfoPort;
   storagePort: StoragePort;
   llmPort: LLMPort;
+  graphPort: GraphPort;
 }

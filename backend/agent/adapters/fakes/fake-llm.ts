@@ -1,63 +1,71 @@
-import type { LLMPort } from "../../ports/llm.port";
-import type { ActionCandidate } from "../../domain/entities";
-import type { StoragePort } from "../../ports/storage.port";
+import type { LLMPort } from "../../ports/llm";
+import type { ActionCandidate, ActionDecision } from "../../domain/actions";
 
+/**
+ * FakeLLM offers deterministic LLM behavior for tests and demos.
+ * PURPOSE: Provides stable action enumeration/selection without hitting external LLM services.
+ */
 export class FakeLLM implements LLMPort {
-  constructor(
-    private storage: StoragePort,
-    private seed: number,
-  ) {}
+  constructor(private readonly seed: number) {}
 
   async enumerateActions(
     uiHierarchyXmlRefId: string,
     maxActions: number,
   ): Promise<ActionCandidate[]> {
-    const xml = await this.storage.get(uiHierarchyXmlRefId);
-    if (!xml) {
-      return [];
-    }
-
-    const clickableMatches = xml.matchAll(
-      /clickable="true".*?bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/g,
-    );
-    const candidates: ActionCandidate[] = [];
-    let index = 0;
-
-    for (const match of clickableMatches) {
-      if (index >= maxActions) break;
-
-      const x = Number.parseInt(match[1]);
-      const y = Number.parseInt(match[2]);
-      const width = Number.parseInt(match[3]) - x;
-      const height = Number.parseInt(match[4]) - y;
-
-      candidates.push({
-        actionCandidateId: `01ACTCAND-${String(index + 1).padStart(2, "0")}`,
+    void uiHierarchyXmlRefId; // Deterministic fake does not inspect hierarchy yet.
+    const baseCandidates: ActionCandidate[] = [
+      {
+        candidateId: "01ACTCAND-01",
         actionKind: "TAP",
-        hitTargetBounds: { x, y, width, height },
-        elementStableIdentitySignature: `sig:${x}:${y}:${width}:${height}`,
-        confidenceScore: 0.9,
-      });
-      index++;
-    }
+        targetElementXPath: "//button[1]",
+        targetCoordinates: { x: 540, y: 960 },
+        swipeDirection: null,
+        textInputValue: null,
+        actionDescription: "Tap primary button",
+        estimatedSuccessProbability: 0.9,
+        reasoning: "High confidence primary CTA",
+      },
+      {
+        candidateId: "01ACTCAND-02",
+        actionKind: "SWIPE",
+        targetElementXPath: null,
+        targetCoordinates: null,
+        swipeDirection: "UP",
+        textInputValue: null,
+        actionDescription: "Scroll down",
+        estimatedSuccessProbability: 0.7,
+        reasoning: "Attempt to uncover new content",
+      },
+      {
+        candidateId: "01ACTCAND-03",
+        actionKind: "BACK",
+        targetElementXPath: null,
+        targetCoordinates: null,
+        swipeDirection: null,
+        textInputValue: null,
+        actionDescription: "Navigate back",
+        estimatedSuccessProbability: 0.6,
+        reasoning: "Fallback navigation option",
+      },
+    ];
 
-    candidates.push({
-      actionCandidateId: `01ACTCAND-${String(index + 1).padStart(2, "0")}`,
-      actionKind: "BACK",
-      hitTargetBounds: { x: 0, y: 0, width: 0, height: 0 },
-      elementStableIdentitySignature: "sig:back",
-      confidenceScore: 0.8,
-    });
-
-    return candidates.sort((a, b) => a.actionCandidateId.localeCompare(b.actionCandidateId));
+    return baseCandidates.slice(0, Math.max(1, Math.min(maxActions, baseCandidates.length)));
   }
 
-  async chooseAction(candidates: ActionCandidate[], strategy: string): Promise<string> {
+  async chooseAction(
+    candidates: ActionCandidate[],
+    strategy: "greedy" | "exploratory" | "balanced",
+  ): Promise<ActionDecision> {
     if (candidates.length === 0) {
       throw new Error("No candidates available");
     }
 
     const seededIndex = this.seed % candidates.length;
-    return candidates[seededIndex].actionCandidateId;
+    const selected = candidates[seededIndex];
+    return {
+      selectedActionCandidateId: selected.candidateId,
+      selectionRationale: `FakeLLM (${strategy}) selected candidate ${selected.candidateId}`,
+      selectedActionDetails: selected,
+    };
   }
 }

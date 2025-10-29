@@ -1,7 +1,7 @@
-import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
-import type { EventKind } from "../../domain/events";
-import type { ProgressEvaluation, ProgressState } from "../../domain/progress";
-import type { GraphPort } from "../../ports/graph";
+import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
+import type { EventKind } from "../../../domain/events";
+import type { ProgressEvaluation, ProgressState } from "../../../domain/progress";
+import type { GraphPort } from "../../../ports/graph";
 
 export interface DetectProgressInput extends CommonNodeInput {
   runId: string;
@@ -18,8 +18,8 @@ export interface DetectProgressOutput extends CommonNodeOutput {
 }
 
 /**
- * DetectProgress node evaluates whether the agent is making forward progress.
- * Checks for new screen discoveries and detects stalls or loops.
+ * detectProgress evaluates whether the agent is making forward progress.
+ * PURPOSE: Checks for new screen discoveries and detects stalls or loops to inform routing decisions.
  */
 export async function detectProgress(
   input: DetectProgressInput,
@@ -67,7 +67,6 @@ export async function detectProgress(
 
   return {
     output: {
-      runId: input.runId,
       nodeName: "DetectProgress",
       stepOrdinal: input.stepOrdinal,
       iterationOrdinalNumber: input.iterationOrdinalNumber,

@@ -4,6 +4,7 @@ import type { Orchestrator } from "./orchestrator";
 import { buildNodeRegistry } from "../nodes/registry";
 import { buildAgentContext } from "../nodes/context";
 import type { AgentNodeName, AgentPorts, AgentContext } from "../nodes/types";
+import type { GraphPort } from "../ports/graph";
 import type { NodeRegistry } from "../engine/types";
 import { WebDriverIOSessionAdapter } from "../adapters/appium/webdriverio/session.adapter";
 import { WebDriverIOAppLifecycleAdapter } from "../adapters/appium/webdriverio/app-lifecycle.adapter";
@@ -38,7 +39,29 @@ function buildAgentPorts(): AgentPorts {
   const deviceInfoPort = new WebDriverIODeviceInfoAdapter(contextProvider);
   const storagePort = new EncoreStorageAdapter();
   // TODO: Replace with real LLM adapter implementation
-  const llmPort = new FakeLLM(storagePort, 123456);
+  const llmPort = new FakeLLM(123456);
+  // TODO: Wire real graph persistence adapter once storage service is ready.
+  const graphPort: GraphPort = {
+    async persistScreen() {
+      throw new Error("GraphPort.persistScreen not yet implemented");
+    },
+    async persistAction() {
+      throw new Error("GraphPort.persistAction not yet implemented");
+    },
+    async getGraphStatistics() {
+      return {
+        totalScreens: 0,
+        totalActions: 0,
+        totalUniqueScreens: 0,
+      };
+    },
+    async findScreenByHash() {
+      return null;
+    },
+    async getScreenDiscoveryCount() {
+      return 0;
+    },
+  };
   return {
     sessionPort,
     appLifecyclePort,
@@ -48,6 +71,7 @@ function buildAgentPorts(): AgentPorts {
     deviceInfoPort,
     storagePort,
     llmPort,
+    graphPort,
   };
 }
 
