@@ -42,7 +42,7 @@ Use Bun everywhere ("packageManager": "bun").
 Each sub-directory manages its own dependencies.
 
 Testing:
-You test for flow reliability, correctness, and creative consistency, not just functional output.
+You test for flow reliability, correctness, and creative consistency, not just functional output. You focus on high level flow tests and not edge cases or petty tests.
 
 Commands:
 Backend: encore run
