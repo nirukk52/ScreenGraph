@@ -93,3 +93,20 @@ export interface EngineRunOnceResult<N extends string> {
   stopReason: StopReason;
   events: NodeEvent[];
 }
+
+/**
+ * EngineNodeExecutionResult captures the raw effect of executing a single node without
+ * applying retry/backoff/backtrack semantics.
+ * PURPOSE: Enables higher-level drivers (XState) to own transition policy decisions.
+ */
+export interface EngineNodeExecutionResult<N extends string> {
+  state: AgentState;
+  nodeName: N;
+  outcome: NodeExecutionOutcomeStatus;
+  retryable: boolean | null;
+  policy: TransitionPolicy<N>;
+  successTarget: N | null;
+  events: NodeEvent[];
+  attemptNumber: number;
+  seedUsed: number;
+}

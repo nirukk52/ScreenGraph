@@ -1,6 +1,11 @@
 import { advanceStep } from "../domain/state";
 import type { StopReason } from "../domain/state";
-import type { EngineRunOnceArgs, EngineRunOnceResult, NodeRegistry } from "./types";
+import type {
+  EngineNodeExecutionResult,
+  EngineRunOnceArgs,
+  EngineRunOnceResult,
+  NodeRegistry,
+} from "./types";
 import type { NodeOutputBase } from "./types";
 import { computeBackoffDelayMs } from "./transition-policy";
 
@@ -17,25 +22,15 @@ export class NodeEngine<N extends string, P, C> {
   async runOnce(
     args: EngineRunOnceArgs<P, C> & { currentNode: N },
   ): Promise<EngineRunOnceResult<N>> {
-    const { state, nowIso, seed, ports, ctx, currentNode } = args;
-
-    const handler = this.resolveHandler(currentNode);
-
-    const input = handler.buildInput(state, ctx);
-    const { output, events } = await handler.execute(input as never, ports);
-
-    const advanced = advanceStep(state, handler.name, nowIso, seed);
-    const updated = handler.applyOutput(advanced, output as NodeOutputBase);
-
-    const outcome = output.nodeExecutionOutcomeStatus;
-    const retryable = (output as NodeOutputBase & { retryable?: boolean | null }).retryable ?? null;
+    const execution = await this.runNode(args);
+    const { state, outcome, successTarget, policy, retryable, events, attemptNumber, nodeName } = execution;
 
     if (outcome === "SUCCESS") {
       return {
-        state: { ...updated, iterationOrdinalNumber: 0 },
-        nodeName: handler.name,
+        state: { ...state, iterationOrdinalNumber: 0 },
+        nodeName,
         outcome,
-        nextNode: handler.onSuccess,
+        nextNode: successTarget,
         backtracked: false,
         retryDelayMs: null,
         stopReason: null as StopReason,
@@ -43,21 +38,20 @@ export class NodeEngine<N extends string, P, C> {
       };
     }
 
-    const attempt = (state.iterationOrdinalNumber ?? 0) + 1;
-    const { retry, backtrackTo } = handler.onFailure;
+    const { retry, backtrackTo } = policy;
     const canRetry = retryable !== false;
-    if (attempt < retry.maxAttempts && canRetry) {
+    if (attemptNumber < retry.maxAttempts && canRetry) {
       const retryDelayMs = computeBackoffDelayMs(
-        attempt,
+        attemptNumber,
         retry.baseDelayMs,
         retry.maxDelayMs,
-        seed,
+        execution.seedUsed,
       );
       return {
-        state: { ...updated, iterationOrdinalNumber: attempt },
-        nodeName: handler.name,
+        state: { ...state, iterationOrdinalNumber: attemptNumber },
+        nodeName,
         outcome,
-        nextNode: handler.name,
+        nextNode: nodeName,
         backtracked: false,
         retryDelayMs,
         stopReason: null as StopReason,
@@ -68,13 +62,13 @@ export class NodeEngine<N extends string, P, C> {
     if (backtrackTo) {
       return {
         state: {
-          ...updated,
+          ...state,
           nodeName: backtrackTo,
           iterationOrdinalNumber: 0,
-          counters: { ...updated.counters, restartsUsed: updated.counters.restartsUsed + 1 },
-          stopReason: updated.stopReason,
+          counters: { ...state.counters, restartsUsed: state.counters.restartsUsed + 1 },
+          stopReason: state.stopReason,
         },
-        nodeName: handler.name,
+        nodeName,
         outcome,
         nextNode: backtrackTo,
         backtracked: true,
@@ -85,14 +79,46 @@ export class NodeEngine<N extends string, P, C> {
     }
 
     return {
-      state: { ...updated, status: "failed", stopReason: updated.stopReason ?? "crash" },
-      nodeName: handler.name,
+      state: { ...state, status: "failed", stopReason: state.stopReason ?? "crash" },
+      nodeName,
       outcome,
       nextNode: null,
       backtracked: false,
       retryDelayMs: null,
-      stopReason: updated.stopReason ?? "crash",
+      stopReason: state.stopReason ?? "crash",
       events,
+    };
+  }
+
+  /**
+   * runNode executes a handler and returns the raw execution outcome without transition policy.
+   */
+  async runNode(
+    args: EngineRunOnceArgs<P, C> & { currentNode: N },
+  ): Promise<EngineNodeExecutionResult<N>> {
+    const { state, nowIso, seed, ports, ctx, currentNode } = args;
+
+    const handler = this.resolveHandler(currentNode);
+
+    const input = handler.buildInput(state, ctx);
+    const { output, events } = await handler.execute(input as never, ports);
+
+    const advanced = advanceStep(state, handler.name, nowIso, seed);
+    const updated = handler.applyOutput(advanced, output as NodeOutputBase);
+
+    const retryable = (output as NodeOutputBase & { retryable?: boolean | null }).retryable ?? null;
+    const attemptNumber = (state.iterationOrdinalNumber ?? 0) + 1;
+
+    return {
+      state: updated,
+      nodeName: handler.name,
+      outcome: output.nodeExecutionOutcomeStatus,
+      retryable,
+      policy: handler.onFailure,
+      successTarget: handler.onSuccess,
+      events,
+      attemptNumber,
+      seedUsed: seed,
     };
   }
 

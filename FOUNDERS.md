@@ -193,3 +193,7 @@ Evidence Packs – One export with screenshots, diffs, traces, and summary text 
 4) Extend
 
 Labels & Notes – Tag screens (“Paywall”, “KYC”), leave short reviews, and filter dashboards by tag.
+
+
+Helpful commands
+open "/Users/priyankalalge/Library/Caches/encore/objects/d3u8d93djnh82bnf6l1g/artifacts/obj:/artifacts/"     

@@ -11,8 +11,8 @@ import { listDocs as steering_listDocsImpl7 } from "../../../../steering/list-do
 import { updateDoc as steering_updateDocImpl8 } from "../../../../steering/update-doc";
 import "../../../../agent/orchestrator/subscription";
 import * as artifacts_service from "../../../../artifacts/encore.service";
-import * as run_service from "../../../../run/encore.service";
 import * as steering_service from "../../../../steering/encore.service";
+import * as run_service from "../../../../run/encore.service";
 
 const gateways: any[] = [
 ];

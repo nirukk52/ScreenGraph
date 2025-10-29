@@ -21,6 +21,57 @@ This document is the single place where agents leave status for each other. Alwa
 
 ---
 
+## Handoff #5 — XState v5 Orchestration Phase 2 Complete
+
+- **What I am doing**: Completed Phase 2 of XState migration by moving retry/backoff/backtrack policy logic into XState guards/actions, extracting routing from SwitchPolicy into dedicated router, removing AgentRunner fallback entirely, and adding dev inspector URL logging. XState is now the only driver for agent orchestration.
+
+- **What is pending**:
+  - [ ] Tests: Expand machine tests for retry/backtrack/router; remove runner tests
+  - [ ] Tests: End-to-end test with real device
+  - [ ] Manual review: Verify retry timing, backtrack increments restartsUsed, and router flows correctly
+
+- **What I plan to do next**:
+  - Update `backend/agent/CLAUDE.md` to reflect Phase 2 changes
+  - Add missing main-loop nodes (EnumerateActions → ChooseAction → Act → Verify → DetectProgress → ShouldContinue)
+  - Wire inspector server properly for full debugging support
+
+- **Modules I am touching**:
+  - `backend/agent/engine/xstate/policy.ts` (new - transition decision logic)
+  - `backend/agent/engine/xstate/router.ts` (new - routing decisions)
+  - `backend/agent/engine/xstate/machine.ts` (refactored for execution/decision pattern)
+  - `backend/agent/engine/xstate/services.ts` (updated to use raw API)
+  - `backend/agent/engine/xstate/types.ts` (added AgentTransitionDecision)
+  - `backend/agent/engine/node-engine.ts` (added runNode raw API)
+  - `backend/agent/engine/types.ts` (added EngineNodeExecutionResult)
+  - `backend/agent/orchestrator/worker.ts` (removed AgentRunner, uses XState only)
+  - `backend/package.json` (added @statelyai/inspect)
+
+- **Work status rating (out of 5)**: 5
+
+- **Graphiti episode IDs**:
+  - XState Phase 2 Migration Architecture: `xstate-phase2-architecture`
+  - XState Phase 2 Files Modified: `xstate-phase2-files`
+  - XState Inspector Integration and Bug: `xstate-inspector-integration`
+  - XState Policy Module Implementation: `xstate-policy-module`
+  - Router Extraction from SwitchPolicy: `router-extraction-switchpolicy`
+  - Raw Execution API Implementation: `raw-execution-api`
+  - AgentRunner Removal Complete: `agentrunner-removal`
+  - XState Inspector Bug Report: `xstate-inspector-bug`
+
+- **Related docs**:
+  - `.cursor/plans/x-c5832686.plan.md`
+  - `backend/agent/engine/xstate/` (complete Phase 2 implementation)
+
+- **Notes for next agent**:
+  - **Architecture**: Raw execution API (`runNode`) returns only outcome/retryable/policy; XState policy module computes retry/backtrack/advance decisions based on state + execution result
+  - **Routing**: `computeNextNodeFromState` in router.ts handles green-path transitions; SwitchPolicy capsule now only for explicit policy switches (BFS/DFS/etc)
+  - **Inspector**: URL logged in dev mode: `https://stately.ai/inspect?server=ws://localhost:5678` (inspect server needs to be started separately)
+  - **No AGENT_DRIVER env var**: XState is now the only driver; AgentRunner removed
+  - **State machine**: machine.ts uses execution/decision pattern where guards check `latestDecision.kind` (retry/backtrack/advance/terminalSuccess/terminalFailure)
+  - **Preserved**: All node capsules unchanged; only orchestration layer migrated
+
+---
+
 ## Handoff #4 — XState v5 Orchestration Phase 1 Complete
 
 - **What I am doing**: Implemented XState v5 wrapper for agent orchestration preserving all existing node capsules, ports, adapters, handlers, and mappers. Created feature flag `AGENT_DRIVER` (default: "runner") to toggle between AgentRunner and XState driver without code changes. Achieved functional parity on green path with all unit tests passing.

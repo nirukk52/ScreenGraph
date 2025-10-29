@@ -1,25 +1,26 @@
 import { fromPromise } from "xstate";
 import type { AgentState } from "../../domain/state";
 import type { AgentNodeName } from "../../nodes/types";
-import type { EngineRunOnceResult } from "../types";
+import type { EngineNodeExecutionResult } from "../types";
 import type { AgentMachineDependencies, ShouldStopResult } from "./types";
+import { computeTransitionDecision, applyTransitionToState } from "./policy";
 
 /**
- * RunOnceActorInput contains the mutable state required for a single NodeEngine execution.
+ * RunNodeActorInput contains the mutable state required for a single NodeEngine execution.
  * PURPOSE: Keeps the XState invoke call strongly typed while allowing the service to remain pure.
  */
-export interface RunOnceActorInput {
+export interface RunNodeActorInput {
   agentState: AgentState;
   currentNode: AgentNodeName;
 }
 
 /**
- * createRunOnceActor produces a typed promise actor that executes NodeEngine.runOnce.
+ * createRunNodeActor produces a typed promise actor that executes NodeEngine.runNode.
  * PURPOSE: Centralizes callback invocation and logging so that the state machine remains declarative.
  */
-export function createRunOnceActor(deps: AgentMachineDependencies) {
-  return fromPromise<EngineRunOnceResult<AgentNodeName>, RunOnceActorInput>(async ({ input }) => {
-    const { engine, ports, ctx, callbacks, seed, logger } = deps;
+export function createRunNodeActor(deps: AgentMachineDependencies) {
+  return fromPromise<{ execution: EngineNodeExecutionResult<AgentNodeName>; decision: any }, RunNodeActorInput>(async ({ input }) => {
+    const { engine, ports, ctx, callbacks, seed, logger, computeNextNode } = deps;
 
     logger.info("Running node", {
       currentNode: input.currentNode,
@@ -27,7 +28,7 @@ export function createRunOnceActor(deps: AgentMachineDependencies) {
     });
 
     try {
-      const result = await engine.runOnce({
+      const execution = await engine.runNode({
         state: input.agentState,
         nowIso: new Date().toISOString(),
         seed: seed(),
@@ -36,20 +37,26 @@ export function createRunOnceActor(deps: AgentMachineDependencies) {
         currentNode: input.currentNode,
       });
 
-      logger.info("Engine result", {
-        nodeName: result.nodeName,
-        outcome: result.outcome,
-        nextNode: result.nextNode,
-        retryDelayMs: result.retryDelayMs,
-        backtracked: result.backtracked,
+      const decision = computeTransitionDecision(execution, input.agentState, computeNextNode);
+      const updatedState = applyTransitionToState(execution.state, decision);
+
+      logger.info("Node execution", {
+        nodeName: execution.nodeName,
+        outcome: execution.outcome,
+        decision: decision.kind,
       });
 
-      await callbacks.onPersist(result.state, result.events, result.nodeName);
-      await callbacks.onAttempt(result);
+      await callbacks.onPersist(updatedState, execution.events, execution.nodeName);
+      await callbacks.onAttempt({
+        nodeName: execution.nodeName,
+        outcome: execution.outcome,
+        nextNode: decision.kind === "advance" ? decision.nextNode : null,
+        backtracked: decision.kind === "backtrack",
+      } as any);
 
-      return result;
+      return { execution, decision };
     } catch (err) {
-      logger.error("RunOnce actor failed", { error: err });
+      logger.error("RunNode actor failed", { error: err });
       throw err;
     }
   });

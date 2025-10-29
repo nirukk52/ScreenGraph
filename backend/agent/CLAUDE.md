@@ -63,12 +63,14 @@ RunJob → Worker ↓ Worker creates: sessionPort, registry, context, engine ↓
 1. Subscription receives RunJob from Pub/Sub topic
 2. Worker claims run with lease
 3. Orchestrator initializes from snapshot or creates initial state
-4. Worker creates AgentRunner with NodeEngine, AgentPorts, AgentContext
-5. AgentRunner loop: shouldStop check → engine.runOnce() → persist → handle retry/backtrack/next
-6. NodeEngine: resolve handler → build input → execute → apply output → decide transition
-7. Orchestrator: record events, save snapshot via callbacks
-8. AgentRunner: loop until termination (retry with backoff, backtrack, or next node)
-9. Worker: finalize run status
+4. Worker creates XState machine with NodeEngine, AgentPorts, AgentContext
+5. XState machine loop: shouldStop check → runNode raw execution → policy.computeTransitionDecision → persist → transition
+6. NodeEngine.runNode: resolve handler → build input → execute → apply output → return raw execution result
+7. Policy module: compute retry/backtrack/advance decision based on outcome + policy
+8. Machine guards: check decision.kind (retry/backtrack/advance/terminalSuccess/terminalFailure)
+9. Machine actions: apply state updates (retry delay, backtrack target, advance nextNode)
+10. Orchestrator: record events, save snapshot via callbacks
+11. Worker: finalize run status
 
 ## State Management
 - **AgentState**: Single source of truth (stepOrdinal, iterationOrdinalNumber, nodeName, counters, budgets, status)
@@ -77,10 +79,16 @@ RunJob → Worker ↓ Worker creates: sessionPort, registry, context, engine ↓
 - **Transitions**: Forward (success), Retry (bounded attempts), Backtrack (to recovery node)
 
 ## Retry/Backtrack
+- **Policy module**: `backend/agent/engine/xstate/policy.ts` computes transition decisions
 - **Max 3 attempts** per node with exponential backoff (1s base, 5s max)
-- **Deterministic jitter** using `randomSeed`
+- **Deterministic jitter** using `randomSeed` from execution result
 - **Backtracking**: ProvisionApp → EnsureDevice after retries exhausted
-- **Counters**: `restartsUsed` incremented on backtrack
+- **Counters**: `restartsUsed` incremented on backtrack via `applyTransitionToState`
+
+## Routing
+- **Router**: `backend/agent/engine/xstate/router.ts` returns next node based on current state
+- **SwitchPolicy**: Now only for explicit policy switches (BFS/DFS/MaxCoverage/Focused/GoalOriented)
+- **Green path**: Router determines EnsureDevice → ProvisionApp → LaunchOrAttach → Perceive → WaitIdle → Perceive (loop)
 
 ## Logging
 - **Module**: `"agent"`
@@ -100,9 +108,14 @@ RunJob → Worker ↓ Worker creates: sessionPort, registry, context, engine ↓
 - Integration testing via log verification in Encore dashboard
 - Use fake adapters for unit tests
 
+## XState Inspector (Dev)
+- URL: `https://stately.ai/inspect?server=ws://localhost:5678`
+- Start inspect server separately in development
+- View real-time state transitions, guards, and actions
+
 ## Future Work
 - Wire LangGraph.js for main loop nodes
-- Implement policy switching
+- Implement full policy switching (BFS/DFS/MaxCoverage/Focused/GoalOriented)
 - Add recovery dispositions
 - Complete terminal node conditions
 

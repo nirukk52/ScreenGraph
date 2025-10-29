@@ -1,6 +1,6 @@
 import type { AgentState, StopReason } from "../../domain/state";
 import type { AgentNodeName, AgentContext, AgentPorts } from "../../nodes/types";
-import type { EngineRunOnceResult } from "../types";
+import type { EngineNodeExecutionResult } from "../types";
 import type { AgentRunnerCallbacks } from "../agent-runner";
 import type { NodeEngine } from "../node-engine";
 import type log from "encore.dev/log";
@@ -27,7 +27,8 @@ export type ShouldStopFn = (state: AgentState) => Promise<ShouldStopResult>;
 export interface AgentMachineContext {
   agentState: AgentState;
   currentNode: AgentNodeName;
-  latestResult: EngineRunOnceResult<AgentNodeName> | null;
+  latestExecution: EngineNodeExecutionResult<AgentNodeName> | null;
+  latestDecision: AgentTransitionDecision | null;
   pendingStop: ShouldStopResult | null;
   lastDecision: AgentDecisionKind | null;
 }
@@ -44,6 +45,19 @@ export type AgentDecisionKind =
   | "advance"
   | "stop"
   | "unexpected";
+
+/**
+ * AgentTransitionDecision enumerates deterministic driver choices derived from a node execution.
+ * PURPOSE: Allows guards/actions to reason over retry/backoff/backtrack without embedding policy in machine states.
+ */
+export type AgentTransitionDecision =
+  | { kind: "advance"; nextNode: AgentNodeName }
+  | { kind: "retry"; delayMs: number; attempt: number }
+  | { kind: "backtrack"; targetNode: AgentNodeName }
+  | { kind: "terminalSuccess" }
+  | { kind: "terminalFailure"; stopReason: StopReason }
+  | { kind: "stop"; stopReason: StopReason }
+  | { kind: "unexpected" };
 
 /**
  * AgentMachineEvent enumerates events consumed by the orchestration XState machine.
@@ -65,6 +79,12 @@ export interface AgentMachineOutput {
 }
 
 /**
+ * ComputeNextNodeFn determines the next node given current state.
+ * PURPOSE: Enables routing decisions without SwitchPolicy in green path.
+ */
+export type ComputeNextNodeFn = (state: AgentState) => AgentNodeName | null;
+
+/**
  * AgentMachineDependencies encapsulates shared orchestration dependencies needed by the machine.
  * PURPOSE: Ensures a single wiring surface when constructing the XState actor.
  */
@@ -75,6 +95,7 @@ export interface AgentMachineDependencies {
   callbacks: AgentRunnerCallbacks<AgentNodeName>;
   seed: () => number;
   shouldStop: ShouldStopFn;
+  computeNextNode: ComputeNextNodeFn;
   logger: ReturnType<typeof log.with>;
 }
 

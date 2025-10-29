@@ -2,7 +2,6 @@ import type { AgentState, Budgets } from "../domain/state";
 import type { RunRecord, RunLifecycleStatus, RunDbPort } from "../ports/db-ports/run-db.port";
 import type { Orchestrator } from "./orchestrator";
 import { NodeEngine } from "../engine/node-engine";
-import { AgentRunner } from "../engine/agent-runner";
 import { buildNodeRegistry } from "../nodes/registry";
 import { buildAgentContext } from "../nodes/context";
 import type { AgentNodeName, AgentPorts, AgentContext } from "../nodes/types";
@@ -16,12 +15,16 @@ import { EncoreStorageAdapter } from "../adapters/storage/encore-storage.adapter
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../logging/logger";
 import { createActor } from "xstate";
+import { createBrowserInspector } from "@statelyai/inspect";
 import { createAgentMachine } from "../engine/xstate/machine";
+import { computeNextNodeFromState } from "../engine/xstate/router";
 import type {
   AgentMachineDependencies,
   AgentMachineOutput,
+  AgentMachineContext,
   ShouldStopResult,
 } from "../engine/xstate/types";
+// Inspector available in dev via @statelyai/inspect
 
 /**
  * Build AgentPorts using the WebDriverIO adapter family so the agent relies on a single
@@ -133,64 +136,13 @@ export class AgentWorker {
 
     await this.options.orchestrator.saveSnapshot(initialState);
 
-    const driver = process.env.AGENT_DRIVER ?? "runner";
-    logger.info("Selected agent driver", { driver });
-
-    const params: AgentDriverParams = {
+    return this.runWithXState({
       initialState,
       engine,
       ports,
       ctx,
       logger,
-    };
-
-    if (driver === "xstate") {
-      return this.runWithXState(params);
-    }
-
-    return this.runWithRunner(params);
-  }
-
-  private async runWithRunner(params: AgentDriverParams): Promise<AgentWorkerExecutionResult> {
-    const { initialState, engine, ports, ctx, logger } = params;
-    const runner = new AgentRunner(engine);
-    let latestState = initialState;
-
-    const result = await runner.run({
-      state: initialState,
-      entryNode: "EnsureDevice",
-      ports,
-      ctx,
-      seed: this.options.orchestrator.nextSeed.bind(this.options.orchestrator),
-      shouldStop: async () => this.evaluateShouldStop(latestState),
-      callbacks: {
-        onAttempt: async (attempt) => {
-          logger.info("Agent runner attempt completed", {
-            nodeName: attempt.nodeName,
-            outcome: attempt.outcome,
-            nextNode: attempt.nextNode,
-            backtracked: attempt.backtracked,
-          });
-        },
-        onPersist: async (state, events, nodeName) => {
-          latestState = state;
-          await this.options.orchestrator.recordNodeEvents(state, nodeName, events as never);
-          await this.options.orchestrator.saveSnapshot(state);
-        },
-      },
     });
-
-    logger.info("Agent runner completed", {
-      status: result.status,
-      stopReason: result.stopReason,
-      lastNode: result.lastNode,
-    });
-
-    return {
-      state: result.state,
-      status: result.status,
-      stopReason: result.stopReason,
-    };
   }
 
   private async runWithXState(params: AgentDriverParams): Promise<AgentWorkerExecutionResult> {
@@ -202,6 +154,7 @@ export class AgentWorker {
       ctx,
       seed: this.options.orchestrator.nextSeed.bind(this.options.orchestrator),
       shouldStop: async (state) => this.evaluateShouldStop(state),
+      computeNextNode: computeNextNodeFromState,
       logger,
       callbacks: {
         onAttempt: async (attempt) => {
@@ -225,14 +178,40 @@ export class AgentWorker {
       dependencies,
     });
 
-    const actor = createActor(machine);
+    // Enable Stately Inspector (dev-only). This opens the inspector in your browser
+    // and wires the actor to stream inspection events.
+    const isDev = process.env.NODE_ENV !== "production";
+    const inspector = isDev ? createBrowserInspector({ url: "https://stately.ai/inspect" }) : null;
+
+    const actor = createActor(machine, {
+      inspect: inspector?.inspect,
+    });
 
     const completion = new Promise<AgentMachineOutput>((resolve, reject) => {
       const subscription = actor.subscribe({
         next: (snapshot) => {
+          if (!snapshot) return;
           if (snapshot.status === "done") {
             subscription.unsubscribe?.();
-            resolve(snapshot.output as AgentMachineOutput);
+            const out = (snapshot as unknown as { output?: AgentMachineOutput }).output;
+            if (out) {
+              resolve(out);
+              return;
+            }
+            // Fallback: derive final output from context when snapshot has no explicit output
+            const ctx = (snapshot.context as unknown) as AgentMachineContext;
+            const derived: AgentMachineOutput = {
+              state: ctx.agentState,
+              status:
+                ctx.agentState.status === "completed" ||
+                ctx.agentState.status === "failed" ||
+                ctx.agentState.status === "canceled"
+                  ? (ctx.agentState.status as "completed" | "failed" | "canceled")
+                  : "failed",
+              stopReason: ctx.agentState.stopReason ?? null,
+              lastNode: ctx.latestExecution?.nodeName ?? ctx.currentNode,
+            };
+            resolve(derived);
           }
         },
         error: (err) => {
