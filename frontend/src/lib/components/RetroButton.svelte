@@ -38,12 +38,12 @@ Usage:
 		children?: Snippet;
 	} = $props();
 
-	// Variant color mappings
+	// Variant color mappings with hover states
 	const variantClasses = {
-		primary: 'bg-[var(--color-charcoal-dark)] text-white',
-		secondary: 'bg-white text-[var(--color-charcoal)]',
-		accent: 'bg-[var(--color-sky-blue)] text-[var(--color-charcoal)]',
-		success: 'bg-[var(--color-soft-pink)] text-[var(--color-charcoal)]'
+		primary: 'bg-[var(--color-charcoal)] text-white hover:bg-[var(--color-charcoal-dark)]',
+		secondary: 'bg-[var(--color-sky-blue)] text-[var(--color-charcoal)] hover:bg-[var(--color-sky-blue-light)]',
+		accent: 'bg-[var(--color-warm-tan)] text-[var(--color-charcoal)] hover:bg-[var(--color-warm-orange)]',
+		success: 'bg-[var(--color-soft-pink)] text-[var(--color-charcoal)] hover:bg-[var(--color-soft-rose)]'
 	};
 
 	// Size mappings
@@ -58,7 +58,7 @@ Usage:
 	{type}
 	{onclick}
 	{disabled}
-	class="retro-shadow-hover rounded-xl font-medium transition-all {variantClasses[variant]} {sizeClasses[size]} {className} disabled:opacity-50 disabled:cursor-not-allowed"
+	class="retro-shadow retro-shadow-hover rounded-xl font-medium transition-all {variantClasses[variant]} {sizeClasses[size]} {className} disabled:opacity-50 disabled:cursor-not-allowed"
 >
 	{#if children}
 		{@render children()}

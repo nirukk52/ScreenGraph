@@ -86,47 +86,47 @@ Retro-modern design landing page showcasing the UX drift detection platform
 					</div>
 				</div>
 
-				<!-- Right: Animated Graph Visualization -->
-				<div class="relative h-[500px]">
-					<!-- Phone Mockup 1 -->
-					<div
-						class="absolute top-0 left-0 w-48 h-80 bg-white retro-shadow rounded-3xl p-4 z-10 transition-transform"
-						style="transform: translateY({phoneOffset1}px)"
-					>
-						<div class="w-full h-full bg-[var(--color-sky-blue)] rounded-2xl p-3 space-y-2">
-							<div class="h-6 bg-white/50 rounded-lg"></div>
-							<div class="h-20 bg-white/70 rounded-lg"></div>
-							<div class="space-y-1">
-								<div class="h-3 bg-white/40 rounded"></div>
-								<div class="h-3 bg-white/40 rounded w-3/4"></div>
-							</div>
+			<!-- Right: Animated Graph Visualization -->
+			<div class="relative h-[500px]">
+				<!-- Phone Mockup 1 -->
+				<div
+					class="absolute top-8 left-12 w-48 h-80 bg-white retro-shadow rounded-3xl p-4 z-10 transition-transform"
+					style="transform: translateY({phoneOffset1}px)"
+				>
+					<div class="w-full h-full bg-[var(--color-sky-blue)] rounded-2xl p-3 space-y-2">
+						<div class="h-6 bg-white/50 rounded-lg"></div>
+						<div class="h-20 bg-white/70 rounded-lg"></div>
+						<div class="space-y-1">
+							<div class="h-3 bg-white/40 rounded"></div>
+							<div class="h-3 bg-white/40 rounded w-3/4"></div>
 						</div>
 					</div>
-
-					<!-- Phone Mockup 2 -->
-					<div
-						class="absolute top-24 right-0 w-48 h-80 bg-white retro-shadow rounded-3xl p-4 z-10 transition-transform"
-						style="transform: translateY({phoneOffset2}px)"
-					>
-						<div class="w-full h-full bg-[var(--color-soft-pink)] rounded-2xl p-3 space-y-2">
-							<div class="h-6 bg-white/50 rounded-lg"></div>
-							<div class="h-20 bg-white/70 rounded-lg"></div>
-							<div class="space-y-1">
-								<div class="h-3 bg-white/40 rounded"></div>
-								<div class="h-3 bg-white/40 rounded w-2/3"></div>
-							</div>
-						</div>
-					</div>
-
-					<!-- Graph Node Indicators -->
-					<div
-						class="absolute top-40 left-28 w-3 h-3 bg-[var(--color-charcoal)] rounded-full z-20 animate-pulse"
-					></div>
-					<div
-						class="absolute top-56 right-28 w-3 h-3 bg-[var(--color-sky-blue)] rounded-full z-20 animate-pulse"
-						style="animation-delay: 0.5s"
-					></div>
 				</div>
+
+				<!-- Phone Mockup 2 -->
+				<div
+					class="absolute top-32 right-12 w-48 h-80 bg-white retro-shadow rounded-3xl p-4 z-10 transition-transform"
+					style="transform: translateY({phoneOffset2}px)"
+				>
+					<div class="w-full h-full bg-[var(--color-soft-pink)] rounded-2xl p-3 space-y-2">
+						<div class="h-6 bg-white/50 rounded-lg"></div>
+						<div class="h-20 bg-white/70 rounded-lg"></div>
+						<div class="space-y-1">
+							<div class="h-3 bg-white/40 rounded"></div>
+							<div class="h-3 bg-white/40 rounded w-2/3"></div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Graph Node Indicators -->
+				<div
+					class="absolute top-40 left-28 w-3 h-3 bg-[var(--color-charcoal)] rounded-full z-20 animate-pulse"
+				></div>
+				<div
+					class="absolute top-56 right-28 w-3 h-3 bg-[var(--color-sky-blue)] rounded-full z-20 animate-pulse"
+					style="animation-delay: 0.5s"
+				></div>
+			</div>
 			</div>
 		</div>
 	</section>
