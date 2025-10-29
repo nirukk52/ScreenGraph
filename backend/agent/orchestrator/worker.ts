@@ -15,6 +15,13 @@ import { WebDriverIODeviceInfoAdapter } from "../adapters/appium/webdriverio/dev
 import { EncoreStorageAdapter } from "../adapters/storage/encore-storage.adapter";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../logging/logger";
+import { createActor } from "xstate";
+import { createAgentMachine } from "../engine/xstate/machine";
+import type {
+  AgentMachineDependencies,
+  AgentMachineOutput,
+  ShouldStopResult,
+} from "../engine/xstate/types";
 
 /**
  * Build AgentPorts using the WebDriverIO adapter family so the agent relies on a single
@@ -117,76 +124,56 @@ export class AgentWorker {
       workerId: this.options.workerId,
     });
 
-// Wire agent ports using the unified WebDriverIO adapter stack
     const ports = buildAgentPorts();
     const registry = buildNodeRegistry(
       this.options.orchestrator.generateId.bind(this.options.orchestrator),
     );
     const ctx = buildAgentContext(this.options.run);
     const engine = new NodeEngine<AgentNodeName, AgentPorts, AgentContext>(registry);
-    const runner = new AgentRunner(engine);
 
-    // Save initial snapshot
     await this.options.orchestrator.saveSnapshot(initialState);
 
-    // Run agent loop via AgentRunner
+    const driver = process.env.AGENT_DRIVER ?? "runner";
+    logger.info("Selected agent driver", { driver });
+
+    const params: AgentDriverParams = {
+      initialState,
+      engine,
+      ports,
+      ctx,
+      logger,
+    };
+
+    if (driver === "xstate") {
+      return this.runWithXState(params);
+    }
+
+    return this.runWithRunner(params);
+  }
+
+  private async runWithRunner(params: AgentDriverParams): Promise<AgentWorkerExecutionResult> {
+    const { initialState, engine, ports, ctx, logger } = params;
+    const runner = new AgentRunner(engine);
+    let latestState = initialState;
+
     const result = await runner.run({
       state: initialState,
       entryNode: "EnsureDevice",
       ports,
       ctx,
       seed: this.options.orchestrator.nextSeed.bind(this.options.orchestrator),
-      shouldStop: async () => {
-        if (await this.isCancellationRequested()) {
-          const now = new Date().toISOString();
-          const canceledState = {
-            ...initialState,
-            status: "canceled" as const,
-            stopReason: "user_cancelled" as const,
-            timestamps: { ...initialState.timestamps, updatedAt: now },
-          };
-          await this.options.runDb.updateRunStatus(
-            initialState.runId,
-            "canceled",
-            now,
-            canceledState.stopReason,
-          );
-          await this.options.orchestrator.saveSnapshot(canceledState);
-          return { stop: true, reason: "user_cancelled" as const };
-        }
-
-        const startMs = Date.parse(initialState.timestamps.createdAt);
-        const elapsedMs = Date.now() - startMs;
-        const { budgets } = this.options;
-        const budgetExceeded =
-          initialState.counters.stepsTotal >= budgets.maxSteps ||
-          elapsedMs >= budgets.maxTimeMs ||
-          initialState.counters.restartsUsed >= budgets.restartLimit;
-
-        if (budgetExceeded) {
-          const now = new Date().toISOString();
-          const failedState = {
-            ...initialState,
-            status: "failed" as const,
-            stopReason: "budget_exhausted" as const,
-            timestamps: { ...initialState.timestamps, updatedAt: now },
-          };
-          await this.options.orchestrator.saveSnapshot(failedState);
-          return { stop: true, reason: "budget_exhausted" as const };
-        }
-
-        return { stop: false, reason: null };
-      },
+      shouldStop: async () => this.evaluateShouldStop(latestState),
       callbacks: {
-        onAttempt: async (result) => {
+        onAttempt: async (attempt) => {
           logger.info("Agent runner attempt completed", {
-            nodeName: result.nodeName,
-            outcome: result.outcome,
-            nextNode: result.nextNode,
-            backtracked: result.backtracked,
+            nodeName: attempt.nodeName,
+            outcome: attempt.outcome,
+            nextNode: attempt.nextNode,
+            backtracked: attempt.backtracked,
           });
         },
         onPersist: async (state, events, nodeName) => {
+          latestState = state;
           await this.options.orchestrator.recordNodeEvents(state, nodeName, events as never);
           await this.options.orchestrator.saveSnapshot(state);
         },
@@ -204,6 +191,116 @@ export class AgentWorker {
       status: result.status,
       stopReason: result.stopReason,
     };
+  }
+
+  private async runWithXState(params: AgentDriverParams): Promise<AgentWorkerExecutionResult> {
+    const { initialState, engine, ports, ctx, logger } = params;
+
+    const dependencies: AgentMachineDependencies = {
+      engine,
+      ports,
+      ctx,
+      seed: this.options.orchestrator.nextSeed.bind(this.options.orchestrator),
+      shouldStop: async (state) => this.evaluateShouldStop(state),
+      logger,
+      callbacks: {
+        onAttempt: async (attempt) => {
+          logger.info("Agent runner attempt completed", {
+            nodeName: attempt.nodeName,
+            outcome: attempt.outcome,
+            nextNode: attempt.nextNode,
+            backtracked: attempt.backtracked,
+          });
+        },
+        onPersist: async (state, events, nodeName) => {
+          await this.options.orchestrator.recordNodeEvents(state, nodeName, events as never);
+          await this.options.orchestrator.saveSnapshot(state);
+        },
+      },
+    };
+
+    const machine = createAgentMachine({
+      initialState,
+      entryNode: "EnsureDevice",
+      dependencies,
+    });
+
+    const actor = createActor(machine);
+
+    const completion = new Promise<AgentMachineOutput>((resolve, reject) => {
+      const subscription = actor.subscribe({
+        next: (snapshot) => {
+          if (snapshot.status === "done") {
+            subscription.unsubscribe?.();
+            resolve(snapshot.output as AgentMachineOutput);
+          }
+        },
+        error: (err) => {
+          subscription.unsubscribe?.();
+          reject(err);
+        },
+      });
+    });
+
+    actor.start();
+    actor.send({ type: "START" });
+
+    const output = await completion;
+    actor.stop();
+
+    logger.info("Agent XState completed", {
+      status: output.status,
+      stopReason: output.stopReason,
+      lastNode: output.lastNode,
+    });
+
+    return {
+      state: output.state,
+      status: output.status,
+      stopReason: output.stopReason,
+    };
+  }
+
+  private async evaluateShouldStop(state: AgentState): Promise<ShouldStopResult> {
+    if (await this.isCancellationRequested()) {
+      const now = new Date().toISOString();
+      const canceledState: AgentState = {
+        ...state,
+        status: "canceled",
+        stopReason: "user_cancelled",
+        timestamps: { ...state.timestamps, updatedAt: now },
+      };
+      await this.options.runDb.updateRunStatus(
+        state.runId,
+        "canceled",
+        now,
+        canceledState.stopReason,
+      );
+      await this.options.orchestrator.saveSnapshot(canceledState);
+      return { stop: true, reason: "user_cancelled" };
+    }
+
+    const startMs = Date.parse(state.timestamps.createdAt);
+    const elapsedMs = Date.now() - startMs;
+    const { budgets } = this.options;
+    const budgetExceeded =
+      state.counters.stepsTotal >= budgets.maxSteps ||
+      elapsedMs >= budgets.maxTimeMs ||
+      state.counters.restartsUsed >= budgets.restartLimit;
+
+    if (budgetExceeded) {
+      const now = new Date().toISOString();
+      const failedState: AgentState = {
+        ...state,
+        status: "failed",
+        stopReason: "budget_exhausted",
+        timestamps: { ...state.timestamps, updatedAt: now },
+      };
+      await this.options.orchestrator.saveSnapshot(failedState);
+      return { stop: true, reason: "budget_exhausted" };
+    }
+
+    return { stop: false, reason: null };
   }
 
   private startHeartbeat(): void {
@@ -276,4 +373,12 @@ interface AgentWorkerExecutionResult {
   state: AgentState;
   status: RunLifecycleStatus;
   stopReason: string | null;
+}
+
+interface AgentDriverParams {
+  initialState: AgentState;
+  engine: NodeEngine<AgentNodeName, AgentPorts, AgentContext>;
+  ports: AgentPorts;
+  ctx: AgentContext;
+  logger: ReturnType<typeof log.with>;
 }
