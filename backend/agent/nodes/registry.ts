@@ -5,6 +5,7 @@ import { createProvisionAppHandler } from "./setup/ProvisionApp/handler";
 import { createLaunchOrAttachHandler } from "./setup/LaunchOrAttach/handler";
 import { createWaitIdleHandler } from "./setup/WaitIdle/handler";
 import { createPerceiveHandler } from "./main/Perceive/handler";
+import { createChooseActionHandler } from "./main/ChooseAction/handler";
 import { createSwitchPolicyHandler } from "./policy/SwitchPolicy/handler";
 import { createStopHandler } from "./terminal/Stop/handler";
 
@@ -21,6 +22,7 @@ export function buildNodeRegistry(
     LaunchOrAttach: createLaunchOrAttachHandler(),
     Perceive: createPerceiveHandler(),
     WaitIdle: createWaitIdleHandler(),
+    ChooseAction: createChooseActionHandler(),
     SwitchPolicy: createSwitchPolicyHandler(),
     Stop: createStopHandler(),
   };

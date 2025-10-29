@@ -12,6 +12,7 @@ import { WebDriverIOPackageManagerAdapter } from "../adapters/appium/webdriverio
 import { WebDriverIOPerceptionAdapter } from "../adapters/appium/webdriverio/perception.adapter";
 import { WebDriverIODeviceInfoAdapter } from "../adapters/appium/webdriverio/device-info.adapter";
 import { EncoreStorageAdapter } from "../adapters/storage/encore-storage.adapter";
+import { FakeLLM } from "../adapters/fakes/fake-llm";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../logging/logger";
 import { createActor } from "xstate";
@@ -36,6 +37,8 @@ function buildAgentPorts(): AgentPorts {
   const perceptionPort = new WebDriverIOPerceptionAdapter(contextProvider);
   const deviceInfoPort = new WebDriverIODeviceInfoAdapter(contextProvider);
   const storagePort = new EncoreStorageAdapter();
+  // TODO: Replace with real LLM adapter implementation
+  const llmPort = new FakeLLM(storagePort, 123456);
   return {
     sessionPort,
     appLifecyclePort,
@@ -44,6 +47,7 @@ function buildAgentPorts(): AgentPorts {
     perceptionPort,
     deviceInfoPort,
     storagePort,
+    llmPort,
   };
 }
 

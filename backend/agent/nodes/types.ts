@@ -6,6 +6,7 @@ import type { PackageManagerPort } from "../ports/appium/package-manager.port";
 import type { PerceptionPort } from "../ports/appium/perception.port";
 import type { DeviceInfoPort } from "../ports/appium/device-info.port";
 import type { StoragePort } from "../ports/storage";
+import type { LLMPort } from "../ports/llm";
 
 /**
  * AgentNodeName enumerates all nodes available in the agent execution graph.
@@ -17,6 +18,7 @@ export type AgentNodeName =
   | "LaunchOrAttach"
   | "WaitIdle"
   | "Perceive"
+  | "ChooseAction"
   | "SwitchPolicy"
   | "RestartApp"
   | "Stop";
@@ -92,4 +94,5 @@ export interface AgentPorts {
   perceptionPort: PerceptionPort;
   deviceInfoPort: DeviceInfoPort;
   storagePort: StoragePort;
+  llmPort: LLMPort;
 }
