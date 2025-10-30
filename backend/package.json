@@ -14,6 +14,13 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.2",
     "@types/node": "^22.0.0",
+    "@wdio/appium-service": "^9.20.0",
+    "@wdio/cli": "^9.20.0",
+    "@wdio/local-runner": "^9.20.0",
+    "@wdio/mocha-framework": "^9.20.0",
+    "@wdio/spec-reporter": "^9.20.0",
+    "appium": "^2.4.0",
+    "appium-uiautomator2-driver": "^2.20.0",
     "vitest": "^2.0.0"
   },
   "scripts": {
@@ -24,6 +31,9 @@
     "lint:fix": "bunx biome lint --apply .",
     "build": "echo 'Build handled by Encore CI'",
     "test": "bunx vitest run",
-    "test:watch": "bunx vitest"
+    "test:watch": "bunx vitest",
+    "appium": "bash scripts/start-appium-service.sh",
+    "appium:standalone": "bunx appium --allow-insecure=adb_shell --address 127.0.0.1 --port 4723",
+    "wdio": "wdio run ./wdio.conf.js"
   }
 }
