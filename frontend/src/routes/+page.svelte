@@ -6,11 +6,15 @@ Retro-modern design landing page showcasing the UX drift detection platform
 	import autoAnimate from '@formkit/auto-animate';
 	import { Activity, GitCompare, FileText, Check } from 'lucide-svelte';
 	import { RetroButton, RetroCard, RetroInput, RetroBadge } from '$lib/components';
+	import { goto } from '$app/navigation';
+	import { startRun } from '$lib/api';
 
 	/** Email input for beta signup */
 	let email = $state('');
 	/** Show signup success message */
 	let signupSuccess = $state(false);
+	/** Loading state for starting a run */
+	let startingRun = $state(false);
 
 	/**
 	 * Handle beta signup form submission
@@ -24,6 +28,32 @@ Retro-modern design landing page showcasing the UX drift detection platform
 			signupSuccess = false;
 			email = '';
 		}, 3000);
+	}
+
+	/**
+	 * Handle starting a drift detection run with the provided debugging parameters
+	 */
+	async function handleDetectDrift() {
+		if (startingRun) return;
+		
+		startingRun = true;
+		try {
+			const response = await startRun({
+				apkPath: "/Users/priyankalalge/SAAS/Scoreboard/AppiumPythonClient/test/apps/kotlinconf.apk",
+				appiumServerUrl: "http://127.0.0.1:4723/",
+				packageName: "com.jetbrains.kotlinconf",
+				appActivity: ".*",
+				maxSteps: 10.0,
+				goal: "Explore | Max Coverage"
+			});
+			
+			// Navigate to the run page
+			await goto(`/run/${response.runId}`);
+		} catch (error) {
+			console.error("Failed to start run:", error);
+			alert(`Failed to start run: ${error instanceof Error ? error.message : "Unknown error"}`);
+			startingRun = false;
+		}
 	}
 
 	// Animation states for phone mockups
@@ -67,7 +97,9 @@ Retro-modern design landing page showcasing the UX drift detection platform
 						</p>
 					</div>
 					<div class="flex flex-wrap gap-4">
-						<RetroButton variant="primary" size="lg"> Detect My First Drift </RetroButton>
+						<RetroButton variant="primary" size="lg" onclick={handleDetectDrift} disabled={startingRun}>
+							{startingRun ? "Starting..." : "Detect My First Drift"}
+						</RetroButton>
 						<RetroButton variant="secondary" size="lg"> See How It Works </RetroButton>
 					</div>
 					<div class="flex flex-wrap gap-6 text-sm text-[var(--color-text-secondary)]">

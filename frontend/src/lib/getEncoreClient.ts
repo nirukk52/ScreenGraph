@@ -44,13 +44,20 @@ let client: Client | null = null;
  * Automatically detects which local port the backend is running on by trying
  * ports 4000, 4002, 4001, 4003 in order.
  */
-export function getEncoreClient(): Client {
+export async function getEncoreClient(): Promise<Client> {
   const isBrowser = typeof window !== "undefined";
   
   if (isBrowser) {
-    // Use the first port in our list (4000) as default
-    // Real detection happens via environment variable or user can manually configure
-    return new Client(Local);
+    // Use cached client if available
+    if (client && cachedEndpoint) {
+      return client;
+    }
+    
+    // Use port detection in browser
+    const endpoint = await findLocalEndpoint();
+    cachedEndpoint = endpoint;
+    client = new Client(endpoint);
+    return client;
   }
   
   // SSR uses cloud in production, local otherwise

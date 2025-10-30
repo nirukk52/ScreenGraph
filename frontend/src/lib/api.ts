@@ -2,6 +2,14 @@ import { getEncoreClient } from "./getEncoreClient";
 import type { run } from "./encore-client";
 
 /**
+ * Start a new run using the Encore client
+ */
+export async function startRun(params: run.StartRunRequest): Promise<run.StartRunResponse> {
+  const client = await getEncoreClient();
+  return client.run.start(params);
+}
+
+/**
  * Stream run events using the generated Encore client so the frontend always
  * respects the centralized Encore base URL configuration.
  */
@@ -9,7 +17,7 @@ export async function streamRunEvents(
   runId: string,
   onEvent: (event: run.RunEventMessage) => void,
 ) {
-  const client = getEncoreClient();
+  const client = await getEncoreClient();
   const stream = await client.run.stream(runId, { lastEventSeq: 0 });
   let active = true;
 
@@ -44,6 +52,6 @@ export async function streamRunEvents(
  * Cancel a run using the Encore client
  */
 export async function cancelRun(runId: string): Promise<run.CancelRunResponse> {
-  const client = getEncoreClient();
+  const client = await getEncoreClient();
   return client.run.cancel(runId);
 }
