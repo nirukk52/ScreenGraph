@@ -21,6 +21,60 @@ This document is the single place where agents leave status for each other. Alwa
 
 ---
 
+## Handoff #7 — Graph Projection Service (Iteration 1) Complete
+
+- **What I am doing**: ✅ **COMPLETED** - Implemented background Graph Projection Service that consumes `run_events` and maintains derived graph tables (`screens`, `graph_persistence_outcomes`) while preserving single-sink architecture. Service auto-starts on Encore service init, polls every 300ms, tracks per-run cursors, projects `agent.event.screen_perceived` events into canonical screen records with deterministic IDs. Includes XML normalization, layout hashing, cursor-based replay, structured logging, and unit tests.
+
+- **What is pending**:
+  - [x] Code: Complete projection service implementation
+  - [x] Tests: Unit tests for hashing utilities (hasher.test.ts)
+  - [x] Migration: 007 adds graph_projection_cursors and source_run_seq
+  - [ ] Integration: SSE stream integration (join graph outcomes with run_events by source_run_seq) - deferred to future iteration
+  - [ ] Metrics: Encore metrics for projection latency/throughput - deferred to future iteration
+
+- **What I plan to do next**:
+  - Extend `/run/:id/stream` to emit `graph.screen.discovered` / `graph.screen.mapped` messages
+  - Add projection lag monitoring and alerts (>2s)
+  - Project action events to create labeled edges between screens
+
+- **Modules I am touching**:
+  - `backend/graph/` (new service: encore.service.ts, projector.ts, repo.ts, hasher.ts, types.ts)
+  - `backend/db/migrations/007_graph_projection.up.sql` (cursors table + source_run_seq)
+  - `backend/logging/logger.ts` (added MODULES.GRAPH, GRAPH_ACTORS.PROJECTOR)
+  - `backend/encore.gen/clients/` (auto-generated graph service exports)
+
+- **Work status rating (out of 5)**: 5
+
+- **Graphiti episode IDs**:
+  - Graph Projection Service - Single-Sink Architecture Pattern: `graph-projection-service-single-sink-architecture-pattern`
+  - Graph Projection Implementation Procedure: `graph-projection-implementation-procedure`
+  - Deterministic Screen ID Hashing Preference: `deterministic-screen-id-hashing-preference`
+  - XML Normalization and Layout Hashing Procedure: `xml-normalization-layout-hashing-procedure`
+  - Cursor-Based Background Projection Pattern: `cursor-based-background-projection-pattern`
+  - Graph Projection Event Context Tracking: `graph-projection-event-context-tracking`
+  - Graph Projection Logging Standard: `graph-projection-logging-standard`
+  - Screen Discovery vs Mapping Outcome: `screen-discovery-vs-mapping-outcome`
+
+- **Related docs**:
+  - `GRAPH_PROJECTION_APPROACH.md` (approach evaluation document)
+  - `session_summary_graph_projection_implementation.md` (comprehensive session summary)
+  - `backend/graph/README.md` (operations documentation)
+  - `.cursor/plans/graph-3de556e1.plan.md` (implementation plan)
+
+- **Notes for next agent**:
+  - **Architecture**: Preserves single-sink principle - agent writes `run_events` only, projection derives graph state
+  - **Deterministic IDs**: Screen IDs use `sha256(appId::layoutHash)[:32]` for idempotency, not DB UUIDs
+  - **Cursor Management**: `graph_projection_cursors` table enables fault-tolerant replay per run
+  - **Event Context**: In-memory context tracks Perceive lifecycle (stepOrdinal, uiRefId) across distributed events
+  - **XML Processing**: Normalizes UI hierarchy XML (strip declarations, collapse whitespace) before layout hash
+  - **Fallback Logic**: Falls back to `perceptualHash64` if artifact download fails
+  - **Outcome Tracking**: Records `discovered` (new) vs `mapped` (existing) in `graph_persistence_outcomes` with `source_run_seq` for SSE correlation
+  - **Logging**: Module `graph`, actor `projector`, includes batch summaries (eventsProcessed, projectedScreens, durationMs)
+  - **SSE Integration**: Next iteration should join `graph_persistence_outcomes` with `run_events` using `source_run_seq` to emit graph events on stream
+  - **Testing**: Unit tests verify hashing determinism; integration tests deferred (verify via Encore logs per standard)
+
+---
+
 ## Handoff #6 — XState v5 Orchestration Migration Complete
 
 - **What I am doing**: ✅ **COMPLETED** - Successfully migrated entire agent orchestration from AgentRunner/NodeEngine to XState v5. Created single machine (`agent.machine.ts`) that handles all orchestration logic including retries, backtracks, budget enforcement, and state transitions. Removed 8 legacy files and simplified worker/subscription to thin infrastructure layers. All unit tests pass (4/4) with complete flow coverage.
