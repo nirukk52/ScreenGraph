@@ -21,6 +21,80 @@ This document is the single place where agents leave status for each other. Alwa
 
 ---
 
+## Handoff #9 — Appium Service Implementation Complete
+
+- **What I am doing**: ✅ **COMPLETED** - Implemented standalone Appium server startup solution for ScreenGraph agent. Created bash script (`backend/scripts/start-appium-service.sh`) that starts Appium server directly using `bunx appium` with `--allow-insecure=adb_shell` flag on `http://127.0.0.1:4723`. Experimented with WDIO Appium Service approach but determined it's not suitable for standalone server use (requires test execution). Fixed version compatibility issues between Appium 2.4.0 and appium-uiautomator2-driver 2.20.0. Added npm scripts: `appium` (bash script) and `appium:standalone` (direct command).
+
+- **What is pending**:
+  - [x] Code: Standalone Appium startup script complete
+  - [x] Code: Package.json scripts added
+  - [x] Code: Version compatibility fixed
+  - [x] Tests: Manual verification - Appium server starts successfully
+  - [ ] Manual review: End-to-end test with agent connecting to Appium server
+
+- **What I plan to do next**:
+  - Document device connection requirements more clearly
+  - Consider adding device detection/pre-warming to startup script
+  - Monitor agent connection success rate in production
+
+- **Modules I am touching**:
+  - `backend/scripts/start-appium-service.sh` (new - standalone Appium startup)
+  - `backend/package.json` (added appium dependencies and scripts)
+  - `backend/wdio.appium.conf.js` (created but not recommended for production)
+  - `backend/tests/_appium-server.spec.js` (holder spec for WDIO approach)
+
+- **Work status rating (out of 5)**: 5
+
+- **Graphiti episode IDs**:
+  - Appium Service Setup Implementation: `e75ea9c5-4b7a-4442-b55a-0afd5440c9e3`
+  - Appium Standalone Server Startup Procedure: `21d58764-11ef-48e6-8465-cc75d9817236`
+  - Appium Version Compatibility Configuration: `episode-queued`
+  - WDIO Appium Service Limitation Discovery: `episode-queued`
+  - Android Device Requirement for Appium Sessions: `episode-queued`
+
+- **Related docs**:
+  - `backend/scripts/start-appium-service.sh` (startup script)
+  - `backend/scripts/dev-android-appium.sh` (existing helper script)
+
+- **Notes for next agent**:
+  - **Critical Requirement**: Android device must be online (via USB or emulator) before agent can create Appium sessions. Check with `adb devices`.
+  - **Startup**: Use `bun run appium` to start standalone Appium server. Script automatically kills existing process on port 4723.
+  - **Version Compatibility**: Appium 2.4.0 + appium-uiautomator2-driver 2.20.0 is the correct version pairing (verified compatible).
+  - **WDIO Approach**: WDIO Appium Service (`@wdio/appium-service`) is NOT suitable for standalone server - it requires test execution. Documents created but not recommended.
+  - **Security Flag**: `--allow-insecure=adb_shell` is required for agent's ADB shell commands.
+  - **Logs**: Appium logs stored in `/tmp/appium-service.log`, PID in `/tmp/appium-service.pid`.
+  - **Device Connection**: If agent fails with TimeoutError, ensure device is connected first using `adb devices` or start emulator.
+
+---
+
+## Handoff #8 — Appium Setup and Device Management Documentation
+
+- **What I am doing**: ✅ **COMPLETED** - Documented comprehensive Appium setup procedures and Android device management workflows. Analyzed `bun run appium` command execution flow, device startup procedures, and security configuration requirements for ScreenGraph agent integration.
+
+- **What is pending**:
+  - [x] Code: No code changes - documentation only
+  - [x] Tests: No testing required - analysis of existing scripts
+  - [x] Manual review: Procedures documented and verified against existing scripts
+
+- **What I plan to do next**:
+  - Continue with other development tasks as assigned
+  - Reference these procedures when working with Appium/device automation
+
+- **Modules I am touching**:
+  - `backend/scripts/start-appium-service.sh` (analyzed)
+  - `backend/scripts/dev-android-appium.sh` (analyzed)
+  - `backend/package.json` (scripts section analyzed)
+
+- **Work status rating (out of 5)**: 5
+
+- **Graphiti episode IDs**:
+  - Appium Server Startup Procedure: `appium-server-startup-procedure`
+  - Android Device Management Procedure: `android-device-management-procedure`
+  - Appium Security Configuration Preference: `appium-security-configuration-preference`
+  - Appium Service Architecture Facts: `appium-service-architecture-facts`
+
+---
+
 ## Handoff #7 — Graph Projection Service (Iteration 1) Complete
 
 - **What I am doing**: ✅ **COMPLETED** - Implemented background Graph Projection Service that consumes `run_events` and maintains derived graph tables (`screens`, `graph_persistence_outcomes`) while preserving single-sink architecture. Service auto-starts on Encore service init, polls every 300ms, tracks per-run cursors, projects `agent.event.screen_perceived` events into canonical screen records with deterministic IDs. Includes XML normalization, layout hashing, cursor-based replay, structured logging, and unit tests.
