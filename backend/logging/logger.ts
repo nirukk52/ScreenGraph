@@ -45,6 +45,7 @@ export const MODULES = {
   DB: "db",
   PUBSUB: "pubsub",
   API: "api",
+  GRAPH: "graph",
 } as const;
 
 /**
@@ -67,4 +68,12 @@ export const RUN_ACTORS = {
   CANCEL: "cancel",
   HEALTH: "health",
   OUTBOX_PUBLISHER: "outbox-publisher",
+} as const;
+
+/**
+ * Common actor names for graph module.
+ * PURPOSE: Groups logs emitted by the graph projection subsystem.
+ */
+export const GRAPH_ACTORS = {
+  PROJECTOR: "projector",
 } as const;
