@@ -15,6 +15,7 @@ export type EventKind =
   | "agent.event.action_performed"
   | "agent.event.action_verification_completed"
   | "graph.screen.discovered"
+  | "graph.screen.mapped"
   | "graph.action.created"
   | "graph.updated"
   | "agent.run.progress_evaluated"
@@ -50,6 +51,7 @@ export type EventPayloadMap = {
   "agent.event.action_performed": { actionKey: string; success: boolean };
   "agent.event.action_verification_completed": { passed: boolean; method: string };
   "graph.screen.discovered": { screenId: string; appId: string };
+  "graph.screen.mapped": { screenId: string; appId: string };
   "graph.action.created": { actionId: string; fromScreenId: string; toScreenId: string };
   "graph.updated": { updateKind: string; details: Record<string, unknown> };
   "agent.run.progress_evaluated": { verdict: string; score: number };

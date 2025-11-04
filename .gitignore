@@ -26,6 +26,7 @@ frontend/.env.*.local
 # Backend build artifacts
 backend/.encore
 backend/encore.gen
+backend/.logs
 
 # IDE and editor files
 .vscode
