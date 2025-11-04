@@ -89,3 +89,4 @@ Why it’s best now:
 - Hash correctness: if `layout_hash` normalization changes, version the hasher and include it in the row for safe evolution.
 
 
+
