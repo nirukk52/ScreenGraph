@@ -206,10 +206,10 @@ let count = $state(0);
 // Derived values
 const double = $derived(count * 2);
 
-// Side effects (for logging, use structured logging in backend)
+// Side effects
 $effect(() => {
-  // Frontend: can use console for debugging
-  // Backend: always use encore.dev/log
+  // Note: In frontend, console.log is acceptable for local debugging
+  // In backend, ALWAYS use encore.dev/log for structured logging
 });
 
 // Props
