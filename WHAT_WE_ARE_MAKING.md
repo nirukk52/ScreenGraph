@@ -70,3 +70,33 @@ ScreenGraph becomes the **definitive source of truth** for mobile app structure.
 
 We're not just building a testing tool — we're creating a **living, evolving map** of the mobile app universe.
 
+## Features
+Out of the below what is my architecture not ready for:
+Test Web Views
+Our visual approach allows you to test both native app components and Web Views seamlessly.
+
+Test Cross-Platform
+Save time by writing your tests once and running them across iOS, Android, and Web platforms.
+
+Perform API Calls
+Use API calls before, during, and after tests to seamlessly interact with your backend systems.
+
+Test without Element IDs
+Easily test Flutter, ReactNative, and other tech stacks, even those without unique IDs.
+
+Test Deep Links
+Easily test deep links by switching between apps and system screens during your tests.
+
+Reuse Tests
+Organize your test suite and reuse tests to reduce maintenance efforts across all your tests.
+
+Test on Physical Devices
+Run your tests on both virtual devices and the latest physical devices for iOS and Android.
+
+Test UI languages
+Save time by running the same tests across different UI languages. Test your app in  >180 languages.
+
+Import & Export Tests
+Import your existing tests and export into popular tools and frameworks.
+
+Automatically handle unexpected screens and UI changes without adjusting tests.

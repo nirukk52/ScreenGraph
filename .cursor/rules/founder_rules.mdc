@@ -97,6 +97,4 @@ Type Safety → Zero API Drift
 Encapsulation → Predictable CI
 Clarity → Easy Onboarding & Maintenance
 
-- Maintain a single, living handoff at root: `HANDOFF.md`.
-- Before editing code with uncommitted changes present, agents MUST read `HANDOFF.md` to understand in-flight work.
-- Before switching tasks or ending a session, agents MUST append/update their section in `HANDOFF.md`
+- Maintain a `BACKEND_HANDOFF.md` and `FRONTEND_HANDOFF.md` at root.

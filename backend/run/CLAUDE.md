@@ -1,5 +1,10 @@
 # Run Service Context
 
+## Service Role
+- Public API for run lifecycle orchestration; publishes jobs, exposes SSE, and manages run state.
+- Streams `agent.*` from `run_events` and interleaves `graph.*` via outcomes correlation.
+- Boundary: does not execute agent logic and does not project graphs.
+
 ## Overview
 The run service exposes API endpoints for run lifecycle management and coordinates with the agent orchestrator via Pub/Sub.
 
