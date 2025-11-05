@@ -1,5 +1,12 @@
 # ScreenGraph Agent System (MVP Scaffolding)
 
+## Service Role
+- Orchestrates autonomous exploration deterministically (XState machine) and is the single writer to `run_events`.
+- Produces artifacts (screenshots, XML) via the `artifacts` service; stores only IDs/refs in state.
+- Does not write screen graph tables; emits events that the `graph` service projects into `screens/actions/edges`.
+- Cooperates with the `run` service for lifecycle (start/cancel) and SSE streaming.
+- Strictly uses Encore generated clients; maintains replayable snapshots for determinism.
+
 Complete scaffolding for the ScreenGraph Agent System following **functional core, imperative shell** architecture with deterministic execution, event sourcing, and full replay support.
 
 https://chatgpt.com/g/g-p-68c870437ca0819195275f9bbbc56103-co-founder/shared/c/68fde20c-99e0-8330-b4f6-f6946dbb1faf?owner_user_id=user-GfWs3AJR2WbUgbsITOoW13pl

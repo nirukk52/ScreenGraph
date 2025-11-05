@@ -1,5 +1,11 @@
 ## Graph Projection Service
 
+### Service Role
+- Projects `run_events` into a canonical screen graph (`screens`, `actions`, `edges`).
+- Provides run-scoped graph retrieval and live/replay streams.
+- Tracks action execution coverage and persists action provenance for deterministic replay.
+- Reads artifacts for XML normalization; never writes `run_events`.
+
 ### Purpose
 Consume `run_events` and maintain a canonical, deterministic screen graph across runs: `screens`, `actions`, `edges`, and `graph_persistence_outcomes`. This enables full-coverage automated crawling, live updates, and deterministic replay.
 

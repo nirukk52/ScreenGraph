@@ -1,5 +1,9 @@
 ## Graph Service Engineering Context (Encore.ts)
 
+### Service Role
+- Event-sourced projector from `run_events` to canonical graph with run-scoped views and SSE.
+- Ownership: graph tables and coverage; no writes to `run_events`.
+
 ### Purpose
 Provide a deterministic, event-sourced ScreenGraph with run-scoped views, live/replay streams, coverage signals, and replayable actions. This service turns `run_events` into queryable and streamable graph state.
 

@@ -1,5 +1,11 @@
 # Agent Subsystem Context
 
+## Service Role
+- Deterministic executor of Perceive → Act → Verify loops; authoritative writer of `run_events`.
+- Publishes artifacts to `artifacts` service and references them by ID in events/state.
+- Drives exploration; never writes graph tables (projected by `graph` service).
+- Coordinates with `run` service for lifecycle and streaming.
+
 ## Overview
 The agent subsystem orchestrates mobile test automation through a deterministic XState machine backed by persistent state snapshots.
 
