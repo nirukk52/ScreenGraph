@@ -13,6 +13,7 @@
       "backend/steering",
       "backend/tmp",
       "frontend/build",
+      "steering-docs",
       "**/.idea/**",
       "**/.vscode/**",
       "**/coverage/**",
