@@ -206,8 +206,11 @@ let count = $state(0);
 // Derived values
 const double = $derived(count * 2);
 
-// Side effects
-$effect(() => console.log(double));
+// Side effects (for logging, use structured logging in backend)
+$effect(() => {
+  // Frontend: can use console for debugging
+  // Backend: always use encore.dev/log
+});
 
 // Props
 let { foo = true, bar } = $props();
@@ -456,10 +459,10 @@ lsof -ti:4000 | xargs kill
 3. Update frontend to use new types
 4. Commit both changes together
 
-### Handoff Document
-- Maintain a single, living handoff at root: `HANDOFF.md`
-- Before editing code with uncommitted changes, read `HANDOFF.md` to understand in-flight work
-- Before switching tasks or ending a session, update your section in `HANDOFF.md`
+### Handoff Document (Optional)
+- Project uses handoff documents (`BACKEND_HANDOFF.md`, `FRONTEND_HANDOFF.md`) to communicate in-flight work
+- Before editing code with uncommitted changes, check relevant handoff documents to understand context
+- Before switching tasks or ending a session, update the appropriate handoff document with your progress
 
 ## Why These Rules Matter
 
