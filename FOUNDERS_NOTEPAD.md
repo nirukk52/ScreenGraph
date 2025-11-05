@@ -44,25 +44,7 @@ This document captures the working mental models for the current app, and immedi
 ## Invariants (What must always be true)
 - Event order per run is strictly increasing by `seq`.
 - Stream never emits out-of-order or duplicate events to the same client session.
-- First terminal status for a run is final; subsequent attempts are ignored.
-
-## Immediate Quick Wins (Rapid Dev)
-1) Tighten Event Type Naming
-   - Align terminal types across backend and frontend (`agent.run.finished|failed|canceled` vs UI constants) to avoid mismatches.
-2) Add Indexes
-   - Ensure `run_events(run_id, seq)` composite index and `runs(run_id)` are present for fast backfill/stream queries.
-3) Stream Backoff & Jitter
-   - Introduce jittered backoff in stream polling to reduce thundering herd during reconnects.
-4) Health & Diagnostics
-   - Add a lightweight `GET /run/:id/status` returning current status and last seq for quick UI sanity checks.
-5) Event Shape Contract
-   - Export a shared `RunEvent` TypeScript type to both backend and frontend to prevent drift.
-6) Better Error Surfacing in Stream
-   - Map internal errors to structured `APIError` details so UI can render actionable messages.
-7) Orchestrator Observability
-   - Add structured logs around agent loop start/stop and per-step timing; include `runId` consistently.
-8) Guardrails in Start Run
-   - Validate `goal`, `maxSteps` bounds and `appiumServerUrl` format early with descriptive errors.
+- First terminal status for a run is final; subsequent attempts are ignored.tive errors.
 
 ## Near-Term Improvements to Mental Models
 - Clarify state machine for Run (diagram + textual spec) including intermediate states (e.g., running, canceling, canceled).
@@ -74,55 +56,6 @@ This document captures the working mental models for the current app, and immedi
 - Design for idempotency and at-least-once delivery first; layer exactly-once only if needed.
 - Keep the founder doc short and actionable; update alongside meaningful behavior changes.
 - **Use American English spelling exclusively** (e.g., "canceled" not "cancelled", "color" not "colour") across all code, database schemas, comments, and documentation for consistency.
-
-### Agent Handoff Workflow (Enforced)
-- Maintain a single, living handoff at root: `HANDOFF.md`.
-- Before editing code with uncommitted changes present, agents MUST read `HANDOFF.md` to understand in-flight work.
-- Before switching tasks or ending a session, agents MUST append/update their section in `HANDOFF.md` using the template:
-  - What I am doing (short paragraph)
-  - What is pending (Code/Tests/Manual review checkboxes)
-  - What I plan to do next (bullets)
-  - Modules I am touching (paths)
-  - Work status rating (0–5) — 5 means module + tests + manual review complete; 2 mid-way; 1/0 blocked/abandoned
-  - Graphiti episode IDs (names + UUIDs)
-- Agents should reference related docs (designs, summaries) in the entry.
-- CI/Code review guideline: PRs referencing active work MUST link the corresponding `HANDOFF.md` entry.
-
-## Encore Rapid Dev Best Practices
-- **Tight dev loop**
-  - Use `encore run --watch` during local development for auto-reload.
-  - Tail logs with `encore logs` and include `runId` in all log contexts via `log.with({ runId })`.
-- **Type-safe APIs**
-  - Prefer `api({ ... }, async (req): Promise<Res> => {})` with explicit request/response interfaces.
-  - Use `Query<T>`, `Header<"...">`, and path params (`/route/:id`) for validation without extra code.
-  - Prefer `APIError.*` helpers with `withDetails` for actionable UI errors.
-- **Streaming endpoints**
-  - Handshake carries `lastEventSeq`; always backfill then stream live updates.
-  - Emit consistent terminal event names and close the stream on first terminal event.
-- **Pub/Sub orchestration**
-  - Declare `Topic` at module top-level; handlers must be idempotent (at-least-once delivery).
-  - Keep messages small; store large payloads in DB and reference by ID.
-- **SQL & migrations**
-  - Keep migrations atomic and sequentially numbered; include indices for hot paths (e.g., `run_events(run_id, seq)`).
-  - Use only `query`, `queryRow`, `exec`; strongly type result rows for safety and clarity.
-- **Secrets management**
-  - Define secrets with `secret("Name")`; set values via CLI or dashboard.
-  - Use `.secrets.local.cue` for local overrides; never hardcode secrets in code.
-- **CORS & headers**
-  - Configure CORS in `encore.app` (`allow_origins_with_credentials` for authenticated frontends).
-  - Let Encore infer headers from types; add `allow_headers`/`expose_headers` only for raw endpoints.
-- **Middleware**
-  - Centralize auth and cross-cutting concerns; use `target` filters instead of runtime checks.
-- **Static assets**
-  - Serve built frontend via `api.static` for cohesive local dev and preview environments.
-- **Client generation**
-  - Use the generated TS client for external consumers; regenerate clients after API surface changes (`encore gen client ...`).
-- **Observability**
-  - Adopt structured logs with stable keys; include timing around orchestrator steps and DB queries.
-- **Environment-aware behavior**
-  - Use `appMeta()` to adjust behavior (e.g., verbose logging in dev, stricter limits in prod).
-- **DB tooling**
-  - Leverage `encore db proxy` for external tools, and `encore db reset` to clean local state for reproducible tests.
 
 
 [POC — 2–3 weeks]

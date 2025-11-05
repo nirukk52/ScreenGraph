@@ -21,6 +21,53 @@ This document is the single place where agents leave status for each other. Alwa
 
 ---
 
+## Handoff #10 — American English Spelling Standardization Rule
+
+- **What I am doing**: ✅ **COMPLETED** - Established and documented American English spelling as a non-negotiable coding rule after discovering runtime errors caused by spelling mismatch between database enum (British 'cancelled') and TypeScript code (American 'canceled'). Updated founder rules with new "Spelling & Language" section requiring American English exclusively across all code, schemas, types, comments, and documentation.
+
+- **What is pending**:
+  - [x] Code: Founder rules updated (.cursor/rules/founder_rules.mdc)
+  - [x] Tests: No tests required - documentation and rule enforcement
+  - [ ] Manual review: Database migration needed to fix run_status_enum spelling
+  - [ ] Code: Create new migration to change enum 'cancelled' → 'canceled'
+  - [ ] Tests: End-to-end test with run cancellation after migration
+
+- **What I plan to do next**:
+  - Create migration to safely modify run_status_enum from British to American spelling
+  - Test run cancellation flow end-to-end
+  - Audit codebase for any remaining British spellings
+  - Consider adding linter rules to catch British spelling in future code
+
+- **Modules I am touching**:
+  - `.cursor/rules/founder_rules.mdc` (added Spelling & Language section)
+  - `backend/db/migrations/` (need to create new migration for enum fix)
+  - `BACKEND_HANDOFF.md` (this file)
+
+- **Work status rating (out of 5)**: 3
+
+- **Graphiti episode IDs**:
+  - American English Spelling Standardization Rule: `queued-position-1`
+  - PostgreSQL Enum Value Change Procedure: `queued-position-1`
+  - Database Schema Refactoring Issues Encountered: `queued-position-2`
+  - Migration Files Deleted After Revert: `queued-position-3`
+  - Founder Rules Location and Management: `queued-position-4`
+
+- **Related docs**:
+  - `.cursor/rules/founder_rules.mdc` (founder rules with new spelling section)
+  - `FOUNDERS.md` (also contains spelling rule reference)
+  - `.cursor/commands/update_handoff` (handoff procedure documentation)
+
+- **Notes for next agent**:
+  - **Critical Issue**: Database enum `run_status_enum` currently uses British spelling `'cancelled'` but TypeScript code uses American `'canceled'`. This causes SQL errors when updating run status to canceled.
+  - **Migration Strategy**: To safely change enum values in use: 1) Convert column to TEXT, 2) Drop old enum with CASCADE, 3) Create new enum with correct spelling, 4) Update existing data, 5) Convert column back to new enum type with CAST.
+  - **Previous Migration Files Deleted**: Migrations 009, 010, 011 were created but deleted after local database reset. They contained: re-adding reverted columns, fixing app_package constraint, and standardizing spelling.
+  - **Spelling Examples**: "canceled" not "cancelled", "color" not "colour", "optimize" not "optimise"
+  - **Scope**: This rule applies to: variable names, function names, enum values, database columns, type names, comments, documentation
+  - **Founder Rule Location**: The authoritative founder rules are in `.cursor/rules/founder_rules.mdc` with `alwaysApply: true` in frontmatter
+  - **Testing**: After applying enum migration, test full run lifecycle including cancellation to verify no errors
+
+---
+
 ## Handoff #9 — Appium Service Implementation Complete
 
 - **What I am doing**: ✅ **COMPLETED** - Implemented standalone Appium server startup solution for ScreenGraph agent. Created bash script (`backend/scripts/start-appium-service.sh`) that starts Appium server directly using `bunx appium` with `--allow-insecure=adb_shell` flag on `http://127.0.0.1:4723`. Experimented with WDIO Appium Service approach but determined it's not suitable for standalone server use (requires test execution). Fixed version compatibility issues between Appium 2.4.0 and appium-uiautomator2-driver 2.20.0. Added npm scripts: `appium` (bash script) and `appium:standalone` (direct command).
