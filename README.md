@@ -31,6 +31,83 @@ ScreenGraph enables autonomous agents to explore and understand mobile applicati
 - **Agent Orchestration**: XState-first machine with integrated retry/backtrack
 - **Structured Logging**: Production-ready log-based QA methodology
 - **Type Safety**: End-to-end via Encore generated clients
+- **Graph Projection**: Event-sourced screen graph with canonical screen deduplication
+
+---
+
+## 📊 ScreenGraph Storage & Querying
+
+### Overview
+
+ScreenGraph builds a **canonical graph** of mobile app screens and navigation edges by projecting agent perception events into persistent graph tables.
+
+### How It Works
+
+**Single-Sink Architecture**
+- Agent writes all events to `run_events` (append-only log)
+- Graph projection service reads events and derives screen graph
+- No dual-writes: clean separation between agent logic and graph storage
+
+**Screen Deduplication**
+- Each screen is identified by its structural layout (XML) and visual appearance (perceptual hash)
+- Same screen encountered across multiple runs → single canonical record
+- Tracks discovery metadata: first seen, last seen, visit count
+
+**Navigation Edges**
+- Captures transitions: Screen A → Action → Screen B
+- Evidence-based: counts how many times each path is traversed
+- Enables pathfinding and reachability analysis
+
+### Planned API Endpoints
+
+**Graph Retrieval**
+- `GET /graph/:app_id` - Retrieve complete application graph (screens, actions, edges)
+- `GET /graph/screens/:screen_id` - Get detailed screen info with incoming/outgoing edges
+
+**Graph Analysis**
+- `GET /graph/:app_id/paths` - Find navigation paths between screens
+- `GET /graph/:app_id/coverage` - Exploration completeness metrics
+- `GET /graph/:app_id/unreachable` - Identify isolated screens
+
+**Live Updates**
+- `GET /graph/:app_id/stream` - Real-time SSE stream of graph changes across all runs
+- Per-run graph events already available via `/run/:id/stream`
+
+**Event Types**: `screen.discovered`, `screen.mapped`, `edge.created`, `edge.reinforced`, `coverage.updated`
+
+> **Implementation Details**: See `backend/graph/README.md` for schemas, algorithms, and operational procedures
+
+---
+
+### Next Steps: Graph Service Implementation
+
+#### Phase 1: Projection Service (Current Priority)
+- [ ] Create `/graph` Encore service
+- [ ] Implement projection cursor table (`graph_projection_cursors`)
+- [ ] Background worker to tail `run_events` and project to graph tables
+- [ ] Add `source_run_seq` column to `graph_persistence_outcomes` (migration 004)
+- [ ] Update `/run/:id/stream` to interleave graph outcomes
+
+#### Phase 2: Query Endpoints
+- [ ] `GET /graph/:app_id` - Full graph retrieval
+- [ ] `GET /graph/screens/:screen_id` - Screen details with edges
+- [ ] `GET /graph/:app_id/coverage` - Coverage statistics
+- [ ] Add pagination and filtering for large graphs
+
+#### Phase 3: Advanced Querying
+- [ ] `GET /graph/:app_id/paths` - Path finding between screens
+- [ ] `GET /graph/:app_id/unreachable` - Detect unreachable screens
+- [ ] `GET /graph/:app_id/diff?from_run=:A&to_run=:B` - Compare graph states
+
+#### Phase 4: Cross-Run Streaming
+- [ ] `GET /graph/:app_id/stream` - Real-time graph events (all runs)
+- [ ] Pub/Sub topic: `graph.events.{app_id}`
+- [ ] Frontend dashboard for live graph visualization
+
+#### Phase 5: Graph Analytics
+- [ ] Coverage heatmaps (which screens/actions explored most)
+- [ ] Graph complexity metrics (cyclomatic complexity, average path length)
+- [ ] Exploration efficiency (time to discover N% of graph)
 
 ---
 

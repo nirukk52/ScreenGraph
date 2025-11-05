@@ -2,61 +2,6 @@
 
 This document captures the working mental models for the current app, and immediate steps to improve those models and accelerate development.
 
-## Purpose
-- Provide a shared, lightweight source of truth for how the system is supposed to work.
-- Help make rapid decisions without rediscovering tribal knowledge.
-- Keep a short list of quick wins to continually reduce friction.
-
-## Core Mental Models
-
-### 1) Run Lifecycle
-- A Run represents a single autonomous agent execution over an app under test.
-- Creation: `POST /run` inserts a `runs` row and publishes a `run-job` to orchestrate processing.
-- Execution: The orchestrator consumes `run-job` and starts the agent loop.
-- Streaming: Clients attach to `/run/:id/stream` to receive backfill + live events in order.
-- Completion: Terminal events close the stream and finalize run status.
-
-### 2) Event Sourcing (Lightweight)
-- Domain events for a run are written to `run_events` with monotonically increasing `seq`.
-- Stream endpoint backfills from last seen `seq` and then polls for new events, preserving order.
-- Terminal events: `agent.run.finished`, `agent.run.failed`, `agent.run.canceled` close the stream.
-
-### 3) Orchestration via Pub/Sub
-- `run-job` Topic triggers the worker (`orchestrator`) to kick off the agent loop.
-- The worker is idempotent with respect to run status updates and event sequences.
-- Failures are surfaced; retries handled per pub/sub semantics (at-least-once delivery).
-
-### 4) Idempotency & Consistency
-- Event inserts enforce uniqueness on `(run_id, seq)`; duplicates with differing payloads are rejected.
-- Run status updates follow a compare-and-set style rule: first terminal status wins.
-
-### 5) Frontend Timeline
-- `RunTimeline` subscribes to the backend stream with `lastEventSeq` for robust resume after reconnects.
-- UI deduplicates events by `seq` and recognizes terminal states to stop streaming.
-
-## Current Implementation Anchors
-- Start Run: `backend/run/start.ts` (`POST /run`, publishes `run-job`).
-- Orchestrator Worker: `backend/run/orchestrator.ts` (subscribes to `run-job`, runs agent loop).
-- Stream: `backend/run/stream.ts` (backfill then live poll, closes on terminal events).
-- Frontend Timeline: `frontend/pages/RunTimeline.tsx` (connects, dedupes, displays).
-- Idempotency tests: `backend/agent/tests/idempotency.test.ts`.
-
-## Invariants (What must always be true)
-- Event order per run is strictly increasing by `seq`.
-- Stream never emits out-of-order or duplicate events to the same client session.
-- First terminal status for a run is final; subsequent attempts are ignored.tive errors.
-
-## Near-Term Improvements to Mental Models
-- Clarify state machine for Run (diagram + textual spec) including intermediate states (e.g., running, canceling, canceled).
-- Define a canonical event taxonomy and naming scheme (prefixes, domains, terminal markers).
-- Document backpressure strategy for high event volumes (batching, pagination windows, or cursor-based streaming).
-
-## Operating Principles
-- Prefer explicit invariants and tests over comments.
-- Design for idempotency and at-least-once delivery first; layer exactly-once only if needed.
-- Keep the founder doc short and actionable; update alongside meaningful behavior changes.
-- **Use American English spelling exclusively** (e.g., "canceled" not "cancelled", "color" not "colour") across all code, database schemas, comments, and documentation for consistency.
-
 
 [POC — 2–3 weeks]
 
