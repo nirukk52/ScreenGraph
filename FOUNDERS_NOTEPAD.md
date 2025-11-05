@@ -2,6 +2,17 @@
 
 This document captures the working mental models for the current app, and immediate steps to improve those models and accelerate development.
 
+## Recent Updates (2025-11-05)
+✅ **BUG-002 RESOLVED**: Graph projection IS working correctly
+- Verified 7 screens projected, 7 outcomes recorded, 7 cursors active
+- Schema is correct: `graph_projection_cursors` + `source_event_seq` exist
+- Added diagnostic endpoints: `GET /graph/diagnostics` and `GET /graph/screens`
+- Ready to proceed with FR-009 (Graph Stream Endpoint)
+
+Review the backend graph @README.md 
+agent @README.md 
+artifacts @README.md 
+run @README.md 
 
 [POC — 2–3 weeks]
 

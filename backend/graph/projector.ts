@@ -40,20 +40,26 @@ export function startGraphProjector(): void {
     return;
   }
 
+  const logger = loggerWith({ module: MODULES.GRAPH, actor: GRAPH_ACTORS.PROJECTOR });
+  logger.info("Graph projector starting", { pollIntervalMs: POLL_INTERVAL_MS });
+
   projectorRunning = true;
   void scheduleTick();
 }
 
 async function scheduleTick(): Promise<void> {
+  const logger = loggerWith({ module: MODULES.GRAPH, actor: GRAPH_ACTORS.PROJECTOR });
+  
   try {
     await repo.hydrateMissingCursors(HYDRATE_LIMIT);
     const cursors = await repo.listCursors(CURSOR_LIMIT);
+
+    logger.info("Graph projector tick", { cursorsFound: cursors.length });
 
     for (const cursor of cursors) {
       await processRun(cursor);
     }
   } catch (err) {
-    const logger = loggerWith({ module: MODULES.GRAPH, actor: GRAPH_ACTORS.PROJECTOR });
     logger.error("Graph projector tick failed", { err });
   } finally {
     setTimeout(() => {

@@ -2,18 +2,20 @@ import { registerGateways, registerHandlers, run, type Handler } from "encore.de
 
 import { getArtifactMeta as artifacts_getArtifactMetaImpl0 } from "../../../../artifacts/get";
 import { storeArtifact as artifacts_storeArtifactImpl1 } from "../../../../artifacts/store";
-import { cancel as run_cancelImpl2 } from "../../../../run/cancel";
-import { health as run_healthImpl3 } from "../../../../run/health";
-import { start as run_startImpl4 } from "../../../../run/start";
-import { stream as run_streamImpl5 } from "../../../../run/stream";
-import { getDoc as steering_getDocImpl6 } from "../../../../steering/get-doc";
-import { listDocs as steering_listDocsImpl7 } from "../../../../steering/list-docs";
-import { updateDoc as steering_updateDocImpl8 } from "../../../../steering/update-doc";
+import { diagnostics as graph_diagnosticsImpl2 } from "../../../../graph/diagnostics";
+import { getScreens as graph_getScreensImpl3 } from "../../../../graph/get-screens";
+import { cancel as run_cancelImpl4 } from "../../../../run/cancel";
+import { health as run_healthImpl5 } from "../../../../run/health";
+import { start as run_startImpl6 } from "../../../../run/start";
+import { stream as run_streamImpl7 } from "../../../../run/stream";
+import { getDoc as steering_getDocImpl8 } from "../../../../steering/get-doc";
+import { listDocs as steering_listDocsImpl9 } from "../../../../steering/list-docs";
+import { updateDoc as steering_updateDocImpl10 } from "../../../../steering/update-doc";
 import "../../../../agent/orchestrator/subscription";
 import * as artifacts_service from "../../../../artifacts/encore.service";
 import * as graph_service from "../../../../graph/encore.service";
-import * as steering_service from "../../../../steering/encore.service";
 import * as run_service from "../../../../run/encore.service";
+import * as steering_service from "../../../../steering/encore.service";
 
 const gateways: any[] = [
 ];
@@ -45,9 +47,33 @@ const handlers: Handler[] = [
     },
     {
         apiRoute: {
+            service:           "graph",
+            name:              "diagnostics",
+            handler:           graph_diagnosticsImpl2,
+            raw:               false,
+            streamingRequest:  false,
+            streamingResponse: false,
+        },
+        endpointOptions: {"expose":true,"auth":false,"isRaw":false,"isStream":false,"tags":[]},
+        middlewares: graph_service.default.cfg.middlewares || [],
+    },
+    {
+        apiRoute: {
+            service:           "graph",
+            name:              "getScreens",
+            handler:           graph_getScreensImpl3,
+            raw:               false,
+            streamingRequest:  false,
+            streamingResponse: false,
+        },
+        endpointOptions: {"expose":true,"auth":false,"isRaw":false,"isStream":false,"tags":[]},
+        middlewares: graph_service.default.cfg.middlewares || [],
+    },
+    {
+        apiRoute: {
             service:           "run",
             name:              "cancel",
-            handler:           run_cancelImpl2,
+            handler:           run_cancelImpl4,
             raw:               false,
             streamingRequest:  false,
             streamingResponse: false,
@@ -59,7 +85,7 @@ const handlers: Handler[] = [
         apiRoute: {
             service:           "run",
             name:              "health",
-            handler:           run_healthImpl3,
+            handler:           run_healthImpl5,
             raw:               false,
             streamingRequest:  false,
             streamingResponse: false,
@@ -71,7 +97,7 @@ const handlers: Handler[] = [
         apiRoute: {
             service:           "run",
             name:              "start",
-            handler:           run_startImpl4,
+            handler:           run_startImpl6,
             raw:               false,
             streamingRequest:  false,
             streamingResponse: false,
@@ -83,7 +109,7 @@ const handlers: Handler[] = [
         apiRoute: {
             service:           "run",
             name:              "stream",
-            handler:           run_streamImpl5,
+            handler:           run_streamImpl7,
             raw:               false,
             streamingRequest:  false,
             streamingResponse: true,
@@ -95,7 +121,7 @@ const handlers: Handler[] = [
         apiRoute: {
             service:           "steering",
             name:              "getDoc",
-            handler:           steering_getDocImpl6,
+            handler:           steering_getDocImpl8,
             raw:               false,
             streamingRequest:  false,
             streamingResponse: false,
@@ -107,7 +133,7 @@ const handlers: Handler[] = [
         apiRoute: {
             service:           "steering",
             name:              "listDocs",
-            handler:           steering_listDocsImpl7,
+            handler:           steering_listDocsImpl9,
             raw:               false,
             streamingRequest:  false,
             streamingResponse: false,
@@ -119,7 +145,7 @@ const handlers: Handler[] = [
         apiRoute: {
             service:           "steering",
             name:              "updateDoc",
-            handler:           steering_updateDocImpl8,
+            handler:           steering_updateDocImpl10,
             raw:               false,
             streamingRequest:  false,
             streamingResponse: false,
