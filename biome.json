@@ -12,6 +12,7 @@
       "**/dist/**",
       "backend/steering",
       "backend/tmp",
+      "backend/agent/cli",
       "frontend/build",
       "steering-docs",
       "**/.idea/**",
