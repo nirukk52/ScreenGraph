@@ -69,3 +69,4 @@ ScreenGraph becomes the **definitive source of truth** for mobile app structure.
 - **Onboard faster** with visual exploration guides for new team members
 
 We're not just building a testing tool — we're creating a **living, evolving map** of the mobile app universe.
+
