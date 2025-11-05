@@ -12,7 +12,18 @@ No shared code or node_modules between backend and frontend.
 No root package.json or encore.app`.
 Backend never imports frontend; frontend never touches backend code.
 
-Non Negotiable Coding Rules:
+## Non Negotiable Coding Rules:
+
+### Naming
+Function, Class and Folder naming is the most important thing. 
+Functions should be named with descriptive, unambiguous, verb phrases that clearly state their purpose and action.
+Use Verbs and Verb Phrases: Functions perform actions, so their names should reflect this. Begin function names with a verb that describes the operation, such as calculate, fetch, save, handle, get, or set.
+Be Specific and Descriptive: The name should precisely indicate what the function does. Avoid generic names like handle() or process(). Instead, specify the action and the object it acts upon.
+Class names should be descriptive, singular nouns or noun phrases that represent the object or concept the class models. 
+Class and function names should be domain-oriented, not just technology-oriented. They should describe the real-world concept or business function, not the implementation details.
+Avoid names like Hasher, Mapper, Processor, or Manager as standalone names. Instead, prefix them with the specific business concept they operate on.
+
+### Other
 Every function class enum dto will have a comment about his purpose in the codebase.
 Absolutely no use of any is allowed in the codebase.
 Every class, function, or API endpoint must explicitly use typed DTOs (Data Transfer Objects).
