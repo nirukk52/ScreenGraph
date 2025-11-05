@@ -8,3 +8,4 @@ ALTER TABLE graph_persistence_outcomes
   ADD COLUMN source_run_seq BIGINT NOT NULL DEFAULT 0;
 
 
+
