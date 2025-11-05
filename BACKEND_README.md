@@ -1,137 +1,93 @@
 # ScreenGraph Backend
 
-Backend API built with Encore.ts, providing agent orchestration, documentation management, and run management.
+Encore.ts services that orchestrate the ScreenGraph agent, persist events, and expose APIs consumed by the SvelteKit frontend.
 
-## 🏗️ Architecture
+## Quick Start
+- Install dependencies once per machine:
+  ```bash
+  cd backend
+  bun install
+  ```
+- Run the stack locally (auto-provisions PostgreSQL + Pub/Sub):
+  ```bash
+  cd backend
+  encore run
+  ```
+- Local endpoints: `http://localhost:4000` (REST + SSE), dashboard at `http://localhost:9400`.
 
-- **Encore.ts**: Backend framework with automatic API generation
-- **PostgreSQL**: Database for state persistence
-- **PubSub**: Event-driven communication between services
+## Services
+- **Run API (`backend/run`)** – Start, cancel, and stream agent runs.
+- **Agent Orchestrator (`backend/agent`)** – XState machine, ports/adapters, persistence.
+- **Graph Projection (`backend/graph`)** – Background worker projecting `run_events` into graph tables.
+- **Artifacts (`backend/artifacts`)** – Deterministic storage for screenshots and XML dumps.
+- **Logging (`backend/logging`)** – Convenience helpers for structured Encore logs.
 
-## 🚀 Quick Start
+Each service obeys Encore boundaries: no cross-imports outside generated clients, no manual HTTP hops.
 
-### Prerequisites
+## Development Workflow
+- **Tests** – `cd backend && encore test`
+- **Database tools**
+  ```bash
+  cd backend
+  encore db reset      # wipe local Postgres (useful during schema changes)
+  encore db shell      # psql shell with credentials pre-configured
+  encore db conn-uri   # copy connection string for external tooling
+  ```
+- **Logging discipline** – Always call `log.with({ module, actor, ...context })`; include `stopReason` on failures.
+- **DTO rules** – Declare request/response DTOs at the top of the file or import from shared types. No `any`; prefer discriminated unions for dynamic payloads.
+- **Secrets** – Manage via `encore secret set`; never read from `.env`.
 
-- [Bun](https://bun.sh) >= 1.0
-- [Encore CLI](https://encore.dev/docs/install)
-- PostgreSQL (managed by Encore locally)
-
-### Install & Run
-
-```bash
-# Install dependencies
-bun install
-
-# Run locally (includes database)
-encore run
-
-# Your API will be available at:
-# - API Gateway: http://localhost:4000
-# - API Explorer: http://localhost:4000/#/api
-```
-
-## 📁 Project Structure
-
+## Directory Layout
 ```
 backend/
-├── agent/          # AI agent orchestration
-├── run/            # Run management endpoints
-├── steering/       # Documentation management
-└── db/             # Database migrations
-
-encore.app          # Encore configuration
+├── encore.app            # App ID + CORS configuration
+├── package.json          # Bun-managed dependencies
+├── agent/                # Agent machine, nodes, adapters, persistence
+├── run/                  # HTTP handlers for run lifecycle
+├── graph/                # Projection service + hashing utilities
+├── artifacts/            # Artifact storage service
+├── logging/              # Logger helpers and actor/module constants
+├── db/
+│   ├── migrations/       # Sequential *.up.sql files (no .down.sql)
+│   └── index.ts          # Database entrypoint
+└── tests/                # Encore test files (uses `encore test` runner)
 ```
 
-## 🔧 Development
+## API Highlights
+- `POST /run` – start a run; queues work on the `run-job` topic and returns SSE stream URL.
+- `GET /run/:id/stream` – Server-Sent Events emitting run timeline updates.
+- `POST /run/:id/cancel` – cooperative cancellation for in-flight runs.
+- Additional documentation endpoints exposed from `backend/steering` for knowledge base management.
 
-### Running Tests
+Full spec lives in `backend/API_DOCUMENTATION.md` (regenerate clients via `cd frontend && bun run gen`).
 
-```bash
-encore test
-```
+## Data & Persistence
+- **Events** – `run_events` is append-only with monotonic `seq` per run.
+- **Snapshots** – `run_state_snapshots` store deterministic machine state for replay/resume.
+- **Graph** – `screens`, `actions`, `edges`, and `graph_persistence_outcomes` track derived UI graph data. Projection cursors live in `graph_projection_cursors`.
+- **Outbox** – `run_outbox` drives SSE delivery without double-publish.
 
-### Database Management
+See `AGENT_DATABASE_FLOW.md` for a step-by-step map from `/run` through projection.
 
-```bash
-# Open psql shell
-encore db shell screengraph
+## Deployment
+- Deploy via Encore Cloud:
+  ```bash
+  cd backend
+  encore auth login
+  git push encore main
+  ```
+- Monitor deployment + logs at <https://app.encore.cloud> (app ID `screengraph-ovzi`).
+- Update environment secrets through Encore’s CLI or dashboard.
 
-# View connection string
-encore db conn-uri screengraph
-```
+## Troubleshooting
+- **Port busy** – `lsof -ti:4000 | xargs kill` before re-running `encore run`.
+- **Schema drift** – `cd backend && encore db reset`, then restart the service.
+- **Missing generated clients** – Ensure frontend ran `bun run gen` after backend DTO changes.
+- **Log noise** – Ensure `module`/`actor` pairs are set correctly before logging; dashboard filters rely on them.
 
-### API Client Generation
-
-```bash
-# Generate TypeScript client
-encore gen client typescript
-
-# Generated client in encore.gen/clients/
-```
-
-## 🌐 Deployment
-
-### Deploy to Encore Cloud
-
-```bash
-# Push to Encore Cloud
-git push encore main
-
-# Get deployment URL
-encore app list
-```
-
-### Environment Configuration
-
-- Production: Auto-configured by Encore Cloud
-- Secrets: Manage via `encore secret set`
-- CORS: Configured in `encore.app`
-
-## 📡 API Endpoints
-
-See [backend/API_DOCUMENTATION.md](./backend/API_DOCUMENTATION.md) for complete API reference.
-
-### Key Endpoints
-
-- `POST /run.Start` - Start a new agent run
-- `GET /run.Stream` - Stream run events (WebSocket)
-- `POST /run.Cancel` - Cancel active run
-- `GET /run.Show` - Get run details
-- `GET /steering.GetDoc` - Get documentation
-- `POST /steering.UpdateDoc` - Update documentation
-
-## 🔐 CORS Configuration
-
-Backend is configured to accept requests from:
-- `http://localhost:5173` (local frontend)
-- `https://screengraph.vercel.app` (production frontend)
-- `https://*.vercel.app` (Vercel preview deployments)
-
-## 🐛 Troubleshooting
-
-### Port Already in Use
-
-```bash
-# Find process using port 4000
-lsof -i :4000
-
-# Kill process
-kill -9 <PID>
-```
-
-### Database Connection Issues
-
-```bash
-# Reset database
-encore db reset
-
-# Re-run migrations
-encore run
-```
-
-## 📚 Resources
-
-- [Encore.ts Documentation](https://encore.dev/docs)
-- [API Documentation](./backend/API_DOCUMENTATION.md)
-- [Testing Guide](./backend/agent/README.md)
+## Reference Docs
+- `BACKEND_HANDOFF.md` – Live status before/after each backend task.
+- `CLAUDE.md` (root) – Founder-managed quick reference, always keep synchronized.
+- `GRAPH_PROJECTION_APPROACH.md` – Design notes for the projection worker.
+- `WEBDRIVER_APPIUM_SETUP_REVIEW.md` & `DEVICE_SETUP_INVESTIGATION.md` – Device automation procedures.
 
