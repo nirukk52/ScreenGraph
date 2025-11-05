@@ -7,8 +7,6 @@ import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
 
 export interface LaunchOrAttachInput extends CommonNodeInput {
   runId: string;
-  tenantId: string;
-  projectId: string;
   applicationUnderTestDescriptor: {
     androidPackageId: string;
   };

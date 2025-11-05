@@ -12,8 +12,6 @@ export function buildProvisionAppInput(state: AgentState, ctx: AgentContext): Pr
   }
   return {
     runId: state.runId,
-    tenantId: state.tenantId,
-    projectId: state.projectId,
     deviceRuntimeContextId: state.deviceRuntimeContextId,
     applicationUnderTestDescriptor: ctx.provisionApp.applicationUnderTestDescriptor,
     installationPolicy: ctx.provisionApp.installationPolicy,

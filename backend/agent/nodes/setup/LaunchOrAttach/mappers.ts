@@ -12,8 +12,6 @@ export function buildLaunchOrAttachInput(
 ): LaunchOrAttachInput {
   return {
     runId: state.runId,
-    tenantId: state.tenantId,
-    projectId: state.projectId,
     applicationUnderTestDescriptor: ctx.launchOrAttach.applicationUnderTestDescriptor,
     launchAttachMode: ctx.launchOrAttach.launchAttachMode,
     installOrRestart: ctx.launchOrAttach.installOrRestart,

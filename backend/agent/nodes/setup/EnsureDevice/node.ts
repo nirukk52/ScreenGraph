@@ -7,8 +7,6 @@ import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
 
 export interface EnsureDeviceInput extends CommonNodeInput {
   runId: string;
-  tenantId: string;
-  projectId: string;
   iterationOrdinalNumber: number;
   deviceConfiguration: DeviceConfiguration;
   driverReusePolicy: "REUSE_OR_CREATE";

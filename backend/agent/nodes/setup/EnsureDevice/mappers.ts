@@ -18,8 +18,6 @@ export function buildEnsureDeviceInput(state: AgentState, ctx: AgentContext): En
 
   const input: EnsureDeviceInput = {
     runId: state.runId,
-    tenantId: state.tenantId,
-    projectId: state.projectId,
     iterationOrdinalNumber: state.iterationOrdinalNumber,
     deviceConfiguration: ctx.ensureDevice.deviceConfiguration,
     driverReusePolicy: ctx.ensureDevice.driverReusePolicy,
