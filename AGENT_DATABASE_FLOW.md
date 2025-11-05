@@ -3,30 +3,23 @@
 ## Overview
 This document maps the complete flow of database operations from the `/start` API call through the XState agent machine execution, showing which tables are updated at each layer.
 
+**Status**: ✅ Updated for Migration 008 (MVP Schema - Multi-tenancy removed)
+
 ## Database Tables Overview
 
-### Core Tables
+### Core Tables (MVP)
 - **`runs`**: Main run lifecycle and metadata
 - **`run_events`**: Append-only event log with sequence numbers
 - **`run_outbox`**: Publishing cursor for event streaming
-- **`agent_state_snapshots`**: Full state snapshots per step for resume capability
+- **`run_state_snapshots`**: Full state snapshots per step (renamed from `agent_state_snapshots`)
+- **`run_artifacts`**: References to screenshots, XML, etc. (renamed from `artifacts_index`)
 
-### Graph Tables
-- **`screens`**: UI screen records with perceptual hashes
+### Graph Tables (MVP)
+- **`screens`**: UI screen records with perceptual/layout hashes
 - **`actions`**: Action definitions per screen
 - **`edges`**: Screen-to-screen transitions via actions
-- **`artifacts_index`**: References to screenshots, XML, etc.
-
-### Analysis Tables
-- **`action_candidates`**: Generated action options per step
-- **`decisions`**: LLM decision records
-- **`execution_outcomes`**: Action execution results
-- **`verification_assessments`**: Progress verification results
-- **`progress_evaluations`**: Progress detection results
-- **`continuation_decisions`**: Should-continue decisions
-- **`recovery_dispositions`**: Error recovery actions
-- **`checkpoints_index`**: Checkpoint references
-- **`graph_persistence_outcomes`**: Graph update results
+- **`graph_persistence_outcomes`**: Graph update tracking per step
+- **`graph_projection_cursors`**: Graph projection state
 
 ---
 
@@ -41,12 +34,11 @@ This document maps the complete flow of database operations from the `/start` AP
 **Database Operations**:
 ```sql
 INSERT INTO runs (
-  run_id, tenant_id, project_id, app_config_id, status, 
-  created_at, updated_at, processing_by, lease_expires_at, 
-  heartbeat_at, started_at, finished_at, cancel_requested_at, stop_reason
+  run_id, app_package, status, 
+  created_at, updated_at
 ) VALUES (
-  ${runId}, ${tenantId}, ${projectId}, ${appConfigId}, 'queued',
-  NOW(), NOW(), NULL, NULL, NULL, NULL, NULL, NULL, NULL
+  ${runId}, ${packageName}, 'queued',
+  NOW(), NOW()
 )
 ```
 
@@ -75,13 +67,13 @@ INSERT INTO runs (
 1. **Claim Run** (`backend/agent/persistence/run-db.repo.ts`):
 ```sql
 UPDATE runs 
-SET processing_by = ${workerId}, 
+SET worker_id = ${workerId}, 
     lease_expires_at = NOW() + INTERVAL '${leaseDurationMs} milliseconds',
     status = 'running',
     started_at = NOW(),
     updated_at = NOW()
 WHERE run_id = ${runId} 
-  AND (processing_by IS NULL OR lease_expires_at < NOW())
+  AND (worker_id IS NULL OR lease_expires_at < NOW())
 ```
 
 2. **Ensure Outbox Cursor** (`backend/agent/persistence/run-outbox.repo.ts`):
@@ -99,13 +91,13 @@ ON CONFLICT (run_id) DO NOTHING
 
 **File**: `backend/agent/orchestrator/orchestrator.ts`  
 **Function**: `initialize()`  
-**Tables**: `run_events`, `agent_state_snapshots`
+**Tables**: `run_events`, `run_state_snapshots`
 
 **Database Operations**:
 
 1. **Get Latest Snapshot** (`backend/agent/persistence/agent-state.repo.ts`):
 ```sql
-SELECT state_json FROM agent_state_snapshots 
+SELECT state_json FROM run_state_snapshots 
 WHERE run_id = ${runId} 
 ORDER BY step_ordinal DESC LIMIT 1
 ```
@@ -120,12 +112,12 @@ ORDER BY seq DESC LIMIT 1
 3. **Record Run Started Event** (`backend/agent/persistence/run-events.repo.ts`):
 ```sql
 INSERT INTO run_events (run_id, seq, kind, node_name, payload, created_at)
-VALUES (${runId}, ${sequence}, 'run.started', NULL, ${payload}, ${timestamp})
+VALUES (${runId}, ${sequence}, 'agent.run.started', NULL, ${payload}, ${timestamp})
 ```
 
 4. **Save Initial Snapshot** (`backend/agent/persistence/agent-state.repo.ts`):
 ```sql
-INSERT INTO agent_state_snapshots (run_id, step_ordinal, node_name, state_json, created_at, updated_at)
+INSERT INTO run_state_snapshots (run_id, step_ordinal, node_name, state_json, created_at, updated_at)
 VALUES (${runId}, 0, ${nodeName}, ${stateJson}, ${createdAt}, ${updatedAt})
 ON CONFLICT (run_id, step_ordinal) DO UPDATE SET ...
 ```
@@ -136,9 +128,9 @@ ON CONFLICT (run_id, step_ordinal) DO UPDATE SET ...
 
 ### 5. XState Machine Execution Layer
 
-**File**: `backend/agent/engine/xstate/agent.machine.ts`  
-**Function**: `createAgentMachine()`  
-**Tables**: `run_events`, `agent_state_snapshots`
+**File**: `backend/agent/orchestrator/worker.ts`  
+**Function**: `runWithXState()`  
+**Tables**: `run_events`, `run_state_snapshots`
 
 **Database Operations** (per node execution):
 
@@ -146,69 +138,20 @@ ON CONFLICT (run_id, step_ordinal) DO UPDATE SET ...
 ```sql
 INSERT INTO run_events (run_id, seq, kind, node_name, payload, created_at)
 VALUES (${runId}, ${sequence}, ${kind}, ${nodeName}, ${payload}, ${timestamp})
-ON CONFLICT (run_id, seq) DO NOTHING
 ```
 
 2. **Save State Snapshot** (`backend/agent/persistence/agent-state.repo.ts`):
 ```sql
-INSERT INTO agent_state_snapshots (run_id, step_ordinal, node_name, state_json, created_at, updated_at)
+INSERT INTO run_state_snapshots (run_id, step_ordinal, node_name, state_json, created_at, updated_at)
 VALUES (${runId}, ${stepOrdinal}, ${nodeName}, ${stateJson}, ${createdAt}, ${updatedAt})
-ON CONFLICT (run_id, step_ordinal) DO UPDATE SET ...
+ON CONFLICT (run_id, step_ordinal) DO UPDATE SET state_json = EXCLUDED.state_json, updated_at = EXCLUDED.updated_at
 ```
 
 **What it does**: Orchestrates node execution and persists state/events after each step
 
 ---
 
-### 6. Individual Node Execution Layer
-
-#### Setup Nodes
-
-**EnsureDevice Node** (`backend/agent/nodes/setup/EnsureDevice/handler.ts`)
-- **Tables**: `driver_runtime_contexts`
-- **What it does**: Establishes device connection and persists driver context
-
-**ProvisionApp Node** (`backend/agent/nodes/setup/ProvisionApp/handler.ts`)
-- **Tables**: `app_fg_contexts`
-- **What it does**: Installs/launches app and persists app context
-
-#### Main Loop Nodes
-
-**Perceive Node** (`backend/agent/nodes/main/perceive.ts`)
-- **Tables**: `artifacts_index`
-- **What it does**: Captures screenshot/XML and indexes artifacts
-
-**EnumerateActions Node** (`backend/agent/nodes/main/enumerate-actions.ts`)
-- **Tables**: `action_candidates`
-- **What it does**: Generates action candidates using LLM
-
-**ChooseAction Node** (`backend/agent/nodes/main/choose-action.ts`)
-- **Tables**: `decisions`
-- **What it does**: Records LLM decision for action selection
-
-**Act Node** (`backend/agent/nodes/main/act.ts`)
-- **Tables**: `execution_outcomes`
-- **What it does**: Records action execution results
-
-**Persist Node** (`backend/agent/nodes/main/persist.ts`)
-- **Tables**: `screens`, `actions`, `edges`, `artifacts_index`, `graph_persistence_outcomes`
-- **What it does**: Updates exploration graph with new screens/actions
-
-**Verify Node** (`backend/agent/nodes/main/verify.ts`)
-- **Tables**: `verification_assessments`
-- **What it does**: Records verification results
-
-**DetectProgress Node** (`backend/agent/nodes/main/detect-progress.ts`)
-- **Tables**: `progress_evaluations`
-- **What it does**: Records progress detection results
-
-**ShouldContinue Node** (`backend/agent/nodes/main/should-continue.ts`)
-- **Tables**: `continuation_decisions`
-- **What it does**: Records continuation decisions
-
----
-
-### 7. Event Publishing Layer
+### 6. Event Publishing Layer
 
 **File**: `backend/run/outbox-publisher.ts`  
 **Function**: `publishBatch()`  
@@ -224,7 +167,14 @@ WHERE run_id = ${runId} AND seq > ${lastPublishedSeq}
 ORDER BY seq ASC
 ```
 
-2. **Advance Outbox Cursor**:
+2. **Mark Events Published**:
+```sql
+UPDATE run_events
+SET published_at = NOW()
+WHERE run_id = ${runId} AND seq > ${lastPublishedSeq}
+```
+
+3. **Advance Outbox Cursor**:
 ```sql
 UPDATE run_outbox
 SET last_published_seq = ${publishedSeq},
@@ -237,9 +187,9 @@ WHERE run_id = ${runId}
 
 ---
 
-### 8. Run Completion Layer
+### 7. Run Completion Layer
 
-**File**: `backend/agent/orchestrator/worker.ts`  
+**File**: `backend/agent/orchestrator/orchestrator.ts`  
 **Function**: `finalizeRun()`  
 **Tables**: `runs`
 
@@ -260,32 +210,30 @@ WHERE run_id = ${runId}
 ## Complete Flow Summary
 
 1. **API Call** → Creates `runs` record with status "queued"
-2. **Pub/Sub** → Publishes RunJob message
-3. **Subscription** → Claims run, sets up `run_outbox` cursor
-4. **Orchestrator** → Loads/creates state, records "run.started" event, saves initial snapshot
+2. **Pub/Sub** → Publishes RunJob message with app config
+3. **Subscription** → Claims run with `worker_id`, sets up `run_outbox` cursor
+4. **Orchestrator** → Loads/creates state, records "agent.run.started" event, saves initial snapshot
 5. **XState Machine** → Executes nodes in sequence, persisting events and snapshots after each step
-6. **Node Execution** → Each node updates relevant analysis/graph tables
-7. **Event Publishing** → Publishes events to SSE stream via outbox pattern
-8. **Completion** → Updates `runs` status to final state
+6. **Event Publishing** → Publishes events to SSE stream via outbox pattern
+7. **Completion** → Updates `runs` status to final state (completed/failed/canceled)
 
 ## Key Database Patterns
 
 ### Event Sourcing
 - All state changes recorded as events in `run_events`
-- Events have monotonic sequence numbers
-- State snapshots allow fast resume
+- Events have monotonic sequence numbers per run
+- State snapshots allow fast resume from any step
 
 ### Outbox Pattern
-- Events written to `run_events` first
+- Events written to `run_events` first (transactional)
 - `run_outbox` tracks publishing progress
-- Ensures reliable event delivery
+- `published_at` timestamp marks published events
+- Ensures reliable event delivery to SSE stream
 
-### Graph Persistence
-- Screens and actions stored in normalized tables
-- Edges represent screen transitions
-- Artifacts indexed for retrieval
+### MVP Simplifications (Migration 008)
+- Removed multi-tenancy (`tenant_id`, `project_id`)
+- Single `app_package` field instead of complex config
+- Renamed tables for clarity (`agent_state_snapshots` → `run_state_snapshots`)
+- Status uses ENUM type (no magic strings)
+- Worker leasing via `worker_id` and `lease_expires_at`
 
-### Analysis Tracking
-- Every decision and outcome recorded
-- Enables debugging and optimization
-- Supports ML training data collection
