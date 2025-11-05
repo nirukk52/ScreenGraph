@@ -6,6 +6,7 @@ import type {
 } from "../../../domain/state";
 import type { EventKind } from "../../../domain/events";
 import type { PackageManagerPort } from "../../../ports/appium/package-manager.port";
+import type { SessionPort } from "../../../ports/appium/session.port";
 import { AppNotInstalledError, InvalidArgumentError, TimeoutError } from "../../../adapters/appium/errors";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
@@ -38,6 +39,7 @@ export interface ProvisionAppOutput extends CommonNodeOutput {
 export async function provisionApp(
   input: ProvisionAppInput,
   packageManagerPort: PackageManagerPort,
+  sessionPort: SessionPort,
 ): Promise<{
   output: ProvisionAppOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
@@ -69,6 +71,20 @@ export async function provisionApp(
 
     const packageId = input.applicationUnderTestDescriptor.androidPackageId;
     const apkRef = input.applicationUnderTestDescriptor.apkStorageObjectReference;
+
+    // Lazy initialize Appium session if not already created (deferred from EnsureDevice)
+    // Pass app info so UiAutomator2 can start properly with the target app
+    logger.info("ProvisionApp.ensureSession", { correlationId });
+    await sessionPort.ensureDevice({
+      appiumServerUrl: "http://127.0.0.1:4723/",
+      platformName: "Android",
+      deviceName: "", // Will be auto-detected from stored context
+      platformVersion: "", // Will be auto-detected from stored context
+      // CRITICAL: Pass app path so UiAutomator2 can initialize with the app
+      app: apkRef,
+      appPackage: packageId,
+    });
+    logger.info("ProvisionApp.sessionReady", { correlationId });
 
     const initialPackageInfo = await packageManagerPort.isInstalled(packageId);
     logger.info("ProvisionApp.installCheck", {
