@@ -27,20 +27,19 @@ export interface RunDbPort {
 /** Enumerates the lifecycle states tracked for runs in durable storage. */
 export type RunLifecycleStatus = "queued" | "running" | "completed" | "failed" | "canceled";
 
-/** Captures the persisted metadata for a single agent run. */
+/**
+ * Captures the persisted metadata for a single agent run.
+ * PURPOSE: Aligns with migration 008 MVP schema (removed multi-tenancy fields).
+ */
 export interface RunRecord {
   runId: string;
-  tenantId: string;
-  projectId: string;
+  appPackage: string;
   status: RunLifecycleStatus;
-  createdAt: string;
-  updatedAt: string;
-  appConfigId: string;
-  processingBy: string | null;
+  stopReason: string | null;
+  workerId: string | null;
   leaseExpiresAt: string | null;
-  heartbeatAt: string | null;
+  createdAt: string;
   startedAt: string | null;
   finishedAt: string | null;
-  cancelRequestedAt: string | null;
-  stopReason: string | null;
+  updatedAt: string;
 }

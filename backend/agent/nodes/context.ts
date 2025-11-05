@@ -1,34 +1,24 @@
 import type { AgentContext } from "./types";
-import type { RunRecord } from "../ports/db-ports/run-db.port";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../logging/logger";
 
 /**
- * Builds AgentContext from run app config.
- * PURPOSE: Extracts node-specific config from run record without parsing JSON in registry.
+ * Builds AgentContext from run job configuration.
+ * PURPOSE: Extracts node-specific config from job parameters for agent execution.
  */
-export function buildAgentContext(run: RunRecord): AgentContext {
+export function buildAgentContext(params: {
+  runId: string;
+  appiumServerUrl: string;
+  packageName: string;
+  apkPath: string;
+  appActivity?: string;
+}): AgentContext {
   const logger = log.with({
     module: MODULES.AGENT,
     actor: AGENT_ACTORS.ORCHESTRATOR,
-    runId: run.runId,
+    runId: params.runId,
   });
-  logger.info("buildAgentContext - RunRecord", { run });
-
-  const appConfig = JSON.parse(run.appConfigId) as {
-    appiumServerUrl: string;
-    packageName: string;
-    apkPath: string;
-    appActivity?: string;
-    perceiveDelayMs?: number;
-    expectedVersionCode?: number;
-    expectedVersionName?: string;
-    expectedBuildSignatureSha256?: string;
-    strategyName?: string;
-    policyVersion?: number;
-  };
-
-  logger.info("buildAgentContext - Parsed AppConfig", { appConfig });
+  logger.info("buildAgentContext - Parameters", { params });
 
   const context: AgentContext = {
     ensureDevice: {
@@ -36,7 +26,7 @@ export function buildAgentContext(run: RunRecord): AgentContext {
         platformName: "Android",
         deviceName: "",
         platformVersion: "",
-        appiumServerUrl: appConfig.appiumServerUrl,
+        appiumServerUrl: params.appiumServerUrl,
       },
       driverReusePolicy: "REUSE_OR_CREATE",
     },
@@ -44,16 +34,16 @@ export function buildAgentContext(run: RunRecord): AgentContext {
       installationPolicy: "INSTALL_IF_MISSING",
       reinstallIfOlder: true,
       applicationUnderTestDescriptor: {
-        androidPackageId: appConfig.packageName,
-        apkStorageObjectReference: appConfig.apkPath,
-        expectedBuildSignatureSha256: appConfig.expectedBuildSignatureSha256 ?? "default-sha256",
-        expectedVersionCode: appConfig.expectedVersionCode ?? null,
-        expectedVersionName: appConfig.expectedVersionName ?? null,
+        androidPackageId: params.packageName,
+        apkStorageObjectReference: params.apkPath,
+        expectedBuildSignatureSha256: "default-sha256",
+        expectedVersionCode: null,
+        expectedVersionName: null,
       },
     },
     launchOrAttach: {
       applicationUnderTestDescriptor: {
-        androidPackageId: appConfig.packageName,
+        androidPackageId: params.packageName,
       },
       launchAttachMode: "LAUNCH_OR_ATTACH",
       installOrRestart: "RESTART",
@@ -62,7 +52,7 @@ export function buildAgentContext(run: RunRecord): AgentContext {
       captureDirectives: {
         includeScreenshotPng: true,
         includeUiHierarchyXml: true,
-        delayBeforeCaptureMs: appConfig.perceiveDelayMs ?? 500,
+        delayBeforeCaptureMs: 500,
       },
     },
     waitIdle: {
@@ -74,12 +64,12 @@ export function buildAgentContext(run: RunRecord): AgentContext {
     policy: {
       switchPolicy: {
         currentStrategyConfiguration: {
-          strategyName: appConfig.strategyName ?? "baseline",
-          policyVersion: appConfig.policyVersion ?? 1,
+          strategyName: "baseline",
+          policyVersion: 1,
         },
         requestedStrategyConfiguration: {
-          strategyName: appConfig.strategyName ?? "baseline",
-          policyVersion: appConfig.policyVersion ?? 1,
+          strategyName: "baseline",
+          policyVersion: 1,
         },
         reasonPlaintext: "Initial splash capture complete",
       },

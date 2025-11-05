@@ -26,53 +26,29 @@ export const start = api<StartRunRequest, StartRunResponse>(
       throw APIError.invalidArgument("appiumServerUrl is required");
     }
 
+    if (!req.packageName) {
+      baseLog.info("Validation failed: packageName missing");
+      throw APIError.invalidArgument("packageName is required");
+    }
+
     const runId = ulid();
     const logger = baseLog.with({ runId });
-    const tenantId = "tenant-default";
-    const projectId = "project-default";
-    //todo : this needs to be a separate table in the database
-    const appConfigId = JSON.stringify({
-      apkPath: req.apkPath,
-      appiumServerUrl: req.appiumServerUrl,
-      packageName: req.packageName,
-      appActivity: req.appActivity,
-      maxSteps: req.maxSteps ?? 100,
-      goal: req.goal,
-    });
 
     logger.info("Creating runs record");
     const run = await db.queryRow<Run>`
       INSERT INTO runs (
         run_id,
-        tenant_id,
-        project_id,
-        app_config_id,
+        app_package,
         status,
         created_at,
-        updated_at,
-        processing_by,
-        lease_expires_at,
-        heartbeat_at,
-        started_at,
-        finished_at,
-        cancel_requested_at,
-        stop_reason
+        updated_at
       )
       VALUES (
         ${runId},
-        ${tenantId},
-        ${projectId},
-        ${appConfigId},
+        ${req.packageName},
         'queued',
         NOW(),
-        NOW(),
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL
+        NOW()
       )
       RETURNING *
     `;

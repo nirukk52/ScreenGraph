@@ -1,4 +1,5 @@
 import db from "../../db";
+import log from "encore.dev/log";
 import type { RunDbPort, RunLifecycleStatus, RunRecord } from "../ports/run-db.port";
 
 /**
@@ -9,35 +10,27 @@ export class RunDbRepo implements RunDbPort {
   async getRun(runId: string): Promise<RunRecord | null> {
     const row = await db.queryRow<{
       run_id: string;
-      tenant_id: string;
-      project_id: string;
+      app_package: string;
       status: RunLifecycleStatus;
-      created_at: string;
-      updated_at: string;
-      app_config_id: string;
-      processing_by: string | null;
+      stop_reason: string | null;
+      worker_id: string | null;
       lease_expires_at: string | null;
-      heartbeat_at: string | null;
+      created_at: string;
       started_at: string | null;
       finished_at: string | null;
-      cancel_requested_at: string | null;
-      stop_reason: string | null;
+      updated_at: string;
     }>`
       SELECT
         run_id,
-        tenant_id,
-        project_id,
+        app_package,
         status,
-        created_at,
-        updated_at,
-        app_config_id,
-        processing_by,
+        stop_reason,
+        worker_id,
         lease_expires_at,
-        heartbeat_at,
+        created_at,
         started_at,
         finished_at,
-        cancel_requested_at,
-        stop_reason
+        updated_at
       FROM runs
       WHERE run_id = ${runId}
     `;
@@ -46,19 +39,15 @@ export class RunDbRepo implements RunDbPort {
 
     return {
       runId: row.run_id,
-      tenantId: row.tenant_id,
-      projectId: row.project_id,
+      appPackage: row.app_package,
       status: row.status,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-      appConfigId: row.app_config_id,
-      processingBy: row.processing_by,
+      stopReason: row.stop_reason,
+      workerId: row.worker_id,
       leaseExpiresAt: row.lease_expires_at,
-      heartbeatAt: row.heartbeat_at,
+      createdAt: row.created_at,
       startedAt: row.started_at,
       finishedAt: row.finished_at,
-      cancelRequestedAt: row.cancel_requested_at,
-      stopReason: row.stop_reason ?? null,
+      updatedAt: row.updated_at,
     };
   }
 
@@ -72,27 +61,22 @@ export class RunDbRepo implements RunDbPort {
 
     const claimed = await db.queryRow<{
       run_id: string;
-      tenant_id: string;
-      project_id: string;
+      app_package: string;
       status: RunLifecycleStatus;
-      created_at: string;
-      updated_at: string;
-      app_config_id: string;
-      processing_by: string | null;
+      stop_reason: string | null;
+      worker_id: string | null;
       lease_expires_at: string | null;
-      heartbeat_at: string | null;
+      created_at: string;
       started_at: string | null;
       finished_at: string | null;
-      cancel_requested_at: string | null;
-      stop_reason: string | null;
+      updated_at: string;
     }>`
       WITH claimed AS (
         UPDATE runs
         SET
           status = 'running',
-          processing_by = ${workerId},
+          worker_id = ${workerId},
           lease_expires_at = ${leaseUntil.toISOString()},
-          heartbeat_at = ${now.toISOString()},
           started_at = COALESCE(started_at, ${now.toISOString()}),
           updated_at = ${now.toISOString()}
         WHERE run_id = ${runId}
@@ -109,19 +93,15 @@ export class RunDbRepo implements RunDbPort {
 
     return {
       runId: claimed.run_id,
-      tenantId: claimed.tenant_id,
-      projectId: claimed.project_id,
+      appPackage: claimed.app_package,
       status: claimed.status,
-      createdAt: claimed.created_at,
-      updatedAt: claimed.updated_at,
-      appConfigId: claimed.app_config_id,
-      processingBy: claimed.processing_by,
+      stopReason: claimed.stop_reason,
+      workerId: claimed.worker_id,
       leaseExpiresAt: claimed.lease_expires_at,
-      heartbeatAt: claimed.heartbeat_at,
+      createdAt: claimed.created_at,
       startedAt: claimed.started_at,
       finishedAt: claimed.finished_at,
-      cancelRequestedAt: claimed.cancel_requested_at,
-      stopReason: claimed.stop_reason ?? null,
+      updatedAt: claimed.updated_at,
     };
   }
 
@@ -133,10 +113,9 @@ export class RunDbRepo implements RunDbPort {
       UPDATE runs
       SET
         lease_expires_at = ${leaseUntil.toISOString()},
-        heartbeat_at = ${now.toISOString()},
         updated_at = ${now.toISOString()}
       WHERE run_id = ${runId}
-        AND processing_by = ${workerId}
+        AND worker_id = ${workerId}
         AND status = 'running'
         AND (lease_expires_at IS NULL OR lease_expires_at >= ${now.toISOString()})
     `;
@@ -150,19 +129,39 @@ export class RunDbRepo implements RunDbPort {
     now: string,
     stopReason?: string | null,
   ): Promise<boolean> {
-    await db.exec`
-      UPDATE runs
-      SET
-        status = ${newStatus},
-        updated_at = ${now},
-        stop_reason = ${stopReason ?? null},
-        finished_at = CASE
-          WHEN ${newStatus} IN ('completed', 'failed', 'canceled') THEN ${now}
-          ELSE finished_at
-        END
-      WHERE run_id = ${runId}
-        AND status NOT IN ('completed', 'failed', 'canceled')
-    `;
-    return true;
+    const logger = log.with({ module: "agent", actor: "run-db-repo", runId });
+    
+    logger.info("updateRunStatus called", {
+      runId,
+      newStatus,
+      now,
+      stopReason,
+    });
+
+    try {
+      await db.exec`
+        UPDATE runs
+        SET
+          status = ${newStatus},
+          updated_at = ${now},
+          stop_reason = ${stopReason ?? null},
+          finished_at = CASE
+            WHEN ${newStatus} IN ('completed', 'failed', 'canceled') THEN ${now}
+            ELSE finished_at
+          END
+        WHERE run_id = ${runId}
+          AND status NOT IN ('completed', 'failed', 'canceled')
+      `;
+      
+      logger.info("updateRunStatus succeeded");
+      return true;
+    } catch (err) {
+      logger.error("updateRunStatus failed", {
+        err,
+        errorMessage: err instanceof Error ? err.message : String(err),
+        errorStack: err instanceof Error ? err.stack : undefined,
+      });
+      throw err;
+    }
   }
 }

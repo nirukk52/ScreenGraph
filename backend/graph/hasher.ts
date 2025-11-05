@@ -16,19 +16,19 @@ export function normalizeUiHierarchyXml(rawXml: string): string {
 }
 
 /**
- * computeLayoutHash returns a stable structural hash scoped to an application identifier.
+ * computeLayoutHash returns a stable structural hash scoped to an app package identifier.
  * PURPOSE: Provides the canonical signature stored on the `screens` table for deduplication.
  */
-export function computeLayoutHash(appId: string, normalizedXml: string): string {
-  return crypto.createHash("sha256").update(`${appId}::${normalizedXml}`).digest("hex");
+export function computeLayoutHash(appPackage: string, normalizedXml: string): string {
+  return crypto.createHash("sha256").update(`${appPackage}::${normalizedXml}`).digest("hex");
 }
 
 /**
  * deriveDeterministicScreenId produces a short identifier for the screen row.
  * PURPOSE: Guarantees idempotent inserts without relying on database-generated UUIDs.
  */
-export function deriveDeterministicScreenId(appId: string, layoutHash: string): string {
-  return crypto.createHash("sha256").update(`${appId}::${layoutHash}`).digest("hex").slice(0, 32);
+export function deriveDeterministicScreenId(appPackage: string, layoutHash: string): string {
+  return crypto.createHash("sha256").update(`${appPackage}::${layoutHash}`).digest("hex").slice(0, 32);
 }
 
 

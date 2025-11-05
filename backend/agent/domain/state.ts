@@ -84,11 +84,12 @@ export interface Budgets {
   appRestartTimeoutMs: number;
 }
 
+/**
+ * AgentState captures the complete execution state of an agent run.
+ * PURPOSE: ID-first design (no heavy payloads); multi-tenancy removed for MVP.
+ */
 export interface AgentState {
-  tenantId: string;
-  projectId: string;
   runId: string;
-  policyVersion: number;
   nodeName: string;
   stepOrdinal: number;
   iterationOrdinalNumber: number;
@@ -146,18 +147,17 @@ export interface CommonNodeOutput {
   humanReadableFailureSummary: string | null;
 }
 
+/**
+ * createInitialState builds the starting AgentState for a new run.
+ * PURPOSE: Removes multi-tenancy (tenantId/projectId) for MVP simplification.
+ */
 export function createInitialState(
-  tenantId: string,
-  projectId: string,
   runId: string,
   budgets: Budgets,
   now: string,
 ): AgentState {
   return {
-    tenantId,
-    projectId,
     runId,
-    policyVersion: 1,
     nodeName: "InitialSetup",
     stepOrdinal: 0,
     iterationOrdinalNumber: 0,

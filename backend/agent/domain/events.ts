@@ -69,13 +69,12 @@ export type EventPayloadMap = {
 
 /**
  * Base event properties shared across all domain events.
- * The payload field is a discriminated union keyed by EventKind for compile-time type safety.
+ * PURPOSE: The payload field is a discriminated union keyed by EventKind for compile-time type safety.
+ * Multi-tenancy fields removed for MVP simplification (migration 008).
  */
 export interface DomainEvent<T extends EventKind = EventKind> {
   eventId: string;
   runId: string;
-  tenantId: string;
-  projectId: string;
   sequence: number;
   ts: string;
   kind: T;
@@ -89,11 +88,13 @@ export interface NodeEventPair {
   finished: DomainEvent;
 }
 
+/**
+ * Creates agent.node.started event.
+ * PURPOSE: Signals node execution start (removed tenant/project for MVP).
+ */
 export function createNodeStartedEvent(
   eventId: string,
   runId: string,
-  tenantId: string,
-  projectId: string,
   sequence: number,
   ts: string,
   nodeName: string,
@@ -103,8 +104,6 @@ export function createNodeStartedEvent(
   return {
     eventId,
     runId,
-    tenantId,
-    projectId,
     sequence,
     ts,
     kind: "agent.node.started",
@@ -114,11 +113,13 @@ export function createNodeStartedEvent(
   };
 }
 
+/**
+ * Creates agent.node.finished event.
+ * PURPOSE: Signals node execution completion (removed tenant/project for MVP).
+ */
 export function createNodeFinishedEvent(
   eventId: string,
   runId: string,
-  tenantId: string,
-  projectId: string,
   sequence: number,
   ts: string,
   nodeName: string,
@@ -129,8 +130,6 @@ export function createNodeFinishedEvent(
   return {
     eventId,
     runId,
-    tenantId,
-    projectId,
     sequence,
     ts,
     kind: "agent.node.finished",
@@ -140,11 +139,13 @@ export function createNodeFinishedEvent(
   };
 }
 
+/**
+ * Creates agent.run.started event.
+ * PURPOSE: Signals run initialization (removed tenant/project for MVP).
+ */
 export function createRunStartedEvent(
   eventId: string,
   runId: string,
-  tenantId: string,
-  projectId: string,
   sequence: number,
   ts: string,
 ): DomainEvent {
@@ -152,8 +153,6 @@ export function createRunStartedEvent(
   return {
     eventId,
     runId,
-    tenantId,
-    projectId,
     sequence,
     ts,
     kind: "agent.run.started",
@@ -163,11 +162,13 @@ export function createRunStartedEvent(
   };
 }
 
+/**
+ * Creates agent.run.finished event.
+ * PURPOSE: Signals run completion (removed tenant/project for MVP).
+ */
 export function createRunFinishedEvent(
   eventId: string,
   runId: string,
-  tenantId: string,
-  projectId: string,
   sequence: number,
   ts: string,
   stopReason: string,
@@ -176,8 +177,6 @@ export function createRunFinishedEvent(
   return {
     eventId,
     runId,
-    tenantId,
-    projectId,
     sequence,
     ts,
     kind: "agent.run.finished",
@@ -187,11 +186,13 @@ export function createRunFinishedEvent(
   };
 }
 
+/**
+ * Generic domain event creation function.
+ * PURPOSE: Type-safe event factory (removed tenant/project for MVP).
+ */
 export function createDomainEvent<T extends EventKind>(
   eventId: string,
   runId: string,
-  tenantId: string,
-  projectId: string,
   sequence: number,
   ts: string,
   kind: T,
@@ -200,8 +201,6 @@ export function createDomainEvent<T extends EventKind>(
   return {
     eventId,
     runId,
-    tenantId,
-    projectId,
     sequence,
     ts,
     kind,

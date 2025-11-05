@@ -1,150 +1,244 @@
-# Encore + SvelteKit Integration Guide
+# CLAUDE.md - Project Quick Reference
 
-## Overview
+> **Purpose**: This document is personally managed by the founder. Keep it short, clear, to the point with bulletpoints/surgical edits.
+> 
+> **Scope**: Project-specific configurations and quick-start commands ONLY. DO NOT duplicate content from `.cursor/rules/*.mdc`.
+> 
+> **For comprehensive rules, see**: `.cursor/rules/founder_rules.mdc`, `backend_engineer.mdc`, `frontend_engineer.mdc`, `backend_llm_instructions.mdc`
 
-This project uses Encore.ts for the backend and SvelteKit for the frontend, following Encore's recommended monorepo structure.
+---
 
-## Repository Structure
+## Quick Start
 
-```
-/ScreenGraph/
-├── tsconfig.json           # Unified TypeScript config
-├── backend/                # Encore backend services
-│   ├── encore.app          # Backend config
-│   └── package.json        # Backend dependencies
-└── frontend/               # SvelteKit frontend
-    ├── package.json        # Frontend dependencies
-    └── src/lib/encore-client.ts  # Generated Encore client
-```
-
-## What This Setup Gives You
-
-### 1. **Type Safety Across Frontend/Backend**
-- Single `tsconfig.json` with path mapping
-- Shared types between frontend and backend
-- Full IntelliSense and autocomplete
-
-### 2. **Generated Encore Client**
-```typescript
-// Instead of manual fetch calls:
-const response = await fetch('/api/users', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ name: 'John' })
-});
-
-// You get fully typed function calls:
-import { users } from '~encore/clients';
-const user = await users.create({ name: 'John' }); // Fully typed!
+### 1. Generate Encore Client
+```bash
+cd frontend
+bun run gen
 ```
 
-### 3. **Path Mapping Configuration**
+### 2. Run Services
+```bash
+# Terminal 1: Backend
+cd backend && encore run
+
+# Terminal 2: Frontend  
+cd frontend && bun run dev
+```
+
+---
+
+## Project-Specific Configuration
+
+### CORS Settings (encore.app)
 ```json
-// From tsconfig.json:
-"paths": {
-  "~encore/*": ["./backend/encore.gen/*"],  // Encore client imports
-  "~/*": ["./*"]                           // Root-level imports
-}
-```
-
-### 4. **CORS Configuration**
-```json
-// From encore.app:
 "global_cors": {
   "allow_origins_without_credentials": ["*"],
   "allow_origins_with_credentials": [
-    "http://localhost:5173",      // SvelteKit dev server
-    "http://localhost:3000",      // Alternative dev port
+    "http://localhost:5173",
+    "http://localhost:3000",
     "https://screengraph.vercel.app",
     "https://*.vercel.app"
   ]
 }
 ```
 
-## Setup Instructions
-
-### 1. Generate Encore Client
-```bash
-cd frontend
-npm run gen
-```
-This creates `src/lib/encore-client.ts` with fully typed API functions.
-
-### 2. Use in SvelteKit Components
-```typescript
-// In your SvelteKit component:
-import { users } from '~encore/clients';
-
-// Fully typed API calls with automatic validation
-const user = await users.create({ name: 'John' });
-```
-
-### 3. Development Workflow
-```bash
-# Terminal 1: Run Encore backend
-encore run
-
-# Terminal 2: Run SvelteKit frontend
-cd frontend
-npm run dev
-```
-
-## Benefits Over Manual API Calls
-
-### **Type Safety**
-- Request/response types are automatically generated
-- Compile-time error checking
-- IDE autocomplete for all API endpoints
-
-### **Automatic Validation**
-- Request data validated against API schema
-- Typed error responses for validation failures
-- No manual JSON parsing needed
-
-### **Error Handling**
-```typescript
-try {
-  const result = await users.create({ name: 'John' });
-  // result is fully typed with success data
-} catch (error) {
-  // error is typed as Encore API errors
-  if (error.code === 'invalid_argument') {
-    // Handle validation errors
-  }
+### Path Mappings (tsconfig.json)
+```json
+"paths": {
+  "~encore/*": ["./backend/encore.gen/*"],
+  "~/*": ["./*"]
 }
 ```
 
-### **Environment Awareness**
-- Automatically uses correct API base URL
-- Handles local dev vs production environments
-- No hardcoded URLs in frontend code
+### Package Manager
+- **All projects**: Use `bun` exclusively
+- **Backend**: `cd backend && bun install`
+- **Frontend**: `cd frontend && bun install`
 
-### **Real-time Updates**
-- Run `encore gen client` when backend changes
-- Frontend types update automatically
-- Catches breaking changes at compile time
+---
 
-## Deployment
+## Project-Specific Usage Patterns
 
-### Backend (Encore Cloud)
-1. Set "Root Directory" to `backend` in Encore Cloud dashboard
-2. Link to GitHub repository
-3. Deploy automatically on push
+### API Calls (Frontend)
+```typescript
+// ✅ ALWAYS use generated Encore client
+import { users } from '~encore/clients';
+const user = await users.create({ name: 'John' });
 
-### Frontend (Vercel/Netlify)
-1. Point deployment to `frontend/` directory
-2. Configure build settings for SvelteKit
-3. Set environment variables for API URLs
+// ❌ NEVER use manual fetch
+const response = await fetch('/api/users', { ... }); // WRONG
+```
 
-## Key Files
+### Logging (Backend)
+```typescript
+// ✅ ALWAYS use Encore structured logging
+import log from "encore.dev/log";
+const logger = log.with({ module: "agent", runId });
+logger.info("state transition", { from: "idle", to: "planning" });
 
-- `encore.app` - Encore configuration with CORS settings
-- `tsconfig.json` - Unified TypeScript configuration
-- `frontend/package.json` - Contains `gen` script for client generation
-- `frontend/src/lib/encore-client.ts` - Generated Encore client (run `npm run gen` to create)
+// ❌ NEVER use console.log
+console.log("something happened"); // WRONG
+```
 
-## Next Steps
+### Database Queries (Backend)
+```typescript
+// ✅ Use Encore SQLDatabase with typed results
+const rows = await db.query<{ id: string; name: string }>`
+  SELECT id, name FROM users WHERE status = ${status}
+`;
+for await (const row of rows) {
+  logger.info("user found", { userId: row.id });
+}
+```
 
-1. Run `npm run gen` in the frontend directory to generate the client
-2. Import and use the generated client in your SvelteKit components
-3. Enjoy fully typed, validated API calls with automatic error handling!
+---
+
+## Environment-Specific Values
+
+### Local Development
+- Backend API: `http://localhost:4000`
+- Frontend Dev: `http://localhost:5173`
+- Encore Dashboard: `http://localhost:9400`
+
+### Production
+- Backend: Encore Cloud (auto-deployed)
+- Frontend: Vercel (auto-deployed from `frontend/`)
+
+---
+
+## Key Project Files
+
+### Configuration
+- `backend/encore.app` - Backend config with CORS and services
+- `tsconfig.json` - Shared TypeScript config with path mappings
+- `biome.json` - Code formatting and linting rules
+
+### Generated
+- `backend/encore.gen/` - Auto-generated Encore types and clients
+- `frontend/src/lib/encore-client.ts` - Generated API client (run `bun run gen`)
+
+### Data
+- `backend/db/migrations/` - Database migrations (sequential `.up.sql` files)
+- `backend/artifacts/` - Artifact storage service
+- `backend/graph/` - Screen graph projection and hashing
+
+---
+
+## Common Commands
+
+### Development
+```bash
+# Regenerate frontend client after backend changes
+cd frontend && bun run gen
+
+# Reset local database
+cd backend && encore db reset
+
+# View logs
+encore logs
+```
+
+### Database
+```bash
+# Access database shell
+encore db shell run --write
+
+# Get connection string
+encore db conn-uri run
+```
+
+### Testing
+```bash
+# Backend tests
+cd backend && encore test
+
+# Frontend tests
+cd frontend && bun test
+```
+
+---
+
+## Project-Specific Conventions
+
+### Naming
+- **Functions**: `verbNoun` format (e.g., `createAgentState`, `transitionToPlanning`)
+- **Types/Interfaces**: `PascalCase` with descriptive names (e.g., `AgentStateSnapshot`, `RunEventPayload`)
+- **Files**: `kebab-case.ts` or `PascalCase.ts` for classes (e.g., `agent-state.repo.ts`, `AgentMachine.ts`)
+
+### File Organization
+- **Backend**: Group by service/domain (`backend/agent/`, `backend/run/`, `backend/graph/`)
+- **Frontend**: Route-based (`frontend/src/routes/`, `frontend/src/lib/components/`)
+
+### Enums and Constants
+```typescript
+// ✅ Use literal unions or const enums
+type AgentStatus = "idle" | "planning" | "acting" | "completed";
+const RUN_STATUS = {
+  ACTIVE: "active",
+  CANCELED: "canceled",
+  COMPLETED: "completed"
+} as const;
+
+// ❌ Never use magic strings
+if (status === "active") { ... } // WRONG - use RUN_STATUS.ACTIVE
+```
+
+---
+
+## Migration Patterns
+
+### Database Migrations
+- Sequential numbering: `001_initial.up.sql`, `002_add_column.up.sql`
+- One migration per logical change
+- Always test rollback scenario mentally
+- Use American English spelling in column names
+
+### API Changes
+1. Update backend endpoint
+2. Run `bun run gen` in frontend
+3. Update frontend to use new types
+4. Commit both changes together
+
+---
+
+## Troubleshooting
+
+### "Type not found" errors in frontend
+```bash
+cd frontend && bun run gen
+```
+
+### Database migration stuck
+```bash
+encore db reset
+encore run
+```
+
+### CORS errors in development
+- Check `backend/encore.app` has `http://localhost:5173` in allowed origins
+- Verify frontend is running on correct port
+
+---
+
+## Document Maintenance Rules
+
+### ✅ Add to CLAUDE.md
+- Project-specific configuration values
+- Environment-specific URLs/ports
+- Common commands unique to this project
+- Project-specific naming conventions
+- Quick troubleshooting for common issues
+
+### ❌ Do NOT Add to CLAUDE.md
+- General Encore.ts concepts (→ `backend_llm_instructions.mdc`)
+- General coding principles (→ `founder_rules.mdc`)
+- Backend patterns/architecture (→ `backend_engineer.mdc`)
+- Frontend patterns/architecture (→ `frontend_engineer.mdc`)
+- Philosophy or "why" explanations (→ cursor rules)
+
+### Editing Guidelines
+- Keep entries to 1-3 lines with code examples
+- Use bulletpoints, never prose
+- Update immediately when project config changes
+- Remove outdated entries proactively
+- Link to cursor rules for detailed explanations

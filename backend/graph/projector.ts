@@ -182,7 +182,7 @@ async function handleScreenPerceivedEvent(
   }
 
   const layoutHash = await resolveLayoutHash(metadata, context.pendingUiRefId, event.payload.perceptualHash64, logger);
-  const screenId = deriveDeterministicScreenId(metadata.appId, layoutHash);
+  const screenId = deriveDeterministicScreenId(metadata.appPackage, layoutHash);
 
   const upsert = await repo.upsertScreen(screenId, metadata, layoutHash, event.payload.perceptualHash64);
   const outcomeKind: GraphOutcomeKind = upsert.isNew ? "discovered" : "mapped";
@@ -229,24 +229,24 @@ async function resolveLayoutHash(
 ): Promise<string> {
   if (!uiRefId) {
     logger.warn("No UI hierarchy ref available; falling back to perceptual hash signature");
-    return computeLayoutHash(metadata.appId, perceptualHash64);
+    return computeLayoutHash(metadata.appPackage, perceptualHash64);
   }
 
   try {
     await artifacts.getArtifactMeta(uiRefId);
   } catch (err) {
     logger.warn("Artifact metadata unavailable; falling back to perceptual hash", { err });
-    return computeLayoutHash(metadata.appId, perceptualHash64);
+    return computeLayoutHash(metadata.appPackage, perceptualHash64);
   }
 
   try {
     const buffer = await artifactsBucket.download(uiRefId);
     const xml = buffer.toString("utf-8");
     const normalizedXml = normalizeUiHierarchyXml(xml);
-    return computeLayoutHash(metadata.appId, normalizedXml);
+    return computeLayoutHash(metadata.appPackage, normalizedXml);
   } catch (err) {
     logger.warn("Failed to download UI hierarchy; using perceptual hash signature", { err });
-    return computeLayoutHash(metadata.appId, perceptualHash64);
+    return computeLayoutHash(metadata.appPackage, perceptualHash64);
   }
 }
 

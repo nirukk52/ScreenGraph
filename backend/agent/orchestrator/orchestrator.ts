@@ -51,13 +51,11 @@ export class Orchestrator {
     }
 
     const now = new Date().toISOString();
-    const state = createInitialState(run.tenantId, run.projectId, run.runId, budgets, now);
+    const state = createInitialState(run.runId, budgets, now);
 
     const startEvent = createRunStartedEvent(
       this.generateId(),
       run.runId,
-      run.tenantId,
-      run.projectId,
       this.nextSequence(),
       now,
     );
@@ -97,8 +95,6 @@ export class Orchestrator {
     const startEvent = createDomainEvent(
       this.generateId(),
       state.runId,
-      state.tenantId,
-      state.projectId,
       this.nextSequence(),
       now,
       "agent.node.started",
@@ -111,8 +107,6 @@ export class Orchestrator {
       const domainEvent = createDomainEvent(
         this.generateId(),
         state.runId,
-        state.tenantId,
-        state.projectId,
         this.nextSequence(),
         now,
         evt.kind,
@@ -124,8 +118,6 @@ export class Orchestrator {
     const finishEvent = createDomainEvent(
       this.generateId(),
       state.runId,
-      state.tenantId,
-      state.projectId,
       this.nextSequence(),
       now,
       "agent.node.finished",
@@ -143,25 +135,51 @@ export class Orchestrator {
       runId: state.runId,
     });
 
-    const success = await this.runDb.updateRunStatus(state.runId, "completed", now, stopReason);
-
-    if (!success) {
-      logger.error("Failed to update run status (CAS violation)");
-      throw new Error("Failed to update run status (CAS violation)");
-    }
-
-    const finishedEvent = createRunFinishedEvent(
-      this.generateId(),
-      state.runId,
-      state.tenantId,
-      state.projectId,
-      this.nextSequence(),
-      now,
+    logger.info("Starting finalizeRun", {
+      runId: state.runId,
       stopReason,
-    );
+      currentStatus: state.status,
+    });
 
-    await this.recordEvent(finishedEvent);
-    logger.info("Run finalized");
+    try {
+      logger.info("Calling updateRunStatus", {
+        runId: state.runId,
+        newStatus: "completed",
+        now,
+        stopReason,
+      });
+
+      const success = await this.runDb.updateRunStatus(state.runId, "completed", now, stopReason);
+
+      logger.info("updateRunStatus completed", { success });
+
+      if (!success) {
+        logger.error("Failed to update run status (CAS violation)");
+        throw new Error("Failed to update run status (CAS violation)");
+      }
+
+      logger.info("Creating finished event");
+
+      const finishedEvent = createRunFinishedEvent(
+        this.generateId(),
+        state.runId,
+        this.nextSequence(),
+        now,
+        stopReason,
+      );
+
+      logger.info("Recording finished event");
+      await this.recordEvent(finishedEvent);
+      
+      logger.info("Run finalized successfully");
+    } catch (err) {
+      logger.error("Error in finalizeRun", {
+        err,
+        errorMessage: err instanceof Error ? err.message : String(err),
+        errorStack: err instanceof Error ? err.stack : undefined,
+      });
+      throw err;
+    }
   }
 
   /**

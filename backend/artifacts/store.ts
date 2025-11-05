@@ -49,7 +49,7 @@ export const storeArtifact = api<StoreArtifactRequest, StoreArtifactResponse>(
     // Index metadata (idempotent by primary key on artifact_ref_id)
     try {
       await db.exec`
-        INSERT INTO artifacts_index (artifact_ref_id, run_id, kind, byte_size, content_hash_sha256)
+        INSERT INTO run_artifacts (artifact_ref_id, run_id, kind, byte_size, content_hash_sha256)
         VALUES (${refId}, ${req.runId}, ${req.kind}, ${contentBytes.byteLength}, ${contentHashSha256})
         ON CONFLICT (artifact_ref_id) DO NOTHING
       `;

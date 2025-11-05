@@ -27,13 +27,11 @@ export interface ParsedRunEvent<K extends EventKind = EventKind> {
 }
 
 /**
- * RunMetadata captures tenant/project/app identifiers required for screen normalization.
+ * RunMetadata captures app package identifier required for screen normalization.
  * PURPOSE: Supplies deterministic inputs for screen identifiers and layout hashing.
  */
 export interface RunMetadata {
-  tenantId: string;
-  projectId: string;
-  appId: string;
+  appPackage: string;
 }
 
 /**

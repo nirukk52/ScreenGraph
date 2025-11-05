@@ -73,6 +73,7 @@ This document captures the working mental models for the current app, and immedi
 - Prefer explicit invariants and tests over comments.
 - Design for idempotency and at-least-once delivery first; layer exactly-once only if needed.
 - Keep the founder doc short and actionable; update alongside meaningful behavior changes.
+- **Use American English spelling exclusively** (e.g., "canceled" not "cancelled", "color" not "colour") across all code, database schemas, comments, and documentation for consistency.
 
 ### Agent Handoff Workflow (Enforced)
 - Maintain a single, living handoff at root: `HANDOFF.md`.

@@ -24,12 +24,12 @@ interface RunEventRow {
 
 /**
  * GraphOutcomeRow represents a row from graph_persistence_outcomes joined with screens.
- * PURPOSE: Enables querying graph projection outcomes with app_id for SSE emission.
+ * PURPOSE: Enables querying graph projection outcomes with app_package for SSE emission.
  */
 interface GraphOutcomeRow {
-  source_run_seq: number;
+  source_event_seq: number;
   screen_id: string;
-  app_id: string;
+  app_package: string;
   upsert_kind: string;
   created_at: Date;
 }
@@ -48,7 +48,7 @@ interface MergedMessage {
 
 /**
  * fetchGraphOutcomes queries graph_persistence_outcomes joined with screens for SSE emission.
- * PURPOSE: Retrieves graph projection outcomes with app_id for a given run and sequence range.
+ * PURPOSE: Retrieves graph projection outcomes with app_package for a given run and sequence range.
  */
 async function fetchGraphOutcomes(
   runId: string,
@@ -57,15 +57,15 @@ async function fetchGraphOutcomes(
   const outcomes: GraphOutcomeRow[] = [];
   for await (const row of db.query<GraphOutcomeRow>`
     SELECT 
-      gpo.source_run_seq,
+      gpo.source_event_seq,
       gpo.screen_id,
-      s.app_id,
+      s.app_package,
       gpo.upsert_kind,
       gpo.created_at
     FROM graph_persistence_outcomes gpo
     INNER JOIN screens s ON gpo.screen_id = s.screen_id
-    WHERE gpo.run_id = ${runId} AND gpo.source_run_seq > ${minSeq}
-    ORDER BY gpo.source_run_seq ASC, gpo.created_at ASC
+    WHERE gpo.run_id = ${runId} AND gpo.source_event_seq > ${minSeq}
+    ORDER BY gpo.source_event_seq ASC, gpo.created_at ASC
   `) {
     outcomes.push(row);
   }
@@ -80,11 +80,11 @@ function convertGraphOutcomeToMessage(outcome: GraphOutcomeRow): MergedMessage {
   const kind: EventKind =
     outcome.upsert_kind === "discovered" ? "graph.screen.discovered" : "graph.screen.mapped";
   return {
-    seq: outcome.source_run_seq,
+    seq: outcome.source_event_seq,
     kind,
     data: {
       screenId: outcome.screen_id,
-      appId: outcome.app_id,
+      appPackage: outcome.app_package,
     },
     timestamp: outcome.created_at.toISOString(),
     isGraphEvent: true,

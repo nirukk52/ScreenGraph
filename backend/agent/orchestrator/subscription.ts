@@ -36,7 +36,18 @@ new Subscription(runJobTopic, "agent-orchestrator-worker", {
 
       const logger = subLog.with({ workerId });
       logger.info("Attempting to claim run");
-      const claimed = await runDb.claimRun(job.runId, workerId, leaseDurationMs);
+      
+      let claimed;
+      try {
+        claimed = await runDb.claimRun(job.runId, workerId, leaseDurationMs);
+      } catch (claimErr) {
+        logger.error("Failed to claim run", {
+          error: claimErr instanceof Error ? claimErr.message : String(claimErr),
+          stack: claimErr instanceof Error ? claimErr.stack : undefined,
+        });
+        throw claimErr;
+      }
+      
       if (!claimed) {
         subLog.info("Run already claimed, skipping");
         return;
@@ -48,6 +59,8 @@ new Subscription(runJobTopic, "agent-orchestrator-worker", {
         maxTaps: 1_000,
         outsideAppLimit: 10,
         restartLimit: 3,
+        appLaunchTimeoutMs: 30_000,
+        appRestartTimeoutMs: 15_000,
       };
 
       logger.info("Run claimed; starting worker", { ts: new Date().toISOString() } as Record<
@@ -61,6 +74,13 @@ new Subscription(runJobTopic, "agent-orchestrator-worker", {
         workerId,
         budgets,
         leaseDurationMs,
+        jobConfig: {
+          runId: job.runId,
+          appiumServerUrl: job.appiumServerUrl,
+          packageName: job.packageName,
+          apkPath: job.apkPath,
+          appActivity: job.appActivity,
+        },
       });
 
       const result = await worker.run();
@@ -69,7 +89,11 @@ new Subscription(runJobTopic, "agent-orchestrator-worker", {
         emittedEventCount: result.emittedEventCount,
       });
     } catch (err) {
-      subLog.error("Run failed", err as Error);
+      subLog.error("Run failed", {
+        error: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+        name: err instanceof Error ? err.name : undefined,
+      });
       throw err;
     }
   },

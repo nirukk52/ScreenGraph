@@ -3,13 +3,13 @@ import type { AgentStateDbPort } from "../ports/db-ports/agent-state.port";
 import type { AgentState } from "../domain/state";
 
 /**
- * AgentStateRepo implements AgentStateDbPort with the `agent_state_snapshots` table.
+ * AgentStateRepo implements AgentStateDbPort with the `run_state_snapshots` table.
  * It persists full snapshots per step with upsert semantics for determinism/resume.
  */
 export class AgentStateRepo implements AgentStateDbPort {
   async saveSnapshot(runId: string, stepOrdinal: number, state: AgentState): Promise<void> {
     await db.exec`
-      INSERT INTO agent_state_snapshots (run_id, step_ordinal, node_name, state_json, created_at, updated_at)
+      INSERT INTO run_state_snapshots (run_id, step_ordinal, node_name, state_json, created_at, updated_at)
       VALUES (
         ${runId},
         ${stepOrdinal},
@@ -29,7 +29,7 @@ export class AgentStateRepo implements AgentStateDbPort {
   async getSnapshot(runId: string, stepOrdinal: number): Promise<AgentState | null> {
     const row = await db.queryRow<{ state_json: string }>`
       SELECT state_json
-      FROM agent_state_snapshots
+      FROM run_state_snapshots
       WHERE run_id = ${runId} AND step_ordinal = ${stepOrdinal}
     `;
     if (!row) return null;
@@ -39,7 +39,7 @@ export class AgentStateRepo implements AgentStateDbPort {
   async getLatestSnapshot(runId: string): Promise<AgentState | null> {
     const row = await db.queryRow<{ state_json: string }>`
       SELECT state_json
-      FROM agent_state_snapshots
+      FROM run_state_snapshots
       WHERE run_id = ${runId}
       ORDER BY step_ordinal DESC
       LIMIT 1

@@ -35,6 +35,11 @@ Prefer discriminated unions or enums over free-form string comparisons in contro
 NO MAGIC STRINGS!
 NO MAGIC NUMBERS!
 
+### Spelling & Language
+Use American English spelling exclusively across ALL code, schemas, types, comments, and docs.
+Examples: "canceled" not "cancelled", "color" not "colour", "optimize" not "optimise".
+This applies to: variable names, function names, enum values, database columns, type names, comments, documentation.
+
 Logging Rules:
 Use ONLY encore.dev/log for all logging — never console.log, never stdout.
 Always create contextual loggers via log.with({ module, actor, runId?, workerId?, nodeName?, stepOrdinal?, eventSeq? }).

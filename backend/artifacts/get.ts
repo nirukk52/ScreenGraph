@@ -22,7 +22,7 @@ export const getArtifactMeta = api<{ refId: string }, GetArtifactMetaResponse>(
       created_at: string;
     }>`
       SELECT artifact_ref_id, run_id, kind, byte_size, content_hash_sha256, created_at
-      FROM artifacts_index
+      FROM run_artifacts
       WHERE artifact_ref_id = ${req.refId}
     `;
 

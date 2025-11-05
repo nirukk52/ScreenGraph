@@ -14,18 +14,16 @@ export class ScreenGraphRepo implements ScreenGraphDbPort {
     screenshotRef: string,
     xmlRef: string,
   ): Promise<void> {
-    const runRow = await db.queryRow<{ tenant_id: string; project_id: string }>`
-      SELECT tenant_id, project_id FROM runs WHERE run_id = ${runId}
+    const runRow = await db.queryRow<{ app_package: string }>`
+      SELECT app_package FROM runs WHERE run_id = ${runId}
     `;
     if (!runRow) return;
 
     await db.exec`
-      INSERT INTO screens (screen_id, tenant_id, project_id, app_id, layout_hash, perceptual_hash64, first_seen_at, last_seen_at)
+      INSERT INTO screens (screen_id, app_package, layout_hash, perceptual_hash, first_seen_at, last_seen_at)
       VALUES (
         ${screenId},
-        ${runRow.tenant_id},
-        ${runRow.project_id},
-        'default',
+        ${runRow.app_package},
         ${xmlRef},
         ${perceptualHash64},
         NOW(),
@@ -36,7 +34,7 @@ export class ScreenGraphRepo implements ScreenGraphDbPort {
     `;
 
     await db.exec`
-      INSERT INTO artifacts_index (artifact_ref_id, run_id, kind, created_at)
+      INSERT INTO run_artifacts (artifact_ref_id, run_id, kind, created_at)
       VALUES
         (${screenshotRef}, ${runId}, 'screenshot', NOW()),
         (${xmlRef}, ${runId}, 'xml', NOW())
@@ -51,13 +49,13 @@ export class ScreenGraphRepo implements ScreenGraphDbPort {
     toScreenId: string,
     actionKind: string,
   ): Promise<void> {
-    const runRow = await db.queryRow<{ tenant_id: string; project_id: string }>`
-      SELECT tenant_id, project_id FROM runs WHERE run_id = ${runId}
+    const runRow = await db.queryRow<{ app_package: string }>`
+      SELECT app_package FROM runs WHERE run_id = ${runId}
     `;
     if (!runRow) return;
 
     await db.exec`
-      INSERT INTO actions (action_id, screen_id, verb, target_key, created_at)
+      INSERT INTO actions (action_id, screen_id, verb, target_selector, created_at)
       VALUES (
         ${actionId},
         ${fromScreenId},
@@ -65,26 +63,21 @@ export class ScreenGraphRepo implements ScreenGraphDbPort {
         ${actionId},
         NOW()
       )
-      ON CONFLICT (screen_id, verb, target_key) DO NOTHING
+      ON CONFLICT (screen_id, verb, target_selector) DO NOTHING
     `;
 
     await db.exec`
-      INSERT INTO edges (edge_id, tenant_id, project_id, app_id, from_screen_id, action_id, to_screen_id, evidence_counter, last_seen_at)
+      INSERT INTO edges (edge_id, app_package, from_screen_id, action_id, to_screen_id, last_seen_at)
       VALUES (
         ${ulid()},
-        ${runRow.tenant_id},
-        ${runRow.project_id},
-        'default',
+        ${runRow.app_package},
         ${fromScreenId},
         ${actionId},
         ${toScreenId},
-        1,
         NOW()
       )
       ON CONFLICT (from_screen_id, action_id, to_screen_id)
-      DO UPDATE SET
-        evidence_counter = edges.evidence_counter + 1,
-        last_seen_at = NOW()
+      DO UPDATE SET last_seen_at = NOW()
     `;
   }
 }

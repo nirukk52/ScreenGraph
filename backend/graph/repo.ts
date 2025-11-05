@@ -78,16 +78,14 @@ export class GraphProjectionRepo {
   }
 
   /**
-   * fetchRunMetadata resolves tenant/project/app identifiers for hashing.
-   * PURPOSE: Deduplicates screens per app across tenants and ensures deterministic IDs.
+   * fetchRunMetadata resolves app package for hashing and screen deduplication.
+   * PURPOSE: Deduplicates screens per app and ensures deterministic IDs.
    */
   async fetchRunMetadata(runId: string): Promise<RunMetadata | null> {
     const runRow = await db.queryRow<{
-      tenant_id: string;
-      project_id: string;
-      app_config_id: string;
+      app_package: string;
     }>`
-      SELECT tenant_id, project_id, app_config_id
+      SELECT app_package
       FROM runs
       WHERE run_id = ${runId}
     `;
@@ -96,18 +94,8 @@ export class GraphProjectionRepo {
       return null;
     }
 
-    const appRow = await db.queryRow<{ package_or_bundle_id: string }>`
-      SELECT package_or_bundle_id
-      FROM app_fg_contexts
-      WHERE run_id = ${runId}
-      ORDER BY created_at DESC
-      LIMIT 1
-    `;
-
     return {
-      tenantId: runRow.tenant_id,
-      projectId: runRow.project_id,
-      appId: appRow?.package_or_bundle_id ?? runRow.app_config_id,
+      appPackage: runRow.app_package,
     };
   }
 
@@ -119,7 +107,7 @@ export class GraphProjectionRepo {
     screenId: string,
     metadata: RunMetadata,
     layoutHash: string,
-    perceptualHash64: string,
+    perceptualHash: string,
   ): Promise<ScreenUpsertResult> {
     const existing = await db.queryRow<{ screen_id: string }>`
       SELECT screen_id
@@ -131,23 +119,17 @@ export class GraphProjectionRepo {
       await db.exec`
         INSERT INTO screens (
           screen_id,
-          tenant_id,
-          project_id,
-          app_id,
+          app_package,
           layout_hash,
-          ocr_stems_hash,
-          perceptual_hash64,
+          perceptual_hash,
           first_seen_at,
           last_seen_at
         )
         VALUES (
           ${screenId},
-          ${metadata.tenantId},
-          ${metadata.projectId},
-          ${metadata.appId},
+          ${metadata.appPackage},
           ${layoutHash},
-          NULL,
-          ${perceptualHash64},
+          ${perceptualHash},
           NOW(),
           NOW()
         )
@@ -160,7 +142,7 @@ export class GraphProjectionRepo {
       UPDATE screens
       SET
         layout_hash = ${layoutHash},
-        perceptual_hash64 = ${perceptualHash64},
+        perceptual_hash = ${perceptualHash},
         last_seen_at = NOW()
       WHERE screen_id = ${screenId}
     `;
@@ -178,18 +160,18 @@ export class GraphProjectionRepo {
     stepOrdinal: number,
     screenId: string,
     outcomeKind: GraphOutcomeKind,
-    sourceRunSeq: number,
+    sourceEventSeq: number,
   ): Promise<void> {
     await db.exec`
       INSERT INTO graph_persistence_outcomes (
-        graph_persistence_outcome_id,
+        outcome_id,
         run_id,
         step_ordinal,
         screen_id,
         action_id,
-        to_screen_id,
+        edge_id,
         upsert_kind,
-        source_run_seq
+        source_event_seq
       )
       VALUES (
         ${outcomeId},
@@ -199,13 +181,13 @@ export class GraphProjectionRepo {
         NULL,
         NULL,
         ${outcomeKind},
-        ${sourceRunSeq}
+        ${sourceEventSeq}
       )
       ON CONFLICT (run_id, step_ordinal) DO UPDATE
       SET
         screen_id = EXCLUDED.screen_id,
         upsert_kind = EXCLUDED.upsert_kind,
-        source_run_seq = EXCLUDED.source_run_seq
+        source_event_seq = EXCLUDED.source_event_seq
     `;
   }
 

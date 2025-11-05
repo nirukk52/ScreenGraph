@@ -153,7 +153,7 @@ export class AgentWorker {
     const registry = buildNodeRegistry(
       this.options.orchestrator.generateId.bind(this.options.orchestrator),
     );
-    const ctx = buildAgentContext(this.options.run);
+    const ctx = buildAgentContext(this.options.jobConfig);
     await this.options.orchestrator.saveSnapshot(initialState);
 
     return this.runWithXState({
@@ -341,6 +341,13 @@ interface AgentWorkerOptions {
   budgets: Budgets;
   leaseDurationMs: number;
   heartbeatIntervalMs?: number;
+  jobConfig: {
+    runId: string;
+    appiumServerUrl: string;
+    packageName: string;
+    apkPath: string;
+    appActivity?: string;
+  };
 }
 
 export interface AgentWorkerResult {

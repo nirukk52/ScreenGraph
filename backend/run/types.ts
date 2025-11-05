@@ -1,5 +1,5 @@
-/** Represents the canonical lifecycle states a run can occupy. */
-export type RunStatus = "PENDING" | "RUNNING" | "COMPLETED" | "FAILED" | "CANCELLED";
+/** Represents the canonical lifecycle states a run can occupy (matches migration 008 enum). */
+export type RunStatus = "PENDING" | "RUNNING" | "COMPLETED" | "FAILED" | "CANCELED";
 
 export interface StartRunRequest {
   apkPath: string;
@@ -18,29 +18,28 @@ export interface StartRunResponse {
   streamUrl: string;
 }
 
-/** Indicates the acknowledgement payload passed back when cancelling a run. */
+/** Indicates the acknowledgement payload passed back when canceling a run (American spelling). */
 export interface CancelRunResponse {
   runId: string;
-  status: "CANCELLED";
-  cancelledAt: Date;
+  status: "CANCELED";
+  canceledAt: Date;
 }
 
+/**
+ * Run represents the database row from the runs table (migration 008 schema).
+ * PURPOSE: Aligns with MVP schema (removed multi-tenancy, simplified fields).
+ */
 export interface Run {
   run_id: string;
-  tenant_id: string;
-  project_id: string;
-  app_config_id: string;
-  policy_version: number;
+  app_package: string;
   status: string;
   stop_reason: string | null;
-  created_at: Date;
-  updated_at: Date;
-  processing_by: string | null;
+  worker_id: string | null;
   lease_expires_at: Date | null;
-  heartbeat_at: Date | null;
+  created_at: Date;
   started_at: Date | null;
   finished_at: Date | null;
-  cancel_requested_at: Date | null;
+  updated_at: Date;
 }
 
 /** Defines the parameters dispatched to the orchestrator worker for a run. */
