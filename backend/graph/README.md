@@ -1,12 +1,55 @@
 ## Graph Projection Service
 
 ### Purpose
-Consume `run_events` and maintain derived screen graph tables (`screens`, `actions`, `edges`, `graph_persistence_outcomes`).
+Consume `run_events` and maintain a canonical, deterministic screen graph across runs: `screens`, `actions`, `edges`, and `graph_persistence_outcomes`. This enables full-coverage automated crawling, live updates, and deterministic replay.
 
 ### Architecture
 - **Event-Sourced Projection**: Derives graph state from `run_events` (single-sink design)
 - **Background Worker**: Started from `encore.service.ts` via `startGraphProjector()`
 - **Idempotent Processing**: Safe to replay or retry without duplication
+- **Run-Scoped Views**: Full graph can be filtered to a specific `run_id` while keeping canonical storage
+
+---
+
+## Goals (MVP)
+- Expose one endpoint to get the full ScreenGraph for a given `run_id`.
+- Expose one endpoint to stream the full graph for a given `run_id` (live during the run or replay after it ends), emitting on new screens/edges.
+- Support automated crawling with full coverage: track discovered screens, available actions, executed actions, and edges; surface coverage gaps.
+- Provide deterministic, replayable action data (provenance and coordinates) to reproduce runs.
+- Enable future LLM-driven action selection by returning recent screens/actions context and action affordances.
+
+---
+
+## API Design (Proposed)
+
+### GET /graph/run/:runId
+Returns the full ScreenGraph as observed for `runId`. Canonical data is filtered to screens/actions/edges seen or created by this run, but objects retain canonical IDs.
+
+Query params:
+- `includeArtifacts?` boolean (default false) – include latest artifact refs per screen
+- `includeActionProvenance?` boolean (default true) – include `origin` and `coordinates`
+- `includeExecutionStatus?` boolean (default true) – include action execution coverage fields
+
+Response shape (summary):
+- `screens[]` with `screen_id`, `layout_hash`, `perceptual_hash64`, `first_seen_run_id`, `latest_seen_run_id`, `seen_count`
+- `actions[]` with `action_id`, `screen_id`, `verb`, `target_key`, `origin`, `coordinates?`, `params`, `execution` (attempted/succeeded/failed counts for this run)
+- `edges[]` with `edge_id`, `from_screen_id`, `action_id`, `to_screen_id`, `evidence_counter`
+- `metadata` with counts and coverage percentages (screen coverage, action execution coverage)
+
+### GET /graph/run/:runId/stream
+Server-Sent Events stream for the run’s ScreenGraph. If the run is active, emits live updates. If ended, can replay and then close.
+
+Query params:
+- `replay?` boolean (default true) – emit historical outcomes first
+- `fromSeq?` number (default 0) – start after this source sequence
+
+Event types (union):
+- `graph.screen.discovered`, `graph.screen.mapped`
+- `graph.edge.created`, `graph.edge.reinforced`
+- `graph.coverage.updated`
+- `graph.run.ended`
+
+Ordering: Interleaved by `(run_events.seq, outcomes.created_at)` using `graph_persistence_outcomes.source_run_seq` for correlation.
 
 ---
 
@@ -39,6 +82,23 @@ Background loop that continuously tails `run_events` and projects to graph table
 4. Query: `SELECT * FROM screens WHERE app_id = ? AND layout_hash = ?`
 5. **Match found** → update `latest_seen_run_id`, increment `seen_count` → outcome: `mapped`
 6. **No match** → insert new screen → outcome: `discovered`
+
+### Deterministic Replay Model
+- Every `action` stores deterministic replay data:
+  - `origin`: "xml" | "llm" | "heuristic" (how it was derived)
+  - `coordinates?`: `{ x: number; y: number }` when a tap/gesture used coordinates
+  - `selector_snapshot?`: stable selector/xpath at time of action
+  - `input_payload?`: text or data provided to inputs
+- Replay invariant: Given same device form factor and seed, we can re-execute actions and verify target screen by `layout_hash`.
+
+### Coverage Model (Full-Crawl Support)
+- Track action execution coverage per screen:
+  - `execution.attempted_count`, `execution.succeeded_count`, `execution.failed_count` (scoped per run and aggregated canonically)
+- Coverage metrics:
+  - Screen coverage: fraction of discovered screens vs. reachable space
+  - Action coverage: fraction of actions attempted/succeeded at least once
+  - Dead-ends and unreachable screens lists
+  - Used to drive next-action selection for the agent
 
 ### Edge Creation (Future)
 When an action results in a transition:
@@ -77,6 +137,11 @@ CREATE TABLE actions (
   screen_id TEXT NOT NULL REFERENCES screens(screen_id),
   verb TEXT NOT NULL,
   target_key TEXT NOT NULL,
+  origin TEXT, -- 'xml' | 'llm' | 'heuristic'
+  tap_x INTEGER, -- optional for coordinate-originated actions
+  tap_y INTEGER,
+  selector_snapshot TEXT, -- xpath/css at action time
+  input_payload JSONB, -- text or other inputs
   params JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -110,6 +175,19 @@ CREATE TABLE graph_persistence_outcomes (
   source_run_seq BIGINT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(run_id, step_ordinal)
+);
+```
+
+### `action_execution_coverage` (new)
+```sql
+CREATE TABLE action_execution_coverage (
+  run_id TEXT NOT NULL,
+  action_id TEXT NOT NULL REFERENCES actions(action_id),
+  attempted_count INTEGER DEFAULT 0,
+  succeeded_count INTEGER DEFAULT 0,
+  failed_count INTEGER DEFAULT 0,
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (run_id, action_id)
 );
 ```
 
@@ -181,6 +259,21 @@ FROM graph_persistence_outcomes
 GROUP BY run_id;
 ```
 
+### Action Coverage Snapshot (per run)
+```sql
+SELECT a.screen_id,
+       a.action_id,
+       c.attempted_count,
+       c.succeeded_count,
+       c.failed_count
+FROM actions a
+LEFT JOIN action_execution_coverage c ON c.action_id = a.action_id AND c.run_id = $1
+WHERE a.screen_id IN (
+  SELECT screen_id FROM screens s WHERE s.first_seen_run_id = $1 OR s.latest_seen_run_id = $1
+)
+ORDER BY a.screen_id;
+```
+
 ### Check Screen Deduplication
 ```sql
 SELECT 
@@ -221,6 +314,7 @@ ORDER BY seen_count DESC;
 - `graph_screens_total` - Total unique screens per app
 - `graph_edges_total` - Total navigation edges per app
 - `graph_projection_errors_total` - Failed projections
+- `graph_action_coverage_ratio` - Executed actions / total actions (per run and global)
 
 ### Current Observability
 Logs provide full operational visibility until metrics are standardized.
@@ -244,3 +338,64 @@ Logs provide full operational visibility until metrics are standardized.
 2. Query `graph_persistence_outcomes` for outcomes
 3. Check `screens` table for deduplicated records
 4. Verify `seen_count` increments on re-perception
+
+---
+
+## Phases & Work Division (Two Agents)
+
+### Phase 1: Projection Join + Schema Additions
+- Agent A:
+  - Add `source_run_seq` to `graph_persistence_outcomes` (migration 004)
+  - Update projector to populate `source_run_seq`
+  - Implement `action_execution_coverage` writes (attempt/success/fail events)
+- Agent B:
+  - Extend run stream join to interleave `graph.*` based on `source_run_seq`
+  - Define typed DTOs for `graph.*` SSE payloads
+
+Acceptance:
+- Logs show interleaved `agent.*` and `graph.*` events with stable ordering
+- Coverage table updates visible after actions
+
+### Phase 2: Endpoints (Run-Scoped Graph & Stream)
+- Agent A:
+  - Implement `GET /graph/run/:runId` with filters and metadata
+  - Add pagination; ensure types align with Encore validation
+- Agent B:
+  - Implement `GET /graph/run/:runId/stream` with `replay` and `fromSeq`
+  - Add tests for live and ended runs (replay then close)
+
+Acceptance:
+- API Explorer shows both endpoints; sample runs return expected shapes
+- SSE works in browser; messages include `seqRef` correlation
+
+### Phase 3: Deterministic Replay Support
+- Agent A:
+  - Extend `actions` writes to persist `origin`, `coordinates`, `selector_snapshot`, `input_payload`
+  - Document replay invariants and preconditions
+- Agent B:
+  - Provide a `replay` helper/CLI (dev-only) that replays a run using graph data
+  - Add verification via `layout_hash` post-action
+
+Acceptance:
+- Replay reproduces the same screen sequence for a stable device profile
+- Mismatch triggers verification errors with structured logs
+
+### Phase 4: Coverage-Driven Crawling Hooks
+- Agent A:
+  - Expose `GET /graph/run/:runId/coverage` summary
+  - Add `unexplored_actions` computation
+- Agent B:
+  - Add lightweight endpoint to fetch last visited screens/actions for LLM
+  - Ensure outputs are deterministic and typed (no `any`)
+
+Acceptance:
+- Coverage endpoints guide a crawler to pick next actions deterministically
+- LLM input contract is stable and documented
+
+---
+
+## LLM Integration Data Contract (Future)
+- Last N visited screens (ids, layout_hash, timestamps)
+- Available actions per current screen with provenance and selectors
+- Unexplored actions prioritized by coverage deficit
+- Strict DTOs only; no magic strings; enums for verbs and origins
