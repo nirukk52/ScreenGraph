@@ -1,0 +1,13 @@
+Update the appropriate handoff document (BACKEND_HANDOFF.md or FRONTEND_HANDOFF.md) with your current work status.
+
+Follow the handoff template:
+- **What I am doing**: Describe the current task
+- **What is pending**: Checklist of code/tests/manual review
+- **What I plan to do next**: Next steps
+- **Modules I am touching**: Files/paths being modified
+- **Work status rating (out of 5)**: 0-5 rating
+- **Graphiti episode IDs**: Memory system IDs (if available)
+- **Related docs**: Relevant documentation paths
+- **Notes for next agent**: Context and recommendations
+
+Add a new handoff section with an incremented number, and mark previous handoffs as completed if they are done.
