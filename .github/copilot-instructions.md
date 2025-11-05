@@ -464,6 +464,13 @@ lsof -ti:4000 | xargs kill
 - Before editing code with uncommitted changes, check relevant handoff documents to understand context
 - Before switching tasks or ending a session, update the appropriate handoff document with your progress
 
+### Cursor Commands
+The project includes cursor commands in `.cursor/commands/` directory to help with common workflows:
+- `update_handoff` - Update BACKEND_HANDOFF.md or FRONTEND_HANDOFF.md with current work status
+- `open-pr` - Commit, push, and open a PR towards main branch
+- `create_a_bug_for_it` - Create a bug report in /docs/bug-logs
+- `update_knowledge_graph.txt` - Update Graphiti MCP Memory System with session summary
+
 ## Why These Rules Matter
 
 - **Isolation** → Clean Deployment
