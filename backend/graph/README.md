@@ -116,6 +116,28 @@ When an action results in a transition:
 
 ---
 
+## Evidence Layer (Run-Scoped Views)
+Minimal, run-scoped evidence is exposed as SQL views over canonical tables; no new base tables are required.
+
+- `screen_observations_view(run_id, step_ordinal, screen_id, upsert_kind, source_run_seq, created_at)`
+  - Backed by `graph_persistence_outcomes` rows of kind `discovered|mapped`
+- `edge_evidence_view(run_id, from_screen_id, action_id, to_screen_id, evidence_counter, last_evidence_run_id)`
+  - Backed by `edges`, filtered/joined to runs when available
+- `action_candidates_view(run_id, screen_id, action_id, verb, target_key, origin, selector_snapshot, tap_x, tap_y)`
+  - Backed by `actions` with provenance fields; scoped to the run via usage in outcomes
+
+These views let planners/analytics consume run-local evidence without duplicating storage.
+
+Example (illustrative):
+```sql
+CREATE VIEW screen_observations_view AS
+SELECT run_id, step_ordinal, screen_id, upsert_kind, source_run_seq, created_at
+FROM graph_persistence_outcomes
+WHERE upsert_kind IN ('discovered','mapped');
+```
+
+---
+
 ## Database Schema
 
 ### `screens`

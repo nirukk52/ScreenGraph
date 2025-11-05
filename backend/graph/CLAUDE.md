@@ -40,6 +40,11 @@ DTO Guidelines
 - Add (005): `action_execution_coverage` (per-run action attempt/success/fail)
 - Extend `actions` with provenance fields: `origin`, `tap_x`, `tap_y`, `selector_snapshot`, `input_payload`
 
+### Evidence Layer (Run-Scoped Views)
+- Favor SQL views over new base tables to keep single-sink projection minimal.
+- Views: `screen_observations_view`, `edge_evidence_view`, `action_candidates_view` derived from canonical tables.
+- Consumers (planner/analytics) query views for run-local evidence without duplicating storage.
+
 ### Deterministic Replay Requirements
 - Persist action provenance (origin, selectors, coordinates, input)
 - Replay helper verifies post-state via `layout_hash`
