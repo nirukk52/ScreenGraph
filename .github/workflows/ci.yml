@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+# Cancel in-progress runs when a new run is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: bun install
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: bun install
+
+      - name: Run Biome format check (backend)
+        working-directory: ./backend
+        run: bun run format:check
+
+      - name: Run Biome lint (backend)
+        working-directory: ./backend
+        run: bun run lint
+
+      - name: Run Biome format check (frontend)
+        working-directory: ./frontend
+        run: bun run format:check
+
+      - name: Run Biome lint (frontend)
+        working-directory: ./frontend
+        run: bun run lint
+
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Encore CLI
+        run: |
+          curl -L https://encore.dev/install.sh | bash
+          echo "$HOME/.encore/bin" >> $GITHUB_PATH
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: bun install
+
+      - name: Run backend tests
+        working-directory: ./backend
+        run: encore test
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: bun install
+
+      - name: Run Svelte type check
+        working-directory: ./frontend
+        run: bun run check
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: bun run build
+        env:
+          # Use a placeholder for build-time API URL
+          PUBLIC_API_BASE: https://placeholder.encr.app
+
+  status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [lint, backend, frontend]
+    if: always()
+    
+    steps:
+      - name: Check job results
+        run: |
+          if [[ "${{ needs.lint.result }}" == "failure" ]] || \
+             [[ "${{ needs.backend.result }}" == "failure" ]] || \
+             [[ "${{ needs.frontend.result }}" == "failure" ]]; then
+            echo "One or more CI jobs failed"
+            exit 1
+          fi
+          echo "All CI jobs passed"
