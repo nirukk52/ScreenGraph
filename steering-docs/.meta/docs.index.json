@@ -1,0 +1,332 @@
+[
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "agent_main_updated.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.220Z",
+    "updatedAt": "2025-11-06T02:34:29.220Z",
+    "revisionCount": 0,
+    "contentHash": "49b03cce62380bb4537dfef581d0c89b3049731a088bbc3ee10191d29ea508e1"
+  },
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "agent_policy_updated.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.220Z",
+    "updatedAt": "2025-11-06T02:34:29.220Z",
+    "revisionCount": 0,
+    "contentHash": "cb721d8b0a3d4bb431474cc89e4a8b1d064e79aae7ba74ff08fe3a0a19c6e404"
+  },
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "agent_recovery_updated.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.221Z",
+    "updatedAt": "2025-11-06T02:34:29.221Z",
+    "revisionCount": 0,
+    "contentHash": "a52b31143381cf5d7d6d0ea5e1a23fd937e306c903bdb6a8554e752134d74c02"
+  },
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "agent_setup_updated.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.221Z",
+    "updatedAt": "2025-11-06T02:34:29.221Z",
+    "revisionCount": 0,
+    "contentHash": "e73d6aec5fac1a231676fa5276efe862b5ae5eaa4a6a53bf145568f32fea4627"
+  },
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "agent_single_sink_design.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.221Z",
+    "updatedAt": "2025-11-06T02:34:29.221Z",
+    "revisionCount": 0,
+    "contentHash": "19cc76d6688d7da365613b50a08280e63f355a4c4e7674625dba57725623f68e"
+  },
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "agent_terminal_updated.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.221Z",
+    "updatedAt": "2025-11-06T02:34:29.221Z",
+    "revisionCount": 0,
+    "contentHash": "65358947fb7c7d9fb3003eef518ea5541cc91aa3e0fda7d3f6d5afdc41416c65"
+  },
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "ARCHITECTURE_REVIEW_2025_11_05.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.220Z",
+    "updatedAt": "2025-11-06T02:34:29.220Z",
+    "revisionCount": 0,
+    "contentHash": "0012537dff01d2f072a3751005106b9dcfa24411a1b368ff79e2b16f980440a7"
+  },
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "backend_agent_module_review.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.222Z",
+    "updatedAt": "2025-11-06T02:34:29.222Z",
+    "revisionCount": 0,
+    "contentHash": "8d77b0e998650126fb159f0e00db86fee082a4cd4649928d63c6d0a8fd728898"
+  },
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "evidence_layer_differences.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.222Z",
+    "updatedAt": "2025-11-06T02:34:29.222Z",
+    "revisionCount": 0,
+    "contentHash": "a47936a6726e1d601d970c8f0e74d3d46624f2af29991f8e41e8a3c9bcb81e2e"
+  },
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "graph_projection_updates.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.222Z",
+    "updatedAt": "2025-11-06T02:34:29.222Z",
+    "revisionCount": 0,
+    "contentHash": "b0b3d63908d7059869c57039b1696415e680219ba0db7ff19439d497c5e23514"
+  },
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "guardrails.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.222Z",
+    "updatedAt": "2025-11-06T02:34:29.222Z",
+    "revisionCount": 0,
+    "contentHash": "04a408d7c433251d1e10b59a59ed18309071dca861fa16fbf5d53478edcef715"
+  },
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "mvp_agent_state.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.222Z",
+    "updatedAt": "2025-11-06T02:34:29.222Z",
+    "revisionCount": 0,
+    "contentHash": "aff9e34955dc6697913da25a8ce237e1be061ab6cc1a4376b0402590a9d5840f"
+  },
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "mvp_state_db.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.223Z",
+    "updatedAt": "2025-11-06T02:34:29.223Z",
+    "revisionCount": 0,
+    "contentHash": "4113740987cb82333b3910826951805b215741524b7a9e12b91462a2a6f58eb4"
+  },
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "projections_design.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.223Z",
+    "updatedAt": "2025-11-06T02:34:29.223Z",
+    "revisionCount": 0,
+    "contentHash": "ee5f3de0393185dcf7dd75c60581f13aeb3427d5ebae22f38587104fc0dc736e"
+  },
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "requirements.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.223Z",
+    "updatedAt": "2025-11-06T02:34:29.223Z",
+    "revisionCount": 0,
+    "contentHash": "438cc4e0680d70fd77092554b1760d76a709368ac3bddce1b5738a070a704706"
+  },
+  {
+    "key": {
+      "category": "architecture-founder-generated",
+      "filename": "testing_requirements.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.223Z",
+    "updatedAt": "2025-11-06T02:34:29.223Z",
+    "revisionCount": 0,
+    "contentHash": "b729fc3ed51c5b9858ec78100ca6f4bba9ee331013afc06067f5c132931b1df8"
+  },
+  {
+    "key": {
+      "category": "facts",
+      "filename": "glossary.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.265Z",
+    "updatedAt": "2025-11-06T02:34:29.265Z",
+    "revisionCount": 0,
+    "contentHash": "4f8aee20d634e8e7f2dad0087a26f3212e549167f0d913faca3ebbb7ad5d86fb"
+  },
+  {
+    "key": {
+      "category": "facts",
+      "filename": "milestone-index.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.265Z",
+    "updatedAt": "2025-11-06T02:34:29.265Z",
+    "revisionCount": 0,
+    "contentHash": "07217b0d922b3ab8001bb4b8e3bb858393b5b7b6bdfc426248694cbfbccb2b67"
+  },
+  {
+    "key": {
+      "category": "initiatives",
+      "filename": "ux-drift-monitor.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.265Z",
+    "updatedAt": "2025-11-06T02:34:29.265Z",
+    "revisionCount": 0,
+    "contentHash": "f1bcea90b5158df57e66aad2f4d7b7a3c38b40c9cdcc7ef54611cea0e3b01405"
+  },
+  {
+    "key": {
+      "category": "preferences",
+      "filename": "ai-persona-guidelines.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.265Z",
+    "updatedAt": "2025-11-06T02:34:29.265Z",
+    "revisionCount": 0,
+    "contentHash": "bd570599653b024deb9fe95169420e09d9f70631003c05826705bfe0a3ea2acc"
+  },
+  {
+    "key": {
+      "category": "preferences",
+      "filename": "code-style.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.266Z",
+    "updatedAt": "2025-11-06T02:34:29.266Z",
+    "revisionCount": 0,
+    "contentHash": "541b5114c236822bf0d7fbc523d9c06e3abbd755fc70f8d7d9f25336106dbf5b"
+  },
+  {
+    "key": {
+      "category": "reports",
+      "filename": "founder-daily.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.266Z",
+    "updatedAt": "2025-11-06T02:34:29.266Z",
+    "revisionCount": 0,
+    "contentHash": "4f78f4de5f47c348da9f518d010dcb6c2602705875fc3d47adcc7b6e0aed4609"
+  },
+  {
+    "key": {
+      "category": "rules",
+      "filename": "architecture-rules.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.266Z",
+    "updatedAt": "2025-11-06T02:34:29.266Z",
+    "revisionCount": 0,
+    "contentHash": "167d0d0dcb884fd43f2a668da25b7b8815225da144ea57e9e3d7e1d8cb95a179"
+  },
+  {
+    "key": {
+      "category": "rules",
+      "filename": "coding-standards.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.266Z",
+    "updatedAt": "2025-11-06T02:34:29.266Z",
+    "revisionCount": 0,
+    "contentHash": "c8af65cb2d11418573898395c2546b78cb3ebabc31299c15daa9152744c3497e"
+  },
+  {
+    "key": {
+      "category": "rules",
+      "filename": "naming-conventions.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.266Z",
+    "updatedAt": "2025-11-06T02:34:29.266Z",
+    "revisionCount": 0,
+    "contentHash": "ed6f9f117ec3ea86abc2c697cd03b2d69337dc7bf41b54d3c14dadb412493f20"
+  },
+  {
+    "key": {
+      "category": "rules",
+      "filename": "testing-rules.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.266Z",
+    "updatedAt": "2025-11-06T02:34:29.266Z",
+    "revisionCount": 0,
+    "contentHash": "e35a4ca73d655c7ebb2e11f237b6b34502439f21dd3201a17cfada8d3e111809"
+  },
+  {
+    "key": {
+      "category": "tasks",
+      "filename": "completed.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.266Z",
+    "updatedAt": "2025-11-06T02:34:29.266Z",
+    "revisionCount": 0,
+    "contentHash": "5bd29e32cd4b81eaa918dfb59d2d58a0e3f45047333e3fa1c4da9f6521473e3a"
+  },
+  {
+    "key": {
+      "category": "tasks",
+      "filename": "today.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.266Z",
+    "updatedAt": "2025-11-06T02:34:29.266Z",
+    "revisionCount": 0,
+    "contentHash": "9cd3b7ef6a4a7bb2e2c365b2a50beb3abe153d86f94ff9d22a3b031665a138fe"
+  },
+  {
+    "key": {
+      "category": "tasks",
+      "filename": "upcoming.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.266Z",
+    "updatedAt": "2025-11-06T02:34:29.266Z",
+    "revisionCount": 0,
+    "contentHash": "d391cc2f783febf5ff884c0468b489a1abc7e317df402ea3cb23da080b3674cd"
+  },
+  {
+    "key": {
+      "category": "wip",
+      "filename": "current-focus.md"
+    },
+    "lifecycle": "active",
+    "createdAt": "2025-11-06T02:34:29.266Z",
+    "updatedAt": "2025-11-06T02:34:29.266Z",
+    "revisionCount": 0,
+    "contentHash": "20347094143cd052346f9603d4838137edcffd7b895cf16a4aef1e97b0afdb11"
+  }
+]

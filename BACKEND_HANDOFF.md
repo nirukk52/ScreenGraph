@@ -21,6 +21,83 @@ This document is the single place where agents leave status for each other. Alwa
 
 ---
 
+## Handoff #11 — Steering-Docs Microservice with Onyx Integration
+
+- **What I am doing**: ✅ **CORE COMPLETE** - Implemented comprehensive steering-docs microservice (`backend/steering/`) providing versioned, never-delete documentation management with Onyx chat integration. Created 15+ typed HTTP endpoints for CRUD operations, revision history, lifecycle management (archive/restore), search, indexing, and SSE event streaming. All write operations protected by `STEERING_WRITE_TOKEN`. Successfully indexed 30 documents across 8 categories. Generated 5 feature requests (FR-011 through FR-015) documenting the implementation.
+
+- **What is pending**:
+  - [x] Code: Core service with 15+ endpoints complete
+  - [x] Code: Revision history system with manifest tracking
+  - [x] Code: Lifecycle management (active/archived)
+  - [x] Code: Search and indexing
+  - [x] Code: SSE event streaming
+  - [x] Code: Onyx tools manifest endpoint
+  - [x] Code: Auth with write token validation
+  - [x] Tests: Basic smoke tests for hash, indexer
+  - [x] Manual review: All endpoints tested via curl, 30 docs indexed
+  - [ ] Code: Maintenance endpoints (preview/cleanup) - planned but not yet implemented
+  - [ ] Tests: Integration tests for full workflow (create→update→rename→archive→restore→revert)
+  - [ ] Manual review: End-to-end test with Onyx integration
+  - [ ] Documentation: API usage examples in Onyx context
+
+- **What I plan to do next**:
+  - Implement maintenance/cleanup endpoints (dedupe, normalize, categorize, link validation)
+  - Add integration tests covering revision workflows
+  - Test with actual Onyx deployment
+  - Consider frontend UI for document browsing (optional, not in current scope)
+  - Monitor usage patterns and optimize index rebuild strategy
+
+- **Modules I am touching**:
+  - `backend/steering/*.ts` (25 new files: types, repo, hash, indexer, revisions, auth, events, 15+ endpoints)
+  - `backend/steering/README.md` (comprehensive API documentation)
+  - `backend/steering/CLAUDE.md` (quick reference for agents)
+  - `backend/steering/encore.service.ts` (service registration)
+  - `backend/steering/steering.test.ts` (basic tests)
+  - `jira/feature-requests/FR-011-steering-docs-index-and-search.md` (new)
+  - `jira/feature-requests/FR-012-steering-docs-create-update-revisions.md` (new)
+  - `jira/feature-requests/FR-013-steering-docs-rename-archive-restore.md` (new)
+  - `jira/feature-requests/FR-014-steering-docs-events-and-tools-manifest.md` (new)
+  - `jira/feature-requests/FR-015-steering-docs-maintenance-cleanup.md` (new)
+  - `steering-docs/.meta/` (derived index and lifecycle state)
+  - `BACKEND_HANDOFF.md` (this file)
+
+- **Work status rating (out of 5)**: 4
+
+- **Graphiti episode IDs**:
+  - Steering-Docs Service Implementation: `queued-position-1`
+  - Encore Backend Service Discovery Procedure: `queued-position-1`
+  - Founder Documentation Management Preferences: `queued-position-2`
+
+- **Related docs**:
+  - `backend/steering/README.md` (full API reference, examples, troubleshooting)
+  - `backend/steering/CLAUDE.md` (quick reference for coding agents)
+  - `jira/feature-requests/FR-011` through `FR-015` (implementation specs)
+  - `.cursor/rules/backend_engineer.mdc` (Encore.ts patterns and rules)
+  - `CLAUDE.md` (project quick reference with steering mentions)
+
+- **Notes for next agent**:
+  - **Critical Setup**: `STEERING_WRITE_TOKEN` secret must be set before backend starts: `encore secret set --type local STEERING_WRITE_TOKEN` (currently set to `test-token-12345`)
+  - **Encore Parse Issue Fixed**: Used `RevisionMeta[]` instead of `Awaited<ReturnType<typeof listRevisions>>` because Encore's parser doesn't support advanced TypeScript utility types
+  - **Index Location**: Derived index at `steering-docs/.meta/docs.index.json`, lifecycle state at `.meta/lifecycle.json`, revisions under `<category>/.versions/<filename>/`
+  - **Endpoints Working**: All 15 endpoints tested and operational (list, get, create, update, rename, archive, restore, revisions, index, rebuild, search, tools, events)
+  - **30 Docs Indexed**: architecture-founder-generated (16), facts (2), initiatives (1), preferences (2), reports (1), rules (4), tasks (3), wip (1)
+  - **Auth Pattern**: Write endpoints require `Authorization: Bearer <token>` or `X-Steering-Write-Token: <token>` header
+  - **Never-Delete Guarantee**: Archive sets lifecycle to `archived` (content preserved), revisions append snapshots (no overwrites), rename moves atomically
+  - **Onyx Integration**: Tools manifest at `/steering/tools` lists all actions; configure Onyx to call these endpoints with write token
+  - **SSE Events**: Stream at `/steering/events` emits: `docs.document.changed`, `docs.document.renamed`, `docs.document.lifecycle`, `docs.index.rebuilt`
+  - **Search Algorithm**: Simple tokenization with filename/heading boosts; no external dependencies
+  - **Maintenance TODO**: Preview/cleanup endpoints planned but not yet implemented (dedupe by contentHash, normalize filenames, categorize orphans, link validation)
+  - **Testing**: Smoke tests exist; need integration tests for revision workflows
+  - **API Explorer**: View all endpoints at `http://localhost:9400` under `steering` service
+  - **Quick Test Commands**:
+    - Search: `curl "http://localhost:4000/steering/search?q=agent"`
+    - Index: `curl http://localhost:4000/steering/index`
+    - Tools: `curl http://localhost:4000/steering/tools`
+  - **Deployment**: Service starts with `encore run` (no additional setup beyond secret)
+  - **Future Enhancements**: Consider frontend docs browser UI, advanced search with heading extraction, automatic link rewriting for renames
+
+---
+
 ## Handoff #10 — American English Spelling Standardization Rule
 
 - **What I am doing**: ✅ **COMPLETED** - Established and documented American English spelling as a non-negotiable coding rule after discovering runtime errors caused by spelling mismatch between database enum (British 'cancelled') and TypeScript code (American 'canceled'). Updated founder rules with new "Spelling & Language" section requiring American English exclusively across all code, schemas, types, comments, and documentation.
