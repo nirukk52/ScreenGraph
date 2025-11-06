@@ -252,7 +252,7 @@ fi
 
 # If in worktree, verify coordinated ports
 if [ "$TREE_NAME" != "ScreenGraph" ]; then
-  eval "$(bun ./backend/scripts/port-coordinator.mjs --no-summary)"
+  eval "$(bun ./scripts/port-coordinator.mjs --no-summary)"
   [ "$BACKEND_PORT" != "4000" ] || { echo "❌ Using main tree ports"; exit 1; }
   echo "✅ Worktree: $TREE_NAME | Backend: $BACKEND_PORT | Frontend: $FRONTEND_PORT"
 fi
@@ -287,9 +287,9 @@ fi
 # 1. Verify NOT on main tree
 [ "$(basename $(git rev-parse --show-toplevel))" != "ScreenGraph" ] || exit 1
 
-# 2. Start services with port coordination
-cd backend && ./scripts/dev-with-ports.sh   # Assigns 4001-4009
-cd frontend && ./scripts/dev-with-ports.sh  # Assigns 5174-5183
+# 2. Start services with port coordination (from repo root)
+./scripts/dev-backend.sh   # Assigns 4001-4009
+./scripts/dev-frontend.sh  # Assigns 5174-5183
 ```
 
 **For Local Mode (Main Tree Only):**
@@ -310,7 +310,7 @@ cd frontend && bun run dev      # Uses default 5173
 
 **"Worktree" Mode (Default for Agents):**
 - ❌ Cannot work on main tree
-- ✅ Must use coordinated ports via `./scripts/dev-with-ports.sh`
+- ✅ Must use coordinated ports via `./scripts/dev-backend.sh` and `./scripts/dev-frontend.sh`
 - ✅ Must work on feature branches (never `main`)
 - 🎯 Use: Multi-agent development, parallel features
 
@@ -318,7 +318,7 @@ cd frontend && bun run dev      # Uses default 5173
 
 ### 🚫 Enforcement: What Agents CANNOT Do
 
-1. ❌ `encore run` directly (use `./scripts/dev-with-ports.sh`)
+1. ❌ `encore run` directly (use `./scripts/dev-backend.sh`)
 2. ❌ Work on main tree without Local mode
 3. ❌ Use default ports (4000, 5173) in worktrees
 4. ❌ Commit directly to `main` branch
@@ -329,7 +329,7 @@ cd frontend && bun run dev      # Uses default 5173
 ### ✅ Enforcement: What Agents MUST Do
 
 1. ✅ Run worktree detection FIRST
-2. ✅ Use `./scripts/dev-with-ports.sh` for all services
+2. ✅ Use `./scripts/dev-backend.sh` and `./scripts/dev-frontend.sh` for all services
 3. ✅ Verify coordinated ports (not defaults)
 4. ✅ Work on feature branches only
 5. ✅ Include worktree name in logs/commits

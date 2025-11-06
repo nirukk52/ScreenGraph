@@ -11,13 +11,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$SCRIPT_DIR/.."
 
-# Prefer backend copy; fallback to frontend copy to keep backend/frontend isolation.
-if [ -f "$REPO_ROOT/backend/scripts/port-coordinator.mjs" ]; then
-  COORD="$REPO_ROOT/backend/scripts/port-coordinator.mjs"
-elif [ -f "$REPO_ROOT/frontend/scripts/port-coordinator.mjs" ]; then
-  COORD="$REPO_ROOT/frontend/scripts/port-coordinator.mjs"
-else
-  echo "[cursor:worktree-init] ERROR: port-coordinator.mjs not found in backend/ or frontend/scripts/" >&2
+# Port coordinator is at repo root scripts/ (worktree-level concern)
+COORD="$REPO_ROOT/scripts/port-coordinator.mjs"
+if [ ! -f "$COORD" ]; then
+  echo "[cursor:worktree-init] ERROR: port-coordinator.mjs not found at $COORD" >&2
   exit 1
 fi
 

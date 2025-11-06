@@ -1,18 +1,14 @@
 #!/usr/bin/env bash
 
-# PURPOSE: Start Vite dev with deterministic ports and backend base URL for this worktree.
+# PURPOSE: Legacy wrapper - redirects to root scripts/dev-frontend.sh
+# This file is kept for backward compatibility but will be removed in future.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$SCRIPT_DIR/.."
+REPO_ROOT="$SCRIPT_DIR/../.."
 
-# Resolve ports and export env into this shell
-eval "$(bun ./scripts/port-coordinator.mjs --no-summary)"
-
-echo "[dev] frontend=$FRONTEND_PORT backend=$VITE_BACKEND_BASE_URL"
-
-# Prefer config picking up FRONTEND_PORT; also pass explicit --port as backup
-vite dev --port "$FRONTEND_PORT"
+echo "[dev] DEPRECATED: Use './scripts/dev-frontend.sh' from repo root instead" >&2
+exec "$REPO_ROOT/scripts/dev-frontend.sh"
 
 
