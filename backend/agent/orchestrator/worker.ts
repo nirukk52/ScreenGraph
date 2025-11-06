@@ -23,6 +23,35 @@ import type { AgentMachineDependencies, AgentMachineOutput, AgentMachineContext,
 // Inspector available in dev via @statelyai/inspect using WebSocket server
 
 /**
+ * Singleton inspector instance for debugging state machines in development.
+ * Created once and reused across all runs to maintain WebSocket connection.
+ */
+let globalInspector: ReturnType<typeof createWebSocketInspector> | null = null;
+
+/**
+ * Get or create the global inspector instance.
+ * Starts the WebSocket server on first call.
+ */
+function getInspector(): ReturnType<typeof createWebSocketInspector> | null {
+  const isDev = process.env.NODE_ENV !== "production";
+  if (!isDev) {
+    return null;
+  }
+
+  if (!globalInspector) {
+    globalInspector = createWebSocketInspector();
+    globalInspector.start();
+    const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.WORKER });
+    logger.info("XState Inspector WebSocket server started", {
+      inspectorUrl: "https://stately.ai/inspect?server=ws://localhost:5678",
+      message: "Open the URL in Chrome to view live state machine transitions",
+    });
+  }
+
+  return globalInspector;
+}
+
+/**
  * Build AgentPorts using the WebDriverIO adapter family so the agent relies on a single
  * automation stack across the codebase.
  *
@@ -199,17 +228,8 @@ export class AgentWorker {
       dependencies,
     });
 
-    // Enable Stately Inspector (dev-only). Creates a WebSocket server for browser inspection.
-    // Open https://stately.ai/inspect?server=ws://localhost:5678 in Chrome to view live state machine.
-    const isDev = process.env.NODE_ENV !== "production";
-    const inspector = isDev ? createWebSocketInspector() : null;
-
-    if (inspector && isDev) {
-      logger.info("XState Inspector enabled", {
-        inspectorUrl: "https://stately.ai/inspect?server=ws://localhost:5678",
-        message: "Open the URL in Chrome to view live state machine transitions",
-      });
-    }
+    // Enable Stately Inspector (dev-only). Uses singleton inspector instance.
+    const inspector = getInspector();
 
     const actor = createActor(machine, {
       inspect: inspector?.inspect,
@@ -249,11 +269,17 @@ export class AgentWorker {
       });
     });
 
+    // Start actor before inspector connection - inspector needs active actor
     actor.start();
     actor.send({ type: "START" });
 
     const output = await completion;
     actor.stop();
+
+    // Log inspector connection status for debugging
+    if (inspector) {
+      logger.info("Actor stopped, inspector still active for next run");
+    }
 
     logger.info("Agent XState completed", {
       status: output.status,
