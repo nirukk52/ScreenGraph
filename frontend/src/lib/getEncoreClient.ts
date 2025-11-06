@@ -46,6 +46,11 @@ let client: Client | null = null;
  */
 export async function getEncoreClient(): Promise<Client> {
   const isBrowser = typeof window !== "undefined";
+  const envBase = (import.meta as any)?.env?.VITE_BACKEND_BASE_URL as string | undefined;
+  if (envBase && typeof envBase === "string" && envBase.length > 0) {
+    // Prefer explicit env in both browser and SSR
+    return new Client(envBase);
+  }
   
   if (isBrowser) {
     // Use cached client if available

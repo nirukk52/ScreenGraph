@@ -24,7 +24,7 @@
     "vitest": "^2.0.0"
   },
   "scripts": {
-    "dev": "encore run",
+    "dev": "bash scripts/dev-with-ports.sh",
     "format": "bunx biome format --write .",
     "format:check": "bunx biome format --write=false .",
     "lint": "bunx biome lint .",
