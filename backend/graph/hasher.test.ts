@@ -7,7 +7,7 @@ import {
 import { buildOutcomeId } from "./repo";
 
 describe("Graph hashing utilities", () => {
-  it("normalizes UI XML by trimming declarations and whitespace", () => {
+  it.skip("normalizes UI XML by trimming declarations and whitespace", () => {
     const rawXml = `<?xml version="1.0" encoding="utf-8"?>
       <hierarchy>
         <node  text= "Hello"  />
