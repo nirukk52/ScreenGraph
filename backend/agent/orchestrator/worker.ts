@@ -17,39 +17,9 @@ import { FakeLLM } from "../adapters/fakes/fake-llm";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../logging/logger";
 import { createActor } from "xstate";
-import { createWebSocketInspector } from "@statelyai/inspect";
 import { createAgentMachine } from "../engine/xstate/agent.machine";
 import type { AgentMachineDependencies, AgentMachineOutput, AgentMachineContext, ShouldStopResult } from "../engine/xstate/types";
-// Inspector available in dev via @statelyai/inspect using WebSocket server
-
-/**
- * Singleton inspector instance for debugging state machines in development.
- * Created once and reused across all runs to maintain WebSocket connection.
- */
-let globalInspector: ReturnType<typeof createWebSocketInspector> | null = null;
-
-/**
- * Get or create the global inspector instance.
- * Starts the WebSocket server on first call.
- */
-function getInspector(): ReturnType<typeof createWebSocketInspector> | null {
-  const isDev = process.env.NODE_ENV !== "production";
-  if (!isDev) {
-    return null;
-  }
-
-  if (!globalInspector) {
-    globalInspector = createWebSocketInspector();
-    globalInspector.start();
-    const logger = log.with({ module: MODULES.AGENT, actor: AGENT_ACTORS.WORKER });
-    logger.info("XState Inspector WebSocket server started", {
-      inspectorUrl: "https://stately.ai/inspect?server=ws://localhost:5678",
-      message: "Open the URL in Chrome to view live state machine transitions",
-    });
-  }
-
-  return globalInspector;
-}
+import { getInspector } from "../engine/xstate/inspector";
 
 /**
  * Build AgentPorts using the WebDriverIO adapter family so the agent relies on a single
@@ -228,12 +198,9 @@ export class AgentWorker {
       dependencies,
     });
 
-    // Enable Stately Inspector (dev-only). Uses singleton inspector instance.
+    // XState Inspector: Dev-only WebSocket inspector; pass inspect fn when enabled
     const inspector = getInspector();
-
-    const actor = createActor(machine, {
-      inspect: inspector?.inspect,
-    });
+    const actor = createActor(machine, { inspect: inspector?.inspect });
 
     const completion = new Promise<AgentMachineOutput>((resolve, reject) => {
       const subscription = actor.subscribe({
@@ -275,11 +242,6 @@ export class AgentWorker {
 
     const output = await completion;
     actor.stop();
-
-    // Log inspector connection status for debugging
-    if (inspector) {
-      logger.info("Actor stopped, inspector still active for next run");
-    }
 
     logger.info("Agent XState completed", {
       status: output.status,
@@ -348,7 +310,7 @@ export class AgentWorker {
 
   private async isCancellationRequested(): Promise<boolean> {
     const latest = await this.options.runDb.getRun(this.options.run.runId);
-    return Boolean(latest?.cancelRequestedAt);
+    return latest?.status === "canceled";
   }
 
   private async markFailed(err: unknown): Promise<void> {

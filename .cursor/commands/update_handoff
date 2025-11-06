@@ -27,3 +27,5 @@ Add a new handoff section with an incremented number, and mark previous handoffs
 6. Commit the code. Push the code. Use the above information to create beautiful commit messages, so that you will have tremendous success in future debugging.
 
 7. Make sure all md files have an updated index to them.
+
+8. For the features, bugs that you worked on create a retro with rating and what went well and didnt.
