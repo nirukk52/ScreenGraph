@@ -2,99 +2,349 @@
 alwaysApply: true
 ---
 
-This document is personally managed by the founder. Keep it short clear to the point and always bulletpoints/surgical edits.
+# Founder Rules — ScreenGraph Development Standards
 
-# Founder Rules
-Architecture & Boundary Rules
-Backend (backend/) and frontend (frontend/) are completely independent services.
-No root-level coupling: root only holds docs and Git config.
-No shared code or node_modules between backend and frontend.
-No root package.json or encore.app`.
-Backend never imports frontend; frontend never touches backend code.
+> **Purpose**: Non-negotiable rules for all development. Enforce isolation, type safety, naming standards, and multi-agent worktree discipline.
 
-## Non Negotiable Coding Rules:
+---
 
-### Naming
-Function, Class and Folder naming is the most important thing. 
-Functions should be named with descriptive, unambiguous, verb phrases that clearly state their purpose and action.
-Use Verbs and Verb Phrases: Functions perform actions, so their names should reflect this. Begin function names with a verb that describes the operation, such as calculate, fetch, save, handle, get, or set.
-Be Specific and Descriptive: The name should precisely indicate what the function does. Avoid generic names like handle() or process(). Instead, specify the action and the object it acts upon.
-Class names should be descriptive, singular nouns or noun phrases that represent the object or concept the class models. 
-Class and function names should be domain-oriented, not just technology-oriented. They should describe the real-world concept or business function, not the implementation details.
-Avoid names like Hasher, Mapper, Processor, or Manager as standalone names. Instead, prefix them with the specific business concept they operate on.
+## 📑 Table of Contents
 
-### Other
-Every function class enum dto will have a comment about his purpose in the codebase.
-Absolutely no use of any is allowed in the codebase.
-Every class, function, or API endpoint must explicitly use typed DTOs (Data Transfer Objects).
-DTOs must be defined at the top of the file or imported from a shared contracts or types package.
-If dynamic data is expected, define a union or discriminated type instead of fallback to any.
-Temporary "loose" types must still be represented as { [key: string]: unknown } or Record<string, unknown> — never any.
-No magic strings for identifiers or states — define literal unions or enums.
-Prefer discriminated unions or enums over free-form string comparisons in control flow.
-NO MAGIC STRINGS!
-NO MAGIC NUMBERS!
+### Part I: Core Coding Standards
+1. [Architecture & Boundaries](#architecture--boundaries)
+2. [Naming Conventions](#naming-conventions-critical)
+3. [Type Safety](#type-safety-no-exceptions)
+4. [Documentation & Comments](#documentation--comments)
+5. [No Magic Strings/Numbers](#no-magic-stringsnumbers)
+6. [Spelling & Language](#spelling--language)
+7. [Logging Standards](#logging-standards)
+8. [Testing Philosophy](#testing-philosophy)
+9. [API Clients](#api-clients)
+10. [Package Management](#package-management)
+11. [Commands](#commands)
+12. [Build & Deployment](#build--deployment)
+13. [Handoff Documentation](#handoff-documentation)
 
-### Spelling & Language
-Use American English spelling exclusively across ALL code, schemas, types, comments, and docs.
-Examples: "canceled" not "cancelled", "color" not "colour", "optimize" not "optimise".
-This applies to: variable names, function names, enum values, database columns, type names, comments, documentation.
+### Part II: Worktree Isolation
+14. [Worktree Detection (Pre-Flight)](#worktree-detection-run-first-always)
+15. [Main Tree Protection](#main-tree-is-read-only-for-agents)
+16. [Port Reservation Policy](#port-reservation-policy)
+17. [Development Flow](#correct-development-flow)
+18. [Cursor Modes](#cursor-dropdown-modes)
+19. [Enforcement Rules](#enforcement-what-agents-cannot-do)
 
-Logging Rules:
-Use ONLY encore.dev/log for all logging — never console.log, never stdout.
-Always create contextual loggers via log.with({ module, actor, runId?, workerId?, nodeName?, stepOrdinal?, eventSeq? }).
-Every log payload must remain structured JSON; attach additional data as objects, never unstructured strings.
-Include stopReason and err.* fields on failures; capture snapshot state when transitions occur.
-NO console.log — structured Encore logs only.
+---
 
-Type Safety Rules
-Always use Encore generated clients (~encore/clients).
-Never use manual fetch() calls.
-After backend API changes → run bun run gen on frontend.
-Generated clients guarantee full end-to-end type safety.
+## Part I: Core Coding Standards (ALWAYS)
 
-Package Management
-Use Bun everywhere ("packageManager": "bun").
-Each sub-directory manages its own dependencies.
+### 🏗️ Architecture & Boundaries
 
-Testing:
-You test for flow reliability, correctness, and creative consistency, not just functional output. You focus on high level flow tests and not edge cases or petty tests.
+**Backend/Frontend Separation:**
+- Backend (`backend/`) and frontend (`frontend/`) are completely independent services
+- No shared code or `node_modules` between them
+- No root `package.json` or `encore.app`
+- Backend never imports frontend; frontend never touches backend code
+- No root-level coupling: root only holds docs and Git config
 
-Commands:
-Backend: encore run
-Frontend: bun run dev
-
-Directory Structure
+**Directory Structure:**
+```
 /ScreenGraph
-├── backend/   ← Encore backend (independent)
+├── backend/          ← Encore backend (independent)
 │   ├── encore.app
 │   ├── package.json
 │   └── bun.lock
-├── frontend/  ← SvelteKit frontend (independent)
+├── frontend/         ← SvelteKit frontend (independent)
 │   ├── package.json
 │   └── bun.lock
-└── README.md  ← Docs only, shared tsconfig, biome config
+└── README.md         ← Docs, shared tsconfig, biome config
+```
 
-Build & Deployment Rules
-Backend builds via Encore Cloud CI (don’t script builds manually).
-Frontend builds with vite build.
-Deploy independently (Encore Cloud for backend, Vercel for frontend).
+**Absolute Prohibitions:**
+- ❌ No root package.json
+- ❌ No root encore.app
+- ❌ No shared node_modules
+- ❌ No backend↔frontend imports
+- ❌ No manual HTTP fetches (use Encore generated clients)
 
-Run Discipline
+---
+
+### 📛 Naming Conventions (CRITICAL)
+
+**Function names MUST be descriptive verb phrases:**
+- ✅ `calculateTotalPrice`, `fetchUserProfile`, `saveScreenshot`, `handleDeviceConnection`
+- ❌ `handle()`, `process()`, `doStuff()`, `manager()`
+
+**Class names MUST be singular nouns or noun phrases:**
+- ✅ `ScreenGraphProjector`, `AgentOrchestrator`, `RunEventPublisher`
+- ❌ `Hasher`, `Mapper`, `Processor`, `Manager` (too generic)
+
+**Domain-oriented, not tech-oriented:**
+- ✅ `ScreenHasher`, `RunEventMapper`, `AgentStateProcessor`
+- ❌ `Hasher`, `Mapper`, `Processor` (missing business context)
+
+---
+
+### 🔒 Type Safety (NO EXCEPTIONS)
+
+**Absolutely NO `any` type:**
+- Every function, class, API endpoint MUST use explicit types
+- DTOs (Data Transfer Objects) defined at top of file or imported
+- Dynamic data → `Record<string, unknown>` or `{ [key: string]: unknown }`
+- Never fallback to `any`
+
+**Typed APIs:**
+- Always use Encore generated clients (`~encore/clients`)
+- Never manual `fetch()` calls
+- After backend changes → run `bun run gen` on frontend
+- Full end-to-end type safety guaranteed
+
+**Examples:**
+```typescript
+interface StartRunRequest { appId: string; deviceId: string; policy?: "breadth" | "depth"; }
+function startRun(req: StartRunRequest): Promise<RunResponse> {}
+// BAD: avoid `any`
+```
+
+---
+
+### 📝 Documentation & Comments
+
+**Every function, class, enum, DTO MUST have a purpose comment:**
+```typescript
+/** Calculates perceptual hash of a screenshot for deduplication. */
+export function calculateScreenHash(image: Buffer): string {}
+```
+
+---
+
+### 🚫 No Magic Strings/Numbers
+
+**Define literal unions or enums:**
+```typescript
+type AgentStatus = "idle" | "planning" | "acting" | "completed";
+const RUN_STATUS = { ACTIVE: "active", CANCELED: "canceled", COMPLETED: "completed" } as const;
+if (status === RUN_STATUS.ACTIVE) { /* ... */ }
+```
+
+---
+
+### 🌍 Spelling & Language
+
+**Use American English exclusively:**
+- ✅ `canceled`, `color`, `optimize`, `initialize`
+- ❌ `cancelled`, `colour`, `optimise`, `initialise`
+
+**Applies to:** variable names, function names, enums, DB columns, types, comments, docs
+
+---
+
+### 📊 Logging Standards
+
+**Use ONLY `encore.dev/log` (NEVER `console.log`):**
+```typescript
+import log from "encore.dev/log";
+
+const logger = log.with({ module: "agent", actor: "worker", runId: "abc123" });
+logger.info("state transition", { from: "idle", to: "planning" });
+logger.error("device connection failed", { err: error.message, deviceId });
+```
+
+**Required fields:** `module`, `actor`, `runId` (when applicable)  
+**On failures:** Include `stopReason` and `err.*` fields  
+**Always structured JSON** — never unstructured strings
+
+---
+
+### 🧪 Testing Philosophy
+
+**Test for flow reliability and correctness:**
+- High-level flow tests (not edge cases or petty tests)
+- Focus on creative consistency
+- Verify end-to-end behavior
+
+**Commands:**
+- Backend: `encore test`
+- Frontend: `bun run test`
+
+---
+
+### 🎯 API Clients
+
+**Always use Encore generated clients:**
+```typescript
+import { run } from '~encore/clients';
+const result = await run.start({ appId: 'com.example' });
+// BAD: manual fetch
+```
+
+**Workflow:**
+1. Update backend API endpoint
+2. Run `bun run gen` in frontend
+3. Use new types in frontend code
+4. Full type safety end-to-end
+
+---
+
+### 📦 Package Management
+
+**Use Bun exclusively:**
+- All projects: `"packageManager": "bun"`
+- Backend: `cd backend && bun install`
+- Frontend: `cd frontend && bun install`
+
+---
+
+### 🚀 Commands
+
+**Backend:**
+```bash
 cd backend && encore run
+```
+
+**Frontend:**
+```bash
 cd frontend && bun run dev
+```
 
-Absolute Prohibitions
-No root package.json
-No root encore.app
-No shared node_modules
-No backend↔frontend imports
-No manual HTTP fetches
+**NEVER run from root** — always `cd` into service directory
 
-Why This Matters
-Isolation → Clean Deployment
-Type Safety → Zero API Drift
-Encapsulation → Predictable CI
-Clarity → Easy Onboarding & Maintenance
+---
 
-- Maintain a `BACKEND_HANDOFF.md` and `FRONTEND_HANDOFF.md` at root.
+### 🌐 Build & Deployment
+
+**Backend:** Encore Cloud CI (no manual build scripts)  
+**Frontend:** `vite build` → Deploy to Vercel  
+**Deploy independently** — backend and frontend are separate
+
+---
+
+### 📋 Handoff Documentation
+
+**Maintain these files at root:**
+- `BACKEND_HANDOFF.md` — Backend architecture summary
+- `FRONTEND_HANDOFF.md` — Frontend architecture summary
+
+Update after significant changes.
+
+---
+
+## Part II: Worktree Isolation (Multi-Agent Development)
+
+### 🚨 Worktree Detection (Run FIRST, Always)
+
+**Before executing ANY command, you MUST:**
+
+1. **Detect current worktree mode** from Cursor's dropdown
+2. **Verify you are NOT on main tree** (unless Local mode)
+3. **Confirm port assignments** are coordinated
+
+**Pre-Flight Check (Required Before ANY Task):**
+
+```bash
+TREE_NAME=$(basename $(git rev-parse --show-toplevel))
+
+# Block if on main tree without Local mode authorization
+if [ "$TREE_NAME" = "ScreenGraph" ] && [ -z "$LOCAL_MODE_AUTHORIZED" ]; then
+  echo "🚫 STOP: You are on MAIN tree (ScreenGraph)"
+  echo "✅ Switch Cursor to 'Worktree' mode or create feature branch"
+  exit 1
+fi
+
+# If in worktree, verify coordinated ports
+if [ "$TREE_NAME" != "ScreenGraph" ]; then
+  eval "$(bun ./backend/scripts/port-coordinator.mjs --no-summary)"
+  [ "$BACKEND_PORT" != "4000" ] || { echo "❌ Using main tree ports"; exit 1; }
+  echo "✅ Worktree: $TREE_NAME | Backend: $BACKEND_PORT | Frontend: $FRONTEND_PORT"
+fi
+```
+
+---
+
+### 🔒 Main Tree is Read-Only for Agents
+
+- ❌ **NEVER** run `encore run` or `bun run dev` on main tree
+- ❌ **NEVER** modify files or commit on main tree
+- ✅ **EXCEPTION**: Only when Cursor dropdown shows **"Local"** mode
+
+---
+
+### 📍 Port Reservation Policy
+
+| Environment | Backend | Frontend | Dashboard | Appium |
+|-------------|---------|----------|-----------|--------|
+| **Main Tree** | **4000** | **5173** | **9400** | **4723** |
+| Worktree 1-20 | 4001-4009 | 5174-5183 | 9401-9409 | 4724-4733 |
+
+**Main tree ports are RESERVED** — worktrees use port coordinator for automatic assignment.
+
+---
+
+### 🚀 Correct Development Flow
+
+**For Worktree Agents (Default):**
+
+```bash
+# 1. Verify NOT on main tree
+[ "$(basename $(git rev-parse --show-toplevel))" != "ScreenGraph" ] || exit 1
+
+# 2. Start services with port coordination
+cd backend && ./scripts/dev-with-ports.sh   # Assigns 4001-4009
+cd frontend && ./scripts/dev-with-ports.sh  # Assigns 5174-5183
+```
+
+**For Local Mode (Main Tree Only):**
+
+```bash
+# Only when Cursor shows "Local" in dropdown
+cd backend && encore run        # Uses default 4000
+cd frontend && bun run dev      # Uses default 5173
+```
+
+---
+
+### 🎨 Cursor Dropdown Modes
+
+**"Local" Mode:**
+- ✅ Authorized for main tree (default ports: 4000, 5173)
+- 🎯 Use: Single developer, quick fixes
+
+**"Worktree" Mode (Default for Agents):**
+- ❌ Cannot work on main tree
+- ✅ Must use coordinated ports via `./scripts/dev-with-ports.sh`
+- ✅ Must work on feature branches (never `main`)
+- 🎯 Use: Multi-agent development, parallel features
+
+---
+
+### 🚫 Enforcement: What Agents CANNOT Do
+
+1. ❌ `encore run` directly (use `./scripts/dev-with-ports.sh`)
+2. ❌ Work on main tree without Local mode
+3. ❌ Use default ports (4000, 5173) in worktrees
+4. ❌ Commit directly to `main` branch
+5. ❌ Skip worktree detection before commands
+
+---
+
+### ✅ Enforcement: What Agents MUST Do
+
+1. ✅ Run worktree detection FIRST
+2. ✅ Use `./scripts/dev-with-ports.sh` for all services
+3. ✅ Verify coordinated ports (not defaults)
+4. ✅ Work on feature branches only
+5. ✅ Include worktree name in logs/commits
+
+---
+
+## 📝 The One Rule
+
+> **If you're an AI agent and `basename $(git rev-parse --show-toplevel)` returns "ScreenGraph", STOP. You are on the main tree. Switch to Worktree mode or await Local mode authorization.**
+
+**Default Assumption**: All agents work in Worktree mode with coordinated ports. Main tree is sacred and untouchable unless explicitly in Local mode.
+
+---
+
+**Last Updated**: 2025-11-06  
+**Owner**: Founder  
+**Enforcement**: Automatic via pre-flight checks  
+**Violations**: Block immediately, provide clear remediation

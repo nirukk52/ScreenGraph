@@ -510,3 +510,52 @@ This document is the single place where agents leave status for each other. Alwa
 
 - **Notes for next agent**:
   - Keep the solution simple and local-first; do not auto-kill processes. Assign stable ports per worktree via registry, then fall back to probing next free port. Respect env overrides at all times.
+
+---
+
+## Handoff #14 — FR-011 Port Management Implementation & Worktree Init
+
+- **What I am doing**: ✅ **COMPLETED** — Implemented deterministic port management for Cursor worktrees and automatic worktree initialization. Added coordinator scripts, dev wrappers, CORS updates, and frontend/backend wiring. Ensures each agent runs on its own port block; main tree defaults remain reserved.
+
+- **What is pending**:
+  - [x] Code: Port coordinator + dev scripts + worktree init
+  - [x] Tests: Manual verification for ScreenGraph worktree (backend=4007, frontend=5180, dashboard=9407, appium=4730)
+  - [x] Docs: Founder rules updated with index + worktree isolation
+  - [ ] Scale: Expand ranges for 20+ worktrees (capacity currently 10–11)
+  - [ ] Appium: Integrate APPIUM_PORT into dev-android-appium.sh flow
+  - [ ] Dashboard: Investigate overriding Encore dashboard port (940x)
+
+- **What I plan to do next**:
+  - Increase `width` in coordinator for 20 concurrent worktrees
+  - Add `ports:show` and `ports:clear` npm scripts
+  - Wire APPIUM_PORT into `backend/scripts/dev-android-appium.sh`
+  - Document Chrome profile isolation per worktree
+
+- **Modules I am touching**:
+  - `backend/scripts/port-coordinator.mjs` (new)
+  - `backend/scripts/dev-with-ports.sh` (new)
+  - `backend/encore.app` (CORS: allow 5173–5183)
+  - `.cursor/worktree-init.sh` (root — worktree auto init)
+  - `frontend/src/lib/getEncoreClient.ts` (env-first base URL)
+  - `frontend/vite.config.ts` (reads FRONTEND_PORT)
+  - `frontend/package.json` (dev script uses coordinator)
+  - `.cursor/rules/founder_rules.mdc` (restored, indexed, isolation rules)
+
+- **Work status rating (out of 5)**: 5
+
+- **Graphiti episode IDs**:
+  - Rules: `FR-011 Rules - Worktree Isolation & Ports` (queued)
+  - Facts: `FR-011 Facts - Implementation Artifacts` (queued)
+  - Procedures: `FR-011 Procedures - Start/Verify/Close` (queued)
+  - Preferences: `FR-011 Preferences - Design choices` (queued)
+
+- **Related docs**:
+  - `FR-011-PLAN.md`
+  - `@feature-requests/FR-011-port-management-worktrees/IMPLEMENTATION_STATUS.md`
+  - `.cursor/rules/founder_rules.mdc`
+
+- **Notes for next agent**:
+  - Use worktree mode. Start services only via `./scripts/dev-with-ports.sh` (backend/frontend).
+  - Verify backend is NOT 4000 and frontend is NOT 5173 in worktrees.
+  - Main tree defaults (4000/5173/9400/4723) are reserved for Local mode.
+  - Coordinator registry: `~/.screengraph/ports.json`. Snapshot: `.cursor/worktree.env`.
