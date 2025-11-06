@@ -54,8 +54,6 @@ async function scheduleTick(): Promise<void> {
     await repo.hydrateMissingCursors(HYDRATE_LIMIT);
     const cursors = await repo.listCursors(CURSOR_LIMIT);
 
-    logger.info("Graph projector tick", { cursorsFound: cursors.length });
-
     for (const cursor of cursors) {
       await processRun(cursor);
     }

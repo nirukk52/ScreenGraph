@@ -6,8 +6,10 @@ Retro-modern design landing page showcasing the UX drift detection platform
 	import autoAnimate from '@formkit/auto-animate';
 	import { Activity, GitCompare, FileText, Check } from 'lucide-svelte';
 	import { RetroButton, RetroCard, RetroInput, RetroBadge } from '$lib/components';
+	import DebugRetro from '$lib/components/DebugRetro.svelte';
 	import { goto } from '$app/navigation';
-	import { startRun } from '$lib/api';
+    import { startRun } from '$lib/api';
+    import { DEFAULT_RUN_CONFIG, DEFAULT_DEVICE_CONFIG } from '$lib/config';
 
 	/** Email input for beta signup */
 	let email = $state('');
@@ -37,15 +39,15 @@ Retro-modern design landing page showcasing the UX drift detection platform
 		if (startingRun) return;
 		
 		startingRun = true;
-		try {
-			const response = await startRun({
-				apkPath: "/Users/priyankalalge/SAAS/Scoreboard/AppiumPythonClient/test/apps/kotlinconf.apk",
-				appiumServerUrl: "http://127.0.0.1:4723/",
-				packageName: "com.jetbrains.kotlinconf",
-				appActivity: ".*",
-				maxSteps: 10.0,
-				goal: "Explore | Max Coverage"
-			});
+        try {
+            const response = await startRun({
+                apkPath: DEFAULT_DEVICE_CONFIG.apkPath,
+                appiumServerUrl: DEFAULT_RUN_CONFIG.appiumServerUrl,
+                packageName: DEFAULT_DEVICE_CONFIG.packageName,
+                appActivity: DEFAULT_DEVICE_CONFIG.appActivity,
+                maxSteps: DEFAULT_RUN_CONFIG.maxSteps,
+                goal: DEFAULT_RUN_CONFIG.goal
+            });
 			
 			// Navigate to the run page
 			await goto(`/run/${response.runId}`);
@@ -376,6 +378,13 @@ Retro-modern design landing page showcasing the UX drift detection platform
 					</div>
 				</RetroCard>
 			</div>
+		</div>
+	</section>
+
+	<!-- Debugging Retrospective Section -->
+	<section class="py-16 px-8 bg-[var(--color-neutral-gray)]">
+		<div class="max-w-6xl mx-auto">
+			<DebugRetro />
 		</div>
 	</section>
 

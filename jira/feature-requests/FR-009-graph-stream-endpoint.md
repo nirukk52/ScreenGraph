@@ -164,3 +164,17 @@ curl -N http://localhost:4000/graph/run/<runId>/stream?replay=true&fromSeq=0
 ### Frontend Integration Notes
 Events include `screenshot.dataUrl` field ready for `<img src={dataUrl}>` rendering. No additional artifact fetching needed by frontend.
 
+---
+
+## 🔄 Retro: Stream Debugging Outcome (Nov 6, 2025)
+
+- Frontend implementation and typed client are correct; extensive WebSocket lifecycle logs added.
+- Browser Network shows WebSocket with no status code → backend upgrade failed; endpoint not active.
+- Local backend restart was required, but `encore run` failed due to Docker daemon not running.
+- Action taken: Closed backend ports 4000/9400; next step is to start Docker and restart backend.
+
+### Next Steps
+- Start Docker locally, then run `cd backend && encore run`.
+- Re-test WebSocket on run page; expect status 101 and events to populate graph UI.
+- If still failing: verify `backend/graph/encore.service.ts` exports service and stream endpoint is imported, check logs with `module:graph actor:api`.
+

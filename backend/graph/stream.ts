@@ -4,6 +4,16 @@ import db from "../db";
 import { artifactsBucket } from "../artifacts/bucket";
 
 /**
+ * RUN_ENDED_STATUSES enumerates terminal run statuses.
+ * PURPOSE: Avoid magic strings when checking if a run has ended.
+ */
+const RUN_ENDED_STATUSES = [
+  "completed",
+  "failed",
+  "canceled",
+] as const;
+
+/**
  * GraphStreamEventType enumerates the graph event types emitted over SSE.
  * PURPOSE: Type-safe literal union for graph stream events; no magic strings.
  */
@@ -44,8 +54,9 @@ interface GraphStreamEvent {
 }
 
 /**
- * StreamHandshake defines query parameters for the graph stream endpoint.
+ * StreamHandshake defines path and query parameters for the graph stream endpoint.
  * PURPOSE: Typed request contract for SSE initiation.
+ * Note: Path parameter :runId is automatically extracted by Encore.
  */
 interface StreamHandshake {
   runId: string;
@@ -228,8 +239,9 @@ async function checkRunStatus(
     return "not_found";
   }
 
-  const endedStatuses = ["completed", "failed", "canceled"];
-  return endedStatuses.includes(row.status) ? "ended" : "active";
+  return (RUN_ENDED_STATUSES as readonly string[]).includes(row.status)
+    ? "ended"
+    : "active";
 }
 
 /**

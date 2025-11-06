@@ -407,3 +407,35 @@ This document is the single place where agents leave status for each other. Alwa
   - Files Modified in ProvisionApp Session: `dc16143b-ba42-410b-8465-99857256dee9`
 - **Related docs**:
   - `steering-docs/hand-off-docs/session_summary_provisionapp_implementation.md`
+
+---
+
+## Handoff #11 — Graph Stream Endpoint Retro & Infra Notes
+
+- **What I am doing**: Captured retro for `/graph/run/:runId/stream` availability. Frontend wiring is correct; connection fails until backend restart. Local `encore run` is blocked because Docker daemon is not running.
+
+- **What is pending**:
+  - [ ] Infra: Start Docker desktop/daemon locally
+  - [ ] Backend: Restart with `cd backend && encore run`
+  - [ ] Verify: Endpoint registered (API Explorer) and WebSocket upgrades (101)
+  - [ ] Logs: Confirm "Client connected" with `module:graph actor:api`
+
+- **What I plan to do next**:
+  - After Docker is up, run backend, then test `GET /graph/run/:runId/stream`
+  - Regenerate frontend client (`cd frontend && bun run gen`) if types changed
+
+- **Modules I am touching**:
+  - `backend/graph/encore.service.ts`
+  - `backend/graph/stream.ts`
+  - `backend/graph/stream.test.ts`
+
+- **Work status rating (out of 5)**: 3
+
+- **Related docs**:
+  - `jira/feature-requests/FR-009-graph-stream-endpoint.md`
+  - `backend/.claude-skills/backend-debugging/SKILL.md`
+
+- **Notes for next agent**:
+  - Terminal output shows: "The docker daemon is not running. Start it first." → Encore requires Docker for Postgres/PubSub
+  - After restart, verify endpoint in API Explorer and check WebSocket status 101 from browser
+  - Ports 4000/9400 were closed per ops request; bring services back when ready

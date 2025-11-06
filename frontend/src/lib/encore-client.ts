@@ -10,7 +10,7 @@
  */
 export type BaseURL = string
 
-export const Local: BaseURL = "http://localhost:4002"
+export const Local: BaseURL = "http://localhost:4000"
 
 /**
  * Environment returns a BaseURL for calling the cloud environment with the given name.
@@ -32,6 +32,7 @@ const BROWSER = typeof globalThis === "object" && ("window" in globalThis);
  * Client is an API client for the screengraph-ovzi Encore application.
  */
 export default class Client {
+    public readonly graph: graph.ServiceClient
     public readonly run: run.ServiceClient
     public readonly steering: steering.ServiceClient
     private readonly options: ClientOptions
@@ -48,6 +49,7 @@ export default class Client {
         this.target = target
         this.options = options ?? {}
         const base = new BaseClient(this.target, this.options)
+        this.graph = new graph.ServiceClient(base)
         this.run = new run.ServiceClient(base)
         this.steering = new steering.ServiceClient(base)
     }
@@ -80,11 +82,116 @@ export interface ClientOptions {
     requestInit?: Omit<RequestInit, "headers"> & { headers?: Record<string, string> }
 }
 
+export namespace graph {
+    export interface GetScreensResponse {
+        screens: {
+            screenId: string
+            appPackage: string
+            layoutHash: string
+            perceptualHash: string
+            firstSeenAt: string
+            lastSeenAt: string
+        }[]
+    }
+
+    export interface GraphDiagnosticsResponse {
+        projectorStatus: string
+        database: {
+            runEventsCount: number
+            screensCount: number
+            outcomesCount: number
+            cursorsCount: number
+            recentEventKinds: {
+                kind: string
+                count: number
+            }[]
+        }
+        schemaChecks: {
+            hasGraphProjectionCursorsTable: boolean
+            hasSourceEventSeqColumn: boolean
+        }
+    }
+
+    export interface GraphStreamEvent {
+        type: GraphStreamEventType
+        data: GraphStreamEventData
+    }
+
+    export interface GraphStreamEventData {
+        runId: string
+        screenId: string
+        layoutHash: string
+        perceptualHash: string
+        seqRef: number
+        ts: string
+        screenshot: ScreenshotData
+    }
+
+    export type GraphStreamEventType = "graph.screen.discovered" | "graph.screen.mapped"
+
+    export interface ScreenshotData {
+        refId: string | null
+        dataUrl: string | null
+        width?: number
+        height?: number
+    }
+
+    export interface StreamHandshake {
+        replay?: boolean
+        fromSeq?: number
+    }
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.diagnostics = this.diagnostics.bind(this)
+            this.getScreens = this.getScreens.bind(this)
+            this.streamGraphForRun = this.streamGraphForRun.bind(this)
+        }
+
+        /**
+         * GraphDiagnosticsEndpoint provides diagnostic information about the graph projection service.
+         * PURPOSE: Quick endpoint to verify BUG-002 root cause without needing DB access.
+         */
+        public async diagnostics(): Promise<GraphDiagnosticsResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/graph/diagnostics`)
+            return await resp.json() as GraphDiagnosticsResponse
+        }
+
+        /**
+         * GetScreens endpoint returns a sample of screens from the graph.
+         * PURPOSE: Quick verification that graph projection is populating screens table.
+         */
+        public async getScreens(): Promise<GetScreensResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/graph/screens`)
+            return await resp.json() as GetScreensResponse
+        }
+
+        /**
+         * streamGraphForRun implements GET /graph/run/:runId/stream SSE endpoint.
+         * PURPOSE: Stream graph projection outcomes with screenshots to frontend clients.
+         */
+        public async streamGraphForRun(runId: string, params: StreamHandshake): Promise<StreamIn<GraphStreamEvent>> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                fromSeq: params.fromSeq === undefined ? undefined : String(params.fromSeq),
+                replay:  params.replay === undefined ? undefined : String(params.replay),
+            })
+
+            return await this.baseClient.createStreamIn(`/graph/run/${encodeURIComponent(runId)}/stream`, {query})
+        }
+    }
+}
+
 export namespace run {
     export interface CancelRunResponse {
         runId: string
-        status: "CANCELLED"
-        cancelledAt: string
+        status: "CANCELED"
+        canceledAt: string
     }
 
     export interface HealthResponse {
@@ -220,7 +327,7 @@ export namespace steering {
 }
 
 export namespace domain {
-    export type EventKind = "agent.run.started" | "agent.run.finished" | "agent.run.failed" | "agent.run.canceled" | "agent.run.continuation_decided" | "agent.node.started" | "agent.node.token_delta" | "agent.node.finished" | "agent.event.screenshot_captured" | "agent.event.ui_hierarchy_captured" | "agent.event.screen_perceived" | "agent.event.actions_enumerated" | "agent.event.action_selected" | "agent.event.action_performed" | "agent.event.action_verification_completed" | "graph.screen.discovered" | "graph.action.created" | "graph.updated" | "agent.run.progress_evaluated" | "agent.policy.switched" | "agent.app.restarted" | "agent.run.recovery_applied" | "agent.run.checkpoint_restored" | "agent.run.heartbeat"
+    export type EventKind = "agent.run.started" | "agent.run.finished" | "agent.run.failed" | "agent.run.canceled" | "agent.run.continuation_decided" | "agent.node.started" | "agent.node.token_delta" | "agent.node.finished" | "agent.event.screenshot_captured" | "agent.event.ui_hierarchy_captured" | "agent.event.screen_perceived" | "agent.event.actions_enumerated" | "agent.event.action_selected" | "agent.event.action_performed" | "agent.event.action_verification_completed" | "graph.screen.discovered" | "graph.screen.mapped" | "graph.action.created" | "graph.updated" | "agent.run.progress_evaluated" | "agent.policy.switched" | "agent.app.restarted" | "agent.run.recovery_applied" | "agent.run.checkpoint_restored" | "agent.run.heartbeat" | "agent.app.install_checked" | "agent.app.signature_verified" | "agent.app.launch_started" | "agent.app.launch_completed" | "agent.app.launch_failed"
 }
 
 

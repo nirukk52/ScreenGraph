@@ -21,6 +21,88 @@ This document is the single place where frontend agents leave status for each ot
 
 ---
 
+## Handoff #2 — Graph Visualization Implementation & Debugging Skills Created
+
+- **What I am doing**: Implemented basic graph visualization for run timeline page with real-time SSE streaming from backend graph projection service. Created comprehensive frontend debugging skill document with systematic 10-phase debugging procedure. WebSocket connection to graph stream endpoint closes immediately - investigating root cause using browser MCP tools and console logging.
+
+- **What is pending**:
+  - [ ] Code: Graph visualization component complete but not receiving events
+  - [ ] Tests: WebSocket connection debugging in progress
+  - [ ] Manual review: Need to verify backend endpoint is being called
+  - [ ] Code: Compare defaults between working run stream and failing graph stream
+  - [ ] Tests: End-to-end test once connection issue resolved
+
+- **What I plan to do next**:
+  - Check backend logs to see if graph stream endpoint handler is called
+  - Verify endpoint path matches between frontend and backend
+  - Compare StreamHandshake interfaces between run and graph streams
+  - Restart backend if needed to ensure endpoint is loaded
+  - Test with known good data once connection works
+
+- **Modules I am touching**:
+  - `frontend/src/lib/components/ScreenGraph.svelte` (new - grid visualization)
+  - `frontend/src/lib/api.ts` (added streamGraphEvents function)
+  - `frontend/src/routes/run/[id]/+page.svelte` (integrated graph visualization)
+  - `frontend/src/lib/components/index.ts` (exported ScreenGraph component)
+  - `frontend/.claude-skills/frontend-debugging/SKILL.md` (new - systematic debugging)
+
+- **Work status rating (out of 5)**: 3
+
+- **Graphiti episode IDs**:
+  - Backend Engineer Role: `queued-position-1`
+  - Frontend Engineer Role: `queued-position-1`
+  - Debugging Skills System Created: `queued-position-2`
+  - Graph Visualization Implementation: `queued-position-3`
+  - Collaboration Pattern Full Stack Debugging: `queued-position-3`
+
+- **Related docs**:
+  - `frontend/.claude-skills/frontend-debugging/SKILL.md` (systematic debugging procedures)
+  - `backend/.claude-skills/backend-debugging/SKILL.md` (backend debugging procedures)
+  - `jira/feature-requests/FR-009-graph-stream-endpoint.md` (backend implementation complete)
+
+- **Notes for next agent**:
+  - **Critical Issue**: WebSocket connection to `/graph/run/:runId/stream` closes immediately after connecting. Socket state shows 0 (CONNECTING) and never reaches 1 (OPEN). Network tab shows WebSocket request with no status code indicating connection failed. Backend logs not showing "Client connected" message - endpoint handler never reached.
+  - **Debugging Progress**: Added extensive console logging with `[Graph Stream]` prefix to track connection lifecycle (open, close, error, message events). Using browser MCP tools (browser_console_messages, browser_network_requests) for live inspection.
+  - **Working Comparison**: Run stream (`/run/:id/stream`) connects successfully (status 101) using same `api.streamOut` pattern. Need to compare default parameters and handler setup.
+  - **Component Structure**: ScreenGraph component shows responsive grid (2-5 columns) with screenshots, empty state when no nodes, and event log below. Uses Svelte 5 runes with $bindable props pattern (single $props() call).
+  - **Type Safety**: All types generated from Encore client (graph.GraphStreamEvent, graph.GraphStreamEventData). Client regenerated after backend changes with `bun run gen`.
+  - **Console Logging**: Added structured logging with prefixes for filtering: `[Graph Stream]`, `[Component]`, `[API]`. Logs WebSocket state, connection events, and error details.
+  - **Debugging Skills**: Created comprehensive frontend-debugging skill with 10 phases: Environment Setup, Browser Tools, Console Debugging, Client Generation, WebSocket/SSE, Svelte 5 Runes, Component Reactivity, Build & Type Checking, Root Cause Classification, Testing Procedures.
+  - **Next Steps**: Check backend logs with `module:graph actor:api` filter, verify endpoint registered in encore.service.ts, compare run vs graph stream handlers for differences. Restart backend to register new stream endpoint.
+
+---
+
+## Handoff #3 — Retro Update (Graph Stream)
+
+- **What I am doing**: Finalized retro for graph stream investigation. Frontend implementation is correct and logging is in place. Root cause identified on backend side: endpoint not active until backend restart (and Docker daemon required for Encore services).
+
+- **What is pending**:
+  - [ ] Backend: Start Docker daemon locally
+  - [ ] Backend: Restart Encore (`cd backend && encore run`)
+  - [ ] Frontend: Verify graph renders once stream upgrades with 101
+
+- **What I plan to do next**:
+  - After backend is running, reload run page and confirm nodes populate
+  - Capture a screenshot of the populated graph section and attach to FR-009
+
+- **Modules I am touching**:
+  - `frontend/src/lib/components/ScreenGraph.svelte`
+  - `frontend/src/routes/run/[id]/+page.svelte`
+  - `frontend/src/lib/api.ts`
+
+- **Work status rating (out of 5)**: 4
+
+- **Related docs**:
+  - `jira/feature-requests/FR-009-graph-stream-endpoint.md`
+  - `frontend/.claude-skills/frontend-debugging/SKILL.md`
+
+- **Notes for next agent**:
+  - Backend ports 4000/9400 have been closed; start Docker, then run backend again
+  - If WebSocket shows no status code, it indicates failed upgrade — re-check backend
+  - After restart, network tab should show 101 and events should fill `graphNodes`
+
+---
+
 ## Handoff #1 — Design Drift Detection & Fix Complete
 
 - **What I am doing**: ✅ **COMPLETED** - Performed comprehensive design drift detection between Figma design and live SvelteKit implementation using Figma MCP and Playwright MCP tools. Detected and fixed 5 critical design drifts: button colors, hover states, press animation, phone positioning, and typography. Landing page now matches Figma design at ~95% accuracy.

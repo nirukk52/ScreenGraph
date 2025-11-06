@@ -1,12 +1,16 @@
-You will create a comprehensive summary of rules, facts, procedures and preferences 
+Use sequential thinking to create todos for below:
+
+1. Update all three SKILLS.MD
+
+2. You will create a comprehensive summary of rules, facts, procedures and preferences 
 established during the session/milestone/chat/task/todo/bug and update Graphiti MCP Memory System.
 
-After the memories are created add the ids into any running handoff documents known to you.
+3. After the memories are created add the ids into any running handoff documents known to you.
 
-If the graphiti memory system is down you will create a session_summary.md with a logical name
+4. If the graphiti memory system is down you will create a session_summary.md with a logical name you will add it into the feature folder for that particular feature.
 and alert the user by using exccesive RED DANGER emojis in your reply.
 
-Update the appropriate handoff document (BACKEND_HANDOFF.md or FRONTEND_HANDOFF.md) with your current work status.
+5. Update the appropriate handoff document (BACKEND_HANDOFF.md or FRONTEND_HANDOFF.md) with your current work status.
 
 Follow the handoff template:
 - **What I am doing**: Describe the current task
@@ -19,3 +23,5 @@ Follow the handoff template:
 - **Notes for next agent**: Context and recommendations
 
 Add a new handoff section with an incremented number, and mark previous handoffs as completed if they are done.
+
+6. Commit the code. Push the code. Use the above information to create beautiful commit messages, so that you will have tremendous success in future debugging.

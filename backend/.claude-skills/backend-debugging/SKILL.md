@@ -101,6 +101,7 @@ Returns: Complete app structure, all services, databases, topics
 - Error "app not found" → Encore not running, restart with `encore run`
 - Empty results → Service not loaded, check `encore.service.ts` exports
 - Permission errors → Check if endpoint requires authentication
+- Docker errors → Start Docker daemon locally (Encore relies on Docker for local DB & subsystems)
 
 ## Phase 3: Create Diagnostic Endpoints
 
@@ -425,6 +426,7 @@ watch -n 1 'curl -s http://localhost:4000/graph/diagnostics | jq ".database.scre
 |---------|-------------|-----|
 | **Column not found error** | Migration not applied | Run `encore db reset` or verify migration 008 applied |
 | **Endpoints return 404** | Service not loaded | Check `encore.service.ts` has `export default new Service("name")` |
+| **WS connection has no status** | Endpoint not active or backend down | Start Docker, restart backend; verify endpoint listed in API Explorer |
 | **No processing logs** | Background worker not starting | Verify worker function called at module load, add startup log |
 | **Events exist, tables empty** | Event kind not handled | Check switch case in projector, verify kind matches exactly |
 | **Query returns empty** | Wrong database instance | Verify using local DB: `encore db conn-uri db --env=local` |
