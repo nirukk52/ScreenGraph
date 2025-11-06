@@ -111,9 +111,11 @@ RunJob → Worker ↓ Worker creates: sessionPort, registry, context, machine �
 - Use fake adapters for unit tests
 
 ## XState Inspector (Dev)
-- URL: `https://stately.ai/inspect?server=ws://localhost:5678`
-- Start inspect server separately in development
-- View real-time state transitions, guards, and actions
+- Inspector URL: `https://stately.ai/inspect?server=ws://localhost:5678`
+- Automatically enabled when `NODE_ENV !== "production"`
+- Uses `createWebSocketInspector()` to create a WebSocket server on port 5678
+- Open the URL in Chrome to view live state machine transitions, guards, and actions
+- Inspector URL is logged when a run starts in dev mode
 
 ## Future Work
 - Wire LangGraph.js for main loop nodes

@@ -38,10 +38,16 @@ After wiring `@statelyai/inspect` into the backend worker, the Stately Inspector
 - Registry landing page screenshot (not attached).
 
 ### Proposed Fix / Next Steps
-1. Review `@statelyai/inspect` backend integration guidance to confirm whether `createBrowserInspector` supports headless environments.
-2. Consider using WebSocket inspector when running outside a browser context.
+1. ✅ Replace `createBrowserInspector` with `createWebSocketInspector` for Node.js WebSocket inspector (COMPLETED)
+2. ✅ Add logging to show inspector URL when enabled (COMPLETED)
 3. Update worker subscription to gracefully handle missing snapshot fields while still streaming inspection events.
 4. Add automated smoke test (or manual QA checklist) for inspector connectivity before Phase 2 sign-off.
+
+### Fix Applied
+- Changed `createBrowserInspector` to `createWebSocketInspector()` in `backend/agent/orchestrator/worker.ts`
+- Added logging to display inspector URL: `https://stately.ai/inspect?server=ws://localhost:5678`
+- Inspector now creates a WebSocket server (port 5678) that Chrome can connect to
+- Note: `createWebSocketInspector` is the correct export from `@statelyai/inspect@0.4.0` for Node.js environments
 
 ### Owner / Requestor
 - Reported by: TBD (current session)

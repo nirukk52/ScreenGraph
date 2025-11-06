@@ -17,10 +17,10 @@ import { FakeLLM } from "../adapters/fakes/fake-llm";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../logging/logger";
 import { createActor } from "xstate";
-import { createBrowserInspector } from "@statelyai/inspect";
+import { createWebSocketInspector } from "@statelyai/inspect";
 import { createAgentMachine } from "../engine/xstate/agent.machine";
 import type { AgentMachineDependencies, AgentMachineOutput, AgentMachineContext, ShouldStopResult } from "../engine/xstate/types";
-// Inspector available in dev via @statelyai/inspect
+// Inspector available in dev via @statelyai/inspect using WebSocket server
 
 /**
  * Build AgentPorts using the WebDriverIO adapter family so the agent relies on a single
@@ -199,10 +199,17 @@ export class AgentWorker {
       dependencies,
     });
 
-    // Enable Stately Inspector (dev-only). This opens the inspector in your browser
-    // and wires the actor to stream inspection events.
+    // Enable Stately Inspector (dev-only). Creates a WebSocket server for browser inspection.
+    // Open https://stately.ai/inspect?server=ws://localhost:5678 in Chrome to view live state machine.
     const isDev = process.env.NODE_ENV !== "production";
-    const inspector = isDev ? createBrowserInspector({ url: "https://stately.ai/inspect" }) : null;
+    const inspector = isDev ? createWebSocketInspector() : null;
+
+    if (inspector && isDev) {
+      logger.info("XState Inspector enabled", {
+        inspectorUrl: "https://stately.ai/inspect?server=ws://localhost:5678",
+        message: "Open the URL in Chrome to view live state machine transitions",
+      });
+    }
 
     const actor = createActor(machine, {
       inspect: inspector?.inspect,
