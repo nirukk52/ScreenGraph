@@ -6,7 +6,7 @@
 set -euo pipefail
 
 APP_ADDR="127.0.0.1"
-APP_PORT="4723"
+APP_PORT="${APPIUM_PORT:-4723}"
 APP_BASE_PATH="/"
 LOG_LEVEL="info"
 LOG_FILE="${TMPDIR:-/tmp}/appium.log"
