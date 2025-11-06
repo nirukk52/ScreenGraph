@@ -278,3 +278,42 @@ frontend/
 **Last Updated**: October 29, 2025  
 **Status**: Design system aligned, ready for feature development ✅
 
+
+---
+
+## Handoff #4 — Run Defaults Centralization & CODE_REVIEW Fixes
+
+- **What I am doing**: Finalized frontend side for centralizing run defaults and resolved CODE_REVIEW criticals. Extracted hardcoded values into `frontend/src/lib/config.ts` with env overrides, filed FR-010 to make Encore the single source of truth for defaults, and kept graph debugging logs in place (DEV-only gating pending).
+
+- **What is pending**:
+  - [ ] Code: Consume `GET /config/run-defaults` once backend endpoint lands (FR-010)
+  - [ ] Tests: Smoke test that landing button uses server-provided defaults
+  - [ ] Manual review: Verify no regressions in "Detect My First Drift" flow
+
+- **What I plan to do next**:
+  - Add `loadRunDefaults()` in `$lib/api.ts` to call generated client
+  - Gate graph debug logs with `if (import.meta.env.DEV)`
+  - Remove any remaining hardcoded values
+
+- **Modules I am touching**:
+  - `frontend/src/lib/config.ts`
+  - `frontend/src/routes/+page.svelte`
+  - `frontend/src/lib/api.ts`
+  - `jira/feature-requests/FR-010-run-default-config-sync.md`
+  - `CODE_REVIEW.md`
+
+- **Work status rating (out of 5)**: 4
+
+- **Graphiti episode IDs**:
+  - Run Default Config Centralization (FR-010): `episode-queued`
+  - Frontend Config Defaults (Env-Overridable): `episode-queued`
+  - Graph Stream Debugging Resolution: `episode-queued`
+
+- **Related docs**:
+  - `jira/feature-requests/FR-010-run-default-config-sync.md`
+  - `CODE_REVIEW.md`
+
+- **Notes for next agent**:
+  - Use server-provided defaults when available; fall back to `DEFAULT_*` in `config.ts`
+  - After backend merges FR-010, regenerate client: `cd frontend && bun run gen`
+  - Keep the graph stream debug logs while validating; gate before prod

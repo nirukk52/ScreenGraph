@@ -439,3 +439,39 @@ This document is the single place where agents leave status for each other. Alwa
   - Terminal output shows: "The docker daemon is not running. Start it first." → Encore requires Docker for Postgres/PubSub
   - After restart, verify endpoint in API Explorer and check WebSocket status 101 from browser
   - Ports 4000/9400 were closed per ops request; bring services back when ready
+
+---
+
+## Handoff #12 — Run Defaults Config Endpoint (Proposed)
+
+- **What I am doing**: Proposed centralized defaults endpoint `GET /config/run-defaults` to eliminate frontend/backend drift. Values will be sourced from Encore config/secrets with per-environment overrides. No changes to `POST /run` schema; only default provider.
+
+- **What is pending**:
+  - [ ] Code: Implement config provider and typed endpoint in `backend/run`
+  - [ ] Tests: Unit tests for loader + endpoint serialization
+  - [ ] Manual review: Verify values match environment config
+
+- **What I plan to do next**:
+  - Create `backend/run/config.ts` (DTO + loader + endpoint)
+  - Document config keys and defaults in `API_DOCUMENTATION.md`
+  - Coordinate with frontend to consume via generated client
+
+- **Modules I am touching**:
+  - `backend/run/` (new `config.ts`)
+  - `backend/run/encore.service.ts` (export service if needed)
+  - `backend/API_DOCUMENTATION.md`
+
+- **Work status rating (out of 5)**: 3
+
+- **Graphiti episode IDs**:
+  - Run Default Config Centralization (FR-010): `episode-queued`
+  - Graph Stream Debugging Resolution: `episode-queued`
+
+- **Related docs**:
+  - `jira/feature-requests/FR-010-run-default-config-sync.md`
+  - `CODE_REVIEW.md`
+
+- **Notes for next agent**:
+  - Use `encore.dev/config` for env overrides; avoid hardcoding paths/URLs
+  - Keep enums/literal unions for statuses (no magic strings)
+  - After endpoint is live, notify frontend to regenerate client
