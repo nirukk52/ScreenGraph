@@ -1,0 +1,61 @@
+# ============================================
+# Generated Code (Never needs AI context)
+# ============================================
+backend/encore.gen/
+frontend/.svelte-kit/
+
+# ============================================
+# Dependencies (Too large, no value)
+# ============================================
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# ============================================
+# Build Artifacts (Generated output)
+# ============================================
+dist/
+build/
+frontend/dist/
+backend/.encore/
+
+# ============================================
+# Lock Files (Binary/large, no semantic value)
+# ============================================
+*.lock
+bun.lock
+package-lock.json
+bun.lockb
+
+# ============================================
+# Logs & Test Artifacts (Runtime noise)
+# ============================================
+*.log
+coverage/
+test-results/
+allure-results/
+allure-report/
+screenshots/
+errorShots/
+backend/screenshots/
+backend/errorShots/
+
+# ============================================
+# Reference Code (Not part of active codebase)
+# ============================================
+appium_for_referrence/
+
+# ============================================
+# TypeScript Build Info (Generated)
+# ============================================
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# ============================================
+# OS & Editor (Not code)
+# ============================================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
