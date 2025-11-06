@@ -1,6 +1,7 @@
 # FR-014: Steering Docs – Events Stream & Tools Manifest (Onyx)
 
-**Status:** Planned  
+**Status:** ✅ Done  
+**Completed:** 2025-11-06  
 **Priority:** P1  
 **Milestone:** M2 – Steering Docs Onyx Integration  
 **Owner:** Backend Engineer  

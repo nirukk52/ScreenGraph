@@ -1,6 +1,7 @@
 # FR-012: Steering Docs – Create & Update with Revisions
 
-**Status:** In Progress  
+**Status:** ✅ Done  
+**Completed:** 2025-11-06  
 **Priority:** P0  
 **Milestone:** M2 – Steering Docs Onyx Integration  
 **Owner:** Backend Engineer  

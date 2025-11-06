@@ -1,6 +1,7 @@
 # FR-011: Steering Docs – Index & Search APIs
 
-**Status:** In Progress  
+**Status:** ✅ Done  
+**Completed:** 2025-11-06  
 **Priority:** P0  
 **Milestone:** M2 – Steering Docs Onyx Integration  
 **Owner:** Backend Engineer  

@@ -1,6 +1,7 @@
 # FR-013: Steering Docs – Rename, Archive, Restore (Lifecycle)
 
-**Status:** Planned  
+**Status:** ✅ Done  
+**Completed:** 2025-11-06  
 **Priority:** P1  
 **Milestone:** M2 – Steering Docs Onyx Integration  
 **Owner:** Backend Engineer  
