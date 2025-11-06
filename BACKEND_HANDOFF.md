@@ -21,6 +21,43 @@ This document is the single place where agents leave status for each other. Alwa
 
 ---
 
+## Handoff #14 — Play Store App Info Microservice (In Flight)
+
+- **What I am doing**: Building Encore-based `appinfo` service that ingests Play Store metadata/screenshots by package name and persists them into new `appinfo` / `appinfo_media` tables with typed DTOs.
+
+- **What is pending**:
+  - [x] Code: Database migration and service scaffolding committed
+  - [ ] Code: Verify Bun dependency installation (`bun install`) after adding google-play-scraper
+  - [ ] Tests: Vitest coverage for adapter mapping and repository persistence
+  - [ ] Manual review: Run `encore run` once migration applied to confirm schema
+
+- **What I plan to do next**:
+  - Create Vitest suite with mocked Play Store adapter covering success and failure cases
+  - Document usage in `API_DOCUMENTATION.md` and ensure frontend client generation once backend is deployed
+  - Validate Encore client generation after service export
+
+- **Modules I am touching**:
+  - `backend/appinfo/` (new service, DTOs, adapter, repository, endpoints)
+  - `backend/db/migrations/009_appinfo_table.up.sql`
+  - `backend/package.json` (dependency addition)
+  - `backend/types/google-play-scraper.d.ts`
+  - `plan.md`
+
+- **Work status rating (out of 5)**: 3
+
+- **Graphiti episode IDs**: Pending capture for Play Store ingestion workstream
+
+- **Related docs**:
+  - `plan.md`
+  - `backend/API_DOCUMENTATION.md` (to update with new endpoints)
+
+- **Notes for next agent**:
+  - Run `cd backend && bun install` to sync lockfile and ensure `google-play-scraper` is available (binary not present in current shell).
+  - Apply migration `009_appinfo_table.up.sql` before invoking the service; encore run will auto-apply.
+  - Service endpoints are internal-only (`expose: false`) until we finalize authentication story; adjust if external access is required.
+
+---
+
 ## Handoff #10 — American English Spelling Standardization Rule
 
 - **What I am doing**: ✅ **COMPLETED** - Established and documented American English spelling as a non-negotiable coding rule after discovering runtime errors caused by spelling mismatch between database enum (British 'cancelled') and TypeScript code (American 'canceled'). Updated founder rules with new "Spelling & Language" section requiring American English exclusively across all code, schemas, types, comments, and documentation.

@@ -7,6 +7,7 @@
     "@statelyai/inspect": "^0.4.0",
     "@types/webdriverio": "^5.0.0",
     "encore.dev": "^1.50.6",
+    "google-play-scraper": "^10.4.1",
     "ulidx": "^2.4.1",
     "webdriverio": "^9.20.0",
     "xstate": "^5.9.0"
