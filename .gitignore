@@ -73,7 +73,6 @@ test-results
 *.swp
 *.swo
 *~
-.cursor
 
 # ============================================
 # Tool Artifacts
