@@ -50,6 +50,10 @@ Default ranges for local dev (fallback when env not pinned):
   - appium: `APPIUM_PORT`
 - Provide `ports:show` and `ports:who <port>` helpers for quick inspection.
 
+Canonical commands:
+- Backend: always run `encore run` (no wrapper). The worktree init script pre-seeds env so Encore picks the right ports automatically.
+- Frontend: `bun run dev` (Vite), which reads `FRONTEND_PORT` and `VITE_BACKEND_BASE_URL`.
+
 ---
 
 ### Environment Isolation Policy
