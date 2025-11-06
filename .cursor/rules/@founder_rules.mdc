@@ -1,0 +1,5 @@
+ - All .md/.mdc files MUST begin with an "Index" (TOC) linking to its sections.
+ - Maintain a repo-wide `docs/INDEX.md` listing every .md file with title + path.
+ - Update both indexes on every add/rename/edit; never allow stale or missing links.
+ - Use relative links only; verify locally (and in CI) before merging.
+ - PRs must include necessary index updates; otherwise they are rejected.
