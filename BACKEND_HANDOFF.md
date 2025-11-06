@@ -475,3 +475,38 @@ This document is the single place where agents leave status for each other. Alwa
   - Use `encore.dev/config` for env overrides; avoid hardcoding paths/URLs
   - Keep enums/literal unions for statuses (no magic strings)
   - After endpoint is live, notify frontend to regenerate client
+
+---
+
+## Handoff #13 — Port Management for Cursor Worktrees (Proposed)
+
+- **What I am doing**: Drafted a feature request to introduce a lightweight, robust port management strategy per Cursor worktree to prevent port collisions for backend (4000+), dashboard (9400+), frontend (5173+), and Appium (4723+). This is documentation-only at this stage to guide implementation.
+
+- **What is pending**:
+  - [ ] Code: Implement `scripts/port-coordinator.mjs` (JSON registry at `~/.screengraph/ports.json`, availability checks, stable assignment)
+  - [ ] Code: Add `scripts/ports.sh` helpers (`who`, `pick`, `assign`) with macOS/Linux branches
+  - [ ] Backend: Respect `BACKEND_PORT`, `ENCORE_DASHBOARD_PORT`; print resolved ports at startup
+  - [ ] Frontend: Read `VITE_BACKEND_BASE_URL` first; fallback to existing probe
+  - [ ] Tests: Start two worktrees and verify unique, stable port assignment; verify frontend connects correctly
+  - [ ] Manual review: DX flow and docs in CLAUDE.md
+
+- **What I plan to do next**:
+  - Implement the coordinator (node) and helpers (shell)
+  - Wire backend/ frontend pre-start to resolve ports and export envs
+  - Update docs and add troubleshooting
+
+- **Modules I am touching**:
+  - `jira/feature-requests/FR-011-port-management-worktrees.md`
+  - (planned) `scripts/port-coordinator.mjs`
+  - (planned) `scripts/ports.sh`
+
+- **Work status rating (out of 5)**: 3
+
+- **Graphiti episode IDs**: N/A (planning-only)
+
+- **Related docs**:
+  - `jira/feature-requests/FR-011-port-management-worktrees.md`
+  - Cursor Worktrees: https://cursor.com/docs/configuration/worktrees
+
+- **Notes for next agent**:
+  - Keep the solution simple and local-first; do not auto-kill processes. Assign stable ports per worktree via registry, then fall back to probing next free port. Respect env overrides at all times.
