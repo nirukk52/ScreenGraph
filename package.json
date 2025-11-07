@@ -1,15 +1,13 @@
 {
-  "name": "screengraph-monorepo",
-  "version": "1.0.0",
+  "name": "screengraph",
   "private": true,
-  "description": "ScreenGraph monorepo - Git hooks only (no code dependencies)",
   "scripts": {
-    "prepare": "husky"
+    "dev": "concurrently -n backend,frontend -c blue,green \"cd backend && encore run\" \"cd frontend && bun run dev\"",
+    "dev:backend": "cd backend && encore run",
+    "dev:frontend": "cd frontend && bun run dev"
   },
   "devDependencies": {
-    "husky": "^9.0.0"
+    "concurrently": "^9.1.0"
   },
-  "packageManager": "bun@1.0.0",
-  "workspaces": []
+  "packageManager": "bun"
 }
-
