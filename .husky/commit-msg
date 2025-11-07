@@ -1,0 +1,10 @@
+#!/bin/sh
+# Husky commit-msg hook
+# Validates commit message format (conventional commits)
+
+# For now, just a reminder - full validation coming in future
+echo "📝 Commit message: $(cat $1 | head -n 1)"
+echo "   (Conventional commits recommended: feat/fix/chore/docs/style/refactor/test)"
+
+# Future: cd .cursor && task shared:validate-commit-message $1
+

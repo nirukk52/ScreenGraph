@@ -3,26 +3,57 @@ version: '3'
 # Frontend commands
 # Frontend-specific development tasks
 
+vars:
+  FRONTEND_PORT:
+    sh: node ../../../automation/scripts/env.mjs frontend-port
+
 tasks:
   dev:
     desc: "Start frontend development server"
     cmds:
-      - echo "⚛️  Starting frontend..."
-      - echo "⚠️  Implementation pending - Phase 3"
-      - echo "   Will run - ../../scripts/dev-frontend.sh"
+      - echo "⚛️  Starting frontend on port {{.FRONTEND_PORT}}..."
+      - cd ../../frontend && bunx --bun vite dev --port {{.FRONTEND_PORT}}
     silent: false
 
   build:
     desc: "Build frontend for production"
     cmds:
       - echo "📦 Building frontend..."
-      - echo "⚠️  Implementation pending - Phase 3"
+      - cd ../../frontend && bun run build
+      - echo "✅ Build complete"
     silent: false
 
   typecheck:
     desc: "Run TypeScript type checking"
     cmds:
       - echo "🔍 Type checking..."
-      - echo "⚠️  Implementation pending - Phase 3"
+      - cd ../../frontend && bun run check
     silent: false
 
+  lint:
+    desc: "Run linter"
+    cmds:
+      - echo "🔍 Linting..."
+      - cd ../../frontend && bun run lint
+    silent: false
+
+  gen:
+    desc: "Regenerate Encore client"
+    cmds:
+      - echo "🔄 Regenerating Encore client..."
+      - cd ../../frontend && bun run gen
+      - echo "✅ Client regenerated"
+    silent: false
+
+  test:
+    desc: "Run frontend tests"
+    cmds:
+      - echo "🧪 Running frontend tests..."
+      - cd ../../frontend && bun test
+    silent: false
+
+  logs:
+    desc: "View frontend logs"
+    cmds:
+      - tail -f ../../frontend.log
+    silent: false

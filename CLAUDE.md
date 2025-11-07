@@ -10,23 +10,102 @@
 
 ## Quick Start
 
-### 1. Generate Encore Client
+### 1. Unified Automation (Task Commands) ⭐ NEW
 ```bash
-cd frontend
-bun run gen
+# Start everything
+cd .cursor && task founder:servers:start
+
+# Check status
+task founder:servers:status
+
+# Run tests
+task qa:smoke:all
+
+# Stop services
+task founder:servers:stop
+
+# List all commands
+task --list
 ```
 
-### 2. Start Services
+### 2. Legacy Commands (Still Work)
 ```bash
 @start      # Starts both backend + frontend
 @stop       # Stops all services
 ```
 
-Or manually:
+### 3. Generate Encore Client
 ```bash
-./scripts/dev-backend.sh    # Port 4000
-./scripts/dev-frontend.sh   # Port 5173
+# NEW way
+cd .cursor && task founder:workflows:regen-client
+
+# OR old way
+cd frontend && bun run gen
 ```
+
+---
+
+## Unified Automation System ⭐ NEW
+
+### Four Entry Points, One System
+
+All automation runs through `automation/` library via **Task commands**:
+- **Husky Hooks** → Auto-validate on commit/push
+- **Cursor Commands** → Manual `task <command>`
+- **Claude Skills** → Natural language → Tasks
+- **GitHub Actions** → CI/CD (scaffolded)
+
+### Common Commands
+```bash
+cd .cursor  # All commands run from .cursor/
+
+# Development
+task founder:servers:start           # Start backend + frontend
+task founder:servers:stop            # Stop all services
+task founder:servers:status          # Check service status
+
+# Testing
+task qa:smoke:backend                # Backend smoke test
+task qa:smoke:frontend               # Frontend smoke test
+task qa:smoke:all                    # All smoke tests
+
+# Quality
+task founder:rules:check             # Validate founder rules
+task frontend:typecheck              # TypeScript check
+task frontend:lint                   # Lint check
+
+# Backend
+task backend:dev                     # Start backend only
+task backend:health                  # Health check
+task backend:db:migrate              # Run migrations
+task backend:db:shell                # Database shell
+
+# Frontend
+task frontend:dev                    # Start frontend only
+task frontend:build                  # Production build
+task frontend:gen                    # Regenerate client
+
+# Environment
+task ops:ports:show                  # Show port assignments
+task ops:env:print                   # Print all env vars
+task shared:check-worktree           # Verify worktree isolation
+```
+
+### Git Hooks (Auto-Enforced)
+- **pre-commit**: Validates founder rules (no console.log, no any types, American spelling)
+- **pre-push**: Runs smoke tests before push
+- **post-checkout**: Shows worktree status
+- Bypass: `HUSKY=0 git commit` (emergency only)
+
+### Claude Skills (AI-Assisted)
+Say to Claude: "Run smoke tests" → Executes `task qa:smoke:all`  
+See: `.claude-skills/skills.json` for 30 available skills
+
+### Documentation
+- `automation/README.md` - Automation library docs
+- `.cursor/commands/README.md` - All Task commands
+- `.husky/README.md` - Git hooks guide
+- `.claude-skills/README.md` - AI integration
 
 ---
 
@@ -133,36 +212,56 @@ for await (const row of rows) {
 
 ---
 
-## Common Commands
+## Common Commands (Task-Based) ⭐ NEW
 
 ### Development
 ```bash
-# Regenerate frontend client after backend changes
-cd frontend && bun run gen
+cd .cursor  # All task commands run from .cursor/
 
-# Reset local database
-cd backend && encore db reset
+# Regenerate frontend client after backend changes
+task founder:workflows:regen-client
 
 # View logs
-encore logs
+task backend:logs      # or task frontend:logs
+
+# Check health
+task backend:health
 ```
 
 ### Database
 ```bash
-# Access database shell
-encore db shell run --write
+cd .cursor
 
-# Get connection string
-encore db conn-uri run
+# Reset database
+task founder:workflows:db-reset
+
+# Run migrations
+task backend:db:migrate
+
+# Access database shell
+task backend:db:shell
 ```
 
 ### Testing
 ```bash
+cd .cursor
+
 # Backend tests
-cd backend && encore test
+task backend:test
 
 # Frontend tests
-cd frontend && bun test
+task frontend:test
+
+# Smoke tests
+task qa:smoke:all
+```
+
+### Legacy Commands (Still Work)
+```bash
+# Old way (still functional)
+cd frontend && bun run gen
+cd backend && encore db reset
+cd backend && encore test
 ```
 
 ---

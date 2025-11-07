@@ -1,0 +1,6 @@
+#!/bin/sh
+# Husky post-checkout hook
+# Reminds about worktree isolation after branch switch
+
+cd .cursor && task shared:check-worktree
+
