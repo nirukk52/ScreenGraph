@@ -44,10 +44,10 @@
             {#if appInfo.ratingScore}
               <div class="flex items-center gap-1">
                 <Star class="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span class="font-medium">{Number(appInfo.ratingScore).toFixed(1)}</span>
+                <span class="font-medium">{appInfo.ratingScore.toFixed(1)}</span>
                 {#if appInfo.ratingsCount}
                   <span class="text-surface-600 dark:text-surface-400 text-sm">
-                    ({Number(appInfo.ratingsCount).toLocaleString()})
+                    ({appInfo.ratingsCount.toLocaleString()})
                   </span>
                 {/if}
               </div>
