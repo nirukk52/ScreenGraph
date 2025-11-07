@@ -1,17 +1,16 @@
 <script lang="ts">
 import "../app.css";
-import Button from "$lib/components/ui/button.svelte";
 
-/** Root layout with shadcn-svelte for ultimate vibe coding */
+/** Root layout with Skeleton v3 for ultimate vibe coding */
 </script>
 
-<!-- App Header with shadcn-svelte -->
-<header class="border-b">
+<!-- App Header with Skeleton v3 -->
+<header class="bg-surface-100-900-token border-b border-surface-300-700-token">
   <div class="container mx-auto flex h-14 items-center px-4">
-    <a href="/" class="text-lg font-semibold">ScreenGraph</a>
+    <a href="/" class="text-lg font-semibold text-surface-900-50-token">ScreenGraph</a>
     <nav class="ml-auto flex gap-2">
-      <Button variant="ghost" href="/">Home</Button>
-      <Button variant="ghost" href="/app-info">App Info</Button>
+      <a href="/" class="btn variant-ghost-surface">Home</a>
+      <a href="/app-info" class="btn variant-ghost-surface">App Info</a>
     </nav>
   </div>
 </header>
