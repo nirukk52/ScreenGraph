@@ -79,7 +79,7 @@ function isFresh(record: StoredAppInfoRecord | null): boolean {
  * PURPOSE: Primary Encore endpoint invoked by backend workflows.
  */
 export const requestAppInfoIngestion = api<RequestAppInfoIngestionRequest, RequestAppInfoIngestionResponse>(
-  { method: "POST", path: "/appinfo/ingest", expose: false },
+  { method: "POST", path: "/appinfo/ingest", expose: true },
   async (req) => {
     validatePackageName(req.packageName);
 
@@ -133,7 +133,7 @@ export const requestAppInfoIngestion = api<RequestAppInfoIngestionRequest, Reque
  * PURPOSE: Provide read access for analytics and downstream services.
  */
 export const getAppInfo = api<GetAppInfoRequest, GetAppInfoResponse>(
-  { method: "GET", path: "/appinfo/{packageName}", expose: false },
+  { method: "GET", path: "/appinfo/:packageName", expose: true },
   async (req) => {
     validatePackageName(req.packageName);
 
