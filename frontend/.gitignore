@@ -1,4 +1,13 @@
+# SvelteKit build artifacts
 .svelte-kit
 .vercel
+
+# Dependencies
 node_modules
+
+# Logs
+*.log
+
+# Build cache
+.turbo/
 
