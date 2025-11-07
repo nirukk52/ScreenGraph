@@ -20,23 +20,27 @@
 ---
 
 ## 🎯 Acceptance Criteria
-- [ ] Skeleton UI and tw-plugin installed via bun
-- [ ] Tailwind config updated with Skeleton plugin and theme presets
-- [ ] App shell implemented in root layout with header/nav structure
-- [ ] Core Skeleton components integrated: AppBar, Modal, Toast, ProgressBar
-- [ ] Skeleton loader patterns implemented for async data loading
-- [ ] Theme system configured (default to 'skeleton' preset)
-- [ ] Documentation updated with Skeleton usage examples
-- [ ] All existing pages migrated to use Skeleton components where applicable
+- [x] ~~Skeleton UI and tw-plugin installed~~ → **shadcn-svelte + Tailwind v4 implemented**
+- [x] Tailwind config updated → **Migrated to v4 @theme directive**
+- [x] App shell implemented in root layout with header/nav structure
+- [x] Core components created: **Button, Card, Badge** (owned code in `src/lib/components/ui/`)
+- [x] Component styling implemented with **shadcn utilities**
+- [x] Theme system configured (**shadcn Slate theme + custom retro tokens**)
+- [x] Documentation updated with **shadcn usage examples** (FR-016-shadcn-implementation.md)
+- [x] All existing pages migrated to use **shadcn/Tailwind classes**
 
 ---
 
 ## 🔗 Dependencies
 - **Frontend:** Existing SvelteKit 2 + Svelte 5 setup
 - **Libraries:** 
-  - `@skeletonlabs/skeleton` (UI components)
-  - `@skeletonlabs/tw-plugin` (Tailwind integration)
-- **Related:** FR-015 (display-app-info-on-frontend) - may benefit from Skeleton components
+  - `shadcn-svelte@1.0.10` (Component CLI)
+  - `bits-ui@2.14.2` (Headless component primitives)
+  - `tailwindcss@4.0.0` (Utility-first CSS)
+  - `tailwind-variants@3.1.1` (Component variants)
+  - `tailwind-merge@3.3.1` (Class merging utility)
+  - `clsx@2.1.1` (Conditional classes)
+- **Related:** FR-015 (display-app-info-on-frontend) - uses shadcn Card and Badge components
 
 ---
 
@@ -55,77 +59,95 @@
 ### Installation
 ```bash
 cd frontend
-bun add -D @skeletonlabs/skeleton @skeletonlabs/tw-plugin
+
+# Upgrade to Tailwind v4
+bun add -D tailwindcss@next @tailwindcss/vite@next
+
+# Install shadcn-svelte dependencies
+bun add -D bits-ui clsx tailwind-merge tailwind-variants
 ```
 
-### Tailwind Configuration (`tailwind.config.ts`)
-```typescript
-import { skeleton } from '@skeletonlabs/tw-plugin';
-import { join } from 'path';
+### Tailwind v4 Configuration
+**No `tailwind.config.ts` needed!** Configuration via CSS:
 
-export default {
-  content: [
-    './src/**/*.{html,js,svelte,ts}',
-    join(require.resolve('@skeletonlabs/skeleton'), '../**/*.{html,js,svelte,ts}')
-  ],
-  plugins: [
-    skeleton({
-      themes: { preset: ['skeleton', 'modern', 'crimson'] }
-    })
-  ]
-};
-```
-
-### App CSS (`src/app.css`)
 ```css
-@import '@skeletonlabs/skeleton/styles/skeleton.css';
-@import '@skeletonlabs/skeleton/themes/theme-skeleton.css';
+/* src/app.css */
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+  --color-primary: 222.2 47.4% 11.2%;
+  --color-background: 0 0% 100%;
+  /* ... all design tokens */
+}
+```
+
+### Vite Configuration (`vite.config.ts`)
+```typescript
+import tailwindcss from "@tailwindcss/vite";
+
+export default defineConfig({
+  plugins: [tailwindcss(), sveltekit()],
+});
 ```
 
 ### Root Layout (`src/routes/+layout.svelte`)
 ```svelte
 <script lang="ts">
-  import { AppShell, AppBar, Modal, Toast } from '@skeletonlabs/skeleton';
-  import { initializeStores } from '@skeletonlabs/skeleton';
-  
-  initializeStores();
+  import "../app.css";
+  import { Button } from "$lib/components/ui/button.svelte";
 </script>
 
-<Toast />
-<Modal />
+<header class="border-b">
+  <div class="container mx-auto flex h-14 items-center px-4">
+    <a href="/" class="text-lg font-semibold">ScreenGraph</a>
+    <nav class="ml-auto flex gap-2">
+      <Button variant="ghost" href="/">Home</Button>
+      <Button variant="ghost" href="/app-info">App Info</Button>
+    </nav>
+  </div>
+</header>
 
-<AppShell>
-  <svelte:fragment slot="header">
-    <AppBar>
-      <svelte:fragment slot="lead">ScreenGraph</svelte:fragment>
-      <svelte:fragment slot="trail">
-        <!-- Navigation items -->
-      </svelte:fragment>
-    </AppBar>
-  </svelte:fragment>
-  
+<main>
   <slot />
-</AppShell>
+</main>
 ```
 
 ### Component Usage Pattern
 ```svelte
 <script lang="ts">
-  import { ProgressBar, Avatar, getToastStore } from '@skeletonlabs/skeleton';
+  import { Button } from "$lib/components/ui/button.svelte";
+  import { Card } from "$lib/components/ui/card.svelte";
+  import { Badge } from "$lib/components/ui/badge.svelte";
   
-  const toastStore = getToastStore();
   let loading = $state(false);
 </script>
 
-{#if loading}
-  <div class="placeholder animate-pulse" />
-{:else}
-  <ProgressBar value={progress} max={100} />
-{/if}
+<Card class="p-6">
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-2xl font-bold">Run Status</h2>
+    <Badge variant="secondary">Active</Badge>
+  </div>
+  
+  {#if loading}
+    <div class="animate-pulse space-y-2">
+      <div class="h-4 bg-muted rounded"></div>
+      <div class="h-4 bg-muted rounded w-3/4"></div>
+    </div>
+  {:else}
+    <Button>View Details</Button>
+  {/if}
+</Card>
+```
+
+### Adding More Components
+```bash
+# Copy-paste approach (recommended)
+# 1. Visit https://www.shadcn-svelte.com/docs/components/[component]
+# 2. Copy the code
+# 3. Paste into src/lib/components/ui/[component].svelte
+
+# Or use CLI
+bunx shadcn-svelte@latest add dialog toast input
 ```
 
 ---
@@ -136,7 +158,11 @@ export default {
 ---
 
 ## 📚 Related Documents
-- [Skeleton UI Documentation](https://www.skeleton.dev)
+- [shadcn-svelte Documentation](https://www.shadcn-svelte.com/docs) - Main docs
+- [shadcn-svelte Components](https://www.shadcn-svelte.com/docs/components) - Component library
+- [Tailwind CSS v4 Docs](https://tailwindcss.com/docs/v4-beta) - New CSS framework
+- [FR-016 Implementation Guide](./FR-016-shadcn-implementation.md) - Complete setup guide
+- [FR-016 Investigation Notes](./FR-016-implementation-notes.md) - Why we switched from Skeleton
 - [Frontend Engineer Rules](.cursor/rules/frontend_engineer.mdc)
 - [SvelteKit Documentation](.cursor/rules/frontend_llm_instruction.mdc)
 - [FR-015: Display App Info on Frontend](../FR-015-display-app-info-on-frontend/FR-015-main.md)
