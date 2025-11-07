@@ -281,6 +281,53 @@ frontend/
 
 ---
 
+## Handoff #5 — FR-015: App Info Display Complete
+
+- **What I am doing**: ✅ **COMPLETED** - Implemented FR-015: Frontend App Info Display. Fixed two issues: (1) Missing appinfo service in generated Encore client (resolved by running `bun run gen`), and (2) Type mismatch where backend returns ratingScore as string from PostgreSQL DECIMAL column, requiring Number() wrapper before calling .toFixed(). Page now displays Pinterest app metadata with Skeleton UI styling, including icon, rating, install count, developer info, and screenshot gallery.
+
+- **What is pending**:
+  - [x] Code: Page implementation complete
+  - [x] Tests: Manual verification with browser MCP tools complete
+  - [x] Manual review: Screenshots captured, visual verification complete
+  - [x] Documentation: Status and retro documents updated
+  - [x] Graphiti: Memory episodes created
+
+- **What I plan to do next**:
+  - Consider adding ESLint rule to catch .toFixed() calls on potentially-string values
+  - Create reusable AppInfoCard component for future app browsing features
+  - Add integration test for /app-info route
+
+- **Modules I am touching**:
+  - `frontend/src/lib/encore-client.ts` (regenerated with appinfo service)
+  - `frontend/src/routes/app-info/+page.svelte` (added Number() type conversions)
+  - `frontend/src/routes/app-info/+page.ts` (load function calling backend)
+  - `frontend/src/lib/env.ts` (VITE_DEFAULT_APP_PACKAGE configuration)
+
+- **Work status rating (out of 5)**: 5
+
+- **Graphiti episode IDs**:
+  - FR-015 Database Type Conversion Fact: `queued-position-1`
+  - FR-015 Client Regeneration Procedure: `queued-position-1`
+  - FR-015 Type Safety Rule for Numeric Display: `queued-position-2`
+  - FR-015 MCP-Based Verification Preference: `queued-position-3`
+
+- **Related docs**:
+  - `jira/feature-requests/FR-015-display-app-info-on-frontend/FR-015-main.md`
+  - `jira/feature-requests/FR-015-display-app-info-on-frontend/FR-015-status.md`
+  - `jira/feature-requests/FR-015-display-app-info-on-frontend/FR-015-retro.md`
+  - `CLAUDE.md` (API client generation workflow)
+
+- **Notes for next agent**:
+  - **Critical Learning**: PostgreSQL returns DECIMAL/NUMERIC columns as strings through Node.js `pg` driver. Always wrap with Number() before calling .toFixed() or .toLocaleString().
+  - **Client Generation Workflow**: After ANY backend service additions, immediately run `cd frontend && bun run gen` to regenerate the Encore client.
+  - **MCP Verification Workflow**: Use Encore MCP (get_services, get_traces) + Browser MCP (navigate, snapshot, screenshot, evaluate) for comprehensive feature verification. Creates documented trail with visual proof.
+  - **Type Safety Pattern**: For database numeric values, use: `{Number(value).toFixed(decimals)}` instead of `{value.toFixed(decimals)}`
+  - **Error Detection**: Frontend SSR errors appear in `frontend.log` with full stack traces—much faster than browser DevTools for initial debugging
+  - **Page Performance**: Backend caches app info for 6 hours (REFRESH_INTERVAL_MS), so repeated loads are fast (3-7ms)
+  - **Visual Quality**: Skeleton UI cards work beautifully out of the box. Horizontal screenshot gallery uses `overflow-x-auto` with `flex-shrink-0` for smooth scrolling.
+
+---
+
 ## Handoff #4 — Run Defaults Centralization & CODE_REVIEW Fixes
 
 - **What I am doing**: Finalized frontend side for centralizing run defaults and resolved CODE_REVIEW criticals. Extracted hardcoded values into `frontend/src/lib/config.ts` with env overrides, filed FR-010 to make Encore the single source of truth for defaults, and kept graph debugging logs in place (DEV-only gating pending).

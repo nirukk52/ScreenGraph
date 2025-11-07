@@ -27,6 +27,10 @@ export const env = cleanEnv(import.meta.env, {
     default: ".*",
     desc: "Android activity matcher for launching the demo app",
   }),
+  VITE_DEFAULT_APP_PACKAGE: str({
+    default: "com.pinterest",
+    desc: "Default app package name to display on /app-info route",
+  }),
   MODE: str({
     choices: ["development", "production", "test"],
     default: "development",
@@ -47,6 +51,7 @@ export const {
   VITE_APK_PATH,
   VITE_PACKAGE_NAME,
   VITE_APP_ACTIVITY,
+  VITE_DEFAULT_APP_PACKAGE,
   MODE,
   DEV,
   PROD,

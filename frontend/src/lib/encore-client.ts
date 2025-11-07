@@ -32,6 +32,7 @@ const BROWSER = typeof globalThis === "object" && ("window" in globalThis);
  * Client is an API client for the screengraph-ovzi Encore application.
  */
 export default class Client {
+    public readonly appinfo: appinfo.ServiceClient
     public readonly graph: graph.ServiceClient
     public readonly run: run.ServiceClient
     public readonly steering: steering.ServiceClient
@@ -49,6 +50,7 @@ export default class Client {
         this.target = target
         this.options = options ?? {}
         const base = new BaseClient(this.target, this.options)
+        this.appinfo = new appinfo.ServiceClient(base)
         this.graph = new graph.ServiceClient(base)
         this.run = new run.ServiceClient(base)
         this.steering = new steering.ServiceClient(base)
@@ -80,6 +82,104 @@ export interface ClientOptions {
 
     /** Default RequestInit to be used for the client */
     requestInit?: Omit<RequestInit, "headers"> & { headers?: Record<string, string> }
+}
+
+export namespace appinfo {
+    export type AppInfoCategory = "unknown" | "art_and_design" | "auto_and_vehicles" | "beauty" | "books_and_reference" | "business" | "comics" | "communication" | "dating" | "education" | "entertainment" | "events" | "finance" | "food_and_drink" | "game" | "game_action" | "game_adventure" | "game_arcade" | "game_board" | "game_card" | "game_casino" | "game_casual" | "game_educational" | "game_music" | "game_puzzle" | "game_racing" | "game_role_playing" | "game_simulation" | "game_sports" | "game_strategy" | "game_trivia" | "game_word" | "health_and_fitness" | "house_and_home" | "libraries_and_demo" | "lifestyle" | "maps_and_navigation" | "medical" | "music_and_audio" | "news_and_magazines" | "parenting" | "personalization" | "photography" | "productivity" | "shopping" | "social" | "sports" | "tools" | "travel_and_local" | "video_players" | "watch_face" | "weather"
+
+    export type AppInfoIngestStatus = "pending" | "succeeded" | "failed"
+
+    export type AppInfoMediaKind = "phone_screenshot" | "tablet_screenshot" | "feature_graphic" | "video_trailer"
+
+    export interface AppInfoMediaRecord {
+        kind: AppInfoMediaKind
+        position: number
+        assetUrl: string
+        thumbnailUrl: string | null
+    }
+
+    export interface GetAppInfoResponse {
+        appInfo: StoredAppInfoRecord
+    }
+
+    export interface RequestAppInfoIngestionRequest {
+        packageName: string
+        language?: string
+        country?: string
+        forceRefresh?: boolean
+    }
+
+    export interface RequestAppInfoIngestionResponse {
+        appInfo: StoredAppInfoRecord
+    }
+
+    export interface StoredAppInfoRecord {
+        packageName: string
+        displayName: string
+        shortDescription: string | null
+        longDescription: string | null
+        developerName: string
+        developerId: string | null
+        developerEmail: string | null
+        developerWebsite: string | null
+        developerAddress: string | null
+        categories: AppInfoCategory[]
+        primaryCategory: AppInfoCategory
+        contentRating: string | null
+        installsLabel: string | null
+        minInstalls: number | null
+        maxInstalls: number | null
+        ratingScore: number | null
+        ratingsCount: number | null
+        reviewsCount: number | null
+        isFree: boolean
+        priceMicros: number | null
+        currencyCode: string | null
+        offersInAppPurchases: boolean | null
+        supportsAds: boolean | null
+        playStoreUrl: string
+        iconUrl: string | null
+        headerImageUrl: string | null
+        videoTrailerUrl: string | null
+        privacyPolicyUrl: string | null
+        latestVersion: string | null
+        androidVersion: string | null
+        androidVersionText: string | null
+        lastStoreUpdate: string | null
+        ingestStatus: AppInfoIngestStatus
+        ingestedAt: string | null
+        media: AppInfoMediaRecord[]
+    }
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.getAppInfo = this.getAppInfo.bind(this)
+            this.requestAppInfoIngestion = this.requestAppInfoIngestion.bind(this)
+        }
+
+        /**
+         * getAppInfo returns the cached metadata for a package name.
+         * PURPOSE: Provide read access for analytics and downstream services.
+         */
+        public async getAppInfo(packageName: string): Promise<GetAppInfoResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/appinfo/${encodeURIComponent(packageName)}`)
+            return await resp.json() as GetAppInfoResponse
+        }
+
+        /**
+         * requestAppInfoIngestion fetches Play Store metadata and persists it to Postgres.
+         * PURPOSE: Primary Encore endpoint invoked by backend workflows.
+         */
+        public async requestAppInfoIngestion(params: RequestAppInfoIngestionRequest): Promise<RequestAppInfoIngestionResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/appinfo/ingest`, JSON.stringify(params))
+            return await resp.json() as RequestAppInfoIngestionResponse
+        }
+    }
 }
 
 export namespace graph {
