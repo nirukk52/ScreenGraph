@@ -1,6 +1,6 @@
 <script lang="ts">
 import "../app.css";
-import { Button } from "$lib/components/ui/button.svelte";
+import Button from "$lib/components/ui/button.svelte";
 
 /** Root layout with shadcn-svelte for ultimate vibe coding */
 </script>
