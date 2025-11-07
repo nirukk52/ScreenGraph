@@ -21,6 +21,47 @@ This document is the single place where agents leave status for each other. Alwa
 
 ---
 
+## Handoff #11 — Architecture Review Living Document (2025-11-07)
+
+- **What I am doing**: ✅ **COMPLETED** – Authored root-level `ARCHITECTURE_REVIEW.md` as the living system overview tying Encore services and SvelteKit client flows together (run lifecycle, artifacts persistence, graph projection, cancellation, critiques, evolution plan). Updated Cursor skill guides with the new evidence-capture pattern.
+
+- **What is pending**:
+  - [x] Code implementation
+  - [x] Tests written/passing (documentation only)
+  - [x] Manual testing completed (browser/Chrome capture of timeline + graph flows)
+
+- **What I plan to do next**:
+  - Keep ARCHITECTURE_REVIEW.md aligned as backend/fronted changes land (update flows + references each time services shift)
+  - Monitor Graphiti queue for the remaining architecture-review episodes and add IDs once available
+  - Socialize evidence capture loop with frontend team for upcoming UI work
+
+- **Modules I am touching**:
+  - `ARCHITECTURE_REVIEW.md`
+  - `.claude-skills/cursor-browser-mastery/SKILL.md`
+  - `.claude-skills/cursor-chrome-window-mastery/SKILL.md`
+  - `BACKEND_HANDOFF.md`
+
+- **Work status rating (out of 5)**: 4
+
+- **Graphiti episode IDs**:
+  - Architecture Review Rule 2025-11-07: `09220eea-3e54-4b0d-90a8-1fbaa58bed1e`
+  - Architecture Review Fact 2025-11-07: *(queued – id pending)*
+  - Architecture Review Procedure 2025-11-07: *(queued – id pending)*
+  - Architecture Review Preference 2025-11-07: *(queued – id pending)*
+
+- **Related docs**:
+  - `ARCHITECTURE_REVIEW.md`
+  - `.claude-skills/cursor-browser-mastery/SKILL.md`
+  - `.claude-skills/cursor-chrome-window-mastery/SKILL.md`
+  - `.cursor/commands/update_handoff`
+
+- **Notes for next agent**:
+  - Keep capturing live evidence (screenshots + console/network logs) whenever ARCHITECTURE_REVIEW.md is updated; link artifacts in the document references.
+  - Once Graphiti returns IDs for Fact/Procedure/Preference episodes, update this entry and future handoffs with the UUIDs.
+  - If new backend endpoints modify flows, run `bun run gen` on frontend before updating the doc to guarantee type safe references.
+
+---
+
 ## Handoff #10 — American English Spelling Standardization Rule
 
 - **What I am doing**: ✅ **COMPLETED** - Established and documented American English spelling as a non-negotiable coding rule after discovering runtime errors caused by spelling mismatch between database enum (British 'cancelled') and TypeScript code (American 'canceled'). Updated founder rules with new "Spelling & Language" section requiring American English exclusively across all code, schemas, types, comments, and documentation.
@@ -647,3 +688,40 @@ This document is the single place where agents leave status for each other. Alwa
   - Use atomic writes (temp + mv) and create timestamped backups before modifications
   - Prefer shared library to eliminate duplication while preserving simple @-command UX
   - Quote all variables, use `[[ ... ]]`, and `read -r` throughout; trap errors and clean up temps
+
+---
+
+## Handoff #17 — Plane Integration Feature Requests Scoped
+
+- **What I am doing**: ✅ **COMPLETED** — Created two feature requests to integrate Plane while preserving `/jira` as the planning source of truth: (1) FR-012 microservice to host a self-contained Plane instance with documented ops; (2) FR-013 integration endpoint to sync a `/jira/**` folder into Plane (idempotent upsert, dry-run diffs). Added citations to upstream docs.
+
+- **What is pending**:
+  - [ ] Infra: Decide deployment mode (AIO vs Compose/Swarm) and reserve ports per worktree
+  - [ ] Ops: Author `scripts/plane/` helpers (start/stop/logs/backup/upgrade) + README
+  - [ ] Backend: Implement `POST /integrations/plane/sync { path, dryRun? }` with strict path allowlist
+  - [ ] Docs: `/jira` → Plane mapping (fields, labels), security notes, env/secrets
+  - [ ] Tests: Unit (parsing), integration (dry-run stability), E2E (idempotent upsert)
+
+- **What I plan to do next**:
+  - Implement FR-012 ops scaffold (local dev recipe + persistence)
+  - Implement FR-013 endpoint with typed DTOs and structured logging
+
+- **Modules I am touching**:
+  - `jira/feature-requests/FR-012-plane-microservice-hosting/FR-012-main.md`
+  - `jira/feature-requests/FR-013-jira-path-managed-plane/FR-013-main.md`
+
+- **Work status rating (out of 5)**: 4
+
+- **Graphiti episode IDs**:
+  - FR-012 Plane Microservice Hosting Plan: `queued`
+  - FR-013 /jira Path to Plane Sync Plan: `queued`
+
+- **Related docs**:
+  - Plane Docs: https://docs.plane.so/
+  - Plane OSS: https://github.com/makeplane/plane?tab=readme-ov-file
+
+- **Notes for next agent**:
+  - Keep backend/frontend isolation; treat Plane as an external service we operate (no imports)
+  - Enforce worktree port isolation; do not use reserved main-tree ports
+  - Validate `path` stays within `jira/**`; derive idempotency key from folder name
+
