@@ -14,7 +14,7 @@ This library eliminates code duplication and ensures consistent behavior across 
 
 ### Single Source of Truth
 
-All business logic for worktree detection, port coordination, environment resolution, and founder rules validation lives here. The four systems above **call** this library—they don't duplicate it.
+All business logic for port coordination, environment resolution, and founder rules validation lives here. The four systems above **call** this library—they don't duplicate it.
 
 ```
 ┌─────────────┐
@@ -46,7 +46,6 @@ automation/
 ├── README.md                          # This file
 ├── scripts/                           # Executable scripts
 │   ├── env.mjs                        # Environment & port resolution
-│   ├── worktree-detection.mjs         # Worktree isolation logic
 │   ├── check-founder-rules.mjs        # Founder rules validation
 │   └── port-coordinator.mjs           # Symlink → ../../scripts/port-coordinator.mjs
 ├── lib/                               # Reusable library functions
@@ -79,7 +78,6 @@ node automation/scripts/env.mjs json
 # Get specific values
 node automation/scripts/env.mjs backend-port
 node automation/scripts/env.mjs frontend-port
-node automation/scripts/env.mjs worktree-name
 ```
 
 **Output Example:**
@@ -98,41 +96,6 @@ node automation/scripts/env.mjs worktree-name
 - Taskfile (for environment variable resolution)
 - Cursor commands (for status checks)
 - Husky hooks (for validation)
-
----
-
-### `worktree-detection.mjs` - Worktree Isolation
-
-Detects current worktree, validates isolation, checks registry.
-
-**Usage:**
-```bash
-# Get worktree info
-node automation/scripts/worktree-detection.mjs info
-
-# Validate (non-strict)
-node automation/scripts/worktree-detection.mjs validate
-
-# Validate (strict - fails on main tree)
-node automation/scripts/worktree-detection.mjs validate --strict
-
-# List all registered worktrees
-node automation/scripts/worktree-detection.mjs list
-```
-
-**Output Example:**
-```json
-{
-  "worktree": "jcCtc",
-  "isMain": false,
-  "isRegistered": true
-}
-```
-
-**Used by:**
-- Husky `post-checkout` hook (detects worktree switches)
-- Cursor commands (prevents main tree execution)
-- GitHub workflows (validates CI environment)
 
 ---
 
@@ -207,14 +170,11 @@ version: '3'
 vars:
   BACKEND_PORT:
     sh: node automation/scripts/env.mjs backend-port
-  WORKTREE_NAME:
-    sh: node automation/scripts/env.mjs worktree-name
 
 tasks:
   preflight:
     desc: "Run preflight checks"
     cmds:
-      - node automation/scripts/worktree-detection.mjs validate
       - node automation/scripts/check-founder-rules.mjs
 ```
 
@@ -239,7 +199,6 @@ node automation/scripts/check-founder-rules.mjs
 ```bash
 # .cursor/commands/start
 #!/bin/bash
-node automation/scripts/worktree-detection.mjs validate --strict
 node automation/scripts/env.mjs status
 ```
 
@@ -251,7 +210,7 @@ node automation/scripts/env.mjs status
 Each script is self-contained and can be used independently.
 
 ### 2. **Composability**
-Scripts can import each other (e.g., `env.mjs` imports `worktree-detection.mjs`).
+Scripts can import each other as needed.
 
 ### 3. **CLI + Export**
 All scripts work as both:
@@ -275,8 +234,8 @@ Scripts only depend on:
 ## Future Enhancements
 
 ### Planned for Phase 2+
-- `automation/lib/preflight-checks.mjs` - Extracted preflight logic from verify-worktree-isolation
-- `automation/lib/port-resolver.mjs` - Dynamic port allocation for new worktrees
+- `automation/lib/preflight-checks.mjs` - Extracted preflight logic
+- `automation/lib/port-resolver.mjs` - Dynamic port allocation
 - `automation/scripts/validate-commit-msg.mjs` - Conventional commit message validation
 - `automation/templates/` - Standardized templates for GitHub issues, JIRA tickets, PR checklists
 
@@ -304,9 +263,6 @@ Scripts only depend on:
 Each script should be testable independently:
 
 ```bash
-# Test worktree detection
-node automation/scripts/worktree-detection.mjs info
-
 # Test env resolution
 node automation/scripts/env.mjs status
 

@@ -92,30 +92,6 @@ Enumerating objects: 12, done.
 
 ---
 
-### `post-checkout` - Worktree Isolation Check
-
-**Triggers:** After switching branches  
-**Command:** `task shared:check-worktree`
-
-**Checks:**
-- Confirms current worktree
-- Validates port assignments
-- Ensures registry is up-to-date
-
-**Example Output:**
-```bash
-$ git checkout feature-new-ui
-
-📍 Worktree: jcCtc
-✅ Worktree isolation verified
-🔢 Ports: Backend 4100, Frontend 5273
-```
-
-**Purpose:**  
-Reminds you which worktree you're in and confirms isolation is working.
-
----
-
 ### `commit-msg` - Conventional Commits
 
 **Triggers:** Before commit message is finalized  

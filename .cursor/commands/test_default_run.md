@@ -6,7 +6,7 @@ description: Worktree-agnostic drift test. Auto-detect frontend/backend URLs, cl
 # Test Default Run (Worktree-Agnostic)
 
 ## Goal
-Run the simplest end-to-end drift test in any worktree or local setup: open the frontend, press "Detect My First Drift", wait, verify a screenshot appears.
+Run the simplest end-to-end drift test in local setup: open the frontend, press "Detect My First Drift", wait, verify a screenshot appears.
 
 ## Port & URL Autodetection (Do this first)
 1) Try port-coordinator if available:

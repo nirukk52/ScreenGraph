@@ -96,13 +96,11 @@ task frontend:gen                    # Regenerate client
 # Environment
 task ops:ports:show                  # Show port assignments
 task ops:env:print                   # Print all env vars
-task shared:check-worktree           # Verify worktree isolation
 ```
 
 ### Git Hooks (Auto-Enforced)
 - **pre-commit**: Validates founder rules (no console.log, no any types, American spelling)
 - **pre-push**: Runs smoke tests before push
-- **post-checkout**: Shows worktree status
 - Bypass: `HUSKY=0 git commit` (emergency only)
 
 ### Claude Skills (AI-Assisted)

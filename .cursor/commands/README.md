@@ -88,15 +88,12 @@ Add handoff entry to a specific tech debt folder.
 ### `@test-default-run`
 Run smoke test for default run workflow (backend + frontend + device).
 
-### `@verify-worktree-isolation`
-Verify worktree is properly isolated with unique ports.
-
 ---
 
 ## 🚀 Service Commands
 
 ### `@start`
-Start both backend and frontend services with worktree-specific ports.
+Start both backend and frontend services.
 
 ### `@stop`
 Stop all running ScreenGraph services.
@@ -124,7 +121,6 @@ Stop all running ScreenGraph services.
 2. **Before breaks**: Quick handoff ensures context is saved
 3. **Before PRs**: Use thorough handoff for complete documentation
 4. **Production releases**: Always use thorough handoff with PROC-001 workflow
-5. **Worktree isolation**: Always run `@verify-worktree-isolation` before starting work
 
 ---
 
@@ -143,8 +139,7 @@ All commands are executable shell scripts or markdown instruction files:
 ├── update-feature-doc           # Update FR-XXX handoff
 ├── update-bug-doc               # Update BUG-XXX handoff
 ├── update-tech-debt             # Update TD-XXX handoff
-├── test-default-run             # Smoke test
-└── verify-worktree-isolation    # Port verification
+└── test-default-run             # Smoke test
 ```
 
 ---

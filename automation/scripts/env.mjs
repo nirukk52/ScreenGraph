@@ -14,7 +14,21 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
-import { getCurrentWorktree } from './worktree-detection.mjs';
+
+/**
+ * Get the current worktree name (simple version)
+ * @returns {string} Name of the current directory
+ */
+function getCurrentWorktree() {
+  try {
+    const toplevel = execSync('git rev-parse --show-toplevel', {
+      encoding: 'utf-8',
+    }).trim();
+    return toplevel.split('/').pop();
+  } catch (error) {
+    return 'unknown';
+  }
+}
 
 /**
  * Parse .env file content

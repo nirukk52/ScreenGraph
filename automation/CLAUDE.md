@@ -20,18 +20,6 @@ node automation/scripts/env.mjs frontend-port   # → 5273
 node automation/scripts/env.mjs print
 ```
 
-### Worktree Detection
-```bash
-# Get info
-node automation/scripts/worktree-detection.mjs info
-
-# Validate (fails on main tree)
-node automation/scripts/worktree-detection.mjs validate --strict
-
-# List registered
-node automation/scripts/worktree-detection.mjs list
-```
-
 ### Founder Rules Check
 ```bash
 # Run all checks
@@ -49,7 +37,6 @@ node automation/scripts/check-founder-rules.mjs --strict
 automation/
 ├── scripts/
 │   ├── env.mjs                    # Environment & port resolution
-│   ├── worktree-detection.mjs     # Worktree isolation logic
 │   ├── check-founder-rules.mjs    # Founder rules validator
 │   └── port-coordinator.mjs       # Symlink → ../../scripts/
 ├── lib/
@@ -68,9 +55,6 @@ automation/
 ```bash
 # .husky/pre-commit
 node automation/scripts/check-founder-rules.mjs
-
-# .husky/post-checkout
-node automation/scripts/worktree-detection.mjs validate
 ```
 
 ### Taskfile
@@ -78,11 +62,6 @@ node automation/scripts/worktree-detection.mjs validate
 vars:
   BACKEND_PORT:
     sh: node automation/scripts/env.mjs backend-port
-
-tasks:
-  preflight:
-    cmds:
-      - node automation/scripts/worktree-detection.mjs validate
 ```
 
 ### GitHub Actions
@@ -106,11 +85,6 @@ tasks:
 **Exports**: `getPorts()`, `getServiceStatus()`, `printStatus()`, `printEnv()`
 
 **CLI**: `status | print | json | backend-port | frontend-port | worktree-name`
-
-### worktree-detection.mjs
-**Exports**: `getCurrentWorktree()`, `isMainTree()`, `validateWorktreeIsolation()`
-
-**CLI**: `info | validate | list`
 
 ### check-founder-rules.mjs
 **Exports**: `checkNoConsoleLog()`, `checkNoAnyType()`, etc.
@@ -136,10 +110,6 @@ tasks:
 node automation/scripts/env.mjs status
 # Expected: Shows services, ports, status
 
-# Test worktree detection
-node automation/scripts/worktree-detection.mjs info
-# Expected: {"worktree":"jcCtc","isMain":false,"isRegistered":true}
-
 # Test founder rules (should pass on clean codebase)
 node automation/scripts/check-founder-rules.mjs
 # Expected: ✅ All founder rules passed
@@ -148,12 +118,6 @@ node automation/scripts/check-founder-rules.mjs
 ---
 
 ## Common Patterns
-
-### Get Current Worktree
-```javascript
-import { getCurrentWorktree } from './automation/scripts/worktree-detection.mjs';
-const worktree = getCurrentWorktree(); // "jcCtc"
-```
 
 ### Get Ports
 ```javascript

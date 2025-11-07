@@ -8,8 +8,6 @@ vars:
     sh: node ../../../automation/scripts/env.mjs backend-port
   FRONTEND_PORT:
     sh: node ../../../automation/scripts/env.mjs frontend-port
-  WORKTREE_NAME:
-    sh: node ../../../automation/scripts/env.mjs worktree-name
 
 tasks:
   # Server management

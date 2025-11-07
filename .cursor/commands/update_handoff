@@ -45,8 +45,7 @@ Update the appropriate handoff document (BACKEND_HANDOFF.md or FRONTEND_HANDOFF.
 ### 3A) Production Release Update (Deterministic Flow)
 1. Load PROC-001 from `.cursor/procedures/PROCEDURES.md`
 2. Confirm Preconditions (all must be checked):
-   - [ ] `@verify-worktree-isolation` passed on release worktree
-   - [ ] `@test-default-run` passed on release worktree
+   - [ ] `@test-default-run` passed
    - [ ] CI green on release PR
 3. Update Handoff with “Release Notes Template” from PROC-001:
    - Version/tag

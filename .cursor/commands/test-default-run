@@ -4,7 +4,7 @@
 # Purpose: Automated end-to-end test of ScreenGraph run lifecycle using Chrome window
 # 
 # Flow:
-# 1. Detect ports (worktree-aware via port coordinator)
+# 1. Detect ports
 # 2. Verify backend and frontend are running
 # 3. Launch Chrome window and navigate to frontend
 # 4. Click "Detect My First Drift" button
@@ -41,8 +41,8 @@ bun backend/scripts/port-coordinator.mjs --json
 ```
 
 **Parse Output**:
-- Extract `ports.backend` (default: 4000, worktree: 4001-4009)
-- Extract `ports.frontend` (default: 5173, worktree: 5174-5183)
+- Extract `ports.backend` (default: 4000)
+- Extract `ports.frontend` (default: 5173)
 
 **Fallback**:
 If port coordinator fails:
@@ -385,10 +385,8 @@ lsof -ti:4000,4001,4002,5173,5174,5175
 # Run port coordinator
 bun backend/scripts/port-coordinator.mjs
 
-# Check worktree
+# Check current directory
 basename $(git rev-parse --show-toplevel)
-# If "ScreenGraph" → main tree (ports 4000/5173)
-# If other → worktree (ports from coordinator)
 ```
 
 ### WebSocket Issues
@@ -442,7 +440,6 @@ When this command is invoked, the AI should:
 
 ## Notes
 
-- This command is **worktree-aware** via port coordinator
 - Uses **Google Chrome mode** for clean state
 - Saves artifacts to `.cursor/test-artifacts/` (gitignored)
 - Reports are markdown-formatted for easy reading

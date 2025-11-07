@@ -5,7 +5,7 @@ version: '3'
 
 tasks:
   preflight:
-    desc: "Run all preflight checks (worktree, ports, environment)"
+    desc: "Run all preflight checks (ports, environment)"
     cmds:
       - echo "🔍 Running preflight checks..."
       - ./preflight.sh
@@ -32,7 +32,7 @@ tasks:
     silent: false
 
   status:
-    desc: "Show environment status (worktree, ports, services)"
+    desc: "Show environment status (ports, services)"
     cmds:
       - node ../../../automation/scripts/env.mjs status
     silent: false

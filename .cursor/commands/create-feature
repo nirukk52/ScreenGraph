@@ -71,10 +71,9 @@ cat >> "${FOLDER_PATH}/${FEATURE_ID}-main.md" << 'EOF'
 ---
 
 ## Release Plan (PROC-001)
-- Follow PROC-001 “Production Release” in `.cursor/procedures/PROCEDURES.md`
+- Follow PROC-001 "Production Release" in `.cursor/procedures/PROCEDURES.md`
 - Preconditions:
-  - [ ] `@verify-worktree-isolation` passes
-  - [ ] `@test-default-run` passes on this worktree
+  - [ ] `@test-default-run` passes
 - Handoff:
   - After merge to main, run `@update_handoff` and choose the “Production Release Update” workflow
 - Notes:
@@ -82,7 +81,6 @@ cat >> "${FOLDER_PATH}/${FEATURE_ID}-main.md" << 'EOF'
   - Tag format: `v<frontend>-<date>-<shortsha>`
 
 ## Worktree Setup Quicklinks
-- Isolation: `@verify-worktree-isolation`
 - Start Backend: `./scripts/dev-backend.sh`
 - Start Frontend: `./scripts/dev-frontend.sh`
 - Smoke Test: `@test-default-run`
@@ -98,7 +96,7 @@ echo "   - ${FEATURE_ID}-status.md (status report)"
 echo ""
 echo "🚀 Next steps:"
 echo "   1. Fill out ${FEATURE_ID}-main.md with feature details"
-echo "   2. Run @verify-worktree-isolation then start services"
+echo "   2. Start services and begin development"
 echo "   3. Validate with @test-default-run"
-echo "   4. When ready for prod, run @update_handoff and select “Production Release Update”"
+echo "   4. When ready for prod, run @update_handoff and select "Production Release Update""
 

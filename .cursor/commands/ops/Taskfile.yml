@@ -6,7 +6,7 @@ version: '3'
 tasks:
   # Port management
   ports:show:
-    desc: "Show current port assignments for this worktree"
+    desc: "Show current port assignments"
     cmds:
       - echo "🔢 Port Configuration:"
       - bun ../../../scripts/port-coordinator.mjs
@@ -28,14 +28,14 @@ tasks:
     silent: false
 
   ports:reserve:
-    desc: "Reserve ports for current worktree (future implementation)"
+    desc: "Reserve ports (future implementation)"
     cmds:
       - echo "🔒 Port reservation not yet implemented"
       - echo "   Ports are currently assigned from .env file"
     silent: false
 
   ports:release:
-    desc: "Release port reservations for current worktree (future implementation)"
+    desc: "Release port reservations (future implementation)"
     cmds:
       - echo "🔓 Port release not yet implemented"
       - echo "   No cleanup needed for current implementation"
