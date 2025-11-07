@@ -98,6 +98,20 @@ alwaysApply: true
 - After backend changes → run `bun run gen` on frontend
 - Full end-to-end type safety guaranteed
 
+**Encore.ts TypeScript Limitations:**
+- ❌ **NO indexed access types**: `(typeof ARRAY)[number]` NOT supported by Encore parser
+- ✅ **Use explicit literal unions instead**:
+
+```typescript
+// ❌ BAD: Encore parser fails on indexed access
+export const STATUSES = ["pending", "active", "completed"] as const;
+export type Status = (typeof STATUSES)[number];
+
+// ✅ GOOD: Explicit literal union, then typed array
+export type Status = "pending" | "active" | "completed";
+export const STATUSES: readonly Status[] = ["pending", "active", "completed"];
+```
+
 **Examples:**
 ```typescript
 interface StartRunRequest { appId: string; deviceId: string; policy?: "breadth" | "depth"; }

@@ -1,41 +1,106 @@
 /**
+ * AppInfoMediaKind models the allowed media categories for stored assets.
+ * PURPOSE: Enforce type safety across repositories and API DTOs.
+ */
+export type AppInfoMediaKind = 
+  | "phone_screenshot"
+  | "tablet_screenshot"
+  | "feature_graphic"
+  | "video_trailer";
+
+/**
  * APP_INFO_MEDIA_KINDS enumerates supported Play Store media asset types.
  * PURPOSE: Prevent magic strings when classifying screenshots and trailers.
  */
-export const APP_INFO_MEDIA_KINDS = [
+export const APP_INFO_MEDIA_KINDS: readonly AppInfoMediaKind[] = [
   "phone_screenshot",
   "tablet_screenshot",
   "feature_graphic",
   "video_trailer",
-] as const;
-
-/**
- * AppInfoMediaKind models the allowed media categories for stored assets.
- * PURPOSE: Enforce type safety across repositories and API DTOs.
- */
-export type AppInfoMediaKind = (typeof APP_INFO_MEDIA_KINDS)[number];
-
-/**
- * APP_INFO_INGEST_STATUSES defines ingestion lifecycle states for Play Store sync.
- * PURPOSE: Coordinate endpoint responses and database persistence logic.
- */
-export const APP_INFO_INGEST_STATUSES = [
-  "pending",
-  "succeeded",
-  "failed",
-] as const;
+];
 
 /**
  * AppInfoIngestStatus signals the most recent ingestion outcome for a package.
  * PURPOSE: Surface operational visibility to API consumers.
  */
-export type AppInfoIngestStatus = (typeof APP_INFO_INGEST_STATUSES)[number];
+export type AppInfoIngestStatus = 
+  | "pending"
+  | "succeeded"
+  | "failed";
+
+/**
+ * APP_INFO_INGEST_STATUSES defines ingestion lifecycle states for Play Store sync.
+ * PURPOSE: Coordinate endpoint responses and database persistence logic.
+ */
+export const APP_INFO_INGEST_STATUSES: readonly AppInfoIngestStatus[] = [
+  "pending",
+  "succeeded",
+  "failed",
+];
+
+/**
+ * AppInfoCategory is the normalized Google Play category code assigned to an app.
+ * PURPOSE: Drive analytics grouping and downstream filtering.
+ */
+export type AppInfoCategory = 
+  | "unknown"
+  | "art_and_design"
+  | "auto_and_vehicles"
+  | "beauty"
+  | "books_and_reference"
+  | "business"
+  | "comics"
+  | "communication"
+  | "dating"
+  | "education"
+  | "entertainment"
+  | "events"
+  | "finance"
+  | "food_and_drink"
+  | "game"
+  | "game_action"
+  | "game_adventure"
+  | "game_arcade"
+  | "game_board"
+  | "game_card"
+  | "game_casino"
+  | "game_casual"
+  | "game_educational"
+  | "game_music"
+  | "game_puzzle"
+  | "game_racing"
+  | "game_role_playing"
+  | "game_simulation"
+  | "game_sports"
+  | "game_strategy"
+  | "game_trivia"
+  | "game_word"
+  | "health_and_fitness"
+  | "house_and_home"
+  | "libraries_and_demo"
+  | "lifestyle"
+  | "maps_and_navigation"
+  | "medical"
+  | "music_and_audio"
+  | "news_and_magazines"
+  | "parenting"
+  | "personalization"
+  | "photography"
+  | "productivity"
+  | "shopping"
+  | "social"
+  | "sports"
+  | "tools"
+  | "travel_and_local"
+  | "video_players"
+  | "watch_face"
+  | "weather";
 
 /**
  * APP_INFO_CATEGORIES captures known Google Play classification codes.
  * PURPOSE: Normalize external category identifiers into a controlled vocabulary.
  */
-export const APP_INFO_CATEGORIES = [
+export const APP_INFO_CATEGORIES: readonly AppInfoCategory[] = [
   "unknown",
   "art_and_design",
   "auto_and_vehicles",
@@ -88,13 +153,7 @@ export const APP_INFO_CATEGORIES = [
   "video_players",
   "watch_face",
   "weather",
-] as const;
-
-/**
- * AppInfoCategory is the normalized Google Play category code assigned to an app.
- * PURPOSE: Drive analytics grouping and downstream filtering.
- */
-export type AppInfoCategory = (typeof APP_INFO_CATEGORIES)[number];
+];
 
 /**
  * PlayStoreMediaAsset represents a single media element returned by scraping.
