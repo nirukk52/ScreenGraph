@@ -60,8 +60,12 @@ description: "Non-negotiable development standards for ScreenGraph. Enforces arc
 └── README.md         ← Docs, shared tsconfig, biome config
 ```
 
-**Absolute Prohibitions:**
-- ❌ No root package.json
+**Absolute Prohibitions (FR-018 harness exception noted):**
+- ⚠️ Root `package.json` ONLY allowed for dev-only orchestration harnesses (e.g., Turborepo). Requirements:
+  - Must be marked `"private": true`
+  - May contain **devDependencies** only (no shared runtime deps)
+  - Must reference backend/frontend via workspace paths without linking `node_modules`
+  - Must delegate QA/lint/typecheck to existing Taskfile/Turborepo scripts so guardrails remain identical
 - ❌ No root encore.app
 - ❌ No shared node_modules
 - ❌ No backend↔frontend imports

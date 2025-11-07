@@ -63,6 +63,9 @@ Bootstrapped Turborepo harness (root package.json + turbo.json), rerouted `bun r
 ### 2025-11-07 03:45
 Published `FR-018-critique.md` with policy analysis, integration phases, and immediate next steps.
 
+### 2025-11-07 03:55
+Amended founder rules to allow dev-only root harness (`package.json`) under strict constraints (private, devDependencies only, guardrail parity).
+
 ---
 
 ## 🤝 Help Needed
