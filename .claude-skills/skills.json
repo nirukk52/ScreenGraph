@@ -216,6 +216,28 @@
       "command": "cd .cursor && task help",
       "category": "help",
       "status": "active"
+    },
+    {
+      "name": "create-skill",
+      "description": "Create a new Claude skill with proper structure and template",
+      "command": "python3 skills-main/skill-creator/scripts/init_skill.py",
+      "category": "skill-management",
+      "requires": ["skill-name"],
+      "status": "active"
+    },
+    {
+      "name": "validate-skill",
+      "description": "Validate skill structure and requirements",
+      "command": "python3 skills-main/skill-creator/scripts/quick_validate.py",
+      "category": "skill-management",
+      "status": "active"
+    },
+    {
+      "name": "package-skill",
+      "description": "Package skill into distributable zip file",
+      "command": "python3 skills-main/skill-creator/scripts/package_skill.py",
+      "category": "skill-management",
+      "status": "active"
     }
   ],
   "categories": {
@@ -223,6 +245,7 @@
     "testing": "Test execution (smoke tests, unit tests, E2E)",
     "quality": "Code quality checks (linting, type checking, founder rules)",
     "workflows": "Multi-step workflows (builds, deployments, migrations)",
+    "skill-management": "Create, validate, and package Claude skills",
     "help": "Help and documentation"
   },
   "usage": {

@@ -78,6 +78,9 @@ User gets feedback: "✅ Services started on ports 4100, 5273"
 - **backend-debugging** - 10-phase Encore.ts debugging (symlinked from `backend/.claude-skills/`)
 - **frontend-debugging** - 10-phase SvelteKit debugging (symlinked from `frontend/.claude-skills/`)
 
+#### Skill Creation & Management
+- **skill-creator** - Complete guide for creating new skills (copied from Anthropic's skills repository)
+
 ---
 
 ## Using Skills in Cursor
@@ -127,6 +130,7 @@ Claude will:
 ```
 "Use the backend-debugging-encore skill to investigate why screens table is empty"
 "Use the frontend-debugging-sveltekit skill to debug WebSocket connection"
+"Use the skill-creator skill to build a new deployment skill"
 ```
 
 **Context-Based Activation:**
@@ -134,6 +138,85 @@ Claude may automatically load relevant knowledge skills when:
 - Working in related files (e.g., frontend component → frontend-debugging)
 - Describing issues that match skill descriptions
 - Following systematic debugging procedures
+
+---
+
+## Creating New Skills
+
+Claude can quickly create new skills for you using the skill-creator workflow.
+
+### Quick Start
+
+**Natural Language (Recommended):**
+```
+"Create a skill for database migrations"
+"Create a skill to help with API documentation"
+"Update the deployment skill to include rollback steps"
+```
+
+Claude will:
+1. Ask clarifying questions about the skill's purpose
+2. Identify what scripts, references, or assets are needed
+3. Generate the skill structure using `init_skill.py`
+4. Create SKILL.md with proper frontmatter
+5. Add relevant scripts/references/assets
+6. Validate the skill structure
+
+### Manual Creation
+
+**Using Scripts Directly:**
+```bash
+# Initialize new skill
+python3 skills-main/skill-creator/scripts/init_skill.py <skill-name> --path .claude-skills/
+
+# Validate skill
+python3 skills-main/skill-creator/scripts/quick_validate.py .claude-skills/<skill-name>
+
+# Package skill for distribution
+python3 skills-main/skill-creator/scripts/package_skill.py .claude-skills/<skill-name>
+```
+
+### Skill Structure
+
+Every skill needs:
+```
+skill-name/
+├── SKILL.md (required)
+│   ├── YAML frontmatter (name, description)
+│   └── Markdown instructions
+└── Optional resources:
+    ├── scripts/       - Executable code (Python/Bash)
+    ├── references/    - Documentation to load as needed
+    └── assets/        - Templates, files for output
+```
+
+### Best Practices
+
+**When to Create a Skill:**
+- ✅ You're rewriting the same code repeatedly
+- ✅ You need domain-specific knowledge available
+- ✅ There's a systematic procedure to follow
+- ✅ You have reusable assets or templates
+
+**Skill Types to Create:**
+- **Workflow skills** - Multi-step procedures (e.g., deployment, testing)
+- **Tool integration skills** - Work with specific APIs or file formats
+- **Domain expertise skills** - Company schemas, business logic
+- **Debugging skills** - Systematic investigation procedures
+
+**Skill Naming:**
+- Use kebab-case: `database-migration`, `api-generator`
+- Be descriptive: `frontend-component-builder` not just `builder`
+- Include context: `encore-database-migration` not just `migration`
+
+### Iteration Workflow
+
+1. Create initial skill
+2. Use it on real tasks
+3. Notice what's missing or inefficient
+4. Say: "Update the [skill-name] skill to include [improvement]"
+5. Claude updates SKILL.md or adds resources
+6. Validate and test again
 
 ---
 

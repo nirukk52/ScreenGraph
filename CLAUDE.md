@@ -122,13 +122,33 @@ task ops:env:print                   # Print env vars from .env
 
 ### Claude Skills (AI-Assisted)
 Say to Claude: "Run smoke tests" → Executes `task qa:smoke:all`  
-See: `.claude-skills/skills.json` for 30 available skills
+Say to Claude: "Create a skill for database migrations" → Creates new skill  
+See: `.claude-skills/skills.json` for 33 available skills
+
+**Skill Types:**
+- **Task-based** (30 skills): Automation workflows in `skills.json`
+- **Knowledge-based** (5 skills): Debugging procedures with `SKILL.md` files
+  - `backend-debugging` - 10-phase Encore.ts debugging
+  - `frontend-debugging` - 10-phase SvelteKit debugging
+  - `cursor-browser-mastery` - Browser tool comprehensive guide
+  - `cursor-chrome-window-mastery` - Window management
+  - `skill-creator` - Create new skills workflow
+
+**Creating New Skills:**
+```bash
+# Say to Claude:
+"Create a skill for [purpose]"
+
+# Or use directly:
+python3 skills-main/skill-creator/scripts/init_skill.py <skill-name> --path .claude-skills/
+```
 
 ### Documentation
 - `automation/README.md` - Automation library docs
 - `.cursor/commands/README.md` - All Task commands
 - `.husky/README.md` - Git hooks guide
-- `.claude-skills/README.md` - AI integration
+- `.claude-skills/README.md` - Skills documentation
+- `.claude-skills/skill-creator/SKILL.md` - How to create new skills
 
 ---
 
