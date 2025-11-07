@@ -1,47 +1,72 @@
-# FR-XXX: [Short Title] - Retrospective
+# FR-XXX: [Short Title] - Retro
 
-**Completed Date:** [YYYY-MM-DD]  
-**Actual Effort:** [Small | Medium | Large | XL]  
-**Team:** [Names of people who worked on this]
-
----
-
-## ✅ What Went Well
-- [Thing that went well 1]
-- [Thing that went well 2]
-- [Thing that went well 3]
+> **Line Limit:** 100 lines max (enforced)
+> **Purpose:** Learnings and retrospective after bug resolution
 
 ---
 
-## 🚧 What Could Be Improved
-- [Challenge or pain point 1]
-- [Challenge or pain point 2]
-- [Challenge or pain point 3]
+## Completed
+**Date:** YYYY-MM-DD
+**Resolution:** [Completed | Cancelled | Deferred]
 
 ---
 
-## 📊 Metrics & Outcomes
-- **Estimated vs Actual Effort:** [e.g., "Estimated Medium, Actual Large"]
-- **Bugs Introduced:** [Number and severity]
-- **Performance Impact:** [e.g., "API response time improved by 200ms"]
-- **User Impact:** [e.g., "Unblocked 3 downstream features"]
+## Rating (out of 5)
+**Overall:** [0-5]
+
+**Breakdown:**
+- Design quality: [0-5]
+- Implementation speed: [0-5]
+- Testing coverage: [0-5]
+- Documentation: [0-5]
 
 ---
 
-## 🎓 Lessons Learned
-1. [Key lesson 1]
-2. [Key lesson 2]
-3. [Key lesson 3]
+## What Went Well
+- [Success 1]
+- [Success 2]
+- [Success 3]
 
 ---
 
-## 🔄 Action Items for Future
-- [ ] [Actionable item 1 - assign to specific person/process]
-- [ ] [Actionable item 2 - assign to specific person/process]
-- [ ] [Actionable item 3 - assign to specific person/process]
+## What Didn't Go Well
+- [Challenge 1]
+- [Challenge 2]
+- [Challenge 3]
 
 ---
 
-## 📝 Additional Notes
-[Any other reflections, discoveries, or context worth capturing]
+## Lessons Learned
+1. **[Lesson Title]**
+   - What: [Brief description]
+   - Why: [Root cause or context]
+   - Action: [What to do differently]
+
+2. **[Lesson Title]**
+   - What: [Brief description]
+   - Why: [Root cause or context]
+   - Action: [What to do differently]
+
+---
+
+## Prevention
+**How to prevent this bug class in the future:**
+- [Prevention measure 1]
+- [Prevention measure 2]
+- [Prevention measure 3]
+
+---
+
+## Impact
+- **Users affected**: [Number/percentage]
+- **Duration**: [How long bug existed]
+- **Time to fix**: [Investigation + implementation time]
+
+---
+
+## Follow-up Items
+- [ ] [Follow-up task 1] → TD-XXX
+- [ ] [Follow-up task 2] → FR-XXX
+
+---
 

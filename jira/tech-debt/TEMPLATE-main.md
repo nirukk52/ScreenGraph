@@ -1,82 +1,95 @@
 # TD-XXX: [Short Title]
 
-**Status:** 📋 Todo | 🚧 In Progress | ✅ Done | 🔥 Blocked  
-**Priority:** P0 (Critical) | P1 (High) | P2 (Medium) | P3 (Low)  
-**Owner:** [Name or TBD]  
-**Estimated Effort:** [Small | Medium | Large | XL]
+> **Line Limit:** 150 lines max (enforced)
+> **Purpose:** Core tech debt documentation and refactoring details
 
 ---
 
-## 📝 Description
-[Clear description of the technical debt, what's suboptimal, and why it needs to be addressed]
+## Summary
+[Brief description: what needs to be refactored, why it's technical debt, impact if not addressed]
 
 ---
 
-## 🚨 Current Problem / Pain Points
-- [Pain point 1 - e.g., "Slows down feature development"]
-- [Pain point 2 - e.g., "Causes frequent bugs"]
-- [Pain point 3 - e.g., "Makes onboarding difficult"]
+## Current State (Problems)
+- [Problem 1: maintainability issue]
+- [Problem 2: performance issue]
+- [Problem 3: code quality issue]
 
 ---
 
-## 💰 Business Value / Impact
-- **Development Velocity:** [How it impacts speed of development]
-- **Reliability:** [How it impacts system reliability]
-- **Maintainability:** [How it impacts code maintainability]
-- **Cost:** [Current cost of NOT fixing it]
+## Desired State (After Refactoring)
+- [Improvement 1]
+- [Improvement 2]
+- [Improvement 3]
 
 ---
 
-## 🎯 Proposed Solution
-[Clear description of how you want to fix or refactor this]
-
-### Acceptance Criteria
-- [ ] [Specific criterion 1]
-- [ ] [Specific criterion 2]
-- [ ] [Specific criterion 3]
+## Why This Matters
+- **Maintainability**: [Impact on future development]
+- **Performance**: [Impact on system performance]
+- **Code Quality**: [Impact on codebase health]
+- **Risk**: [What breaks if we don't fix this]
 
 ---
 
-## 🔗 Dependencies
-- [Other TDs that should be addressed first]
-- [FRs that might be impacted by this change]
-- [System components that will be affected]
+## Refactoring Approach
+[High-level strategy for addressing the tech debt]
 
 ---
 
-## 🧪 Testing Requirements
-- [ ] [Regression test requirement 1]
-- [ ] [Integration test requirement 2]
-- [ ] [Performance test requirement 3]
+## Implementation Plan
+1. [Step 1: analysis/preparation]
+2. [Step 2: incremental refactoring]
+3. [Step 3: testing/verification]
+4. [Step 4: deployment/monitoring]
 
 ---
 
-## 📋 Technical Notes
-[Include details about current implementation, proposed implementation, migration plan, etc.]
-
-### Current State
-```typescript
-// Current problematic code or pattern
-```
-
-### Proposed State
-```typescript
-// How it should look after refactor
-```
-
-### Migration Plan
-1. [Step 1]
-2. [Step 2]
-3. [Step 3]
+## Affected Modules
+- `path/to/module1.ts`
+- `path/to/module2.ts`
+- `path/to/module3.ts`
 
 ---
 
-## 🏷️ Labels
-`[backend]`, `[frontend]`, `[refactor]`, `[performance]`, `[priority]`
+## Breaking Changes
+- [ ] No breaking changes
+- [ ] Breaking changes (describe below)
+
+[If breaking changes, describe migration path]
 
 ---
 
-## 📚 Related Documents
-- [Link to architecture docs]
-- [Link to related TDs/FRs/bugs]
+## Testing Strategy
+- **Unit Tests**: [What to test]
+- **Integration Tests**: [What to test]
+- **Regression Tests**: [What to verify still works]
+- **Performance Tests**: [Before/after benchmarks]
+
+---
+
+## Dependencies
+- **Discovered in**: [FR-XXX, BUG-XXX, or code review]
+- **Blocks**: [FR-XXX if refactoring is prerequisite]
+- **Related**: [TD-XXX, FR-XXX if applicable]
+
+---
+
+## Owner / Priority
+- **Reported by**: [Name or "Code Review"]
+- **Assigned to**: [Team or person]
+- **Priority**: [P0 | P1 | P2 | P3]
+- **Target Sprint**: [Sprint number or date]
+
+---
+
+## Success Criteria
+- [ ] [Criterion 1]
+- [ ] [Criterion 2]
+- [ ] [Criterion 3]
+
+---
+
+## Notes
+[Additional context, links, architectural decision records]
 

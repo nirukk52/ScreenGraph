@@ -1,23 +1,24 @@
-# Handoff Log - FR-XXX - [Short Title]
+# Handoff Log - FR-XXX
 
-This file tracks handoff entries for this feature across multiple work sessions.
+> **Line Limit:** 50 lines max (enforced)
+> **Purpose:** Track work sessions and handoff context to next agent
 
 ---
 
-## Handoff #1 - [DATE]
+## Handoff #1 — YYYY-MM-DD
 
 ### What I am doing
-[Current task description]
+[Brief description of current task, 1-2 lines]
 
 ### What is pending
-- [ ] Requirements clarified
-- [ ] Code implementation
+- [ ] Feature implementation
 - [ ] Tests written/passing
-- [ ] Manual testing completed
+- [ ] Manual verification
 - [ ] Documentation updated
 
 ### What I plan to do next
-[Next steps]
+- [Next step 1]
+- [Next step 2]
 
 ### Modules I am touching
 - `path/to/file1.ts`
@@ -25,6 +26,10 @@ This file tracks handoff entries for this feature across multiple work sessions.
 
 ### Work status rating (out of 5)
 [0-5]
+
+### Handoff Chain
+**Next Item:** [FR-XXX or BUG-XXX or TBD]
+**Related:** [comma-separated IDs if applicable]
 
 ### Notes for next agent
 [Context, gotchas, recommendations]

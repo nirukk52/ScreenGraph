@@ -1,76 +1,72 @@
-# FR-XXX: [Short Title] - Status Report
+# FR-XXX: [Short Title] - Status
 
-**Last Updated:** [YYYY-MM-DD HH:MM]  
-**Current Status:** 📋 Todo | 🚧 In Progress | ✅ Done | 🔥 Blocked  
-**Owner:** [Name]
-
----
-
-## 🎯 Progress Summary
-**Overall Completion:** [XX%]
-
-### Acceptance Criteria Progress
-- [✅] [Completed criterion 1]
-- [🚧] [In-progress criterion 2] - 60% complete
-- [📋] [Not started criterion 3]
+> **Line Limit:** 100 lines max (enforced)
+> **Purpose:** Track todos, progress, and current state
 
 ---
 
-## 🔨 Work Completed (Last Update)
-- [Specific accomplishment 1]
-- [Specific accomplishment 2]
-- [Specific accomplishment 3]
+## Manual Testing Required (Top 5)
+1. [Test scenario 1 - small or large]
+2. [Test scenario 2]
+3. [Test scenario 3]
+4. [Test scenario 4]
+5. [Test scenario 5]
 
 ---
 
-## 🚧 Work In Progress
-- [Current task 1] - Expected completion: [date]
-- [Current task 2] - Expected completion: [date]
+## Status
+**Current:** [planning | in-progress | testing | completed | blocked]
+**Priority:** [P0 | P1 | P2 | P3]
+**Severity:** [Critical | High | Medium | Low]
+
+**Started:** YYYY-MM-DD
+**Last Updated:** YYYY-MM-DD
+**Completed:** YYYY-MM-DD (if applicable)
 
 ---
 
-## 📋 Work Remaining
-- [ ] [Remaining task 1]
-- [ ] [Remaining task 2]
-- [ ] [Remaining task 3]
+## Todos
+- [ ] Design feature architecture
+- [ ] Implement backend endpoints
+- [ ] Implement frontend UI
+- [ ] Write/update tests
+- [ ] Manual verification
+- [ ] Update documentation
 
 ---
 
-## 🔥 Blockers & Risks
-**Blockers:**
-- [Blocker 1] - Blocking since [date] - Waiting on [person/team]
-- [Blocker 2] - Blocking since [date] - Requires [dependency]
-
-**Risks:**
-- [Risk 1] - Likelihood: [High|Medium|Low] - Impact: [High|Medium|Low]
-- [Risk 2] - Likelihood: [High|Medium|Low] - Impact: [High|Medium|Low]
+## Progress Summary
+[Brief summary of current state and recent progress]
 
 ---
 
-## 📊 Timeline
-- **Started:** [YYYY-MM-DD]
-- **Original Target:** [YYYY-MM-DD]
-- **Current Target:** [YYYY-MM-DD]
-- **Status:** On Track | At Risk | Delayed
+## Blockers
+- (none)
+
+OR
+
+- [Blocker 1] - Since YYYY-MM-DD
+- [Blocker 2] - Waiting for [resource/person]
 
 ---
 
-## 💬 Recent Updates
+## Recent Updates
 
-### [YYYY-MM-DD HH:MM]
-[Update description - what changed, what was completed, what's next]
+### YYYY-MM-DD
+[Update description - findings, progress, new information]
 
-### [YYYY-MM-DD HH:MM]
+### YYYY-MM-DD
 [Previous update]
 
 ---
 
-## 🤝 Help Needed
+## Help Needed
+- (none)
+
+OR
+
 - [Specific help request 1]
 - [Specific help request 2]
 
 ---
-
-## 📝 Notes
-[Any additional context, decisions made, or important information]
 

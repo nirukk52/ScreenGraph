@@ -1,4 +1,4 @@
-# Handoff Log - BUG-XXX
+# Handoff Log - CHORE-XXX
 
 > **Line Limit:** 50 lines max (enforced)
 > **Purpose:** Track work sessions and handoff context to next agent
@@ -11,10 +11,10 @@
 [Brief description of current task, 1-2 lines]
 
 ### What is pending
-- [ ] Root cause identified
-- [ ] Fix implemented
-- [ ] Tests passing
-- [ ] Manual verification
+- [ ] Chore implementation
+- [ ] Tests/verification
+- [ ] Documentation updated
+- [ ] Team notification
 
 ### What I plan to do next
 - [Next step 1]
@@ -28,7 +28,7 @@
 [0-5]
 
 ### Handoff Chain
-**Next Item:** [BUG-XXX or FR-XXX or TBD]
+**Next Item:** [CHORE-XXX or FR-XXX or TD-XXX or TBD]
 **Related:** [comma-separated IDs if applicable]
 
 ### Notes for next agent

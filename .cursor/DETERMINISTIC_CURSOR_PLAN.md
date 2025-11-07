@@ -59,6 +59,15 @@ Every `jira/feature-requests/FR-XXX/`, `jira/bugs/BUG-XXX/`, `jira/tech-debt/TD-
 
 ---
 
+## Manual Testing Required (Top 5)
+1. [Test scenario 1 - small or large]
+2. [Test scenario 2]
+3. [Test scenario 3]
+4. [Test scenario 4]
+5. [Test scenario 5]
+
+---
+
 ## Todos
 - [ ] Todo item 1 (Brief, < 10 words)
 - [ ] Todo item 2

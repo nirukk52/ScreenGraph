@@ -1,0 +1,222 @@
+#!/usr/bin/env bash
+# Update Handoff Quick - Fast item-level handoff (30 seconds)
+#
+# Minimal handoff update for regular work sessions.
+# For production releases or major milestones, use 'update-handoff' instead.
+
+set -euo pipefail
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Constants
+JIRA_DIR="jira"
+MAX_HANDOFF_LINES=50
+
+# Helper functions
+print_info() { echo -e "${BLUE}ℹ${NC} $1"; }
+print_success() { echo -e "${GREEN}✓${NC} $1"; }
+print_error() { echo -e "${RED}✗${NC} $1" >&2; }
+
+show_help() {
+  cat <<EOF
+Usage: update-handoff-quick [ITEM-ID]
+
+Fast handoff update for regular work (30 seconds vs 2-3 minutes).
+
+EXAMPLES:
+  update-handoff-quick FR-015     # Quick update for feature #15
+  update-handoff-quick BUG-003    # Quick update for bug #3
+  update-handoff-quick            # Interactive: select from git context
+
+WHAT'S INCLUDED:
+  ✓ Auto-detects item from git branch or modified files
+  ✓ Pre-fills modules from git status
+  ✓ Minimal prompts (rating + notes only)
+  ✓ Auto-updates status.md timestamp
+
+WHAT'S SKIPPED:
+  ⏭ Extensive documentation
+  ⏭ Graphiti episodes (do separately if needed)
+  ⏭ Retro creation (use 'update-handoff' for completed work)
+
+For thorough handoffs: use 'update-handoff' instead
+EOF
+}
+
+find_item_path() {
+  local item_id="$1"
+  local prefix="${item_id%%-*}"
+  
+  local category=""
+  case "$prefix" in
+    FR) category="feature-requests" ;;
+    BUG) category="bugs" ;;
+    TD) category="tech-debt" ;;
+    CHORE) category="chores" ;;
+    *)
+      print_error "Invalid item ID: ${item_id}"
+      return 1
+      ;;
+  esac
+  
+  local item_dir="${JIRA_DIR}/${category}/${item_id}"
+  if [[ ! -d "$item_dir" ]]; then
+    local matches=( "${JIRA_DIR}/${category}/${item_id}"-* )
+    if [[ -d "${matches[0]}" ]]; then
+      item_dir="${matches[0]}"
+    else
+      return 1
+    fi
+  fi
+  
+  echo "$item_dir"
+}
+
+detect_item_from_git() {
+  # Try to extract from branch name (e.g., feature/FR-015-app-info)
+  local branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+  if [[ "$branch" =~ (FR|BUG|TD|CHORE)-[0-9]+ ]]; then
+    echo "${BASH_REMATCH[0]}"
+    return 0
+  fi
+  
+  # Try to find from modified files in jira/
+  local modified=$(git status --short | grep "^ M" | grep "jira/" | head -1 || echo "")
+  if [[ "$modified" =~ (FR|BUG|TD|CHORE)-[0-9]+ ]]; then
+    echo "${BASH_REMATCH[0]}"
+    return 0
+  fi
+  
+  return 1
+}
+
+get_modified_files() {
+  git status --short | grep "^ M" | awk '{print $2}' | head -5
+}
+
+get_next_handoff_number() {
+  local handoff_file="$1"
+  if [[ ! -f "$handoff_file" ]]; then
+    echo "1"
+    return
+  fi
+  local last_num=$(grep -o "## Handoff #[0-9]\+" "$handoff_file" | tail -1 | grep -o "[0-9]\+")
+  [[ -z "$last_num" ]] && echo "1" || echo $((last_num + 1))
+}
+
+quick_handoff() {
+  local item_id="$1"
+  local item_dir=$(find_item_path "$item_id")
+  
+  if [[ -z "$item_dir" ]]; then
+    print_error "Item not found: ${item_id}"
+    return 1
+  fi
+  
+  print_info "Quick handoff for: ${item_id}"
+  
+  local handoff_file="${item_dir}/handoff.md"
+  local status_file="${item_dir}/status.md"
+  local handoff_num=$(get_next_handoff_number "$handoff_file")
+  local date=$(date +%Y-%m-%d)
+  
+  # Auto-detect modified files
+  local modules=$(get_modified_files)
+  local modules_display=$(echo "$modules" | head -3 | sed 's/^/  - /')
+  
+  echo ""
+  print_info "Auto-detected modules:"
+  echo "$modules_display"
+  echo ""
+  
+  # Minimal prompts
+  echo -e "${BLUE}What are you doing? (1 line)${NC}"
+  read -r what_doing
+  
+  echo -e "${BLUE}Work rating (0-5)?${NC}"
+  read -r rating
+  
+  echo -e "${BLUE}Notes (optional, press Enter to skip)?${NC}"
+  read -r notes
+  
+  # Build handoff entry
+  local entry=""
+  entry+="## Handoff #${handoff_num} — ${date}\n\n"
+  entry+="**What:** ${what_doing}\n"
+  entry+="**Rating:** ${rating}/5\n\n"
+  
+  if [[ -n "$modules" ]]; then
+    entry+="**Modules:**\n"
+    echo "$modules" | head -5 | while read -r mod; do
+      entry+="- \`${mod}\`\n"
+    done
+    entry+="\n"
+  fi
+  
+  if [[ -n "$notes" ]]; then
+    entry+="**Notes:** ${notes}\n\n"
+  fi
+  
+  entry+="---\n\n"
+  
+  # Create or append
+  if [[ ! -f "$handoff_file" ]]; then
+    echo -e "# Handoff Log - ${item_id}\n\n" > "$handoff_file"
+  fi
+  
+  echo -e "$entry" >> "$handoff_file"
+  
+  # Check line limit
+  local line_count=$(wc -l < "$handoff_file")
+  if (( line_count > MAX_HANDOFF_LINES )); then
+    print_error "⚠ Handoff exceeds ${MAX_HANDOFF_LINES} lines (${line_count})"
+  fi
+  
+  # Update status.md timestamp
+  if [[ -f "$status_file" ]]; then
+    if grep -q "Last Updated:" "$status_file"; then
+      sed -i.bak "s/Last Updated:.*/Last Updated: ${date}/" "$status_file"
+      rm "${status_file}.bak"
+    fi
+  fi
+  
+  print_success "Quick handoff #${handoff_num} complete!"
+  print_info "Time saved: ~2 minutes vs full handoff"
+}
+
+# Main
+ITEM_ID=""
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -h|--help)
+      show_help
+      exit 0
+      ;;
+    *)
+      ITEM_ID="$1"
+      shift
+      ;;
+  esac
+done
+
+# Auto-detect if not provided
+if [[ -z "$ITEM_ID" ]]; then
+  ITEM_ID=$(detect_item_from_git) || true
+  
+  if [[ -z "$ITEM_ID" ]]; then
+    print_error "Could not detect item from git context"
+    print_info "Usage: update-handoff-quick [ITEM-ID]"
+    exit 1
+  fi
+  
+  print_info "Auto-detected: ${ITEM_ID}"
+fi
+
+quick_handoff "$ITEM_ID"
+

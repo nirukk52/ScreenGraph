@@ -1,4 +1,4 @@
-# TD-XXX: [Short Title] - Status
+# CHORE-XXX: [Short Title] - Status
 
 > **Line Limit:** 100 lines max (enforced)
 > **Purpose:** Track todos, progress, and current state
@@ -15,7 +15,7 @@
 ---
 
 ## Status
-**Current:** [investigating | fixing | testing | fixed | blocked]
+**Current:** [planning | in-progress | completed | blocked]
 **Priority:** [P0 | P1 | P2 | P3]
 **Severity:** [Critical | High | Medium | Low]
 
@@ -26,12 +26,10 @@
 ---
 
 ## Todos
-- [ ] Reproduce bug locally
-- [ ] Identify root cause
-- [ ] Implement fix
-- [ ] Write/update tests
-- [ ] Manual verification
+- [ ] Complete chore task
+- [ ] Verify changes work
 - [ ] Update documentation
+- [ ] Notify team (if needed)
 
 ---
 

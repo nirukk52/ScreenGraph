@@ -1,81 +1,72 @@
-# BUG-XXX: [Short Title] - Status Report
+# BUG-XXX: [Short Title] - Status
 
-**Last Updated:** [YYYY-MM-DD HH:MM]  
-**Current Status:** 🔍 Investigating | 🔧 Fixing | 🧪 Testing | ✅ Fixed | 🔄 Needs More Info  
-**Owner:** [Name]
-
----
-
-## 🎯 Current State
-**Priority:** [P0 | P1 | P2 | P3]  
-**Severity:** [Critical | High | Medium | Low]  
-**Assigned To:** [Name]
+> **Line Limit:** 100 lines max (enforced)
+> **Purpose:** Track todos, progress, and current state
 
 ---
 
-## 🔍 Investigation Progress
-### What We Know
-- [Known fact 1]
-- [Known fact 2]
-- [Known fact 3]
-
-### What We Don't Know
-- [ ] [Unknown 1 - investigating]
-- [ ] [Unknown 2 - need to reproduce]
-- [ ] [Unknown 3 - need more logs]
+## Manual Testing Required (Top 5)
+1. [Test scenario 1 - small or large]
+2. [Test scenario 2]
+3. [Test scenario 3]
+4. [Test scenario 4]
+5. [Test scenario 5]
 
 ---
 
-## 🔨 Work Completed (Last Update)
-- [Investigation step or fix attempt 1]
-- [Investigation step or fix attempt 2]
-- [Investigation step or fix attempt 3]
+## Status
+**Current:** [investigating | fixing | testing | fixed | blocked]
+**Priority:** [P0 | P1 | P2 | P3]
+**Severity:** [Critical | High | Medium | Low]
+
+**Started:** YYYY-MM-DD
+**Last Updated:** YYYY-MM-DD
+**Completed:** YYYY-MM-DD (if applicable)
 
 ---
 
-## 🚧 Work In Progress
-- [Current investigation/fix task 1]
-- [Current investigation/fix task 2]
+## Todos
+- [ ] Reproduce bug locally
+- [ ] Identify root cause
+- [ ] Implement fix
+- [ ] Write/update tests
+- [ ] Manual verification
+- [ ] Update documentation
 
 ---
 
-## 📋 Next Steps
-1. [ ] [Next action 1]
-2. [ ] [Next action 2]
-3. [ ] [Next action 3]
+## Progress Summary
+[Brief summary of current state and recent progress]
 
 ---
 
-## 🔥 Blockers
-- [Blocker 1] - Blocking since [date]
-- [Blocker 2] - Need [resource/person]
+## Blockers
+- (none)
+
+OR
+
+- [Blocker 1] - Since YYYY-MM-DD
+- [Blocker 2] - Waiting for [resource/person]
 
 ---
 
-## 📊 Timeline
-- **Reported:** [YYYY-MM-DD HH:MM]
-- **Acknowledged:** [YYYY-MM-DD HH:MM]
-- **Started Investigation:** [YYYY-MM-DD HH:MM]
-- **Expected Fix:** [YYYY-MM-DD]
+## Recent Updates
 
----
-
-## 💬 Recent Updates
-
-### [YYYY-MM-DD HH:MM]
+### YYYY-MM-DD
 [Update description - findings, progress, new information]
 
-### [YYYY-MM-DD HH:MM]
+### YYYY-MM-DD
 [Previous update]
 
 ---
 
-## 🤝 Help Needed
+## Help Needed
+- (none)
+
+OR
+
 - [Specific help request 1]
 - [Specific help request 2]
 
 ---
-
-## 📝 Notes
-[Any additional context, theories, or related information]
 

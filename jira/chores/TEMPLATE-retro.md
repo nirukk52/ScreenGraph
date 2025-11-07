@@ -1,4 +1,4 @@
-# BUG-XXX: [Short Title] - Retro
+# CHORE-XXX: [Short Title] - Retro
 
 > **Line Limit:** 100 lines max (enforced)
 > **Purpose:** Learnings and retrospective after bug resolution
@@ -7,7 +7,7 @@
 
 ## Completed
 **Date:** YYYY-MM-DD
-**Resolution:** [Fixed | Won't Fix | Duplicate | Not a Bug]
+**Resolution:** [Completed | Cancelled | Deferred]
 
 ---
 
