@@ -10,44 +10,47 @@
 
 ## Quick Start
 
-### 1. Unified Automation (Task Commands) ⭐ NEW
+### 1. Start Development Servers ⭐ SIMPLEST
 ```bash
-# Start everything (with health checks & auto-wait)
-cd .cursor && task founder:servers:start
+# Start both backend + frontend (recommended)
+bun run dev
 
-# Check status
-task founder:servers:status
-
-# Run tests
-task qa:smoke:all
-
-# Stop services
-task founder:servers:stop
-
-# List all commands
-task --list
+# Or start individually
+bun run dev:backend   # Backend only
+bun run dev:frontend  # Frontend only
 ```
 
-**Start Command Features:**
-- ✅ Auto-installs dependencies
-- ✅ Clears conflicting processes
-- ✅ Health checks (waits for services to be ready)
-- ✅ Worktree-specific logs (`.logs/backend-{worktree}.log`)
-- ✅ Real-time status display
-- ✅ Error handling with helpful messages
+**How it works:**
+- Uses `concurrently` to run both servers at once
+- Color-coded output: backend (blue), frontend (green)
+- Logs stream directly to your console
+- Stop with `Ctrl+C`
 
-### 2. Legacy Commands (Still Work)
+### 2. Task Commands (Advanced)
 ```bash
-@start      # Starts both backend + frontend
-@stop       # Stops all services
+cd .cursor
+
+# Services
+task founder:servers:status   # Check what's running
+task founder:servers:stop     # Stop all services
+
+# Testing
+task qa:smoke:all            # Run all smoke tests
+
+# Workflows
+task founder:workflows:regen-client   # Regenerate Encore client
+task founder:workflows:db-reset       # Reset database
+
+# List all
+task --list
 ```
 
 ### 3. Generate Encore Client
 ```bash
-# NEW way
-cd .cursor && task founder:workflows:regen-client
+# From root
+bun run gen:client
 
-# OR old way
+# Or from frontend
 cd frontend && bun run gen
 ```
 

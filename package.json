@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "concurrently -n backend,frontend -c blue,green \"cd backend && encore run\" \"cd frontend && bun run dev\"",
     "dev:backend": "cd backend && encore run",
-    "dev:frontend": "cd frontend && bun run dev"
+    "dev:frontend": "cd frontend && bun run dev",
+    "gen:client": "cd frontend && bun run gen"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"
