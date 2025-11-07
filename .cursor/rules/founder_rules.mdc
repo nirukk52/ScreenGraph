@@ -228,123 +228,88 @@ Update after significant changes.
 
 ---
 
-## Part II: Worktree Isolation (Multi-Agent Development)
+## Part II: Worktree Model (Lightweight - Code Editing Only)
 
-### 🚨 Worktree Detection (Run FIRST, Always)
+> **CRITICAL**: We use LIGHTWEIGHT worktrees (code editing only). Ignore any references to "runtime isolation" or "per-worktree ports" found in old docs—that was a wrong approach we abandoned.
 
-**Before executing ANY command, you MUST:**
+### 🏠 Main Tree (Runtime Environment)
 
-1. **Detect current worktree mode** from Cursor's dropdown
-2. **Verify you are NOT on main tree** (unless Local mode)
-3. **Confirm port assignments** are coordinated
+**Purpose**: Run services for testing  
+**Ports**: Default (4000, 5173, 9400, 4723) - FIXED  
+**Services**: Backend + Frontend running  
+**Code Changes**: Allowed ONLY with `LOCAL_MODE_AUTHORIZED=1`
 
-**Pre-Flight Check (Required Before ANY Task):**
-
+**Usage**:
 ```bash
-TREE_NAME=$(basename $(git rev-parse --show-toplevel))
-
-# Block if on main tree without Local mode authorization
-if [ "$TREE_NAME" = "ScreenGraph" ] && [ -z "$LOCAL_MODE_AUTHORIZED" ]; then
-  echo "🚫 STOP: You are on MAIN tree (ScreenGraph)"
-  echo "✅ Switch Cursor to 'Worktree' mode or create feature branch"
-  exit 1
-fi
-
-# If in worktree, verify coordinated ports
-if [ "$TREE_NAME" != "ScreenGraph" ]; then
-  eval "$(bun ./scripts/port-coordinator.mjs --no-summary)"
-  [ "$BACKEND_PORT" != "4000" ] || { echo "❌ Using main tree ports"; exit 1; }
-  echo "✅ Worktree: $TREE_NAME | Backend: $BACKEND_PORT | Frontend: $FRONTEND_PORT"
-fi
+# Start services (main tree only)
+./scripts/dev-backend.sh    # Port 4000
+./scripts/dev-frontend.sh   # Port 5173
 ```
 
 ---
 
-### 🔒 Main Tree is Read-Only for Agents
+### 🔧 Worktrees (Code Editing Only)
 
-- ❌ **NEVER** run `encore run` or `bun run dev` on main tree
-- ❌ **NEVER** modify files or commit on main tree
-- ✅ **EXCEPTION**: Only when Cursor dropdown shows **"Local"** mode
+**Purpose**: Code development and commits  
+**Ports**: N/A (no services run here)  
+**Services**: NEVER start services in worktrees  
+**Code Changes**: Yes (commit freely)
 
----
-
-### 📍 Port Reservation Policy
-
-| Environment | Backend | Frontend | Dashboard | Appium |
-|-------------|---------|----------|-----------|--------|
-| **Main Tree** | **4000** | **5173** | **9400** | **4723** |
-| Worktree 1-20 | 4001-4009 | 5174-5183 | 9401-9409 | 4724-4733 |
-
-**Main tree ports are RESERVED** — worktrees use port coordinator for automatic assignment.
-
----
-
-### 🚀 Correct Development Flow
-
-**For Worktree Agents (Default):**
-
+**Usage**:
 ```bash
-# 1. Verify NOT on main tree
-[ "$(basename $(git rev-parse --show-toplevel))" != "ScreenGraph" ] || exit 1
+# In worktree: Edit code and commit
+git add .
+git commit -m "feat: add feature"
 
-# 2. Start services with port coordination (from repo root)
-./scripts/dev-backend.sh   # Assigns 4001-4009
-./scripts/dev-frontend.sh  # Assigns 5174-5183
-```
-
-**For Local Mode (Main Tree Only):**
-
-```bash
-# Only when Cursor shows "Local" in dropdown
-cd backend && encore run        # Uses default 4000
-cd frontend && bun run dev      # Uses default 5173
+# To test: Switch main tree to your branch
+cd ~/ScreenGraph/Code/ScreenGraph
+git checkout your-branch
+# Services auto-reload
 ```
 
 ---
 
-### 🎨 Cursor Dropdown Modes
+### 🚫 Worktree Enforcement
 
-**"Local" Mode:**
-- ✅ Authorized for main tree (default ports: 4000, 5173)
-- 🎯 Use: Single developer, quick fixes
+**Scripts block worktree service starts**:
+```bash
+# In worktree Px8w6:
+./scripts/dev-backend.sh
 
-**"Worktree" Mode (Default for Agents):**
-- ❌ Cannot work on main tree
-- ✅ Must use coordinated ports via `./scripts/dev-backend.sh` and `./scripts/dev-frontend.sh`
-- ✅ Must work on feature branches (never `main`)
-- 🎯 Use: Multi-agent development, parallel features
+# Output:
+🚫 ERROR: Cannot start backend in worktree
+Worktrees are for CODE EDITING only.
+```
+
+**What agents CANNOT do in worktrees**:
+1. ❌ Run `./scripts/dev-backend.sh` (blocked)
+2. ❌ Run `./scripts/dev-frontend.sh` (blocked)
+3. ❌ Start any services
+4. ❌ Use custom ports
+
+**What agents MUST do in worktrees**:
+1. ✅ Edit code freely
+2. ✅ Commit to feature branch
+3. ✅ Test on main tree (switch branch)
 
 ---
 
-### 🚫 Enforcement: What Agents CANNOT Do
+### 🔒 Main Tree Protection
 
-1. ❌ `encore run` directly (use `./scripts/dev-backend.sh`)
-2. ❌ Work on main tree without Local mode
-3. ❌ Use default ports (4000, 5173) in worktrees
-4. ❌ Commit directly to `main` branch
-5. ❌ Skip worktree detection before commands
-
----
-
-### ✅ Enforcement: What Agents MUST Do
-
-1. ✅ Run worktree detection FIRST
-2. ✅ Use `./scripts/dev-backend.sh` and `./scripts/dev-frontend.sh` for all services
-3. ✅ Verify coordinated ports (not defaults)
-4. ✅ Work on feature branches only
-5. ✅ Include worktree name in logs/commits
+**AI agents blocked unless `LOCAL_MODE_AUTHORIZED=1`**:
+- Main tree preflight checks refuse work without authorization
+- Prevents accidental commits to shared runtime environment
+- Only founders with Local mode can modify main tree
 
 ---
 
 ## 📝 The One Rule
 
-> **If you're an AI agent and `basename $(git rev-parse --show-toplevel)` returns "ScreenGraph", STOP. You are on the main tree. Switch to Worktree mode or await Local mode authorization.**
-
-**Default Assumption**: All agents work in Worktree mode with coordinated ports. Main tree is sacred and untouchable unless explicitly in Local mode.
+> **Worktrees = Code Editing Only. Services = Main Tree Only. If you need to test, commit and switch main tree branch.**
 
 ---
 
-**Last Updated**: 2025-11-06  
+**Last Updated**: 2025-11-07  
 **Owner**: Founder  
-**Enforcement**: Automatic via pre-flight checks  
-**Violations**: Block immediately, provide clear remediation
+**Model**: Lightweight (code isolation)  
+**Deprecated**: Runtime isolation, per-worktree ports

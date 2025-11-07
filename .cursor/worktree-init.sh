@@ -1,44 +1,42 @@
 #!/usr/bin/env bash
 
-# PURPOSE: Initialize Cursor Worktree environment with deterministic, non-conflicting ports.
-# - Computes ports per worktree using the port coordinator
-# - Exports BACKEND_PORT / FRONTEND_PORT / ENCORE_DASHBOARD_PORT / APPIUM_PORT
-# - Sets VITE_BACKEND_BASE_URL for the frontend to use generated Encore client
-# This script is idempotent and safe to run multiple times.
+# PURPOSE: Initialize Cursor Worktree (lightweight model).
+# - Worktrees are for CODE EDITING only
+# - Services run ONLY on main tree (default ports)
+# - This script just verifies setup and reminds about workflow
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$SCRIPT_DIR/.."
+cd "$REPO_ROOT"
 
-# Port coordinator is at repo root scripts/ (worktree-level concern)
-COORD="$REPO_ROOT/scripts/port-coordinator.mjs"
-if [ ! -f "$COORD" ]; then
-  echo "[cursor:worktree-init] ERROR: port-coordinator.mjs not found at $COORD" >&2
-  exit 1
-fi
+WORKTREE_NAME=$(basename $(git rev-parse --show-toplevel))
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
-# Run coordinator and export env for this shell.
-# The coordinator respects CURSOR_WORKTREE_NAME/WORKTREE_NAME if provided by Cursor.
-eval "$(bun "$COORD" --no-summary)"
-
-echo "[cursor:worktree-init] ✓ Ports assigned for worktree: ${WORKTREE_NAME:-unknown}"
-echo "[cursor:worktree-init]    backend=$BACKEND_PORT frontend=$FRONTEND_PORT dashboard=${ENCORE_DASHBOARD_PORT:-9400} appium=$APPIUM_PORT"
-echo "[cursor:worktree-init]    VITE_BACKEND_BASE_URL=$VITE_BACKEND_BASE_URL"
-
-# Optionally persist a snapshot for debugging/visibility (non-authoritative).
-# This file is safe to delete; authoritative registry lives at ~/.screengraph/ports.json
-ENV_SNAPSHOT="$SCRIPT_DIR/worktree.env"
-cat > "$ENV_SNAPSHOT" <<EOF
-WORKTREE_NAME=${WORKTREE_NAME:-}
-CURSOR_WORKTREE_NAME=${CURSOR_WORKTREE_NAME:-}
-BACKEND_PORT=$BACKEND_PORT
-FRONTEND_PORT=$FRONTEND_PORT
-ENCORE_DASHBOARD_PORT=${ENCORE_DASHBOARD_PORT:-}
-APPIUM_PORT=$APPIUM_PORT
-VITE_BACKEND_BASE_URL=$VITE_BACKEND_BASE_URL
-EOF
-
-echo "[cursor:worktree-init] Wrote snapshot: $ENV_SNAPSHOT"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔧 Worktree Initialized: $WORKTREE_NAME"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "Branch: $BRANCH"
+echo "Mode: CODE EDITING ONLY"
+echo ""
+echo "✅ What to do here:"
+echo "   - Edit code freely"
+echo "   - Commit to $BRANCH"
+echo "   - Push when ready"
+echo ""
+echo "❌ What NOT to do:"
+echo "   - Don't run ./scripts/dev-backend.sh (will error)"
+echo "   - Don't run ./scripts/dev-frontend.sh (will error)"
+echo ""
+echo "🧪 To test your changes:"
+echo "   1. Commit here: git add . && git commit"
+echo "   2. Switch main tree: cd ~/ScreenGraph/Code/ScreenGraph"
+echo "   3. Checkout branch: git checkout $BRANCH"
+echo "   4. Services auto-reload on main tree"
+echo "   5. Test at: http://localhost:5173"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 

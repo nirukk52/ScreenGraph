@@ -1,14 +1,12 @@
 #!/bin/bash
-# Verify Worktree Isolation
+# Verify Worktree Setup
 # 
-# Purpose: Run this FIRST in any new worktree to verify port isolation is working
+# Purpose: Run this FIRST in any new worktree to verify correct setup
 # 
-# This command:
-# 1. Detects current worktree
-# 2. Shows assigned ports
-# 3. Checks for port conflicts
-# 4. Verifies registry is correct
-# 5. Optionally starts services to test
+# Lightweight Model:
+# - Worktrees are for CODE EDITING only
+# - Services run ONLY on main tree (default ports)
+# - This command verifies you're in the right mode
 # 
 # Usage:
 #   @verify-worktree-isolation in Cursor chat
@@ -26,7 +24,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${CYAN}🔍 Worktree Isolation Verification${NC}"
+echo -e "${CYAN}🔍 Worktree Setup Verification${NC}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
@@ -40,145 +38,112 @@ cd "$REPO_ROOT"
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 echo -e "${BLUE}📍 Step 1: Detecting Worktree${NC}"
 WORKTREE_NAME=$(basename $(git rev-parse --show-toplevel))
-echo -e "   Worktree: ${GREEN}$WORKTREE_NAME${NC}"
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+echo -e "   Location: ${GREEN}$WORKTREE_NAME${NC}"
+echo -e "   Branch: ${GREEN}$BRANCH${NC}"
 echo ""
 
-# Check if main tree
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Step 2: Determine Mode
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+echo -e "${BLUE}🎯 Step 2: Worktree Mode${NC}"
+
 if [ "$WORKTREE_NAME" = "ScreenGraph" ]; then
-    echo -e "${YELLOW}⚠️  You are on the MAIN tree (ScreenGraph)${NC}"
-    echo -e "${YELLOW}   Main tree uses base ports with offset.${NC}"
+    echo -e "${CYAN}🏠 MAIN TREE (Runtime Environment)${NC}"
+    echo ""
+    echo -e "${GREEN}✅ This is where services run${NC}"
+    echo -e "${GREEN}✅ Use default ports: 4000 (backend), 5173 (frontend)${NC}"
+    echo ""
+    
+    if [ -z "$LOCAL_MODE_AUTHORIZED" ]; then
+        echo -e "${YELLOW}⚠️  Warning: LOCAL_MODE_AUTHORIZED not set${NC}"
+        echo -e "${YELLOW}   AI agents should not modify code on main tree${NC}"
+        echo -e "${YELLOW}   Set LOCAL_MODE_AUTHORIZED=1 if you're working locally${NC}"
+    else
+        echo -e "${GREEN}✅ LOCAL_MODE_AUTHORIZED - code changes permitted${NC}"
+    fi
+else
+    echo -e "${CYAN}🔧 WORKTREE (Code Editing Only)${NC}"
+    echo ""
+    echo -e "${GREEN}✅ Edit code and commit freely here${NC}"
+    echo -e "${RED}❌ Don't run services in worktrees${NC}"
+    echo ""
+    echo -e "${BLUE}To test your changes:${NC}"
+    echo -e "   1. Commit your code here"
+    echo -e "   2. Switch main tree: ${CYAN}cd ~/ScreenGraph/Code/ScreenGraph && git checkout $BRANCH${NC}"
+    echo -e "   3. Services auto-reload on main tree"
+    echo -e "   4. Test at: ${CYAN}http://localhost:5173${NC}"
+fi
+echo ""
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Step 3: Check Services (Main Tree Only)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+if [ "$WORKTREE_NAME" = "ScreenGraph" ]; then
+    echo -e "${BLUE}🌐 Step 3: Service Status${NC}"
+    
+    # Check backend
+    if lsof -ti:4000 > /dev/null 2>&1; then
+        BACKEND_PID=$(lsof -ti:4000)
+        echo -e "   ${GREEN}✓${NC} Backend running (PID $BACKEND_PID, port 4000)"
+    else
+        echo -e "   ${YELLOW}⚠${NC} Backend not running"
+        echo -e "      Start: ${CYAN}./scripts/dev-backend.sh${NC}"
+    fi
+    
+    # Check frontend
+    if lsof -ti:5173 > /dev/null 2>&1; then
+        FRONTEND_PID=$(lsof -ti:5173)
+        echo -e "   ${GREEN}✓${NC} Frontend running (PID $FRONTEND_PID, port 5173)"
+    else
+        echo -e "   ${YELLOW}⚠${NC} Frontend not running"
+        echo -e "      Start: ${CYAN}./scripts/dev-frontend.sh${NC}"
+    fi
     echo ""
 fi
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Step 2: Get Assigned Ports
+# Step 4: Git Status
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-echo -e "${BLUE}🔢 Step 2: Port Assignment${NC}"
-PORT_JSON=$(bun ./scripts/port-coordinator.mjs --json)
-BACKEND_PORT=$(echo "$PORT_JSON" | grep -o '"backend": [0-9]*' | grep -o '[0-9]*')
-FRONTEND_PORT=$(echo "$PORT_JSON" | grep -o '"frontend": [0-9]*' | grep -o '[0-9]*')
-DASHBOARD_PORT=$(echo "$PORT_JSON" | grep -o '"dashboard": [0-9]*' | grep -o '[0-9]*')
-APPIUM_PORT=$(echo "$PORT_JSON" | grep -o '"appium": [0-9]*' | grep -o '[0-9]*')
+echo -e "${BLUE}📝 Step 4: Git Status${NC}"
+UNCOMMITTED=$(git status --porcelain | wc -l | tr -d ' ')
+echo -e "   Uncommitted changes: ${GREEN}$UNCOMMITTED${NC}"
 
-echo -e "   Backend:   ${GREEN}$BACKEND_PORT${NC}"
-echo -e "   Frontend:  ${GREEN}$FRONTEND_PORT${NC}"
-echo -e "   Dashboard: ${GREEN}$DASHBOARD_PORT${NC}"
-echo -e "   Appium:    ${GREEN}$APPIUM_PORT${NC}"
-echo ""
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Step 3: Check for Port Conflicts
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-echo -e "${BLUE}🔍 Step 3: Checking Port Availability${NC}"
-
-check_port() {
-    local port=$1
-    local service=$2
-    local pid=$(lsof -ti:$port 2>/dev/null || echo "")
-    
-    if [ -z "$pid" ]; then
-        echo -e "   ${GREEN}✓${NC} Port $port ($service) is free"
-        return 0
-    else
-        local process_name=$(ps -p $pid -o comm= 2>/dev/null || echo "unknown")
-        echo -e "   ${YELLOW}⚠${NC} Port $port ($service) occupied by PID $pid ($process_name)"
-        return 1
-    fi
-}
-
-CONFLICTS=0
-check_port $BACKEND_PORT "backend" || CONFLICTS=$((CONFLICTS + 1))
-check_port $FRONTEND_PORT "frontend" || CONFLICTS=$((CONFLICTS + 1))
-check_port $DASHBOARD_PORT "dashboard" || CONFLICTS=$((CONFLICTS + 1))
-check_port $APPIUM_PORT "appium" || CONFLICTS=$((CONFLICTS + 1))
-echo ""
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Step 4: Check Registry
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-echo -e "${BLUE}📋 Step 4: Registry Status${NC}"
-REGISTRY_PATH="$HOME/.screengraph/ports.json"
-
-if [ -f "$REGISTRY_PATH" ]; then
-    echo -e "   ${GREEN}✓${NC} Registry exists: $REGISTRY_PATH"
-    
-    # Show all worktrees in registry
-    echo -e "\n   ${CYAN}Registered Worktrees:${NC}"
-    cat "$REGISTRY_PATH" | grep -E '^\s*"[^"]+":' | sed 's/[",:]//g' | sed 's/^/      - /'
-    
-    # Check if current worktree is registered
-    if grep -q "\"$WORKTREE_NAME\"" "$REGISTRY_PATH"; then
-        echo -e "\n   ${GREEN}✓${NC} Current worktree ($WORKTREE_NAME) is registered"
-    else
-        echo -e "\n   ${YELLOW}⚠${NC} Current worktree ($WORKTREE_NAME) not yet in registry"
-        echo -e "      Will be added when services start"
-    fi
-else
-    echo -e "   ${YELLOW}⚠${NC} Registry not found (will be created on first run)"
+if [ "$WORKTREE_NAME" != "ScreenGraph" ] && [ "$UNCOMMITTED" -gt 0 ]; then
+    echo -e "   ${GREEN}✓${NC} Code changes in worktree (expected)"
+elif [ "$WORKTREE_NAME" = "ScreenGraph" ] && [ "$UNCOMMITTED" -gt 0 ]; then
+    echo -e "   ${YELLOW}⚠${NC} Uncommitted changes on main tree"
+    echo -e "      Consider creating a worktree for this work"
 fi
 echo ""
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Step 5: Check for Other Running Worktrees
+# Summary
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-echo -e "${BLUE}🌳 Step 5: Other Active Worktrees${NC}"
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${CYAN}📊 Summary${NC}"
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
 
-# Check for Encore processes on other ports
-ENCORE_PROCS=$(ps aux | grep 'encore run' | grep -v grep || echo "")
-if [ -z "$ENCORE_PROCS" ]; then
-    echo -e "   ${CYAN}ℹ${NC} No other Encore backends running"
+if [ "$WORKTREE_NAME" = "ScreenGraph" ]; then
+    echo -e "${GREEN}✅ Main tree setup verified${NC}"
+    echo ""
+    echo -e "${BLUE}Services should run here:${NC}"
+    echo -e "   Backend:   ${CYAN}http://localhost:4000${NC}"
+    echo -e "   Frontend:  ${CYAN}http://localhost:5173${NC}"
+    echo -e "   Dashboard: ${CYAN}http://localhost:9400${NC}"
 else
-    echo -e "   ${GREEN}✓${NC} Other backends detected (multi-agent mode):"
-    echo "$ENCORE_PROCS" | while read line; do
-        PORT=$(echo "$line" | grep -o 'port=[0-9]*' | grep -o '[0-9]*' || echo "unknown")
-        PID=$(echo "$line" | awk '{print $2}')
-        echo -e "      - PID $PID on port $PORT"
-    done
+    echo -e "${GREEN}✅ Worktree setup verified${NC}"
+    echo ""
+    echo -e "${BLUE}Worktree Purpose:${NC}"
+    echo -e "   ✅ Code editing and commits"
+    echo -e "   ❌ Don't run services here"
+    echo ""
+    echo -e "${BLUE}To test your code:${NC}"
+    echo -e "   ${CYAN}cd ~/ScreenGraph/Code/ScreenGraph${NC}"
+    echo -e "   ${CYAN}git checkout $BRANCH${NC}"
+    echo -e "   ${CYAN}# Test at http://localhost:5173${NC}"
 fi
-echo ""
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Step 6: Verification Summary
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${CYAN}📊 Verification Summary${NC}"
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
-
-if [ $CONFLICTS -eq 0 ]; then
-    echo -e "${GREEN}✅ All ports are available${NC}"
-    echo -e "${GREEN}✅ Worktree isolation is correctly configured${NC}"
-    echo -e "${GREEN}✅ Ready to start services${NC}"
-else
-    echo -e "${YELLOW}⚠️  $CONFLICTS port(s) currently occupied${NC}"
-    echo -e "${YELLOW}   This is OK if services are already running for this worktree${NC}"
-    echo -e "${YELLOW}   Use 'lsof -ti:<port>' to identify processes${NC}"
-fi
-echo ""
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Step 7: Next Steps
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${CYAN}🚀 Next Steps${NC}"
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
-echo -e "${BLUE}To start services for this worktree:${NC}"
-echo ""
-echo -e "   ${GREEN}# Terminal 1: Backend${NC}"
-echo -e "   ./scripts/dev-backend.sh"
-echo ""
-echo -e "   ${GREEN}# Terminal 2: Frontend${NC}"
-echo -e "   ./scripts/dev-frontend.sh"
-echo ""
-echo -e "${BLUE}Services will run on:${NC}"
-echo -e "   Backend:   ${CYAN}http://localhost:$BACKEND_PORT${NC}"
-echo -e "   Frontend:  ${CYAN}http://localhost:$FRONTEND_PORT${NC}"
-echo -e "   Dashboard: ${CYAN}http://localhost:$DASHBOARD_PORT${NC}"
-echo ""
-echo -e "${BLUE}To verify isolation after starting:${NC}"
-echo -e "   curl http://localhost:$FRONTEND_PORT  # Should load frontend"
-echo -e "   curl http://localhost:$BACKEND_PORT/health  # Should show backend health"
 echo ""
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${GREEN}✅ Verification complete!${NC}"

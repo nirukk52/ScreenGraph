@@ -16,13 +16,16 @@ cd frontend
 bun run gen
 ```
 
-### 2. Run Services
+### 2. Run Services (Main Tree Only)
 ```bash
-# Terminal 1: Backend (auto loads .env / .env.local)
-./scripts/dev-backend.sh
+# Services ONLY run on main tree (ScreenGraph)
+# Worktrees are for code editing only
+
+# Terminal 1: Backend
+./scripts/dev-backend.sh    # Port 4000
 
 # Terminal 2: Frontend  
-./scripts/dev-frontend.sh
+./scripts/dev-frontend.sh   # Port 5173
 ```
 
 ---
@@ -56,8 +59,9 @@ bun run gen
 - **Frontend**: `cd frontend && bun install`
 
 ### Environment Files
-- `.env` (committed defaults) + `.env.local` (gitignored overrides)
-- Generate worktree ports: `bun ./scripts/port-coordinator.mjs --write-env`
+- `.env` (committed defaults for main tree)
+- `.env.example` (template)
+- Type-safe validation: `backend/config/env.ts`, `frontend/src/lib/env.ts`
 - Encrypted secrets: `.env.vault` managed via `bunx dotenvx`
 
 ---
@@ -100,10 +104,15 @@ for await (const row of rows) {
 
 ## Environment-Specific Values
 
-### Local Development
+### Local Development (Main Tree)
 - Backend API: `http://localhost:4000`
 - Frontend Dev: `http://localhost:5173`
 - Encore Dashboard: `http://localhost:9400`
+
+### Worktree Development (Code Editing Only)
+- **Do**: Edit code, commit to feature branch
+- **Don't**: Start services (will error)
+- **Test**: Switch main tree to your branch, services auto-reload
 
 ### Production
 - Backend: Encore Cloud (auto-deployed)
