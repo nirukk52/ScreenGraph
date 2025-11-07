@@ -265,7 +265,7 @@ cd frontend && bun run dev # Service-specific when needed
 ```
 
 ### Services & Ports
-- Scripts `./scripts/dev-backend.sh` and `./scripts/dev-frontend.sh` respect `.env` values.
+- Scripts `./automation/scripts/dev-backend.sh` and `./automation/scripts/dev-frontend.sh` respect `.env` values.
 - Husky/CI always start services on the standard ports defined above.
 
 ---
