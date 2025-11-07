@@ -28,7 +28,7 @@
     "vitest": "^2.0.0"
   },
   "scripts": {
-    "dev": "encore run",
+    "dev": "BACKEND_PORT=${BACKEND_PORT:-4000} encore run --port=${BACKEND_PORT:-4000}",
     "format": "bunx biome format --write .",
     "format:check": "bunx biome format --write=false .",
     "lint": "bunx biome lint .",

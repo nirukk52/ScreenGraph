@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
+    "dev": "FRONTEND_PORT=${FRONTEND_PORT:-5173} vite dev --port ${FRONTEND_PORT:-5173} --strictPort",
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",

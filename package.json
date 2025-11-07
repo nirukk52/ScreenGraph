@@ -8,9 +8,9 @@
   ],
   "scripts": {
     "predev": "cd .cursor && task shared:preflight",
-    "dev": "turbo run dev --parallel --filter=screengraph-backend --filter=screengraph-frontend",
-    "dev:backend": "turbo run dev --filter=screengraph-backend",
-    "dev:frontend": "turbo run dev --filter=screengraph-frontend",
+    "dev": "BACKEND_PORT=${BACKEND_PORT:-4000} FRONTEND_PORT=${FRONTEND_PORT:-5173} turbo run dev --parallel --filter=screengraph-backend --filter=screengraph-frontend",
+    "dev:backend": "BACKEND_PORT=${BACKEND_PORT:-4000} turbo run dev --filter=screengraph-backend",
+    "dev:frontend": "FRONTEND_PORT=${FRONTEND_PORT:-5173} turbo run dev --filter=screengraph-frontend",
     "task": "cd .cursor && task",
     "qa:smoke": "cd .cursor && task qa:smoke:all",
     "qa:smoke:frontend": "cd .cursor && task qa:smoke:frontend",
