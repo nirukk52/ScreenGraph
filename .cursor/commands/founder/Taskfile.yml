@@ -38,9 +38,7 @@ tasks:
       - echo ""
       - echo "🚀 Starting backend..."
       - mkdir -p ../../.logs
-      - |
-        cd ../../backend
-        nohup encore run > "$PWD/../.logs/backend-{{.WORKTREE_NAME}}.log" 2>&1 &
+      - cd ../../backend && nohup encore run > "$PWD/../.logs/backend-{{.WORKTREE_NAME}}.log" 2>&1 &
       - echo "   ⏳ Waiting for backend to be ready (up to 60s)..."
       - |
         for i in {1..60}; do
@@ -60,9 +58,7 @@ tasks:
         done
       - echo ""
       - echo "🚀 Starting frontend..."
-      - |
-        cd ../../frontend
-        nohup bunx --bun vite dev --port {{.FRONTEND_PORT}} --host > "$PWD/../.logs/frontend-{{.WORKTREE_NAME}}.log" 2>&1 &
+      - cd ../../frontend && nohup bunx --bun vite dev --port {{.FRONTEND_PORT}} --host > "$PWD/../.logs/frontend-{{.WORKTREE_NAME}}.log" 2>&1 &
       - echo "   ⏳ Waiting for frontend to be ready (up to 45s)..."
       - |
         for i in {1..45}; do
