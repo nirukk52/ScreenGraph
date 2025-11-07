@@ -228,88 +228,24 @@ Update after significant changes.
 
 ---
 
-## Part II: Worktree Model (Lightweight - Code Editing Only)
+## Part II: Environment & Services
 
-> **CRITICAL**: We use LIGHTWEIGHT worktrees (code editing only). Ignore any references to "runtime isolation" or "per-worktree ports" found in old docs—that was a wrong approach we abandoned.
+### Ports (All in .env)
 
-### 🏠 Main Tree (Runtime Environment)
+- Backend: 4000
+- Frontend: 5173
+- Dashboard: 9400
+- Appium: 4723
 
-**Purpose**: Run services for testing  
-**Ports**: Default (4000, 5173, 9400, 4723) - FIXED  
-**Services**: Backend + Frontend running  
-**Code Changes**: Allowed ONLY with `LOCAL_MODE_AUTHORIZED=1`
+See `.env` file for configuration.
 
-**Usage**:
+### Services
+
 ```bash
-# Start services (main tree only)
-./scripts/dev-backend.sh    # Port 4000
-./scripts/dev-frontend.sh   # Port 5173
+./scripts/dev-backend.sh    # Starts backend
+./scripts/dev-frontend.sh   # Starts frontend
 ```
 
 ---
 
-### 🔧 Worktrees (Code Editing Only)
-
-**Purpose**: Code development and commits  
-**Ports**: N/A (no services run here)  
-**Services**: NEVER start services in worktrees  
-**Code Changes**: Yes (commit freely)
-
-**Usage**:
-```bash
-# In worktree: Edit code and commit
-git add .
-git commit -m "feat: add feature"
-
-# To test: Switch main tree to your branch
-cd ~/ScreenGraph/Code/ScreenGraph
-git checkout your-branch
-# Services auto-reload
-```
-
----
-
-### 🚫 Worktree Enforcement
-
-**Scripts block worktree service starts**:
-```bash
-# In worktree Px8w6:
-./scripts/dev-backend.sh
-
-# Output:
-🚫 ERROR: Cannot start backend in worktree
-Worktrees are for CODE EDITING only.
-```
-
-**What agents CANNOT do in worktrees**:
-1. ❌ Run `./scripts/dev-backend.sh` (blocked)
-2. ❌ Run `./scripts/dev-frontend.sh` (blocked)
-3. ❌ Start any services
-4. ❌ Use custom ports
-
-**What agents MUST do in worktrees**:
-1. ✅ Edit code freely
-2. ✅ Commit to feature branch
-3. ✅ Test on main tree (switch branch)
-
----
-
-### 🔒 Main Tree Protection
-
-**AI agents blocked unless `LOCAL_MODE_AUTHORIZED=1`**:
-- Main tree preflight checks refuse work without authorization
-- Prevents accidental commits to shared runtime environment
-- Only founders with Local mode can modify main tree
-
----
-
-## 📝 The One Rule
-
-> **Worktrees = Code Editing Only. Services = Main Tree Only. If you need to test, commit and switch main tree branch.**
-
----
-
-**Last Updated**: 2025-11-07  
-**Owner**: Founder  
-**Model**: Lightweight (code isolation)  
-**Deprecated**: Runtime isolation, per-worktree ports
+**Last Updated**: 2025-11-07

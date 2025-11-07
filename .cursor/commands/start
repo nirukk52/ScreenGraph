@@ -1,0 +1,75 @@
+#!/bin/bash
+# Start Backend + Frontend Together
+#
+# Usage: @start in Cursor chat
+#
+# This command:
+# 1. Frees ports 4000 and 5173 if occupied
+# 2. Starts backend and frontend in background
+# 3. Shows status and URLs
+
+set -e
+
+cd "$(git rev-parse --show-toplevel)"
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🚀 Starting ScreenGraph Services"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Free ports if occupied
+echo "🧹 Freeing ports..."
+lsof -ti:4000 2>/dev/null | xargs kill -9 2>/dev/null || true
+lsof -ti:5173 2>/dev/null | xargs kill -9 2>/dev/null || true
+sleep 1
+
+# Load .env
+if [ -f .env ]; then
+  set -a
+  source .env
+  set +a
+fi
+
+BACKEND_PORT="${BACKEND_PORT:-4000}"
+FRONTEND_PORT="${FRONTEND_PORT:-5173}"
+
+echo ""
+echo "🚀 Starting services..."
+echo ""
+
+# Start backend in background
+cd backend
+nohup encore run --port="$BACKEND_PORT" > ../backend.log 2>&1 &
+BACKEND_PID=$!
+cd ..
+
+echo "   ✓ Backend starting (PID $BACKEND_PID, port $BACKEND_PORT)"
+
+# Start frontend in background
+cd frontend
+nohup bunx --bun vite dev --port "$FRONTEND_PORT" > ../frontend.log 2>&1 &
+FRONTEND_PID=$!
+cd ..
+
+echo "   ✓ Frontend starting (PID $FRONTEND_PID, port $FRONTEND_PORT)"
+
+# Wait a bit for services to start
+sleep 3
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "✅ Services Running"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "   Backend:   http://localhost:$BACKEND_PORT"
+echo "   Frontend:  http://localhost:$FRONTEND_PORT"
+echo "   Dashboard: http://localhost:${ENCORE_DASHBOARD_PORT:-9400}"
+echo ""
+echo "   Logs:"
+echo "   - Backend:  tail -f backend.log"
+echo "   - Frontend: tail -f frontend.log"
+echo ""
+echo "   Stop: @stop or pkill -f 'encore run|vite dev'"
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
