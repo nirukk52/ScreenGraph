@@ -2,21 +2,11 @@
 # Husky pre-push hook
 # Runs smoke tests before allowing push
 
-echo "🧪 Running smoke tests before push..."
+echo "🧪 Running smoke tests before push (bun run qa:smoke)..."
 echo ""
 
-cd .cursor
-
-# Run smoke tests in parallel
-task qa:smoke:backend &
-BACKEND_PID=$!
-
-task qa:smoke:frontend &
-FRONTEND_PID=$!
-
-# Wait for both to complete
-wait $BACKEND_PID || exit 1
-wait $FRONTEND_PID || exit 1
+# Single entry point ensures Turborepo + Taskfile stay in sync
+bun run qa:smoke || exit 1
 
 echo ""
 echo "✅ All smoke tests passed - proceeding with push"

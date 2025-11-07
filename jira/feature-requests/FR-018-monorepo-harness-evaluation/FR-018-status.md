@@ -66,6 +66,9 @@ Published `FR-018-critique.md` with policy analysis, integration phases, and imm
 ### 2025-11-07 03:55
 Amended founder rules to allow dev-only root harness (`package.json`) under strict constraints (private, devDependencies only, guardrail parity).
 
+### 2025-11-07 04:05
+Bridged automation guardrails: Husky pre-push now runs `bun run qa:smoke`, CI scaffold updated to reference bun/turbo scripts instead of direct Taskfile calls.
+
 ---
 
 ## 🤝 Help Needed
