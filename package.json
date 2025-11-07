@@ -7,11 +7,16 @@
     "frontend"
   ],
   "scripts": {
+    "predev": "cd .cursor && task shared:preflight",
     "dev": "turbo run dev --parallel --filter=screengraph-backend --filter=screengraph-frontend",
     "dev:backend": "turbo run dev --filter=screengraph-backend",
     "dev:frontend": "turbo run dev --filter=screengraph-frontend",
     "task": "cd .cursor && task",
-    "qa:smoke": "cd .cursor && task qa:smoke:all"
+    "qa:smoke": "cd .cursor && task qa:smoke:all",
+    "qa:smoke:frontend": "cd .cursor && task qa:smoke:frontend",
+    "qa:smoke:backend": "cd .cursor && task qa:smoke:backend",
+    "lint": "cd .cursor && task frontend:lint",
+    "typecheck": "cd .cursor && task frontend:typecheck"
   },
   "devDependencies": {
     "turbo": "^2.6.0"

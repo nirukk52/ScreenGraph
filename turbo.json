@@ -6,6 +6,22 @@
       "persistent": true
     },
     "lint": {
+      "outputs": [],
+      "dependsOn": ["^lint"]
+    },
+    "typecheck": {
+      "outputs": []
+    },
+    "qa:smoke": {
+      "cache": false,
+      "outputs": []
+    },
+    "qa:smoke:frontend": {
+      "cache": false,
+      "outputs": []
+    },
+    "qa:smoke:backend": {
+      "cache": false,
       "outputs": []
     },
     "test": {

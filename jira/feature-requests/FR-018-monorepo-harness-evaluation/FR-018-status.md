@@ -60,6 +60,9 @@
 ### 2025-11-07 03:30
 Bootstrapped Turborepo harness (root package.json + turbo.json), rerouted `bun run dev`, documented findings/tasks. Next: requirements matrix + rule amendment draft.
 
+### 2025-11-07 03:45
+Published `FR-018-critique.md` with policy analysis, integration phases, and immediate next steps.
+
 ---
 
 ## 🤝 Help Needed

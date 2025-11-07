@@ -91,6 +91,8 @@ turbo run dev --filter=backend... --filter=frontend...
 - FR-012: Plane microservice hosting (`jira/feature-requests/FR-012-plane-microservice-hosting/FR-012-main.md`)
 - Founder rules (`.cursor/rules/founder_rules.mdc`)
 - Turborepo docs: Getting started installation [https://turborepo.com/docs/getting-started/installation](https://turborepo.com/docs/getting-started/installation)
+- Turborepo config reference [https://turborepo.com/docs/reference/configuration](https://turborepo.com/docs/reference/configuration)
+- FR-018 critique & recommendation (`jira/feature-requests/FR-018-monorepo-harness-evaluation/FR-018-critique.md`)
 
 
 ---
