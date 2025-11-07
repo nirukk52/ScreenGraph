@@ -56,9 +56,9 @@ Usage:
 
 <button
 	{type}
-	{onclick}
+	onclick={(e) => onclick?.(e)}
 	{disabled}
-	class="retro-shadow retro-shadow-hover rounded-xl font-medium transition-all {variantClasses[variant]} {sizeClasses[size]} {className} disabled:opacity-50 disabled:cursor-not-allowed"
+	class="retro-shadow retro-shadow-hover rounded-xl font-medium transition-all cursor-pointer {variantClasses[variant]} {sizeClasses[size]} {className} disabled:opacity-50 disabled:cursor-not-allowed"
 >
 	{#if children}
 		{@render children()}

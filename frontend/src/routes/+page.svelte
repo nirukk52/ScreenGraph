@@ -58,6 +58,16 @@ Retro-modern design landing page showcasing the UX drift detection platform
 		}
 	}
 
+	/**
+	 * Scroll to the "How It Works" section smoothly
+	 */
+	function handleSeeHowItWorks() {
+		const section = document.getElementById('how-it-works');
+		if (section) {
+			section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+	}
+
 	// Animation states for phone mockups
 	let phoneOffset1 = $state(0);
 	let phoneOffset2 = $state(0);
@@ -102,7 +112,7 @@ Retro-modern design landing page showcasing the UX drift detection platform
 						<RetroButton variant="primary" size="lg" onclick={handleDetectDrift} disabled={startingRun}>
 							{startingRun ? "Starting..." : "Detect My First Drift"}
 						</RetroButton>
-						<RetroButton variant="secondary" size="lg"> See How It Works </RetroButton>
+						<RetroButton variant="secondary" size="lg" onclick={handleSeeHowItWorks}> See How It Works </RetroButton>
 					</div>
 					<div class="flex flex-wrap gap-6 text-sm text-[var(--color-text-secondary)]">
 						<div class="flex items-center gap-2">
@@ -166,7 +176,7 @@ Retro-modern design landing page showcasing the UX drift detection platform
 	</section>
 
 	<!-- How It Works Section -->
-	<section class="py-16 px-8 bg-[var(--color-neutral-gray)]">
+	<section id="how-it-works" class="py-16 px-8 bg-[var(--color-neutral-gray)]">
 		<div class="max-w-6xl mx-auto">
 			<div class="text-center mb-12 space-y-4">
 				<h2 class="text-4xl text-[var(--color-charcoal)] font-medium">How ScreenGraph Works</h2>
@@ -426,6 +436,7 @@ Retro-modern design landing page showcasing the UX drift detection platform
 
 				<div class="pt-8 border-t border-gray-700">
 					<div class="flex flex-wrap justify-center gap-8 text-sm text-gray-400">
+						<a href="/app-info" class="hover:text-white transition-colors"> App Info </a>
 						<a href="/docs" class="hover:text-white transition-colors"> Documentation </a>
 						<a href="/api" class="hover:text-white transition-colors"> API Reference </a>
 						<a href="/pricing" class="hover:text-white transition-colors"> Pricing </a>
