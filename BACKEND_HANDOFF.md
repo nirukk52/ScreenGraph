@@ -559,3 +559,54 @@ This document is the single place where agents leave status for each other. Alwa
   - Verify backend is NOT 4000 and frontend is NOT 5173 in worktrees.
   - Main tree defaults (4000/5173/9400/4723) are reserved for Local mode.
   - Coordinator registry: `~/.screengraph/ports.json`. Snapshot: `.cursor/worktree.env`.
+
+---
+
+## Handoff #15 — Update Commands for Ticket-Level Handoff Documentation
+
+- **What I am doing**: ✅ **COMPLETED** - Created three new Cursor commands (@update-bug-doc, @update-feature-doc, @update-tech-debt) that add handoff entries to individual ticket folders. These commands list existing tickets, let users select one, and append structured handoff entries to a per-ticket handoff.md file. Also created TEMPLATE-handoff.md templates in bugs/, feature-requests/, and tech-debt/ directories.
+
+- **What is pending**:
+  - [x] Code: Three update commands created and made executable
+  - [x] Templates: TEMPLATE-handoff.md created for all three ticket types
+  - [x] Manual review: Script logic tested (interactive folder selection, handoff numbering)
+  - [x] Docs: Graphiti memory episodes created
+
+- **What I plan to do next**:
+  - Test the commands in a real workflow (e.g., when working on a bug or feature)
+  - Consider adding similar commands for milestone tracking if needed
+  - Monitor command usage and refine prompts based on agent feedback
+
+- **Modules I am touching**:
+  - `.cursor/commands/update-bug-doc` (new executable script)
+  - `.cursor/commands/update-feature-doc` (new executable script)
+  - `.cursor/commands/update-tech-debt` (new executable script)
+  - `jira/bugs/TEMPLATE-handoff.md` (new template)
+  - `jira/feature-requests/TEMPLATE-handoff.md` (new template)
+  - `jira/tech-debt/TEMPLATE-handoff.md` (new template)
+  - `BACKEND_HANDOFF.md` (this file)
+
+- **Work status rating (out of 5)**: 5
+
+- **Graphiti episode IDs**:
+  - Update Commands Created - Handoff Documentation System: `queued-position-1`
+  - Handoff Templates Created: `queued-position-1`
+  - Handoff Documentation Pattern: `queued-position-2`
+  - Bash Script Implementation - Interactive Folder Selection: `queued-position-3`
+
+- **Related docs**:
+  - `.cursor/commands/create-bug`, `create-feature`, `create-techdebt` (corresponding create commands)
+  - `.cursor/commands/update_handoff` (main handoff command)
+  - `jira/bugs/TEMPLATE-*.md` (all bug templates)
+  - `jira/feature-requests/TEMPLATE-*.md` (all feature templates)
+  - `jira/tech-debt/TEMPLATE-*.md` (all tech debt templates)
+
+- **Notes for next agent**:
+  - **Usage Pattern**: When working on a ticket, run the appropriate @update-*-doc command to log a handoff entry. The command will list available tickets and let you select which one to update.
+  - **Handoff Numbering**: Commands auto-increment handoff numbers by counting "## Handoff #" patterns in the existing handoff.md file.
+  - **First-Time Creation**: If handoff.md doesn't exist for a ticket, the command creates it from the template with proper ID/title substitution.
+  - **Structured Format**: Each handoff entry captures: what you're doing, pending items, next steps, modules touched, work rating, and notes for next agent.
+  - **Complements Global Handoffs**: These ticket-level handoffs complement BACKEND_HANDOFF.md and FRONTEND_HANDOFF.md by providing granular, ticket-specific context.
+  - **Interactive Prompts**: Commands prompt for: what doing, pending items (comma-separated), next steps, modules (comma-separated paths), rating (0-5), and notes.
+  - **Comma-Separated Inputs**: Pending items and modules use comma-separated format which gets auto-converted to markdown lists.
+  - **Consistency**: All three commands follow identical patterns, just with different paths (bugs/, feature-requests/, tech-debt/) and prefixes (BUG-, FR-, TD-).
