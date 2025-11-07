@@ -2,14 +2,33 @@
 
 # Create Feature Request Folder
 # Usage: When @-mentioned in Cursor, this command sets up a new feature request folder
+# Auto-increments feature number based on existing feature requests
 
-# Get the feature ID and title from user input
-read -p "Feature ID (e.g., FR-012): " FEATURE_ID
+# Find the highest FR-XXX number in feature-requests directory
+HIGHEST_NUM=$(find jira/feature-requests -maxdepth 1 \( -type f -o -type d \) -name "FR-[0-9]*" | \
+  sed 's/.*FR-\([0-9]\{3\}\).*/\1/' | \
+  sort -n | \
+  tail -1)
+
+# Increment to get next number
+if [ -z "$HIGHEST_NUM" ]; then
+    NEXT_NUM=1
+else
+    NEXT_NUM=$((10#$HIGHEST_NUM + 1))
+fi
+
+# Format as FR-XXX
+FEATURE_ID=$(printf "FR-%03d" $NEXT_NUM)
+
+echo "🔢 Auto-generated Feature ID: ${FEATURE_ID}"
+echo ""
+
+# Get the title from user input
 read -p "Short Title (kebab-case, e.g., api-rate-limiting): " TITLE
 
-# Validate inputs
-if [ -z "$FEATURE_ID" ] || [ -z "$TITLE" ]; then
-    echo "❌ Error: Both Feature ID and Title are required"
+# Validate input
+if [ -z "$TITLE" ]; then
+    echo "❌ Error: Title is required"
     exit 1
 fi
 
