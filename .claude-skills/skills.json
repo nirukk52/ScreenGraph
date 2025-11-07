@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "description": "Claude Skills for ScreenGraph unified automation system",
+  "description": "Claude Skills for ScreenGraph unified automation system. Automatically pick based on the Task you are doing!",
   "last_updated": "2025-11-07",
   "skills": [
     {
@@ -238,6 +238,86 @@
       "command": "python3 skills-main/skill-creator/scripts/package_skill.py",
       "category": "skill-management",
       "status": "active"
+    },
+    {
+      "name": "backend-debugging",
+      "description": "Systematic 10-phase debugging procedure for Encore.ts backend issues including service errors, API failures, database queries, PubSub, and performance bottlenecks",
+      "type": "knowledge",
+      "skill_file": "backend-debugging/SKILL.md",
+      "category": "debugging",
+      "status": "active"
+    },
+    {
+      "name": "frontend-debugging",
+      "description": "Systematic 10-phase debugging procedure for SvelteKit 2 + Svelte 5 frontend issues including component rendering, routing, runes errors, API client failures, and build problems",
+      "type": "knowledge",
+      "skill_file": "frontend-debugging/SKILL.md",
+      "category": "debugging",
+      "status": "active"
+    },
+    {
+      "name": "frontend-development",
+      "description": "Comprehensive guide for SvelteKit 2 + Svelte 5 development including runes, routing, API integration, SSR/CSR, and best practices for building modern web applications",
+      "type": "knowledge",
+      "skill_file": "frontend-development/SKILL.md",
+      "category": "development",
+      "status": "active"
+    },
+    {
+      "name": "skill-creator",
+      "description": "Guide for creating effective skills. Use when creating new skills or updating existing skills to extend Claude's capabilities with specialized knowledge, workflows, or tool integrations",
+      "type": "knowledge",
+      "skill_file": "skill-creator/SKILL.md",
+      "category": "skill-management",
+      "status": "active"
+    },
+    {
+      "name": "cursor-browser-mastery",
+      "description": "Complete guide to Cursor's built-in @Browser tool for inspecting, debugging, and interacting with web applications. Essential for frontend debugging, UI testing, and visual verification",
+      "type": "knowledge",
+      "skill_file": "cursor-browser-mastery/SKILL.md",
+      "category": "debugging",
+      "status": "active"
+    },
+    {
+      "name": "cursor-chrome-window-mastery",
+      "description": "Expert at using Cursor's Google Chrome mode (Playwright-controlled isolated window) for clean-state testing and verification. Specializes in ScreenGraph application testing including run lifecycle, WebSocket debugging, and graph visualization",
+      "type": "knowledge",
+      "skill_file": "cursor-chrome-window-mastery/SKILL.md",
+      "category": "debugging",
+      "status": "active"
+    },
+    {
+      "name": "webapp-testing",
+      "description": "Toolkit for testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing screenshots, and viewing browser logs",
+      "type": "knowledge",
+      "skill_file": "webapp-testing/SKILL.md",
+      "category": "testing",
+      "status": "active"
+    },
+    {
+      "name": "theme-factory",
+      "description": "Toolkit for styling artifacts with themes. Apply 10 pre-set themes with colors/fonts to slides, docs, reports, HTML pages, or generate new themes on-the-fly",
+      "type": "knowledge",
+      "skill_file": "theme-factory/SKILL.md",
+      "category": "design",
+      "status": "active"
+    },
+    {
+      "name": "brand-guidelines",
+      "description": "Applies Anthropic's official brand colors and typography to artifacts. Use when brand colors, style guidelines, visual formatting, or company design standards apply",
+      "type": "knowledge",
+      "skill_file": "brand-guidelines/SKILL.md",
+      "category": "design",
+      "status": "active"
+    },
+    {
+      "name": "mcp-builder",
+      "description": "Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services. Supports Python (FastMCP) and Node/TypeScript (MCP SDK)",
+      "type": "knowledge",
+      "skill_file": "mcp-builder/SKILL.md",
+      "category": "development",
+      "status": "active"
     }
   ],
   "categories": {
@@ -246,6 +326,8 @@
     "quality": "Code quality checks (linting, type checking, founder rules)",
     "workflows": "Multi-step workflows (builds, deployments, migrations)",
     "skill-management": "Create, validate, and package Claude skills",
+    "debugging": "Systematic debugging procedures and browser tools",
+    "design": "UI/UX design, branding, and theming tools",
     "help": "Help and documentation"
   },
   "usage": {
