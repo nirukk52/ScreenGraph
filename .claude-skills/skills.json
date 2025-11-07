@@ -1,0 +1,197 @@
+{
+  "version": "1.0",
+  "description": "Claude Skills for ScreenGraph unified automation system",
+  "skills": [
+    {
+      "name": "start-dev-environment",
+      "description": "Start backend and frontend development servers with worktree isolation checks",
+      "command": "task founder:servers:start",
+      "category": "development",
+      "requires": ["worktree-isolation"]
+    },
+    {
+      "name": "stop-dev-environment",
+      "description": "Stop all running development services (backend, frontend)",
+      "command": "task founder:servers:stop",
+      "category": "development"
+    },
+    {
+      "name": "restart-dev-environment",
+      "description": "Restart all development services with fresh state",
+      "command": "task founder:servers:restart",
+      "category": "development"
+    },
+    {
+      "name": "check-service-status",
+      "description": "Show current service status, ports, and PIDs",
+      "command": "task founder:servers:status",
+      "category": "development"
+    },
+    {
+      "name": "run-smoke-tests",
+      "description": "Run smoke tests for both backend and frontend to verify basic functionality",
+      "command": "task founder:testing:smoke",
+      "category": "testing"
+    },
+    {
+      "name": "test-backend",
+      "description": "Run backend unit and integration tests",
+      "command": "task founder:testing:backend",
+      "category": "testing"
+    },
+    {
+      "name": "test-frontend",
+      "description": "Run frontend unit and integration tests",
+      "command": "task founder:testing:frontend",
+      "category": "testing"
+    },
+    {
+      "name": "check-founder-rules",
+      "description": "Validate all founder rules compliance (no console.log, no any types, American spelling, etc.)",
+      "command": "task founder:rules:check",
+      "category": "quality"
+    },
+    {
+      "name": "check-worktree-isolation",
+      "description": "Verify worktree isolation setup and port assignments",
+      "command": "task shared:check-worktree",
+      "category": "quality",
+      "requires": ["worktree-isolation"]
+    },
+    {
+      "name": "typecheck-frontend",
+      "description": "Run TypeScript type checking on frontend code",
+      "command": "task frontend:typecheck",
+      "category": "quality"
+    },
+    {
+      "name": "lint-frontend",
+      "description": "Run linter on frontend code",
+      "command": "task frontend:lint",
+      "category": "quality"
+    },
+    {
+      "name": "regenerate-encore-client",
+      "description": "Regenerate frontend Encore client after backend API changes",
+      "command": "task founder:workflows:regen-client",
+      "category": "workflows",
+      "requires": ["backend-changes"]
+    },
+    {
+      "name": "reset-database",
+      "description": "Reset database to clean state (DESTRUCTIVE - deletes all data)",
+      "command": "task founder:workflows:db-reset",
+      "category": "workflows",
+      "destructive": true
+    },
+    {
+      "name": "create-feature-request",
+      "description": "Create new feature request folder with templates",
+      "command": "task founder:jira:new-feature",
+      "category": "project-management"
+    },
+    {
+      "name": "create-bug-report",
+      "description": "Create new bug report folder with templates",
+      "command": "task founder:jira:new-bug",
+      "category": "project-management"
+    },
+    {
+      "name": "generate-status-report",
+      "description": "Generate JIRA status report from current progress",
+      "command": "task founder:jira:status-report",
+      "category": "project-management"
+    },
+    {
+      "name": "show-port-assignments",
+      "description": "Show current port assignments for all services in this worktree",
+      "command": "task ops:ports:show",
+      "category": "development"
+    },
+    {
+      "name": "validate-port-configuration",
+      "description": "Validate port configuration and check for conflicts",
+      "command": "task ops:ports:validate",
+      "category": "quality"
+    },
+    {
+      "name": "start-appium-server",
+      "description": "Start Appium server for mobile testing",
+      "command": "task qa:appium:start",
+      "category": "testing"
+    },
+    {
+      "name": "stop-appium-server",
+      "description": "Stop Appium server",
+      "command": "task qa:appium:stop",
+      "category": "testing"
+    },
+    {
+      "name": "view-backend-logs",
+      "description": "View backend service logs",
+      "command": "task backend:logs",
+      "category": "development"
+    },
+    {
+      "name": "check-backend-health",
+      "description": "Check backend service health status",
+      "command": "task backend:health",
+      "category": "development"
+    },
+    {
+      "name": "migrate-database",
+      "description": "Run database migrations",
+      "command": "task backend:db:migrate",
+      "category": "workflows"
+    },
+    {
+      "name": "open-database-shell",
+      "description": "Open interactive database shell",
+      "command": "task backend:db:shell",
+      "category": "development"
+    },
+    {
+      "name": "build-frontend",
+      "description": "Build frontend for production",
+      "command": "task frontend:build",
+      "category": "workflows"
+    },
+    {
+      "name": "run-preflight-checks",
+      "description": "Run all preflight checks (worktree, ports, environment)",
+      "command": "task shared:preflight",
+      "category": "quality"
+    },
+    {
+      "name": "print-environment",
+      "description": "Print all environment variables (ports, worktree info, paths)",
+      "command": "task ops:env:print",
+      "category": "development"
+    },
+    {
+      "name": "create-new-worktree",
+      "description": "Create new worktree with coordinated ports and branch setup",
+      "command": "task founder:worktrees:create",
+      "category": "development"
+    },
+    {
+      "name": "switch-worktree",
+      "description": "Switch to another worktree and reload environment",
+      "command": "task founder:worktrees:switch",
+      "category": "development"
+    },
+    {
+      "name": "prune-worktrees",
+      "description": "Cleanup merged worktrees safely",
+      "command": "task founder:worktrees:prune",
+      "category": "development"
+    },
+    {
+      "name": "show-worktree-status",
+      "description": "Show current worktree, branch, ports, and protection status",
+      "command": "task founder:worktrees:status",
+      "category": "development"
+    }
+  ]
+}
+
