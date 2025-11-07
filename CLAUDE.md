@@ -16,8 +16,8 @@
 bun run dev
 
 # Or start individually
-bun run dev:backend   # Backend only
-bun run dev:frontend  # Frontend only
+bun run dev:backend   # Runs: encore run
+bun run dev:frontend  # Runs: bun run dev (vite)
 ```
 
 **How it works:**
