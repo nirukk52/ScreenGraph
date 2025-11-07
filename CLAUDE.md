@@ -10,7 +10,26 @@
 
 ## Quick Start
 
-### 1. Unified Automation (Task Commands) ⭐ NEW
+### 1. Turborepo Harness (FR-018 Pilot)
+```bash
+# Start backend + frontend together
+bun run dev
+
+# Focus on individual service
+bun run dev:backend
+bun run dev:frontend
+
+# Delegate to Taskfile via harness bridge
+bun run task founder:servers:status
+```
+
+**Notes:**
+- Experimental harness introduced in FR-018 using Turborepo (`turbo run`).
+- Root `package.json` is dev-only; backend/frontend dependencies stay isolated.
+- Guardrails (Taskfile, Husky, CI) still run via `bun run task …`.
+- Fall back to Task commands below if harness misbehaves.
+
+### 2. Unified Automation (Task Commands)
 ```bash
 # Start everything (with health checks & auto-wait)
 cd .cursor && task founder:servers:start
@@ -36,13 +55,13 @@ task --list
 - ✅ Real-time status display
 - ✅ Error handling with helpful messages
 
-### 2. Legacy Commands (Still Work)
+### 3. Legacy Commands (Still Work)
 ```bash
 @start      # Starts both backend + frontend
 @stop       # Stops all services
 ```
 
-### 3. Generate Encore Client
+### 4. Generate Encore Client
 ```bash
 # NEW way
 cd .cursor && task founder:workflows:regen-client

@@ -1,76 +1,72 @@
 # FR-018: monorepo-harness-evaluation - Status Report
 
-**Last Updated:** [YYYY-MM-DD HH:MM]  
-**Current Status:** 📋 Todo | 🚧 In Progress | ✅ Done | 🔥 Blocked  
-**Owner:** [Name]
+**Last Updated:** 2025-11-07 03:30  
+**Current Status:** 🚧 In Progress  
+**Owner:** TBD
 
 ---
 
 ## 🎯 Progress Summary
-**Overall Completion:** [XX%]
+**Overall Completion:** ~20%
 
 ### Acceptance Criteria Progress
-- [✅] [Completed criterion 1]
-- [🚧] [In-progress criterion 2] - 60% complete
-- [📋] [Not started criterion 3]
+- [📋] Decision record comparing Turborepo vs Taskfile (analysis started)
+- [🚧] Prototype harness on main (`bun run dev` via Turborepo)
+- [📋] Founder rule/CLAUDE.md updates pending ratification
+- [📋] Rollback plan documentation not started
 
 ---
 
 ## 🔨 Work Completed (Last Update)
-- [Specific accomplishment 1]
-- [Specific accomplishment 2]
-- [Specific accomplishment 3]
+- Added root `package.json`/`turbo.json` (dev-only) with Bun workspaces for backend/frontend
+- Installed Turborepo and wired `bun run dev` harness bridging to Taskfile commands
+- Updated `CLAUDE.md` quick start and FR-018 main doc with pilot notes and findings
 
 ---
 
 ## 🚧 Work In Progress
-- [Current task 1] - Expected completion: [date]
-- [Current task 2] - Expected completion: [date]
+- Requirements matrix mapping FR-013/FR-017/FR-012 guardrails to Turborepo capabilities (Target: 2025-11-08)
+- Founder rule amendment draft describing dev-only root tooling allowance (Target: 2025-11-09)
 
 ---
 
 ## 📋 Work Remaining
-- [ ] [Remaining task 1]
-- [ ] [Remaining task 2]
-- [ ] [Remaining task 3]
+- [ ] Decide whether Taskfile wraps Turborepo or vice versa and prototype both flows
+- [ ] Author rollback plan + decision record for leadership review
+- [ ] Update CI/Husky workflows to call Turborepo (if adopted) and validate QA smoke tasks
 
 ---
 
 ## 🔥 Blockers & Risks
 **Blockers:**
-- [Blocker 1] - Blocking since [date] - Waiting on [person/team]
-- [Blocker 2] - Blocking since [date] - Requires [dependency]
+- None at this time
 
 **Risks:**
-- [Risk 1] - Likelihood: [High|Medium|Low] - Impact: [High|Medium|Low]
-- [Risk 2] - Likelihood: [High|Medium|Low] - Impact: [High|Medium|Low]
+- Founder rule change required for root tooling (Likelihood: Medium, Impact: High)
+- Potential duplication/drift between Taskfile and Turborepo pipelines (Likelihood: Medium, Impact: Medium)
 
 ---
 
 ## 📊 Timeline
-- **Started:** [YYYY-MM-DD]
-- **Original Target:** [YYYY-MM-DD]
-- **Current Target:** [YYYY-MM-DD]
-- **Status:** On Track | At Risk | Delayed
+- **Started:** 2025-11-07
+- **Original Target:** 2025-11-12
+- **Current Target:** 2025-11-12
+- **Status:** On Track
 
 ---
 
 ## 💬 Recent Updates
 
-### [YYYY-MM-DD HH:MM]
-[Update description - what changed, what was completed, what's next]
-
-### [YYYY-MM-DD HH:MM]
-[Previous update]
+### 2025-11-07 03:30
+Bootstrapped Turborepo harness (root package.json + turbo.json), rerouted `bun run dev`, documented findings/tasks. Next: requirements matrix + rule amendment draft.
 
 ---
 
 ## 🤝 Help Needed
-- [Specific help request 1]
-- [Specific help request 2]
+- None currently
 
 ---
 
 ## 📝 Notes
-[Any additional context, decisions made, or important information]
+- Reminder: harness is experimental; fallback to Taskfile remains available (`cd .cursor && task …`).
 

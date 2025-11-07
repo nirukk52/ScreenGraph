@@ -1,0 +1,19 @@
+{
+  "name": "screengraph-monorepo",
+  "private": true,
+  "packageManager": "bun@1.3.1",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "turbo run dev --parallel --filter=screengraph-backend --filter=screengraph-frontend",
+    "dev:backend": "turbo run dev --filter=screengraph-backend",
+    "dev:frontend": "turbo run dev --filter=screengraph-frontend",
+    "task": "cd .cursor && task",
+    "qa:smoke": "cd .cursor && task qa:smoke:all"
+  },
+  "devDependencies": {
+    "turbo": "^2.6.0"
+  }
+}

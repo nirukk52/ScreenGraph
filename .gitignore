@@ -78,6 +78,7 @@ test-results
 # Tool Artifacts
 # ============================================
 .playwright-mcp
+.turbo/
 
 # ============================================
 # OS Files

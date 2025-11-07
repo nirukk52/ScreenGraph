@@ -29,6 +29,7 @@ Turborepo is the preferred candidate (per founder request). The evaluation must 
 - **FR-017 coupling:** Testing stack (Vitest/Playwright/Supertest) relies on Taskfile targets (`qa:smoke:*`). Turborepo pipelines must execute those targets or provide equivalent scripts so pre-push and CI remain deterministic.
 - **Port coordination impact (FR-012 Plane integration):** Turborepo must not hard-code ports; the existing `env.mjs` port resolver still needs to run before spawning services, implying shared scripts between Taskfile and Turborepo.
 - **DX opportunity:** Turborepo can deliver a single `turbo run dev` command with concurrency, caching, and filtered builds, reducing the need for custom shell logic.
+- **Prototype harness created (main branch):** Added dev-only root `package.json`, `turbo.json`, and Bun workspace configuration; `bun run dev` now bridges to Taskfile via Turborepo while keeping backend/frontend package boundaries intact.
 
 ---
 
