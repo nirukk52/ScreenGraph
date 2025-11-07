@@ -8,6 +8,87 @@
 
 ---
 
+---
+
+## Context Handoff - FR-017: Minimal Robust Testing Stack
+
+📋 Quick Summary
+Created FR-017: Minimal Robust Testing Stack for Encore + SvelteKit. Researched testing frameworks using Context7 MCP, defined minimal stack (Vitest, Playwright, Supertest, MSW, Zod, Testcontainers), and created phased implementation plan aligned with FR-013 automation structure.
+📍 Primary Handoff
+Path: /Users/priyankalalge/ScreenGraph/Code/ScreenGraph/FRONTEND_HANDOFF.md
+Handoff Section: #6
+🧠 Graphiti Memory Episodes
+queued-position-1 - FR-017 Testing Framework Stack Decision (tool choices and rationale)
+queued-position-1 - FR-017 Testing Setup Procedure (5-phase implementation steps)
+queued-position-2 - FR-017 Minimal Robust Testing Preference (philosophy and approach)
+queued-position-3 - FR-017 Testing Automation Integration Rule (FR-013 Taskfile integration)
+📂 Modified/Relevant Files
+Code Files
+None yet (planning phase complete)
+Documentation
+FRONTEND_HANDOFF.md (added Handoff #6)
+jira/feature-requests/FR-017-minimal-robust-testing/FR-017-main.md (feature spec)
+jira/feature-requests/FR-017-minimal-robust-testing/FR-017-status.md (progress tracking)
+jira/feature-requests/FR-017-minimal-robust-testing/FR-017-retro.md (template)
+Tests
+None yet (Phase 1 pending)
+🎯 Feature/Bug Tracking
+Feature Request: jira/feature-requests/FR-017-minimal-robust-testing/FR-017-main.md
+Status: jira/feature-requests/FR-017-minimal-robust-testing/FR-017-status.md (📋 Todo)
+Retro: jira/feature-requests/FR-017-minimal-robust-testing/FR-017-retro.md (template, not started)
+🔗 Git
+Branch: main
+Latest Commit: 3a32427 - "docs(frontend): add Handoff #6 for FR-017 testing stack creation"
+Pushed to: origin/main
+⚠️ Critical Notes
+Testing Stack Decisions:
+Vitest: Unit + integration (Vite-native, fast, ESM support)
+Playwright Test: E2E (real browsers, traces, screenshots)
+Supertest: HTTP endpoint testing against Encore localhost:4000
+MSW: Mock fetch for network-free unit tests (browser + Node)
+Zod: Schema validation for API contracts (type-safe DTOs)
+Testcontainers: Prototype for DB isolation (may be redundant with Encore test env)
+Research Sources:
+Used Context7 MCP to research all libraries - excellent documentation coverage:
+Vitest: /vitest-dev/vitest
+Playwright: /microsoft/playwright
+MSW: /websites/mswjs_io
+Supertest: /ladjs/supertest
+Testcontainers: /testcontainers/testcontainers-node
+Zod: /colinhacks/zod
+FR-013 Integration:
+All tests must be wired into Taskfile structure:
+qa:smoke:frontend → typecheck + lint + vitest
+qa:e2e:frontend → playwright
+qa:smoke:backend → supertest + encore test
+Pre-push gating via Husky hooks will block pushes if tests fail.
+Phased Implementation:
+Phase 1: Frontend Vitest + MSW + Zod (fast feedback)
+Phase 2: Frontend Playwright E2E (real browser)
+Phase 3: Backend Supertest HTTP tests
+Phase 4: Testcontainers evaluation (decision record)
+Phase 5: FR-013 Taskfile + Husky integration
+Next Steps:
+Start Phase 1 - Install dependencies and create first tests:
+cd frontendbun add -d vitest @testing-library/svelte @testing-library/jest-dom jsdom msw @playwright/testbun add zodbunx playwright install
+Then create vitest.config.ts, MSW handlers, and first unit test for RetroButton component.
+📊 Work Status
+Rating: 1/5 (Planning complete, implementation pending)
+Next Steps:
+Begin Phase 1: Install Vitest, MSW, Zod
+Create vitest.config.ts with jsdom environment
+Write first unit test (RetroButton) and integration test (/app-info with MSW)
+Use Zod to validate API response schemas
+✅ Handoff Complete
+All Steps Executed:
+✅ Created Graphiti Memory Episodes (4 episodes queued)
+✅ Updated Handoff Documents (FRONTEND_HANDOFF.md #6)
+✅ Committed and Pushed (commit 3a32427, pushed to origin/main)
+✅ Generated Structured Output (this document)
+Feature Status: 📋 PLANNING COMPLETE - Ready for Phase 1 implementation
+
+---
+
 ## 📝 Description
 
 Establish a minimal, robust testing stack for our Encore backend and SvelteKit frontend that prevents regressions and plugs into the unified automation from FR-013. The goal is fast local feedback, CI reliability, and pre-push gating.
