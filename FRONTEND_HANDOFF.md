@@ -275,9 +275,53 @@ frontend/
 
 ---
 
-**Last Updated**: October 29, 2025  
-**Status**: Design system aligned, ready for feature development ✅
+**Last Updated**: November 7, 2025  
+**Status**: Testing infrastructure setup in progress ⏳
 
+
+---
+
+## Handoff #7 — FR-017: Tailwind v4 Migration & Build Cleanup (2025-11-07)
+
+- **What I am doing**: Migrated frontend to Tailwind CSS v4 with native Vite plugin, cleaned up app.css utilities (removed 72 redundant lines now handled by Tailwind v4 layers), and removed committed build artifacts from dist/ folder to prevent merge conflicts and reduce repo bloat.
+
+- **What is pending**:
+  - [x] Code: Tailwind v4 migration complete
+  - [x] Code: Build artifact cleanup (dist/ files removed)
+  - [x] Dependencies: bun.lock updated with new resolutions
+  - [ ] Tests: Verify Tailwind v4 compilation works in dev and build
+  - [ ] Manual review: Confirm no visual regressions on landing page
+  - [ ] Config: Add frontend/dist/ to .gitignore to prevent future commits
+
+- **What I plan to do next**:
+  - Add `frontend/dist/` to `.gitignore` if not already present
+  - Test dev server (`bun run dev`) to verify Tailwind v4 compilation
+  - Continue FR-017 Phase 1: Install Vitest + MSW + Zod
+  - Create first unit test for RetroButton component
+
+- **Modules I am touching**:
+  - `frontend/package.json` (Tailwind v4 dependencies)
+  - `frontend/bun.lock` (dependency updates)
+  - `frontend/src/app.css` (removed 72 lines of utilities, kept base styles and custom retro-shadow classes)
+  - `frontend/dist/` (deleted: index.html, index-4dee3a3f.css, index-65559419.js)
+  - `jira/feature-requests/FR-017-minimal-robust-testing/FR-017-main.md` (updated documentation)
+
+- **Work status rating (out of 5)**: 4
+
+- **Graphiti episode IDs**:
+  - FR-017 Testing Stack - Tailwind v4 Migration: `queued-position-1`
+  - Frontend Build Artifact Cleanup - Best Practice: `queued-position-1`
+
+- **Related docs**:
+  - `jira/feature-requests/FR-017-minimal-robust-testing/FR-017-main.md`
+  - Tailwind CSS v4 docs: https://tailwindcss.com/docs/v4-beta
+
+- **Notes for next agent**:
+  - **Tailwind v4 Changes**: Now uses `@tailwindcss/vite` plugin instead of PostCSS. Import statement in app.css changed to `@import "tailwindcss";`. Utility classes like `.retro-shadow` are preserved in `@layer utilities`.
+  - **Build Artifacts**: Removed 30K+ lines of generated code from git history. Build artifacts belong in .gitignore, not version control. Check if `frontend/dist/` is already gitignored; add if missing.
+  - **Dependency Updates**: Tailwind CSS v4 requires Vite 6.0+. Package.json now shows `"tailwindcss": "^4.0.0"` and `"@tailwindcss/vite": "^4.0.0"`.
+  - **Visual Verification**: After starting dev server, verify landing page buttons still have retro shadows and hover animations. Tailwind v4 compilation should be transparent.
+  - **Next Phase**: FR-017 Phase 1 ready to start - install Vitest, MSW, Zod and create first tests.
 
 ---
 
