@@ -9,6 +9,17 @@
   
   const appInfo = data.appInfo;
   const error = data.error;
+  
+  /** Track failed image loads for error handling */
+  const failedImages = $state<Set<string>>(new Set());
+  
+  /** Handle image load errors */
+  function handleImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    if (img.src) {
+      failedImages.add(img.src);
+    }
+  }
 </script>
 
 {#if error}
@@ -44,7 +55,7 @@
             {#if appInfo.ratingScore}
               <div class="flex items-center gap-1">
                 <Star class="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span class="font-medium">{appInfo.ratingScore.toFixed(1)}</span>
+                <span class="font-medium">{typeof appInfo.ratingScore === 'number' ? appInfo.ratingScore.toFixed(1) : Number(appInfo.ratingScore).toFixed(1)}</span>
                 {#if appInfo.ratingsCount}
                   <span class="text-surface-600 dark:text-surface-400 text-sm">
                     ({appInfo.ratingsCount.toLocaleString()})
@@ -160,11 +171,19 @@
           <h2 class="h3 mb-4">Screenshots</h2>
           <div class="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory">
             {#each phoneScreenshots as screenshot}
-              <img 
-                src={screenshot.assetUrl} 
-                alt="Screenshot {screenshot.position + 1}"
-                class="h-96 rounded-lg shadow-lg flex-shrink-0 snap-start"
-              />
+              {#if !failedImages.has(screenshot.assetUrl)}
+                <img 
+                  src={screenshot.assetUrl} 
+                  alt="Screenshot {screenshot.position + 1}"
+                  class="h-96 w-auto max-w-sm rounded-lg shadow-lg flex-shrink-0 snap-start object-contain bg-surface-200 dark:bg-surface-800"
+                  loading="lazy"
+                  onerror={handleImageError}
+                />
+              {:else}
+                <div class="h-96 w-64 rounded-lg shadow-lg flex-shrink-0 snap-start bg-surface-200 dark:bg-surface-800 flex items-center justify-center">
+                  <Download class="w-12 h-12 text-surface-400" />
+                </div>
+              {/if}
             {/each}
           </div>
         </div>

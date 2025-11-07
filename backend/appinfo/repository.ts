@@ -367,7 +367,7 @@ export async function loadAppInfo(packageName: string): Promise<StoredAppInfoRec
       installsLabel: row.installs_label,
       minInstalls: row.min_installs,
       maxInstalls: row.max_installs,
-      ratingScore: row.rating_score,
+      ratingScore: row.rating_score !== null ? Number(row.rating_score) : null,
       ratingsCount: row.ratings_count,
       reviewsCount: row.reviews_count,
       isFree: row.is_free,
