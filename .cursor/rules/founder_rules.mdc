@@ -228,123 +228,24 @@ Update after significant changes.
 
 ---
 
-## Part II: Worktree Isolation (Multi-Agent Development)
+## Part II: Environment & Services
 
-### 🚨 Worktree Detection (Run FIRST, Always)
+### Ports (All in .env)
 
-**Before executing ANY command, you MUST:**
+- Backend: 4000
+- Frontend: 5173
+- Dashboard: 9400
+- Appium: 4723
 
-1. **Detect current worktree mode** from Cursor's dropdown
-2. **Verify you are NOT on main tree** (unless Local mode)
-3. **Confirm port assignments** are coordinated
+See `.env` file for configuration.
 
-**Pre-Flight Check (Required Before ANY Task):**
+### Services
 
 ```bash
-TREE_NAME=$(basename $(git rev-parse --show-toplevel))
-
-# Block if on main tree without Local mode authorization
-if [ "$TREE_NAME" = "ScreenGraph" ] && [ -z "$LOCAL_MODE_AUTHORIZED" ]; then
-  echo "🚫 STOP: You are on MAIN tree (ScreenGraph)"
-  echo "✅ Switch Cursor to 'Worktree' mode or create feature branch"
-  exit 1
-fi
-
-# If in worktree, verify coordinated ports
-if [ "$TREE_NAME" != "ScreenGraph" ]; then
-  eval "$(bun ./scripts/port-coordinator.mjs --no-summary)"
-  [ "$BACKEND_PORT" != "4000" ] || { echo "❌ Using main tree ports"; exit 1; }
-  echo "✅ Worktree: $TREE_NAME | Backend: $BACKEND_PORT | Frontend: $FRONTEND_PORT"
-fi
+./scripts/dev-backend.sh    # Starts backend
+./scripts/dev-frontend.sh   # Starts frontend
 ```
 
 ---
 
-### 🔒 Main Tree is Read-Only for Agents
-
-- ❌ **NEVER** run `encore run` or `bun run dev` on main tree
-- ❌ **NEVER** modify files or commit on main tree
-- ✅ **EXCEPTION**: Only when Cursor dropdown shows **"Local"** mode
-
----
-
-### 📍 Port Reservation Policy
-
-| Environment | Backend | Frontend | Dashboard | Appium |
-|-------------|---------|----------|-----------|--------|
-| **Main Tree** | **4000** | **5173** | **9400** | **4723** |
-| Worktree 1-20 | 4001-4009 | 5174-5183 | 9401-9409 | 4724-4733 |
-
-**Main tree ports are RESERVED** — worktrees use port coordinator for automatic assignment.
-
----
-
-### 🚀 Correct Development Flow
-
-**For Worktree Agents (Default):**
-
-```bash
-# 1. Verify NOT on main tree
-[ "$(basename $(git rev-parse --show-toplevel))" != "ScreenGraph" ] || exit 1
-
-# 2. Start services with port coordination (from repo root)
-./scripts/dev-backend.sh   # Assigns 4001-4009
-./scripts/dev-frontend.sh  # Assigns 5174-5183
-```
-
-**For Local Mode (Main Tree Only):**
-
-```bash
-# Only when Cursor shows "Local" in dropdown
-cd backend && encore run        # Uses default 4000
-cd frontend && bun run dev      # Uses default 5173
-```
-
----
-
-### 🎨 Cursor Dropdown Modes
-
-**"Local" Mode:**
-- ✅ Authorized for main tree (default ports: 4000, 5173)
-- 🎯 Use: Single developer, quick fixes
-
-**"Worktree" Mode (Default for Agents):**
-- ❌ Cannot work on main tree
-- ✅ Must use coordinated ports via `./scripts/dev-backend.sh` and `./scripts/dev-frontend.sh`
-- ✅ Must work on feature branches (never `main`)
-- 🎯 Use: Multi-agent development, parallel features
-
----
-
-### 🚫 Enforcement: What Agents CANNOT Do
-
-1. ❌ `encore run` directly (use `./scripts/dev-backend.sh`)
-2. ❌ Work on main tree without Local mode
-3. ❌ Use default ports (4000, 5173) in worktrees
-4. ❌ Commit directly to `main` branch
-5. ❌ Skip worktree detection before commands
-
----
-
-### ✅ Enforcement: What Agents MUST Do
-
-1. ✅ Run worktree detection FIRST
-2. ✅ Use `./scripts/dev-backend.sh` and `./scripts/dev-frontend.sh` for all services
-3. ✅ Verify coordinated ports (not defaults)
-4. ✅ Work on feature branches only
-5. ✅ Include worktree name in logs/commits
-
----
-
-## 📝 The One Rule
-
-> **If you're an AI agent and `basename $(git rev-parse --show-toplevel)` returns "ScreenGraph", STOP. You are on the main tree. Switch to Worktree mode or await Local mode authorization.**
-
-**Default Assumption**: All agents work in Worktree mode with coordinated ports. Main tree is sacred and untouchable unless explicitly in Local mode.
-
----
-
-**Last Updated**: 2025-11-06  
-**Owner**: Founder  
-**Enforcement**: Automatic via pre-flight checks  
-**Violations**: Block immediately, provide clear remediation
+**Last Updated**: 2025-11-07

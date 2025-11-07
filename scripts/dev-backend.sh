@@ -1,19 +1,18 @@
 #!/usr/bin/env bash
-
-# PURPOSE: Start Encore backend dev with deterministic ports for this worktree.
-# Run from repo root: ./scripts/dev-backend.sh
-
-set -euo pipefail
+set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="$SCRIPT_DIR/.."
-cd "$REPO_ROOT"
+cd "$SCRIPT_DIR/.."
 
-# Resolve ports and export env into this shell
-eval "$(bun ./scripts/port-coordinator.mjs --no-summary)"
+# Load .env if exists
+if [ -f .env ]; then
+  set -a
+  source .env
+  set +a
+fi
 
-echo "[dev] backend=$BACKEND_PORT dashboard=$ENCORE_DASHBOARD_PORT"
+echo "Starting backend on port ${BACKEND_PORT:-4000}"
 
 cd backend
-encore run --port="$BACKEND_PORT"
+encore run --port="${BACKEND_PORT:-4000}"
 

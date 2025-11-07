@@ -4,9 +4,12 @@
   "type": "module",
   "packageManager": "bun",
   "dependencies": {
+    "@dotenvx/dotenvx": "^1.51.1",
     "@statelyai/inspect": "^0.4.0",
     "@types/webdriverio": "^5.0.0",
+    "dotenv": "^17.2.3",
     "encore.dev": "^1.50.6",
+    "envalid": "^8.1.1",
     "ulidx": "^2.4.1",
     "webdriverio": "^9.20.0",
     "xstate": "^5.9.0"

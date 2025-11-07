@@ -1,5 +1,6 @@
 import { createSkyInspector } from "@statelyai/inspect";
 import log from "encore.dev/log";
+import { env, XSTATE_INSPECTOR_ENABLED } from "../../../config/env";
 import { MODULES, AGENT_ACTORS } from "../../../logging/logger";
 
 /**
@@ -16,8 +17,8 @@ let singletonInspector: ReturnType<typeof createSkyInspector> | null = null;
  * - XSTATE_INSPECTOR_ENABLED !== "false" (can force-disable)
  */
 export function getInspector(): ReturnType<typeof createSkyInspector> | null {
-  const isDev = process.env.NODE_ENV !== "production";
-  const enabled = process.env.XSTATE_INSPECTOR_ENABLED !== "false";
+  const isDev = env.isDev;
+  const enabled = XSTATE_INSPECTOR_ENABLED;
 
   if (!isDev || !enabled) {
     return null;
