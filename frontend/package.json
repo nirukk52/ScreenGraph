@@ -19,6 +19,7 @@
     "@skeletonlabs/skeleton": "^4.1.4",
     "@skeletonlabs/skeleton-svelte": "^4.1.4",
     "clsx": "^2.0.0",
+    "envalid": "^8.1.1",
     "lucide-svelte": "^0.425.0",
     "tailwind-merge": "^2.5.2"
   },

@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# Create Tech Debt Folder
+# Usage: When @-mentioned in Cursor, this command sets up a new tech debt folder
+
+# Get the tech debt ID and title from user input
+read -p "Tech Debt ID (e.g., TD-001): " TD_ID
+read -p "Short Title (kebab-case, e.g., refactor-logging-layer): " TITLE
+
+# Validate inputs
+if [ -z "$TD_ID" ] || [ -z "$TITLE" ]; then
+    echo "❌ Error: Both Tech Debt ID and Title are required"
+    exit 1
+fi
+
+# Create folder name
+FOLDER_NAME="${TD_ID}-${TITLE}"
+FOLDER_PATH="jira/tech-debt/${FOLDER_NAME}"
+
+# Check if folder already exists
+if [ -d "$FOLDER_PATH" ]; then
+    echo "❌ Error: Folder ${FOLDER_PATH} already exists"
+    exit 1
+fi
+
+# Create the folder
+mkdir -p "$FOLDER_PATH"
+
+# Copy templates and rename them
+cp jira/tech-debt/TEMPLATE-main.md "${FOLDER_PATH}/${TD_ID}-main.md"
+cp jira/tech-debt/TEMPLATE-retro.md "${FOLDER_PATH}/${TD_ID}-retro.md"
+cp jira/tech-debt/TEMPLATE-status.md "${FOLDER_PATH}/${TD_ID}-status.md"
+
+# Replace placeholders in the main file
+sed -i.bak "s/TD-XXX/${TD_ID}/g" "${FOLDER_PATH}/${TD_ID}-main.md"
+sed -i.bak "s/\[Short Title\]/${TITLE}/g" "${FOLDER_PATH}/${TD_ID}-main.md"
+rm "${FOLDER_PATH}/${TD_ID}-main.md.bak"
+
+# Replace placeholders in retro
+sed -i.bak "s/TD-XXX/${TD_ID}/g" "${FOLDER_PATH}/${TD_ID}-retro.md"
+sed -i.bak "s/\[Short Title\]/${TITLE}/g" "${FOLDER_PATH}/${TD_ID}-retro.md"
+rm "${FOLDER_PATH}/${TD_ID}-retro.md.bak"
+
+# Replace placeholders in status
+sed -i.bak "s/TD-XXX/${TD_ID}/g" "${FOLDER_PATH}/${TD_ID}-status.md"
+sed -i.bak "s/\[Short Title\]/${TITLE}/g" "${FOLDER_PATH}/${TD_ID}-status.md"
+rm "${FOLDER_PATH}/${TD_ID}-status.md.bak"
+
+echo "✅ Tech debt folder created: ${FOLDER_PATH}"
+echo ""
+echo "📁 Created files:"
+echo "   - ${TD_ID}-main.md (main ticket)"
+echo "   - ${TD_ID}-retro.md (retrospective)"
+echo "   - ${TD_ID}-status.md (status report)"
+echo ""
+echo "🚀 Next steps:"
+echo "   1. Fill out ${TD_ID}-main.md with tech debt details"
+echo "   2. Update ${TD_ID}-status.md as you refactor"
+echo "   3. Complete ${TD_ID}-retro.md after refactor is complete"
+

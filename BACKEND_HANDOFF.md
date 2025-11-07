@@ -50,11 +50,54 @@ This document is the single place where agents leave status for each other. Alwa
 - **Related docs**:
   - `plan.md`
   - `backend/API_DOCUMENTATION.md` (to update with new endpoints)
+  - `jira/feature-requests/FR-014-fetch-and-store-play-store-app-data/FR-014-main.md` (feature specification)
 
 - **Notes for next agent**:
   - Run `cd backend && bun install` to sync lockfile and ensure `google-play-scraper` is available (binary not present in current shell).
   - Apply migration `009_appinfo_table.up.sql` before invoking the service; encore run will auto-apply.
   - Service endpoints are internal-only (`expose: false`) until we finalize authentication story; adjust if external access is required.
+  - FR-014 contains comprehensive specification and implementation examples for this service.
+
+---
+
+## Handoff #11 — Architecture Review Living Document (2025-11-07)
+
+- **What I am doing**: ✅ **COMPLETED** – Authored root-level `ARCHITECTURE_REVIEW.md` as the living system overview tying Encore services and SvelteKit client flows together (run lifecycle, artifacts persistence, graph projection, cancellation, critiques, evolution plan). Updated Cursor skill guides with the new evidence-capture pattern.
+
+- **What is pending**:
+  - [x] Code implementation
+  - [x] Tests written/passing (documentation only)
+  - [x] Manual testing completed (browser/Chrome capture of timeline + graph flows)
+
+- **What I plan to do next**:
+  - Keep ARCHITECTURE_REVIEW.md aligned as backend/fronted changes land (update flows + references each time services shift)
+  - Monitor Graphiti queue for the remaining architecture-review episodes and add IDs once available
+  - Socialize evidence capture loop with frontend team for upcoming UI work
+
+- **Modules I am touching**:
+  - `ARCHITECTURE_REVIEW.md`
+  - `.claude-skills/cursor-browser-mastery/SKILL.md`
+  - `.claude-skills/cursor-chrome-window-mastery/SKILL.md`
+  - `BACKEND_HANDOFF.md`
+
+- **Work status rating (out of 5)**: 4
+
+- **Graphiti episode IDs**:
+  - Architecture Review Rule 2025-11-07: `09220eea-3e54-4b0d-90a8-1fbaa58bed1e`
+  - Architecture Review Fact 2025-11-07: *(queued – id pending)*
+  - Architecture Review Procedure 2025-11-07: *(queued – id pending)*
+  - Architecture Review Preference 2025-11-07: *(queued – id pending)*
+
+- **Related docs**:
+  - `ARCHITECTURE_REVIEW.md`
+  - `.claude-skills/cursor-browser-mastery/SKILL.md`
+  - `.claude-skills/cursor-chrome-window-mastery/SKILL.md`
+  - `.cursor/commands/update_handoff`
+
+- **Notes for next agent**:
+  - Keep capturing live evidence (screenshots + console/network logs) whenever ARCHITECTURE_REVIEW.md is updated; link artifacts in the document references.
+  - Once Graphiti returns IDs for Fact/Procedure/Preference episodes, update this entry and future handoffs with the UUIDs.
+  - If new backend endpoints modify flows, run `bun run gen` on frontend before updating the doc to guarantee type safe references.
 
 ---
 
@@ -547,3 +590,177 @@ This document is the single place where agents leave status for each other. Alwa
 
 - **Notes for next agent**:
   - Keep the solution simple and local-first; do not auto-kill processes. Assign stable ports per worktree via registry, then fall back to probing next free port. Respect env overrides at all times.
+
+---
+
+## Handoff #14 — FR-011 Port Management Implementation & Worktree Init
+
+- **What I am doing**: ✅ **COMPLETED** — Implemented deterministic port management for Cursor worktrees and automatic worktree initialization. Added coordinator scripts, dev wrappers, CORS updates, and frontend/backend wiring. Ensures each agent runs on its own port block; main tree defaults remain reserved.
+
+- **What is pending**:
+  - [x] Code: Port coordinator + dev scripts + worktree init
+  - [x] Tests: Manual verification for ScreenGraph worktree (backend=4007, frontend=5180, dashboard=9407, appium=4730)
+  - [x] Docs: Founder rules updated with index + worktree isolation
+  - [ ] Scale: Expand ranges for 20+ worktrees (capacity currently 10–11)
+  - [ ] Appium: Integrate APPIUM_PORT into dev-android-appium.sh flow
+  - [ ] Dashboard: Investigate overriding Encore dashboard port (940x)
+
+- **What I plan to do next**:
+  - Increase `width` in coordinator for 20 concurrent worktrees
+  - Add `ports:show` and `ports:clear` npm scripts
+  - Wire APPIUM_PORT into `backend/scripts/dev-android-appium.sh`
+  - Document Chrome profile isolation per worktree
+
+- **Modules I am touching**:
+  - `backend/scripts/port-coordinator.mjs` (new)
+  - `backend/scripts/dev-with-ports.sh` (new)
+  - `backend/encore.app` (CORS: allow 5173–5183)
+  - `.cursor/worktree-init.sh` (root — worktree auto init)
+  - `frontend/src/lib/getEncoreClient.ts` (env-first base URL)
+  - `frontend/vite.config.ts` (reads FRONTEND_PORT)
+  - `frontend/package.json` (dev script uses coordinator)
+  - `.cursor/rules/founder_rules.mdc` (restored, indexed, isolation rules)
+
+- **Work status rating (out of 5)**: 5
+
+- **Graphiti episode IDs**:
+  - Rules: `FR-011 Rules - Worktree Isolation & Ports` (queued)
+  - Facts: `FR-011 Facts - Implementation Artifacts` (queued)
+  - Procedures: `FR-011 Procedures - Start/Verify/Close` (queued)
+  - Preferences: `FR-011 Preferences - Design choices` (queued)
+
+- **Related docs**:
+  - `FR-011-PLAN.md`
+  - `@feature-requests/FR-011-port-management-worktrees/IMPLEMENTATION_STATUS.md`
+  - `.cursor/rules/founder_rules.mdc`
+
+- **Notes for next agent**:
+  - Use worktree mode. Start services only via `./scripts/dev-with-ports.sh` (backend/frontend).
+  - Verify backend is NOT 4000 and frontend is NOT 5173 in worktrees.
+  - Main tree defaults (4000/5173/9400/4723) are reserved for Local mode.
+  - Coordinator registry: `~/.screengraph/ports.json`. Snapshot: `.cursor/worktree.env`.
+
+---
+
+## Handoff #15 — Update Commands for Ticket-Level Handoff Documentation
+
+- **What I am doing**: ✅ **COMPLETED** - Created three new Cursor commands (@update-bug-doc, @update-feature-doc, @update-tech-debt) that add handoff entries to individual ticket folders. These commands list existing tickets, let users select one, and append structured handoff entries to a per-ticket handoff.md file. Also created TEMPLATE-handoff.md templates in bugs/, feature-requests/, and tech-debt/ directories.
+
+- **What is pending**:
+  - [x] Code: Three update commands created and made executable
+  - [x] Templates: TEMPLATE-handoff.md created for all three ticket types
+  - [x] Manual review: Script logic tested (interactive folder selection, handoff numbering)
+  - [x] Docs: Graphiti memory episodes created
+
+- **What I plan to do next**:
+  - Test the commands in a real workflow (e.g., when working on a bug or feature)
+  - Consider adding similar commands for milestone tracking if needed
+  - Monitor command usage and refine prompts based on agent feedback
+
+- **Modules I am touching**:
+  - `.cursor/commands/update-bug-doc` (new executable script)
+  - `.cursor/commands/update-feature-doc` (new executable script)
+  - `.cursor/commands/update-tech-debt` (new executable script)
+  - `jira/bugs/TEMPLATE-handoff.md` (new template)
+  - `jira/feature-requests/TEMPLATE-handoff.md` (new template)
+  - `jira/tech-debt/TEMPLATE-handoff.md` (new template)
+  - `BACKEND_HANDOFF.md` (this file)
+
+- **Work status rating (out of 5)**: 5
+
+- **Graphiti episode IDs**:
+  - Update Commands Created - Handoff Documentation System: `queued-position-1`
+  - Handoff Templates Created: `queued-position-1`
+  - Handoff Documentation Pattern: `queued-position-2`
+  - Bash Script Implementation - Interactive Folder Selection: `queued-position-3`
+
+- **Related docs**:
+  - `.cursor/commands/create-bug`, `create-feature`, `create-techdebt` (corresponding create commands)
+  - `.cursor/commands/update_handoff` (main handoff command)
+  - `jira/bugs/TEMPLATE-*.md` (all bug templates)
+  - `jira/feature-requests/TEMPLATE-*.md` (all feature templates)
+  - `jira/tech-debt/TEMPLATE-*.md` (all tech debt templates)
+
+- **Notes for next agent**:
+  - **Usage Pattern**: When working on a ticket, run the appropriate @update-*-doc command to log a handoff entry. The command will list available tickets and let you select which one to update.
+  - **Handoff Numbering**: Commands auto-increment handoff numbers by counting "## Handoff #" patterns in the existing handoff.md file.
+  - **First-Time Creation**: If handoff.md doesn't exist for a ticket, the command creates it from the template with proper ID/title substitution.
+  - **Structured Format**: Each handoff entry captures: what you're doing, pending items, next steps, modules touched, work rating, and notes for next agent.
+  - **Complements Global Handoffs**: These ticket-level handoffs complement BACKEND_HANDOFF.md and FRONTEND_HANDOFF.md by providing granular, ticket-specific context.
+  - **Interactive Prompts**: Commands prompt for: what doing, pending items (comma-separated), next steps, modules (comma-separated paths), rating (0-5), and notes.
+  - **Comma-Separated Inputs**: Pending items and modules use comma-separated format which gets auto-converted to markdown lists.
+  - **Consistency**: All three commands follow identical patterns, just with different paths (bugs/, feature-requests/, tech-debt/) and prefixes (BUG-, FR-, TD-).
+
+---
+
+## Handoff #16 — Code Review Best Practices Plan for Update Commands
+
+- **What I am doing**: Documented a phased plan to bring `.cursor/commands/update-bug-doc`, `update-feature-doc`, and `update-tech-debt` up to code review best practices: input validation with retries, preview/confirm, backups, error handling, constants (no magic values), help/dry-run flags, atomic writes, bash safety, colored output, exit codes, optional verbose/debug modes, and de-duplication via a shared library (`handoff-common.sh`).
+
+- **What is pending**:
+  - [ ] Phase 1 (Critical): Input validation with retry; preview + confirmation; backup creation; constants; basic error handling; `--help`
+  - [ ] Phase 2 (High): Shared library to remove duplication; `--dry-run`; atomic writes; `set -euo pipefail` + quoting; colored output; standardized exit codes
+  - [ ] Phase 3 (Nice): Verbose/debug modes; multi-line inputs; edit-before-confirm; rich summary; optional git auto-stage; concurrent edit detection; malformed file detection
+
+- **What I plan to do next**:
+  - Implement Phase 1 across all three commands, then reassess UX and error paths
+  - Prepare shared library skeleton and migrate common logic (Phase 2)
+
+- **Modules I am touching**:
+  - `.cursor/commands/update-bug-doc`
+  - `.cursor/commands/update-feature-doc`
+  - `.cursor/commands/update-tech-debt`
+  - (planned) `.cursor/commands/lib/handoff-common.sh`
+
+- **Work status rating (out of 5)**: 3
+
+- **Graphiti episode IDs**:
+  - Bash CLI Handoff Commands – Code Review Best Practices: `queued-position-1`
+  - Phased Implementation Plan – Update Commands: `queued-position-2`
+
+- **Related docs**:
+  - `.cursor/commands/update_handoff`
+  - `CODE_REVIEW.md`
+
+- **Notes for next agent**:
+  - Prioritize Phase 1 for safety/UX; keep prompts consistent with other commands (flags: -h/--help, -n/--dry-run, -y/--yes, -v/--verbose)
+  - Use atomic writes (temp + mv) and create timestamped backups before modifications
+  - Prefer shared library to eliminate duplication while preserving simple @-command UX
+  - Quote all variables, use `[[ ... ]]`, and `read -r` throughout; trap errors and clean up temps
+
+---
+
+## Handoff #17 — Plane Integration Feature Requests Scoped
+
+- **What I am doing**: ✅ **COMPLETED** — Created two feature requests to integrate Plane while preserving `/jira` as the planning source of truth: (1) FR-012 microservice to host a self-contained Plane instance with documented ops; (2) FR-013 integration endpoint to sync a `/jira/**` folder into Plane (idempotent upsert, dry-run diffs). Added citations to upstream docs.
+
+- **What is pending**:
+  - [ ] Infra: Decide deployment mode (AIO vs Compose/Swarm) and reserve ports per worktree
+  - [ ] Ops: Author `scripts/plane/` helpers (start/stop/logs/backup/upgrade) + README
+  - [ ] Backend: Implement `POST /integrations/plane/sync { path, dryRun? }` with strict path allowlist
+  - [ ] Docs: `/jira` → Plane mapping (fields, labels), security notes, env/secrets
+  - [ ] Tests: Unit (parsing), integration (dry-run stability), E2E (idempotent upsert)
+
+- **What I plan to do next**:
+  - Implement FR-012 ops scaffold (local dev recipe + persistence)
+  - Implement FR-013 endpoint with typed DTOs and structured logging
+
+- **Modules I am touching**:
+  - `jira/feature-requests/FR-012-plane-microservice-hosting/FR-012-main.md`
+  - `jira/feature-requests/FR-013-jira-path-managed-plane/FR-013-main.md`
+
+- **Work status rating (out of 5)**: 4
+
+- **Graphiti episode IDs**:
+  - FR-012 Plane Microservice Hosting Plan: `queued`
+  - FR-013 /jira Path to Plane Sync Plan: `queued`
+
+- **Related docs**:
+  - Plane Docs: https://docs.plane.so/
+  - Plane OSS: https://github.com/makeplane/plane?tab=readme-ov-file
+
+- **Notes for next agent**:
+  - Keep backend/frontend isolation; treat Plane as an external service we operate (no imports)
+  - Enforce worktree port isolation; do not use reserved main-tree ports
+  - Validate `path` stays within `jira/**`; derive idempotency key from folder name
+

@@ -16,13 +16,16 @@ cd frontend
 bun run gen
 ```
 
-### 2. Run Services
+### 2. Start Services
 ```bash
-# Terminal 1: Backend
-cd backend && encore run
+@start      # Starts both backend + frontend
+@stop       # Stops all services
+```
 
-# Terminal 2: Frontend  
-cd frontend && bun run dev
+Or manually:
+```bash
+./scripts/dev-backend.sh    # Port 4000
+./scripts/dev-frontend.sh   # Port 5173
 ```
 
 ---
@@ -54,6 +57,12 @@ cd frontend && bun run dev
 - **All projects**: Use `bun` exclusively
 - **Backend**: `cd backend && bun install`
 - **Frontend**: `cd frontend && bun install`
+
+### Environment Files
+- `.env` (committed defaults for main tree)
+- `.env.example` (template)
+- Type-safe validation: `backend/config/env.ts`, `frontend/src/lib/env.ts`
+- Encrypted secrets: `.env.vault` managed via `bunx dotenvx`
 
 ---
 

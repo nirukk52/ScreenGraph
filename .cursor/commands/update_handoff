@@ -1,31 +1,156 @@
-Use sequential thinking to create todos for below:
+# Update Handoff Command
 
-1. Update all three SKILLS.MD
+Use sequential thinking to create todos for the steps below:
 
-2. You will create a comprehensive summary of rules, facts, procedures and preferences 
-established during the session/milestone/chat/task/todo/bug and update Graphiti MCP Memory System.
+## Deterministic Workflows (Choose one)
+- Production Release Update (uses PROC-001 from `.cursor/procedures/PROCEDURES.md`)
+- Regular Feature/Bug Handoff Update
 
-3. After the memories are created add the ids into any running handoff documents known to you.
+## Step 1: Update Documentation Skills
+Update all three `SKILLS.md` files with new capabilities/patterns learned.
 
-4. If the graphiti memory system is down you will create a session_summary.md with a logical name you will add it into the feature folder for that particular feature.
-and alert the user by using exccesive RED DANGER emojis in your reply.
+## Step 2: Create Graphiti Memory Episodes
+Create comprehensive memory episodes in the Graphiti MCP Memory System covering:
+- **Rules**: New coding rules or conventions established
+- **Facts**: Technical facts discovered (APIs, behaviors, bugs)
+- **Procedures**: Step-by-step processes for common tasks
+- **Preferences**: Architectural or implementation preferences
 
-5. Update the appropriate handoff document (BACKEND_HANDOFF.md or FRONTEND_HANDOFF.md) with your current work status.
+Group related information by `group_id` (e.g., feature ID, bug ID).
 
-Follow the handoff template:
-- **What I am doing**: Describe the current task
-- **What is pending**: Checklist of code/tests/manual review
-- **What I plan to do next**: Next steps
-- **Modules I am touching**: Files/paths being modified
-- **Work status rating (out of 5)**: 0-5 rating
-- **Graphiti episode IDs**: Memory system IDs (if available)
-- **Related docs**: Relevant documentation paths
-- **Notes for next agent**: Context and recommendations
+## Step 3: Update Handoff Documents
+Update the appropriate handoff document (BACKEND_HANDOFF.md or FRONTEND_HANDOFF.md).
 
-Add a new handoff section with an incremented number, and mark previous handoffs as completed if they are done.
+### 3A) Production Release Update (Deterministic Flow)
+1. Load PROC-001 from `.cursor/procedures/PROCEDURES.md`
+2. Confirm Preconditions (all must be checked):
+   - [ ] `@verify-worktree-isolation` passed on release worktree
+   - [ ] `@test-default-run` passed on release worktree
+   - [ ] CI green on release PR
+3. Update Handoff with “Release Notes Template” from PROC-001:
+   - Version/tag
+   - Date
+   - Backend changes
+   - Frontend changes
+   - Migrations
+   - Smoke test status (+ link/screenshot)
+4. Tag & Deploy summary:
+   - Tag created/pushed (value)
+   - Encore Cloud deploy status (link)
+   - Vercel production deploy status (link)
+5. Rollback plan (paste the PROC-001 rollback section verbatim)
 
-6. Commit the code. Push the code. Use the above information to create beautiful commit messages, so that you will have tremendous success in future debugging.
+### Handoff Template Structure:
+```markdown
+## Handoff #[NUMBER] - [DATE] - [BRIEF_TITLE]
 
-7. Make sure all md files have an updated index to them.
+- **What I am doing**: [Current task description]
+- **What is pending**: 
+  - [ ] Code implementation
+  - [ ] Tests written/passing
+  - [ ] Manual testing completed
+  - [ ] Documentation updated
+- **What I plan to do next**: [Next steps]
+- **Modules I am touching**: 
+  - `path/to/file1.ts`
+  - `path/to/file2.ts`
+- **Work status rating (out of 5)**: [0-5]
+- **Graphiti episode IDs**: 
+  - `[episode-uuid-1]` - [brief description]
+  - `[episode-uuid-2]` - [brief description]
+- **Related docs**: 
+  - `path/to/doc1.md`
+  - `path/to/doc2.md`
+- **Notes for next agent**: [Context, gotchas, recommendations]
+```
 
-8. For the features, bugs that you worked on create a retro with rating and what went well and didnt.
+Add a new handoff section with an incremented number. Mark previous handoffs as completed if done.
+
+## Step 4: Fallback for Graphiti Downtime
+**IF Graphiti MCP is down**:
+- Create `session_summary.md` in the appropriate feature/bug folder
+- Include all rules, facts, procedures, preferences that would have gone into Graphiti
+- Alert user with: 🚨🔴⚠️ DANGER: GRAPHITI MCP DOWN - CREATED FALLBACK SUMMARY 🚨🔴⚠️
+
+## Step 5: Create Retro Document
+For completed features/bugs, create a retro document:
+- Rating (out of 5)
+- What went well
+- What didn't go well
+- Lessons learned
+
+## Step 6: Commit and Push
+- Stage all changes
+- Create descriptive commit message using work context
+- Push to remote
+- Commit message should aid future debugging
+
+## Step 7: Update Documentation Indexes
+Ensure all `.md` files have updated table of contents/indexes.
+
+---
+
+## REQUIRED OUTPUT FORMAT
+
+### If “Production Release Update” was selected
+Paste the normal output plus the following:
+```
+## ✅ Production Release Verification
+- Preconditions satisfied: [yes/no]
+- Tag pushed: `<tag>`
+- Encore deploy: <status/link>
+- Vercel deploy: <status/link>
+- Smoke test (prod): <pass/fail> (<link/screenshot>)
+```
+
+After completing all steps, produce this structured output for the user to paste into the next chat:
+
+```markdown
+# 🔄 Context Handoff - [FEATURE/BUG ID]
+
+## 📋 Quick Summary
+[1-2 sentence summary of what was done]
+
+## 📍 Primary Handoff
+- **Path**: `[path to BACKEND_HANDOFF.md or FRONTEND_HANDOFF.md]`
+- **Handoff Section**: #[NUMBER]
+
+## 🧠 Graphiti Memory Episodes
+[If Graphiti was available]
+- `[episode-uuid-1]` - [description]
+- `[episode-uuid-2]` - [description]
+- `[episode-uuid-3]` - [description]
+
+[If Graphiti was DOWN]
+🚨 **Fallback Summary**: `[path/to/session_summary.md]`
+
+## 📂 Modified/Relevant Files
+### Code Files
+- `[path/to/file1.ts]`
+- `[path/to/file2.ts]`
+
+### Documentation
+- `[path/to/doc1.md]`
+- `[path/to/doc2.md]`
+
+### Tests
+- `[path/to/test1.test.ts]`
+
+## 🎯 Feature/Bug Tracking
+- **Feature Request**: `[path/to/FR-XXX.md]` or **Bug**: `[path/to/BUG-XXX.md]`
+- **Retro**: `[path/to/retro.md]`
+- **Status**: `[path/to/status.md]`
+
+## 🔗 Git
+- **Branch**: `[branch-name]`
+- **Latest Commit**: `[commit-hash]` - "[commit message]"
+
+## ⚠️ Critical Notes
+[Any gotchas, blockers, or important context for next agent]
+
+## 📊 Work Status
+**Rating**: [X]/5
+**Next Steps**: [Brief next action items]
+```
+
+Copy the above filled-in template and paste it into your next chat session to give the next agent full context.

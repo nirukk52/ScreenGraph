@@ -73,7 +73,6 @@ test-results
 *.swp
 *.swo
 *~
-.cursor
 
 # ============================================
 # Tool Artifacts
@@ -129,10 +128,11 @@ tsconfig.tsbuildinfo
 # ============================================
 # Environment Variables
 # ============================================
-.env
 .env.local
 .env.*.local
+!.env
 !.env.example
+!.env.vault
 
 # ============================================
 # Build Output

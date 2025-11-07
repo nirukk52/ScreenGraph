@@ -10,6 +10,7 @@ import { RunOutboxRepo } from "../persistence/run-outbox.repo";
 import type { Budgets } from "../domain/state";
 import { AgentWorker } from "./worker";
 import { MODULES, AGENT_ACTORS } from "../../logging/logger";
+import { WORKTREE_NAME } from "../../config/env";
 
 /**
  * Encore subscription that listens for RunJob messages and executes agent runs.
@@ -31,7 +32,8 @@ new Subscription(runJobTopic, "agent-orchestrator-worker", {
       const outboxDb = new RunOutboxRepo();
       const orchestrator = new Orchestrator(runDb, eventsDb, agentStateDb, outboxDb);
 
-      const workerId = `worker-${process.env.HOSTNAME ?? "local"}-${Date.now()}`;
+      const hostname = process.env.HOSTNAME ?? WORKTREE_NAME ?? "local";
+      const workerId = `worker-${hostname}-${Date.now()}`;
       const leaseDurationMs = 30_000;
 
       const logger = subLog.with({ workerId });
