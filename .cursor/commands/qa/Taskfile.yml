@@ -1,0 +1,27 @@
+version: '3'
+
+# QA commands
+# Testing and quality assurance tasks
+
+tasks:
+  smoke:backend:
+    desc: "Run backend smoke tests"
+    cmds:
+      - echo "🧪 Running backend smoke tests..."
+      - echo "⚠️  Implementation pending - Phase 3"
+    silent: false
+
+  smoke:frontend:
+    desc: "Run frontend smoke tests"
+    cmds:
+      - echo "🧪 Running frontend smoke tests..."
+      - echo "⚠️  Implementation pending - Phase 3"
+    silent: false
+
+  appium:start:
+    desc: "Start Appium server"
+    cmds:
+      - echo "📱 Starting Appium..."
+      - echo "⚠️  Implementation pending - Phase 3"
+    silent: false
+

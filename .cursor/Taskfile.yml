@@ -1,0 +1,67 @@
+version: '3'
+
+# Root Taskfile for ScreenGraph
+# Orchestrates all automation across the unified system
+
+includes:
+  # Domain-specific task namespaces
+  shared:
+    taskfile: ./commands/shared/Taskfile.yml
+    dir: ./commands/shared
+  
+  founder:
+    taskfile: ./commands/founder/Taskfile.yml
+    dir: ./commands/founder
+  
+  backend:
+    taskfile: ./commands/backend/Taskfile.yml
+    dir: ./commands/backend
+  
+  frontend:
+    taskfile: ./commands/frontend/Taskfile.yml
+    dir: ./commands/frontend
+  
+  ops:
+    taskfile: ./commands/ops/Taskfile.yml
+    dir: ./commands/ops
+  
+  qa:
+    taskfile: ./commands/qa/Taskfile.yml
+    dir: ./commands/qa
+
+vars:
+  # Resolved from automation/scripts/env.mjs
+  BACKEND_PORT:
+    sh: node ../automation/scripts/env.mjs backend-port
+  
+  FRONTEND_PORT:
+    sh: node ../automation/scripts/env.mjs frontend-port
+  
+  WORKTREE_NAME:
+    sh: node ../automation/scripts/env.mjs worktree-name
+
+tasks:
+  default:
+    desc: "List all available tasks"
+    cmds:
+      - task --list-all
+    silent: true
+
+  help:
+    desc: "Show help and common commands"
+    cmds:
+      - echo "ScreenGraph Unified Automation System"
+      - echo ""
+      - echo "Common commands:"
+      - echo "  task founder:servers:start    # Start backend + frontend"
+      - echo "  task founder:servers:stop     # Stop all services"
+      - echo "  task founder:servers:status   # Check service status"
+      - echo "  task qa:smoke:backend         # Run backend smoke tests"
+      - echo "  task qa:smoke:frontend        # Run frontend smoke tests"
+      - echo "  task shared:preflight         # Run preflight checks"
+      - echo "  task founder:rules:check      # Validate founder rules"
+      - echo "  task ops:ports:show           # Show port assignments"
+      - echo ""
+      - echo "Run 'task --list-all' for all available tasks"
+    silent: true
+

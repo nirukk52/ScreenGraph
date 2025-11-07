@@ -1,0 +1,28 @@
+version: '3'
+
+# Frontend commands
+# Frontend-specific development tasks
+
+tasks:
+  dev:
+    desc: "Start frontend development server"
+    cmds:
+      - echo "⚛️  Starting frontend..."
+      - echo "⚠️  Implementation pending - Phase 3"
+      - echo "   Will run - ../../scripts/dev-frontend.sh"
+    silent: false
+
+  build:
+    desc: "Build frontend for production"
+    cmds:
+      - echo "📦 Building frontend..."
+      - echo "⚠️  Implementation pending - Phase 3"
+    silent: false
+
+  typecheck:
+    desc: "Run TypeScript type checking"
+    cmds:
+      - echo "🔍 Type checking..."
+      - echo "⚠️  Implementation pending - Phase 3"
+    silent: false
+

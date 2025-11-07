@@ -1,0 +1,43 @@
+version: '3'
+
+# Founder commands
+# High-level orchestration, project management, workflows
+
+tasks:
+  servers:start:
+    desc: "Start backend and frontend services"
+    deps:
+      - task: shared:preflight
+    cmds:
+      - echo "🚀 Starting services..."
+      - echo "⚠️  Implementation pending - Phase 3"
+      - echo "   Will call - ../../scripts/dev-backend.sh and ../../scripts/dev-frontend.sh"
+    silent: false
+
+  servers:stop:
+    desc: "Stop all services"
+    cmds:
+      - echo "🛑 Stopping services..."
+      - echo "⚠️  Implementation pending - Phase 3"
+    silent: false
+
+  servers:status:
+    desc: "Check service status"
+    cmds:
+      - node ../../../automation/scripts/env.mjs status
+    silent: false
+
+  rules:check:
+    desc: "Validate all founder rules"
+    cmds:
+      - node ../../../automation/scripts/check-founder-rules.mjs
+    silent: false
+
+  workflows:regen-client:
+    desc: "Regenerate frontend Encore client"
+    cmds:
+      - echo "🔄 Regenerating client..."
+      - echo "⚠️  Implementation pending - Phase 3"
+      - echo "   Will run - cd frontend && bun run gen"
+    silent: false
+

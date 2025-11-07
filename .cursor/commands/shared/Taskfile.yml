@@ -1,0 +1,47 @@
+version: '3'
+
+# Shared utilities used by all commands
+# Preflight checks, environment validation, worktree detection
+
+tasks:
+  preflight:
+    desc: "Run all preflight checks (worktree, ports, environment)"
+    cmds:
+      - echo "🔍 Running preflight checks..."
+      - ./preflight.sh
+    silent: false
+
+  check-worktree:
+    desc: "Verify worktree isolation and port assignments"
+    cmds:
+      - echo "📍 Checking worktree isolation..."
+      - node ../../../automation/scripts/worktree-detection.mjs validate
+    silent: false
+
+  check-worktree-strict:
+    desc: "Verify worktree isolation (fails on main tree)"
+    cmds:
+      - echo "📍 Checking worktree isolation (strict mode)..."
+      - node ../../../automation/scripts/worktree-detection.mjs validate --strict
+    silent: false
+
+  load-env:
+    desc: "Load and display environment variables"
+    cmds:
+      - node ../../../automation/scripts/env.mjs print
+    silent: false
+
+  status:
+    desc: "Show environment status (worktree, ports, services)"
+    cmds:
+      - node ../../../automation/scripts/env.mjs status
+    silent: false
+
+  validate-commit-message:
+    desc: "Validate commit message format (conventional commits)"
+    cmds:
+      - echo "📝 Validating commit message..."
+      - echo "⚠️  Commit message validator not yet implemented"
+      - echo "   This will check for type(scope) message format"
+    silent: false
+

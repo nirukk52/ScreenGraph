@@ -1,0 +1,63 @@
+version: '3'
+
+# Operations commands
+# Port management, environment configuration, infrastructure utilities
+
+tasks:
+  # Port management
+  ports:show:
+    desc: "Show current port assignments for this worktree"
+    cmds:
+      - echo "🔢 Port Configuration:"
+      - bun ../../../scripts/port-coordinator.mjs
+    silent: false
+
+  ports:show-json:
+    desc: "Show port assignments in JSON format"
+    cmds:
+      - bun ../../../scripts/port-coordinator.mjs --json
+    silent: false
+
+  ports:validate:
+    desc: "Validate port configuration and check for conflicts"
+    cmds:
+      - echo "🔍 Validating port configuration..."
+      - node ../../../automation/scripts/env.mjs status
+      - echo ""
+      - echo "✅ Port validation complete"
+    silent: false
+
+  ports:reserve:
+    desc: "Reserve ports for current worktree (future implementation)"
+    cmds:
+      - echo "🔒 Port reservation not yet implemented"
+      - echo "   Ports are currently assigned from .env file"
+    silent: false
+
+  ports:release:
+    desc: "Release port reservations for current worktree (future implementation)"
+    cmds:
+      - echo "🔓 Port release not yet implemented"
+      - echo "   No cleanup needed for current implementation"
+    silent: false
+
+  # Environment management
+  env:print:
+    desc: "Print all environment variables"
+    cmds:
+      - node ../../../automation/scripts/env.mjs print
+    silent: false
+
+  env:status:
+    desc: "Show environment status with service info"
+    cmds:
+      - node ../../../automation/scripts/env.mjs status
+    silent: false
+
+  env:switch:
+    desc: "Switch environment mode (future implementation)"
+    cmds:
+      - echo "🔄 Environment switching not yet implemented"
+      - echo "   This will support - Local/Worktree/Staging modes"
+    silent: false
+

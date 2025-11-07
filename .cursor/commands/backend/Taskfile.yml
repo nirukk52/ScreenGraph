@@ -1,0 +1,28 @@
+version: '3'
+
+# Backend commands
+# Backend-specific development tasks
+
+tasks:
+  dev:
+    desc: "Start backend development server"
+    cmds:
+      - echo "🔧 Starting backend..."
+      - echo "⚠️  Implementation pending - Phase 3"
+      - echo "   Will run - ../../scripts/dev-backend.sh"
+    silent: false
+
+  logs:
+    desc: "View backend logs"
+    cmds:
+      - echo "📋 Backend logs..."
+      - echo "⚠️  Implementation pending - Phase 3"
+    silent: false
+
+  health:
+    desc: "Check backend health"
+    cmds:
+      - echo "❤️  Checking backend health..."
+      - echo "⚠️  Implementation pending - Phase 3"
+    silent: false
+
