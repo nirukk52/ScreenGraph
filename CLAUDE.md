@@ -12,7 +12,7 @@
 
 ### 1. Unified Automation (Task Commands) ⭐ NEW
 ```bash
-# Start everything
+# Start everything (with health checks & auto-wait)
 cd .cursor && task founder:servers:start
 
 # Check status
@@ -27,6 +27,14 @@ task founder:servers:stop
 # List all commands
 task --list
 ```
+
+**Start Command Features:**
+- ✅ Auto-installs dependencies
+- ✅ Clears conflicting processes
+- ✅ Health checks (waits for services to be ready)
+- ✅ Worktree-specific logs (`.logs/backend-{worktree}.log`)
+- ✅ Real-time status display
+- ✅ Error handling with helpful messages
 
 ### 2. Legacy Commands (Still Work)
 ```bash

@@ -95,6 +95,8 @@ yarn-debug.log*
 yarn-error.log*
 bun-debug.log*
 lerna-debug.log*
+.logs/
+/.logs
 
 # ============================================
 # Runtime Data
