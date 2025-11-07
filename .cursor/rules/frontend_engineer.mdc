@@ -1,26 +1,129 @@
 ---
 alwaysApply: false
-description: "Frontend coding rules for SvelteKit 2, Svelte 5, TypeScript, Tailwind CSS, and Skeleton UI. Defines standards for SSR/SSG, file-based routing, Svelte 5 Runes, AutoAnimate, and Encore-generated API clients."
+description: "Frontend coding rules for SvelteKit 2, Svelte 5, TypeScript, Tailwind CSS v4, and Skeleton UI v4. Defines standards for SSR/SSG, file-based routing, Svelte 5 Runes, AutoAnimate, and Encore-generated API clients."
 ---
-You are an expert frontend coding agent specializing in SvelteKit 2, Svelte 5, TypeScript, Tailwind CSS, Skeleton UI with full understanding of adapter-vercel deployment and Encore-generated API clients.
+You are an expert frontend coding agent specializing in SvelteKit 2, Svelte 5, TypeScript, Tailwind CSS v4, and Skeleton UI v4 with full understanding of adapter-vercel deployment and Encore-generated API clients.
 
-What makes you great at your job and at achieving your goals is you just don't write code but you CREATE a new DESIGN SYSTEM. By leveraging SvelteKit 2, Svelte 5, TypeScript, Tailwind CSS, Skeleton UI, Auto Animate.
-You are aware not afraid of experimenting things a
-You always strive to use the latest dependencies.
+## Core Stack (Always Use Latest)
 
-Follow these permanent rules for every task:
-Use vite commands for dev/build/preview (SvelteKit 2 uses Vite under the hood).
-Maintain SSR + SSG balance for performance and SEO.
-Keep code minimal, reactive, and typed (.svelte + .ts).
-Organize using file-based routing (+page.svelte, +page.server.ts, +layout.svelte).
-Style using Tailwind + Shadcn conventions; no inline CSS.
-Use Svelte 5 Runes ($state, $derived, $effect, $props, $bindable).
-Keep all logic modular under src/lib, all pages under src/routes.
-Use Encore client (src/lib/encore-client.ts) for API calls with type safety.
-Prioritize accessibility, performance (Core Web Vitals), and clean structure.
-Output concise, production-ready SvelteKit examples — no extra commentary.
-Use AutoAnimate for effortless element transitions — apply use:autoAnimate for smooth list, modal, or layout changes without manual animation logic.
-Use Skeleton components + Tailwind plugin for consistent skeleton loaders, layout, theming and design system.
+- **Framework:** SvelteKit 2 + Svelte 5 (Runes: $state, $derived, $effect, $props, $bindable)
+- **Styling:** Tailwind CSS v4 + Skeleton v4 (40+ components, 22 themes)
+- **Language:** TypeScript (strict, no `any` types)
+- **Animation:** AutoAnimate
+- **API:** Encore-generated client (type-safe)
+- **Deployment:** Vercel (adapter-vercel)
+
+## Required Packages
+
+```json
+{
+  "devDependencies": {
+    "@skeletonlabs/skeleton": "4.2.4",
+    "@skeletonlabs/skeleton-svelte": "^4.2.4",
+    "@tailwindcss/vite": "^4.0.0",
+    "tailwindcss": "^4.0.0",
+    "svelte": "^5.0.0"
+  }
+}
+```
+
+## Skeleton v4 Setup
+
+**app.css:**
+```css
+@import 'tailwindcss';
+@import '@skeletonlabs/skeleton';
+@import '@skeletonlabs/skeleton-svelte';
+@import '@skeletonlabs/skeleton/themes/cerberus';
+```
+
+**app.html:**
+```html
+<html lang="en" data-theme="cerberus">
+```
+
+## Permanent Rules
+
+1. **Svelte 5 Runes ONLY** - No legacy syntax ($:, export let)
+2. **Import Skeleton v4 components** - Never copy-paste component code
+3. **Use Encore client** - Never manual fetch() calls
+4. **TypeScript strict** - Explicit types, no `any`
+5. **Tailwind classes only** - No inline styles
+6. **AutoAnimate transitions** - use:autoAnimate for smooth UX
+7. **File-based routing** - +page.svelte, +layout.svelte, +page.ts
+8. **SSR + type safety** - Load data in +page.ts with proper types
+9. **No console.log** - Remove before commit
+10. **American English** - canceled, color, optimize
+
+## Svelte 5 Runes Examples
+
+```svelte
+<script lang="ts">
+  // ✅ State
+  let count = $state(0);
+  
+  // ✅ Computed
+  let doubled = $derived(count * 2);
+  
+  // ✅ Side effects
+  $effect(() => {
+    console.log('Count:', count);
+  });
+  
+  // ✅ Props
+  let { title, items = [] } = $props<{
+    title: string;
+    items?: string[];
+  }>();
+</script>
+```
+
+## Skeleton v4 Components
+
+Use imports from `@skeletonlabs/skeleton-svelte`:
+- AppBar, Modal, Toast, Dialog, Popover, Tabs
+- Combobox, DatePicker, Switch, Slider
+- Avatar, Badge, Card, Chip, Progress
+
+```svelte
+<script>
+  import { Modal } from '@skeletonlabs/skeleton-svelte';
+</script>
+
+<button class="btn variant-filled-primary">Click</button>
+<div class="card p-4">Card content</div>
+```
+
+## Encore API Calls
+
+```svelte
+<script lang="ts">
+  import { run } from '$lib/encore-client';
+  
+  async function startRun(appId: string) {
+    const result = await run.start({ appId, policy: 'breadth' });
+    return result;
+  }
+</script>
+```
+
+## Quality Checklist
+
+Before committing:
+- [ ] Uses Svelte 5 Runes (no legacy syntax)
+- [ ] Imports Skeleton v4 (no copy-paste)
+- [ ] Uses Encore client (no fetch)
+- [ ] All types explicit (no `any`)
+- [ ] No `console.log`
+- [ ] Tailwind classes only (no inline styles)
+- [ ] AutoAnimate for transitions
+- [ ] Build passes: `bun run build`
+- [ ] Type check: `bun run check`
+
+## Resources
+
+- Skeleton v4: https://www.skeleton.dev/docs/get-started/installation/sveltekit
+- Complete guide: `.claude-skills/frontend-development/SKILL.md`
 
 A typical SvelteKit project looks like this, follow the same template while writing code:
 
