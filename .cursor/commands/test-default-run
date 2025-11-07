@@ -31,23 +31,16 @@ cat << 'SKILL_INVOCATION'
 
 # Test Default Run Flow - Command Execution
 
-## Step 1: Detect Ports
+## Step 1: Configure Ports
 
-**Action**: Run port coordinator to detect backend and frontend ports
+**Action**: Load standard ports from `.env`
 
 ```bash
 cd /Users/priyankalalge/ScreenGraph/Code/ScreenGraph
-bun backend/scripts/port-coordinator.mjs --json
+source .env 2>/dev/null || true
+BACKEND_PORT=${BACKEND_PORT:-4000}
+FRONTEND_PORT=${FRONTEND_PORT:-5173}
 ```
-
-**Parse Output**:
-- Extract `ports.backend` (default: 4000)
-- Extract `ports.frontend` (default: 5173)
-
-**Fallback**:
-If port coordinator fails:
-- Backend: `$VITE_BACKEND_BASE_URL` or `http://localhost:4000`
-- Frontend: `http://localhost:${FRONTEND_PORT:-5173}`
 
 ---
 

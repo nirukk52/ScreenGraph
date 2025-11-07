@@ -8,18 +8,13 @@ description: Worktree-agnostic drift test. Auto-detect frontend/backend URLs, cl
 ## Goal
 Run the simplest end-to-end drift test in local setup: open the frontend, press "Detect My First Drift", wait, verify a screenshot appears.
 
-## Port & URL Autodetection (Do this first)
-1) Try port-coordinator if available:
-- Run: `bun backend/scripts/port-coordinator.mjs --json` (ignore failures)
-- If it returns JSON, set:
-  - BACKEND_URL = `http://localhost:${json.ports.backend}`
-  - FRONTEND_URL = `http://localhost:${json.ports.frontend}`
+## Port & URL Setup (Do this first)
+1) Load `.env` (single environment):
+   - `source .env 2>/dev/null || true`
+   - `BACKEND_URL=${VITE_BACKEND_BASE_URL:-http://localhost:${BACKEND_PORT:-4000}}`
+   - `FRONTEND_URL=http://localhost:${FRONTEND_PORT:-5173}`
 
-2) Else fall back to environment:
-- BACKEND_URL = `$VITE_BACKEND_BASE_URL` or `http://localhost:4000`
-- FRONTEND_URL = `http://localhost:${FRONTEND_PORT||5173}`
-
-3) Verify reachability (best-effort; proceed even if checks fail):
+2) Verify reachability (best-effort; proceed even if checks fail):
 - Try `curl -sf $FRONTEND_URL > /dev/null`
 - Try `curl -sf $BACKEND_URL/health > /dev/null`
 

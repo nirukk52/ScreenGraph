@@ -42,7 +42,8 @@ Always detect ports using this priority order:
 
 1. **Port Coordinator** (preferred for worktrees):
    ```bash
-   bun backend/scripts/port-coordinator.mjs --json
+   source .env 2>/dev/null || true
+   echo "backend: ${BACKEND_PORT:-4000}" "frontend: ${FRONTEND_PORT:-5173}"
    ```
    Parse JSON output for `ports.backend` and `ports.frontend`
 
@@ -415,7 +416,8 @@ browser_take_screenshot(
 ### 1. Always Detect Ports First
 ```bash
 # Before any browser_navigate, run:
-bun backend/scripts/port-coordinator.mjs --json
+source .env 2>/dev/null || true
+echo "backend: ${BACKEND_PORT:-4000}" "frontend: ${FRONTEND_PORT:-5173}"
 
 # Parse output and use detected ports
 ```
@@ -501,7 +503,7 @@ const images = snapshot.split("img").length - 1
 **Symptom**: Cannot reach `http://localhost:5173`
 
 **Solution**:
-1. Run port coordinator: `bun backend/scripts/port-coordinator.mjs`
+1. Load `.env`: `source .env 2>/dev/null || true`
 2. Check output for assigned ports
 3. Verify services running:
    ```bash
@@ -649,7 +651,7 @@ const detailSnapshot = browser_snapshot()
 
 - Browser MCP tools: See `browser_*` commands
 - Frontend debugging: `.claude-skills/frontend-debugging/`
-- Port management: `scripts/port-coordinator.mjs`
+- Ports defined in `.env` (backend 4000, frontend 5173)
 - Worktree setup: `.cursor/worktree-init.sh`
 
 ## Summary

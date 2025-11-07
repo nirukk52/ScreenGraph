@@ -24,8 +24,10 @@
   --radius-lg: 0.5rem;
   --radius-md: calc(var(--radius-lg) - 2px);
   --radius-sm: calc(var(--radius-lg) - 4px);
-  
-  @media (prefers-color-scheme: dark) {
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
     --color-background: 222.2 84% 4.9%;
     --color-foreground: 210 40% 98%;
     --color-card: 222.2 84% 4.9%;
