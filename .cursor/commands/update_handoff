@@ -1,6 +1,27 @@
-# Update Handoff Command
+# Update Handoff Command (Thorough)
+
+**Comprehensive handoff for production releases and major milestones (2-3 minutes).**
+
+> 💡 **Quick Alternative**: For regular work, use `@update_handoff_quick` (30 seconds, skips SKILLS.md/retros/extensive docs).
 
 Use sequential thinking to create todos for the steps below:
+
+## When to Use This Command
+
+✅ **Use Thorough Handoff** for:
+- Production releases (PROC-001)
+- Feature completions requiring retros
+- Major architectural changes
+- Skills/documentation updates
+- End-of-milestone summaries
+
+❌ **Use Quick Handoff** (`@update_handoff_quick`) for:
+- Regular development work
+- Bug fixes in progress
+- Feature iterations
+- Minor refactoring
+
+---
 
 ## Deterministic Workflows (Choose one)
 - Production Release Update (uses PROC-001 from `.cursor/procedures/PROCEDURES.md`)
