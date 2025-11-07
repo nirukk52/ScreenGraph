@@ -1,0 +1,176 @@
+# GitHub Actions CI Workflow - SCAFFOLD
+# 
+# Status: NOT YET ACTIVE (rename to ci.yml to activate)
+# Purpose: Run automated tests and quality checks on every push/PR
+# 
+# This workflow will use the unified Task automation system.
+# All checks mirror local development (Husky hooks + Cursor commands)
+#
+# To activate:
+# 1. Rename this file from ci.yml.scaffold to ci.yml
+# 2. Verify all task commands work in CI environment
+# 3. Test in a feature branch first
+# 4. Merge to main when validated
+
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Job 1: Founder Rules Validation
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Mirrors: .husky/pre-commit hook
+  # Command: task founder:rules:check
+  
+  founder-rules:
+    name: Validate Founder Rules
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # TODO: Install Task
+      # - name: Install go-task
+      #   run: |
+      #     sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+      #     task --version
+      
+      # TODO: Install bun
+      # - name: Setup bun
+      #   uses: oven-sh/setup-bun@v1
+      #   with:
+      #     bun-version: latest
+      
+      # TODO: Install Node.js (for automation scripts)
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '20'
+      
+      # TODO: Run founder rules check
+      # - name: Check Founder Rules
+      #   run: cd .cursor && task founder:rules:check
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Job 2: Backend Smoke Tests
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Mirrors: .husky/pre-push hook (backend part)
+  # Command: task qa:smoke:backend
+  
+  backend-smoke:
+    name: Backend Smoke Tests
+    runs-on: ubuntu-latest
+    needs: founder-rules
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # TODO: Setup dependencies
+      # - Install Task, bun, Node.js (same as above)
+      
+      # TODO: Install backend dependencies
+      # - name: Install Backend Dependencies
+      #   run: cd backend && bun install
+      
+      # TODO: Start backend
+      # - name: Start Backend
+      #   run: cd .cursor && task backend:dev &
+      #   # Give it time to start
+      #   sleep 5
+      
+      # TODO: Run smoke tests
+      # - name: Run Backend Smoke Tests
+      #   run: cd .cursor && task qa:smoke:backend
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Job 3: Frontend Smoke Tests
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Mirrors: .husky/pre-push hook (frontend part)
+  # Command: task qa:smoke:frontend
+  
+  frontend-smoke:
+    name: Frontend Smoke Tests
+    runs-on: ubuntu-latest
+    needs: founder-rules
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # TODO: Setup dependencies
+      # - Install Task, bun, Node.js (same as above)
+      
+      # TODO: Install frontend dependencies
+      # - name: Install Frontend Dependencies
+      #   run: cd frontend && bun install
+      
+      # TODO: Build frontend
+      # - name: Build Frontend
+      #   run: cd .cursor && task frontend:build
+      
+      # TODO: Start frontend
+      # - name: Start Frontend
+      #   run: cd .cursor && task frontend:dev &
+      #   sleep 5
+      
+      # TODO: Run smoke tests
+      # - name: Run Frontend Smoke Tests
+      #   run: cd .cursor && task qa:smoke:frontend
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Job 4: Type Checking
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Additional quality check
+  # Command: task frontend:typecheck
+  
+  typecheck:
+    name: TypeScript Type Checking
+    runs-on: ubuntu-latest
+    needs: founder-rules
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # TODO: Setup and run typecheck
+      # - name: Run TypeScript Type Checking
+      #   run: cd .cursor && task frontend:typecheck
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Implementation Notes:
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#
+# 1. All Task commands are the SAME as local development
+# 2. CI enforces the same rules as Husky hooks (redundant safety)
+# 3. Jobs run in parallel where possible (founder-rules first, others parallel)
+# 4. Uses ubuntu-latest for consistency
+# 5. Each job installs its own dependencies (GitHub Actions best practice)
+#
+# Dependencies needed:
+# - go-task (Taskfile runner)
+# - bun (package manager)
+# - Node.js (for automation scripts)
+# - Encore CLI (for backend)
+#
+# Environment variables:
+# - BACKEND_PORT, FRONTEND_PORT (auto-resolved from automation/scripts/env.mjs)
+#
+# Security:
+# - No secrets needed for CI checks
+# - Database: Use in-memory or test DB
+# - No external API calls in smoke tests
+#
+# To test before activating:
+# 1. Create feature branch
+# 2. Rename to ci.yml
+# 3. Push to trigger workflow
+# 4. Verify all jobs pass
+# 5. Merge to main
+

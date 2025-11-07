@@ -3,26 +3,57 @@ version: '3'
 # Backend commands
 # Backend-specific development tasks
 
+vars:
+  BACKEND_PORT:
+    sh: node ../../../automation/scripts/env.mjs backend-port
+
 tasks:
   dev:
     desc: "Start backend development server"
     cmds:
-      - echo "🔧 Starting backend..."
-      - echo "⚠️  Implementation pending - Phase 3"
-      - echo "   Will run - ../../scripts/dev-backend.sh"
+      - echo "🔧 Starting backend on port {{.BACKEND_PORT}}..."
+      - cd ../../backend && encore run --port={{.BACKEND_PORT}}
     silent: false
 
   logs:
     desc: "View backend logs"
     cmds:
-      - echo "📋 Backend logs..."
-      - echo "⚠️  Implementation pending - Phase 3"
+      - tail -f ../../backend.log
     silent: false
 
   health:
     desc: "Check backend health"
     cmds:
       - echo "❤️  Checking backend health..."
-      - echo "⚠️  Implementation pending - Phase 3"
+      - curl -f http://localhost:{{.BACKEND_PORT}}/health || echo "⚠️  Backend not responding"
     silent: false
 
+  db:migrate:
+    desc: "Run database migrations"
+    cmds:
+      - echo "🔄 Running database migrations..."
+      - cd ../../backend && encore db migrate
+      - echo "✅ Migrations complete"
+    silent: false
+
+  db:reset:
+    desc: "Reset database (DESTRUCTIVE)"
+    prompt: "This will delete all data. Continue?"
+    cmds:
+      - echo "⚠️  Resetting database..."
+      - cd ../../backend && encore db reset
+      - echo "✅ Database reset complete"
+    silent: false
+
+  db:shell:
+    desc: "Open database shell"
+    cmds:
+      - cd ../../backend && encore db shell run --write
+    silent: false
+
+  test:
+    desc: "Run backend tests"
+    cmds:
+      - echo "🧪 Running backend tests..."
+      - cd ../../backend && encore test
+    silent: false

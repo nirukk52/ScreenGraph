@@ -1,0 +1,6 @@
+#!/bin/sh
+# Husky pre-commit hook
+# Validates founder rules before allowing commit
+
+cd .cursor && task founder:rules:check
+

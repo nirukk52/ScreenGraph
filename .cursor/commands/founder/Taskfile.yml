@@ -3,22 +3,74 @@ version: '3'
 # Founder commands
 # High-level orchestration, project management, workflows
 
+vars:
+  BACKEND_PORT:
+    sh: node ../../../automation/scripts/env.mjs backend-port
+  FRONTEND_PORT:
+    sh: node ../../../automation/scripts/env.mjs frontend-port
+  WORKTREE_NAME:
+    sh: node ../../../automation/scripts/env.mjs worktree-name
+
 tasks:
+  # Server management
   servers:start:
     desc: "Start backend and frontend services"
     deps:
-      - task: shared:preflight
+      - task: shared:check-worktree-strict
     cmds:
+      - echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      - echo "🚀 Starting ScreenGraph Services"
+      - echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      - echo ""
+      - echo "📍 Worktree {{.WORKTREE_NAME}}"
+      - echo "🔢 Backend {{.BACKEND_PORT}} | Frontend {{.FRONTEND_PORT}}"
+      - echo ""
+      - echo "📦 Installing dependencies..."
+      - cd ../../backend && bun install --silent
+      - cd ../../frontend && bun install --silent
+      - echo "   ✓ Dependencies installed"
+      - echo ""
+      - echo "🧹 Freeing ports..."
+      - lsof -ti:{{.BACKEND_PORT}} 2>/dev/null | xargs kill -9 2>/dev/null || true
+      - lsof -ti:{{.FRONTEND_PORT}} 2>/dev/null | xargs kill -9 2>/dev/null || true
+      - sleep 1
+      - echo ""
       - echo "🚀 Starting services..."
-      - echo "⚠️  Implementation pending - Phase 3"
-      - echo "   Will call - ../../scripts/dev-backend.sh and ../../scripts/dev-frontend.sh"
+      - echo ""
+      - cd ../../backend && nohup encore run --port={{.BACKEND_PORT}} > ../backend.log 2>&1 &
+      - echo "   ✓ Backend starting (port {{.BACKEND_PORT}})"
+      - cd ../../frontend && nohup bunx --bun vite dev --port {{.FRONTEND_PORT}} > ../frontend.log 2>&1 &
+      - echo "   ✓ Frontend starting (port {{.FRONTEND_PORT}})"
+      - sleep 3
+      - echo ""
+      - echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      - echo "✅ Services Running"
+      - echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      - echo ""
+      - echo "   Backend - http://localhost:{{.BACKEND_PORT}}"
+      - echo "   Frontend - http://localhost:{{.FRONTEND_PORT}}"
+      - echo ""
+      - echo "   Logs - tail -f backend.log or tail -f frontend.log"
+      - echo "   Stop - task founder:servers:stop"
+      - echo ""
     silent: false
 
   servers:stop:
     desc: "Stop all services"
     cmds:
       - echo "🛑 Stopping services..."
-      - echo "⚠️  Implementation pending - Phase 3"
+      - pkill -f "encore run" || true
+      - pkill -f "vite dev" || true
+      - sleep 1
+      - echo "✅ Services stopped"
+    silent: false
+
+  servers:restart:
+    desc: "Restart all services"
+    cmds:
+      - task: servers:stop
+      - sleep 2
+      - task: servers:start
     silent: false
 
   servers:status:
@@ -27,17 +79,49 @@ tasks:
       - node ../../../automation/scripts/env.mjs status
     silent: false
 
+  # Rules and validation
   rules:check:
     desc: "Validate all founder rules"
     cmds:
       - node ../../../automation/scripts/check-founder-rules.mjs
     silent: false
 
+  # Workflows
   workflows:regen-client:
     desc: "Regenerate frontend Encore client"
     cmds:
-      - echo "🔄 Regenerating client..."
-      - echo "⚠️  Implementation pending - Phase 3"
-      - echo "   Will run - cd frontend && bun run gen"
+      - echo "🔄 Regenerating Encore client..."
+      - cd ../../frontend && bun run gen
+      - echo "✅ Client regenerated"
     silent: false
 
+  workflows:db-reset:
+    desc: "Reset database (DESTRUCTIVE)"
+    prompt: "This will delete all data. Continue?"
+    cmds:
+      - echo "⚠️  Resetting database..."
+      - cd ../../backend && encore db reset
+      - echo "✅ Database reset complete"
+    silent: false
+
+  # Testing
+  testing:smoke:
+    desc: "Run all smoke tests"
+    cmds:
+      - task: qa:smoke:backend
+      - task: qa:smoke:frontend
+    silent: false
+
+  testing:backend:
+    desc: "Run backend tests"
+    cmds:
+      - echo "🧪 Running backend tests..."
+      - cd ../../backend && encore test
+    silent: false
+
+  testing:frontend:
+    desc: "Run frontend tests"
+    cmds:
+      - echo "🧪 Running frontend tests..."
+      - cd ../../frontend && bun test
+    silent: false

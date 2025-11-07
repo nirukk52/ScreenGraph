@@ -3,25 +3,59 @@ version: '3'
 # QA commands
 # Testing and quality assurance tasks
 
+vars:
+  BACKEND_PORT:
+    sh: node ../../../automation/scripts/env.mjs backend-port
+  FRONTEND_PORT:
+    sh: node ../../../automation/scripts/env.mjs frontend-port
+  APPIUM_PORT:
+    sh: echo "4723"
+
 tasks:
   smoke:backend:
     desc: "Run backend smoke tests"
     cmds:
       - echo "🧪 Running backend smoke tests..."
-      - echo "⚠️  Implementation pending - Phase 3"
+      - echo "   Testing backend health endpoint..."
+      - curl -f http://localhost:{{.BACKEND_PORT}}/health || (echo "❌ Backend smoke test failed" && exit 1)
+      - echo "✅ Backend smoke tests passed"
     silent: false
 
   smoke:frontend:
     desc: "Run frontend smoke tests"
     cmds:
       - echo "🧪 Running frontend smoke tests..."
-      - echo "⚠️  Implementation pending - Phase 3"
+      - echo "   Testing frontend accessibility..."
+      - curl -f http://localhost:{{.FRONTEND_PORT}} > /dev/null || (echo "❌ Frontend smoke test failed" && exit 1)
+      - echo "✅ Frontend smoke tests passed"
+    silent: false
+
+  smoke:all:
+    desc: "Run all smoke tests"
+    cmds:
+      - task: smoke:backend
+      - task: smoke:frontend
     silent: false
 
   appium:start:
     desc: "Start Appium server"
     cmds:
-      - echo "📱 Starting Appium..."
-      - echo "⚠️  Implementation pending - Phase 3"
+      - echo "📱 Starting Appium server on port {{.APPIUM_PORT}}..."
+      - echo "⚠️  Appium start not yet fully implemented"
+      - echo "   Manual start - appium --port {{.APPIUM_PORT}}"
     silent: false
 
+  appium:stop:
+    desc: "Stop Appium server"
+    cmds:
+      - echo "🛑 Stopping Appium server..."
+      - lsof -ti:{{.APPIUM_PORT}} 2>/dev/null | xargs kill -9 2>/dev/null || true
+      - echo "✅ Appium server stopped"
+    silent: false
+
+  e2e:
+    desc: "Run end-to-end tests"
+    cmds:
+      - echo "🧪 Running E2E tests..."
+      - cd ../../backend && bun run test:e2e
+    silent: false
