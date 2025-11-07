@@ -328,6 +328,55 @@ frontend/
 
 ---
 
+## Handoff #6 — FR-017: Minimal Robust Testing Stack Created
+
+- **What I am doing**: ✅ **FEATURE CREATED** - Created FR-017: Minimal Robust Testing Stack for Encore + SvelteKit. Researched testing frameworks using Context7 MCP, Encore MCP, and Svelte MCP. Defined minimal but robust stack: Vitest (unit/integration), Playwright Test (E2E), Supertest (HTTP endpoints), MSW (mocking), Zod (schema validation), Testcontainers (prototype for DB isolation). Created phased implementation plan aligned with FR-013 automation structure for pre-push gating and CI integration.
+
+- **What is pending**:
+  - [ ] Phase 1: Frontend Vitest + MSW + Zod setup
+  - [ ] Phase 2: Frontend Playwright E2E setup
+  - [ ] Phase 3: Backend Supertest HTTP tests
+  - [ ] Phase 4: Testcontainers evaluation (decision record)
+  - [ ] Phase 5: FR-013 Taskfile + Husky integration
+  - [ ] Tests: At least 1 unit + 1 E2E test for /app-info route
+  - [ ] Documentation: Testing setup guide
+
+- **What I plan to do next**:
+  - Start Phase 1: Install Vitest, MSW, Zod and create first unit test
+  - Set up vitest.config.ts with jsdom environment
+  - Create MSW handlers for appinfo API
+  - Write test for RetroButton component (unit) and /app-info page (integration with MSW)
+  - Use Zod to validate API response schemas in tests
+
+- **Modules I am touching**:
+  - `jira/feature-requests/FR-017-minimal-robust-testing/FR-017-main.md` (feature spec)
+  - `jira/feature-requests/FR-017-minimal-robust-testing/FR-017-status.md` (progress tracking)
+  - `jira/feature-requests/FR-017-minimal-robust-testing/FR-017-retro.md` (template)
+
+- **Work status rating (out of 5)**: 1 (Planning complete, implementation pending)
+
+- **Graphiti episode IDs**:
+  - FR-017 Testing Framework Stack Decision: `queued-position-1`
+  - FR-017 Testing Setup Procedure: `queued-position-1`
+  - FR-017 Minimal Robust Testing Preference: `queued-position-2`
+  - FR-017 Testing Automation Integration Rule: `queued-position-3`
+
+- **Related docs**:
+  - `jira/feature-requests/FR-017-minimal-robust-testing/FR-017-main.md`
+  - `jira/feature-requests/FR-013-unified-automation-structure/FR-013-main.md` (automation integration)
+  - Context7 docs: Vitest (`/vitest-dev/vitest`), Playwright (`/microsoft/playwright`), MSW (`/websites/mswjs_io`), Supertest (`/ladjs/supertest`), Testcontainers (`/testcontainers/testcontainers-node`), Zod (`/colinhacks/zod`)
+
+- **Notes for next agent**:
+  - **Testing Stack Decisions**: Minimal but robust approach - Vitest for fast unit/integration (Vite-native), Playwright for real browser E2E, MSW for network-free unit tests, Supertest for HTTP endpoint testing, Zod for API contract validation. Testcontainers evaluated but may be redundant with Encore's built-in test environment.
+  - **Research Sources**: Used Context7 MCP to research all testing libraries - excellent documentation coverage. Key insight: Vitest integrates seamlessly with existing Vite setup, no additional config needed.
+  - **FR-013 Integration**: All tests must be wired into Taskfile structure (`qa:smoke:frontend`, `qa:e2e:frontend`, `qa:smoke:backend`) for unified automation and pre-push gating via Husky hooks.
+  - **Phased Approach**: Start with 1-2 tests per layer to establish patterns, then expand coverage incrementally. Prevents over-engineering while ensuring critical paths are protected.
+  - **Coverage Strategy**: Start with 80% threshold (warn-only), gradually increase to 90%+ as codebase matures. Focus on critical paths first (auth, data flow, API contracts).
+  - **Next Steps**: Begin Phase 1 - install Vitest, MSW, Zod, create vitest.config.ts, write first unit test for RetroButton component, integration test for /app-info page with MSW mocking.
+  - **Install Commands**: `cd frontend && bun add -d vitest @testing-library/svelte @testing-library/jest-dom jsdom msw @playwright/test && bun add zod && bunx playwright install`
+
+---
+
 ## Handoff #4 — Run Defaults Centralization & CODE_REVIEW Fixes
 
 - **What I am doing**: Finalized frontend side for centralizing run defaults and resolved CODE_REVIEW criticals. Extracted hardcoded values into `frontend/src/lib/config.ts` with env overrides, filed FR-010 to make Encore the single source of truth for defaults, and kept graph debugging logs in place (DEV-only gating pending).
