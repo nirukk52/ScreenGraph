@@ -40,9 +40,9 @@ The backend uses Encore.ts for service orchestration, PostgreSQL for persistence
 - Each service has its own `encore.service.ts`
 
 ## Commands
-- **Run**: `encore run` (or `encore run --port=4001` if 4000 is in use)
+- **Run**: `encore run`
 - **Test**: `encore test`
-- **API Explorer**: `http://localhost:4000/#/api` (or 4001)
+- **API Explorer**: `http://localhost:4000/#/api`
 
 ## Absolute Prohibitions
 - No manual cross-service HTTP (use generated clients)

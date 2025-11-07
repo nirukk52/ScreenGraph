@@ -1,28 +1,14 @@
 version: '3'
 
 # Shared utilities used by all commands
-# Preflight checks, environment validation, worktree detection
+# Environment helpers (single .env policy)
 
 tasks:
   preflight:
-    desc: "Run all preflight checks (ports, environment)"
+    desc: "Load environment from .env"
     cmds:
-      - echo "🔍 Running preflight checks..."
-      - ./preflight.sh
-    silent: false
-
-  check-worktree:
-    desc: "Verify worktree isolation and port assignments"
-    cmds:
-      - echo "📍 Checking worktree isolation..."
-      - node ../../../automation/scripts/worktree-detection.mjs validate
-    silent: false
-
-  check-worktree-strict:
-    desc: "Verify worktree isolation (fails on main tree)"
-    cmds:
-      - echo "📍 Checking worktree isolation (strict mode)..."
-      - node ../../../automation/scripts/worktree-detection.mjs validate --strict
+      - echo "🔄 Loading .env (single-environment policy)"
+      - node ../../../automation/scripts/env.mjs print
     silent: false
 
   load-env:
@@ -32,7 +18,7 @@ tasks:
     silent: false
 
   status:
-    desc: "Show environment status (ports, services)"
+    desc: "Show environment status (static ports from .env)"
     cmds:
       - node ../../../automation/scripts/env.mjs status
     silent: false

@@ -37,9 +37,6 @@ vars:
   FRONTEND_PORT:
     sh: node ../automation/scripts/env.mjs frontend-port
   
-  WORKTREE_NAME:
-    sh: node ../automation/scripts/env.mjs worktree-name
-
 tasks:
   default:
     desc: "List all available tasks"
@@ -58,9 +55,8 @@ tasks:
       - echo "  task founder:servers:status   # Check service status"
       - echo "  task qa:smoke:backend         # Run backend smoke tests"
       - echo "  task qa:smoke:frontend        # Run frontend smoke tests"
-      - echo "  task shared:preflight         # Run preflight checks"
       - echo "  task founder:rules:check      # Validate founder rules"
-      - echo "  task ops:ports:show           # Show port assignments"
+      - echo "  node automation/scripts/env.mjs status  # Show standard ports"
       - echo ""
       - echo "Run 'task --list-all' for all available tasks"
     silent: true

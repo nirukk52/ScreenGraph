@@ -24,10 +24,10 @@ bun run task founder:servers:status
 ```
 
 **Notes:**
-- Experimental harness introduced in FR-018 using Turborepo (`turbo run`).
+- Harness introduced in FR-018 using Turborepo (`turbo run`).
 - Root `package.json` is dev-only; backend/frontend dependencies stay isolated.
 - Guardrails (Taskfile, Husky, CI) still run via `bun run task …`.
-- Fall back to Task commands below if harness misbehaves.
+- Standard ports come from `.env` (shared across all trees).
 
 ### 2. Unified Automation (Task Commands)
 ```bash
@@ -51,8 +51,7 @@ task --list
 - ✅ Auto-installs dependencies
 - ✅ Clears conflicting processes
 - ✅ Health checks (waits for services to be ready)
-- ✅ Worktree-specific logs (`.logs/backend-{worktree}.log`)
-- ✅ Real-time status display
+- ✅ Streams logs directly in the harness terminal
 - ✅ Error handling with helpful messages
 
 ### 3. Legacy Commands (Still Work)
@@ -113,8 +112,7 @@ task frontend:build                  # Production build
 task frontend:gen                    # Regenerate client
 
 # Environment
-task ops:ports:show                  # Show port assignments
-task ops:env:print                   # Print all env vars
+task ops:env:print                   # Print env vars from .env
 ```
 
 ### Git Hooks (Auto-Enforced)

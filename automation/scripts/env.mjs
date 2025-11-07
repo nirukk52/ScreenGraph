@@ -13,22 +13,6 @@
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { execSync } from 'child_process';
-
-/**
- * Get the current worktree name (simple version)
- * @returns {string} Name of the current directory
- */
-function getCurrentWorktree() {
-  try {
-    const toplevel = execSync('git rev-parse --show-toplevel', {
-      encoding: 'utf-8',
-    }).trim();
-    return toplevel.split('/').pop();
-  } catch (error) {
-    return 'unknown';
-  }
-}
 
 /**
  * Parse .env file content
@@ -49,7 +33,7 @@ function parseEnv(content) {
 }
 
 /**
- * Get port configuration from .env or defaults
+ * Get port configuration from .env or defaults (single environment policy)
  * @returns {{ backend: number, frontend: number, dashboard: number, appium: number }}
  */
 export function getPorts() {
@@ -88,83 +72,16 @@ export function getDefaultPorts() {
 }
 
 /**
- * Check if a port is in use
- * @param {number} port - Port number to check
- * @returns {{ inUse: boolean, pid?: number, process?: string }}
- */
-export function checkPort(port) {
-  try {
-    const pid = execSync(`lsof -ti:${port} 2>/dev/null || true`, {
-      encoding: 'utf-8',
-    }).trim();
-    
-    if (!pid) {
-      return { inUse: false };
-    }
-    
-    const processName = execSync(`ps -p ${pid} -o comm= 2>/dev/null || echo "unknown"`, {
-      encoding: 'utf-8',
-    }).trim();
-    
-    return {
-      inUse: true,
-      pid: Number.parseInt(pid, 10),
-      process: processName,
-    };
-  } catch (error) {
-    return { inUse: false };
-  }
-}
-
-/**
- * Get status of all services
- * @returns {Record<string, { port: number, status: string, pid?: number, process?: string }>}
- */
-export function getServiceStatus() {
-  const ports = getPorts();
-  const worktree = getCurrentWorktree();
-  
-  return {
-    worktree,
-    services: {
-      backend: {
-        port: ports.backend,
-        ...checkPort(ports.backend),
-      },
-      frontend: {
-        port: ports.frontend,
-        ...checkPort(ports.frontend),
-      },
-      dashboard: {
-        port: ports.dashboard,
-        ...checkPort(ports.dashboard),
-      },
-      appium: {
-        port: ports.appium,
-        ...checkPort(ports.appium),
-      },
-    },
-  };
-}
-
-/**
- * Print service status in a formatted way
+ * Print service status (single environment summary)
  */
 export function printStatus() {
-  const status = getServiceStatus();
-  
-  console.log(`\n📍 Worktree: ${status.worktree}\n`);
-  console.log('🔢 Port Configuration:\n');
-  
-  Object.entries(status.services).forEach(([service, info]) => {
-    const statusIcon = info.inUse ? '🟢' : '⚪';
-    const statusText = info.inUse 
-      ? `Running (PID ${info.pid}, ${info.process})`
-      : 'Available';
-    
-    console.log(`   ${statusIcon} ${service.padEnd(10)} Port ${info.port} - ${statusText}`);
-  });
-  
+  const ports = getPorts();
+  console.log('\n📍 Environment: single .env configuration');
+  console.log('🔢 Assigned Ports (static):');
+  console.log(`   backend   -> ${ports.backend}`);
+  console.log(`   frontend  -> ${ports.frontend}`);
+  console.log(`   dashboard -> ${ports.dashboard}`);
+  console.log(`   appium    -> ${ports.appium}`);
   console.log('');
 }
 
@@ -173,9 +90,6 @@ export function printStatus() {
  */
 export function printEnv() {
   const ports = getPorts();
-  const worktree = getCurrentWorktree();
-  
-  console.log(`WORKTREE_NAME=${worktree}`);
   console.log(`BACKEND_PORT=${ports.backend}`);
   console.log(`FRONTEND_PORT=${ports.frontend}`);
   console.log(`ENCORE_DASHBOARD_PORT=${ports.dashboard}`);
@@ -195,12 +109,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       printEnv();
       break;
     
-    case 'json': {
-      const status = getServiceStatus();
-      console.log(JSON.stringify(status, null, 2));
-      break;
-    }
-    
     case 'backend-port': {
       const ports = getPorts();
       console.log(ports.backend);
@@ -213,15 +121,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       break;
     }
     
-    case 'worktree-name': {
-      const worktree = getCurrentWorktree();
-      console.log(worktree);
-      break;
-    }
-    
     default:
       console.error(`Unknown command: ${command}`);
-      console.error('Usage: env.mjs [status|print|json|backend-port|frontend-port|worktree-name]');
+      console.error('Usage: env.mjs [status|print|backend-port|frontend-port]');
       process.exit(1);
   }
 }

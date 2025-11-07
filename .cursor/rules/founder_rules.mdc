@@ -26,13 +26,12 @@ description: "Non-negotiable development standards for ScreenGraph. Enforces arc
 12. [Build & Deployment](#build--deployment)
 13. [Handoff Documentation](#handoff-documentation)
 
-### Part II: Worktree Isolation
-14. [Worktree Detection (Pre-Flight)](#worktree-detection-run-first-always)
-15. [Main Tree Protection](#main-tree-is-read-only-for-agents)
-16. [Port Reservation Policy](#port-reservation-policy)
-17. [Development Flow](#correct-development-flow)
-18. [Cursor Modes](#cursor-dropdown-modes)
-19. [Enforcement Rules](#enforcement-what-agents-cannot-do)
+### Part II: Environment Policy
+14. [Single Environment Execution](#single-environment-execution)
+15. [Worktree Usage](#worktree-usage)
+16. [Standard Ports](#standard-ports)
+17. [Cursor Modes](#cursor-dropdown-modes)
+18. [Enforcement Rules](#enforcement-what-agents-cannot-do)
 
 ---
 
@@ -247,23 +246,27 @@ Update after significant changes.
 
 ---
 
-## Part II: Environment & Services
+## Part II: Environment Policy
 
-### Ports (All in .env)
+### Single Environment Execution
+- All local development uses the shared `.env` file checked into the repo.
+- Standard ports: backend 4000, frontend 5173, dashboard 9400, appium 4723.
+- Do not customize ports per worktree; treat `.env` as the source of truth.
 
-- Backend: 4000
-- Frontend: 5173
-- Dashboard: 9400
-- Appium: 4723
+### Worktree Usage
+- Worktrees are for parallel code editing only. Run full tests/smoke checks on the main tree.
+- Do not rely on worktree-specific automation (port offsets, isolation scripts, etc.).
 
-See `.env` file for configuration.
-
-### Services
-
+### Standard Dev Commands
 ```bash
-./scripts/dev-backend.sh    # Starts backend
-./scripts/dev-frontend.sh   # Starts frontend
+bun run dev          # Turborepo harness → backend + frontend
+cd backend && encore run   # Service-specific when needed
+cd frontend && bun run dev # Service-specific when needed
 ```
+
+### Services & Ports
+- Scripts `./scripts/dev-backend.sh` and `./scripts/dev-frontend.sh` respect `.env` values.
+- Husky/CI always start services on the standard ports defined above.
 
 ---
 

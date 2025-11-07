@@ -14,7 +14,7 @@ This library eliminates code duplication and ensures consistent behavior across 
 
 ### Single Source of Truth
 
-All business logic for port coordination, environment resolution, and founder rules validation lives here. The four systems above **call** this library—they don't duplicate it.
+All business logic for environment resolution and founder rules validation lives here. The four systems above **call** this library—they don't duplicate it.
 
 ```
 ┌─────────────┐
@@ -45,12 +45,10 @@ All business logic for port coordination, environment resolution, and founder ru
 automation/
 ├── README.md                          # This file
 ├── scripts/                           # Executable scripts
-│   ├── env.mjs                        # Environment & port resolution
-│   ├── check-founder-rules.mjs        # Founder rules validation
-│   └── port-coordinator.mjs           # Symlink → ../../scripts/port-coordinator.mjs
+│   ├── env.mjs                        # Environment resolution (.env only)
+│   └── check-founder-rules.mjs        # Founder rules validation
 ├── lib/                               # Reusable library functions
-│   ├── preflight-checks.mjs           # (Future) Preflight validation
-│   └── port-resolver.mjs              # (Future) Port allocation logic
+│   └── preflight-checks.mjs           # (Future) validation helpers
 └── templates/                         # Document templates
     ├── github/                        # GitHub issue templates
     └── jira/                          # JIRA ticket templates
@@ -62,18 +60,15 @@ automation/
 
 ### `env.mjs` - Environment Resolution
 
-Central module for all environment variables and service status.
+Central module for reading `.env` values and displaying standard ports.
 
 **Usage:**
 ```bash
-# Get service status
+# Show assigned ports
 node automation/scripts/env.mjs status
 
 # Print environment variables (for Task/shell)
 node automation/scripts/env.mjs print
-
-# Get JSON output
-node automation/scripts/env.mjs json
 
 # Get specific values
 node automation/scripts/env.mjs backend-port
@@ -82,14 +77,12 @@ node automation/scripts/env.mjs frontend-port
 
 **Output Example:**
 ```
-📍 Worktree: jcCtc
-
-🔢 Port Configuration:
-
-   🟢 backend     Port 4100 - Running (PID 12345, encore)
-   🟢 frontend    Port 5273 - Running (PID 12346, vite)
-   ⚪ dashboard   Port 9500 - Available
-   ⚪ appium      Port 4823 - Available
+📍 Environment: single .env configuration
+🔢 Assigned Ports (static):
+   backend   -> 4000
+   frontend  -> 5173
+   dashboard -> 9400
+   appium    -> 4723
 ```
 
 **Used by:**
@@ -139,23 +132,6 @@ node automation/scripts/check-founder-rules.mjs --strict
 - Husky `pre-commit` hook (prevents bad commits)
 - GitHub CI (catches violations in PRs)
 - Cursor commands (manual validation)
-
----
-
-### `port-coordinator.mjs` - Port Resolution
-
-Simple port resolver (symlinked from `scripts/port-coordinator.mjs`).
-
-**Usage:**
-```bash
-# Show ports
-bun automation/scripts/port-coordinator.mjs
-
-# JSON output
-bun automation/scripts/port-coordinator.mjs --json
-```
-
-**Note:** This is a symlink to maintain backward compatibility. New code should use `env.mjs` instead, which wraps this functionality.
 
 ---
 

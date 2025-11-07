@@ -1,6 +1,5 @@
 #!/bin/sh
 # Husky post-checkout hook
-# Reminds about worktree isolation after branch switch
-
-cd .cursor && task shared:check-worktree
+# No worktree-specific automation required (single environment policy)
+echo "ℹ️ Post-checkout: no worktree preflight required. Remember: tests run on main using standard ports."
 

@@ -1,47 +1,9 @@
 version: '3'
 
 # Operations commands
-# Port management, environment configuration, infrastructure utilities
+# Environment utilities
 
 tasks:
-  # Port management
-  ports:show:
-    desc: "Show current port assignments"
-    cmds:
-      - echo "🔢 Port Configuration:"
-      - bun ../../../scripts/port-coordinator.mjs
-    silent: false
-
-  ports:show-json:
-    desc: "Show port assignments in JSON format"
-    cmds:
-      - bun ../../../scripts/port-coordinator.mjs --json
-    silent: false
-
-  ports:validate:
-    desc: "Validate port configuration and check for conflicts"
-    cmds:
-      - echo "🔍 Validating port configuration..."
-      - node ../../../automation/scripts/env.mjs status
-      - echo ""
-      - echo "✅ Port validation complete"
-    silent: false
-
-  ports:reserve:
-    desc: "Reserve ports (future implementation)"
-    cmds:
-      - echo "🔒 Port reservation not yet implemented"
-      - echo "   Ports are currently assigned from .env file"
-    silent: false
-
-  ports:release:
-    desc: "Release port reservations (future implementation)"
-    cmds:
-      - echo "🔓 Port release not yet implemented"
-      - echo "   No cleanup needed for current implementation"
-    silent: false
-
-  # Environment management
   env:print:
     desc: "Print all environment variables"
     cmds:

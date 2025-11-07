@@ -9,15 +9,15 @@
 
 ### Environment & Status
 ```bash
-# Show service status
+# Show standard ports from .env
 node automation/scripts/env.mjs status
-
-# Get ports
-node automation/scripts/env.mjs backend-port    # → 4100
-node automation/scripts/env.mjs frontend-port   # → 5273
 
 # Print all env vars
 node automation/scripts/env.mjs print
+
+# Specific values
+node automation/scripts/env.mjs backend-port
+node automation/scripts/env.mjs frontend-port
 ```
 
 ### Founder Rules Check
@@ -36,9 +36,8 @@ node automation/scripts/check-founder-rules.mjs --strict
 ```
 automation/
 ├── scripts/
-│   ├── env.mjs                    # Environment & port resolution
-│   ├── check-founder-rules.mjs    # Founder rules validator
-│   └── port-coordinator.mjs       # Symlink → ../../scripts/
+│   ├── env.mjs                    # Environment resolution (.env)
+│   └── check-founder-rules.mjs    # Founder rules validator
 ├── lib/
 │   ├── preflight-checks.mjs       # (Future) Extracted checks
 │   └── port-resolver.mjs          # (Future) Port allocation
@@ -82,9 +81,9 @@ vars:
 ## Scripts API
 
 ### env.mjs
-**Exports**: `getPorts()`, `getServiceStatus()`, `printStatus()`, `printEnv()`
+**Exports**: `getPorts()`, `printStatus()`, `printEnv()`
 
-**CLI**: `status | print | json | backend-port | frontend-port | worktree-name`
+**CLI**: `status | print | backend-port | frontend-port`
 
 ### check-founder-rules.mjs
 **Exports**: `checkNoConsoleLog()`, `checkNoAnyType()`, etc.

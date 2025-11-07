@@ -18,8 +18,7 @@ tasks:
       - echo "🚀 Starting ScreenGraph Turborepo Harness"
       - echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       - echo ""
-      - echo "📍 Worktree {{.WORKTREE_NAME}}"
-      - echo "🔢 Backend {{.BACKEND_PORT}} | Frontend {{.FRONTEND_PORT}}"
+      - echo "🔢 Backend {{.BACKEND_PORT}} | Frontend {{.FRONTEND_PORT}} (from .env)"
       - echo ""
       - echo "📦 Ensuring root harness dependencies (bun install)"
       - bun install > /dev/null 2>&1 || bun install
