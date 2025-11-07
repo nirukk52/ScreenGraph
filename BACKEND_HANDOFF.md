@@ -610,3 +610,40 @@ This document is the single place where agents leave status for each other. Alwa
   - **Interactive Prompts**: Commands prompt for: what doing, pending items (comma-separated), next steps, modules (comma-separated paths), rating (0-5), and notes.
   - **Comma-Separated Inputs**: Pending items and modules use comma-separated format which gets auto-converted to markdown lists.
   - **Consistency**: All three commands follow identical patterns, just with different paths (bugs/, feature-requests/, tech-debt/) and prefixes (BUG-, FR-, TD-).
+
+---
+
+## Handoff #16 — Code Review Best Practices Plan for Update Commands
+
+- **What I am doing**: Documented a phased plan to bring `.cursor/commands/update-bug-doc`, `update-feature-doc`, and `update-tech-debt` up to code review best practices: input validation with retries, preview/confirm, backups, error handling, constants (no magic values), help/dry-run flags, atomic writes, bash safety, colored output, exit codes, optional verbose/debug modes, and de-duplication via a shared library (`handoff-common.sh`).
+
+- **What is pending**:
+  - [ ] Phase 1 (Critical): Input validation with retry; preview + confirmation; backup creation; constants; basic error handling; `--help`
+  - [ ] Phase 2 (High): Shared library to remove duplication; `--dry-run`; atomic writes; `set -euo pipefail` + quoting; colored output; standardized exit codes
+  - [ ] Phase 3 (Nice): Verbose/debug modes; multi-line inputs; edit-before-confirm; rich summary; optional git auto-stage; concurrent edit detection; malformed file detection
+
+- **What I plan to do next**:
+  - Implement Phase 1 across all three commands, then reassess UX and error paths
+  - Prepare shared library skeleton and migrate common logic (Phase 2)
+
+- **Modules I am touching**:
+  - `.cursor/commands/update-bug-doc`
+  - `.cursor/commands/update-feature-doc`
+  - `.cursor/commands/update-tech-debt`
+  - (planned) `.cursor/commands/lib/handoff-common.sh`
+
+- **Work status rating (out of 5)**: 3
+
+- **Graphiti episode IDs**:
+  - Bash CLI Handoff Commands – Code Review Best Practices: `queued-position-1`
+  - Phased Implementation Plan – Update Commands: `queued-position-2`
+
+- **Related docs**:
+  - `.cursor/commands/update_handoff`
+  - `CODE_REVIEW.md`
+
+- **Notes for next agent**:
+  - Prioritize Phase 1 for safety/UX; keep prompts consistent with other commands (flags: -h/--help, -n/--dry-run, -y/--yes, -v/--verbose)
+  - Use atomic writes (temp + mv) and create timestamped backups before modifications
+  - Prefer shared library to eliminate duplication while preserving simple @-command UX
+  - Quote all variables, use `[[ ... ]]`, and `read -r` throughout; trap errors and clean up temps
