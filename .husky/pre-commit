@@ -4,3 +4,6 @@
 
 cd .cursor && task founder:rules:check
 
+# Cursor docs validation (informational, won't block commit)
+cd .. && node automation/scripts/validate-cursor-docs.mjs || echo "⚠️  Cursor docs validation failed (non-blocking)"
+

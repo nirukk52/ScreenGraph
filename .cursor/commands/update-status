@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Update Status Command - Quick status.md update
+#
+# Updates status.md for a specific item (< 5 seconds)
+
+set -euo pipefail
+
+ITEM_ID="${1:-}"
+
+if [[ -z "$ITEM_ID" ]]; then
+  echo "Usage: update-status [ITEM-ID]"
+  echo "Example: update-status FR-015"
+  exit 1
+fi
+
+# Find item directory
+JIRA_DIR="jira"
+PREFIX="${ITEM_ID%%-*}"
+
+case "$PREFIX" in
+  FR) CATEGORY="feature-requests" ;;
+  BUG) CATEGORY="bugs" ;;
+  TD) CATEGORY="tech-debt" ;;
+  CHORE) CATEGORY="chores" ;;
+  *)
+    echo "Invalid item ID: $ITEM_ID"
+    exit 1
+    ;;
+esac
+
+ITEM_DIR="${JIRA_DIR}/${CATEGORY}/${ITEM_ID}"*
+if [[ ! -d $ITEM_DIR ]]; then
+  echo "Item not found: $ITEM_ID"
+  exit 1
+fi
+
+STATUS_FILE="${ITEM_DIR}/status.md"
+
+if [[ ! -f "$STATUS_FILE" ]]; then
+  echo "status.md not found in $ITEM_DIR"
+  exit 1
+fi
+
+# Update timestamp
+DATE=$(date +%Y-%m-%d)
+sed -i.bak "s/Last Updated:.*/Last Updated: ${DATE}/" "$STATUS_FILE"
+rm "${STATUS_FILE}.bak"
+
+echo "✓ Updated status.md timestamp for $ITEM_ID"
+
