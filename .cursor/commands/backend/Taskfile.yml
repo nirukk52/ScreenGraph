@@ -3,16 +3,12 @@ version: '3'
 # Backend commands
 # Backend-specific development tasks
 
-vars:
-  BACKEND_PORT:
-    sh: node ../../../automation/scripts/env.mjs backend-port
-
 tasks:
   dev:
     desc: "Start backend development server"
     cmds:
-      - echo "🔧 Starting backend on port {{.BACKEND_PORT}}..."
-      - cd ../../backend && encore run --port={{.BACKEND_PORT}}
+      - echo "🔧 Starting backend..."
+      - cd ../../backend && encore run
     silent: false
 
   logs:
@@ -25,7 +21,7 @@ tasks:
     desc: "Check backend health"
     cmds:
       - echo "❤️  Checking backend health..."
-      - curl -f http://localhost:{{.BACKEND_PORT}}/health || echo "⚠️  Backend not responding"
+      - curl -f http://localhost:${BACKEND_PORT:-4000}/health || echo "⚠️  Backend not responding"
     silent: false
 
   db:migrate:

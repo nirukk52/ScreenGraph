@@ -3,37 +3,18 @@ version: '3'
 # Founder commands
 # High-level orchestration, project management, workflows
 
-vars:
-  BACKEND_PORT:
-    sh: node ../../../automation/scripts/env.mjs backend-port
-  FRONTEND_PORT:
-    sh: node ../../../automation/scripts/env.mjs frontend-port
-
 tasks:
   # Server management
   servers:start:
     desc: "Start backend and frontend services via Turborepo harness"
     cmds:
-      - echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-      - echo "🚀 Starting ScreenGraph Turborepo Harness"
-      - echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-      - echo ""
-      - echo "🔢 Backend {{.BACKEND_PORT}} | Frontend {{.FRONTEND_PORT}} (from .env)"
-      - echo ""
-      - echo "📦 Ensuring root harness dependencies (bun install)"
-      - bun install > /dev/null 2>&1 || bun install
-      - echo "📦 Ensuring backend workspace dependencies"
-      - cd ../../backend && bun install > /dev/null 2>&1 || bun install
-      - echo "📦 Ensuring frontend workspace dependencies"
-      - cd ../../frontend && bun install > /dev/null 2>&1 || bun install
-      - echo ""
-      - echo "🧹 Clearing lingering dev servers..."
-      - pkill -f "turbo run dev" 2>/dev/null || true
-      - pkill -f "encore run" 2>/dev/null || true
-      - pkill -f "vite dev" 2>/dev/null || true
+      - echo "🧹 Clearing standard ports (4000, 5173, 9400, 4723)..."
+      - lsof -ti:4000 2>/dev/null | xargs kill -9 2>/dev/null || true
+      - lsof -ti:5173 2>/dev/null | xargs kill -9 2>/dev/null || true
+      - lsof -ti:9400 2>/dev/null | xargs kill -9 2>/dev/null || true
+      - lsof -ti:4723 2>/dev/null | xargs kill -9 2>/dev/null || true
       - sleep 1
-      - echo ""
-      - echo "🚀 Launching Turborepo dev harness (Ctrl+C to stop)"
+      - echo "🚀 Starting services..."
       - bun run dev
     silent: false
 
