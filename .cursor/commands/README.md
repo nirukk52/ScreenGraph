@@ -1,41 +1,70 @@
 # Cursor Commands
 
-All commands accessible via `@command-name` in Cursor.
+Quick reference for `.cursor/commands/` - all commands are executable scripts.
 
 ---
 
-## 📋 Item Management
+## Item Handoff Commands (NEW)
 
-- `@create-feature` - Create FR-XXX
-- `@create-bug` - Create BUG-XXX  
-- `@create-techdebt` - Create TD-XXX
+### `update-handoff [ITEM-ID]`
+Update handoff for FR/BUG/TD/CHORE item. Interactive prompts.
+```bash
+update-handoff FR-015
+```
 
-## ✍️ Handoff Updates
+### `update-handoff-quick [ITEM-ID]`
+Fast handoff (30s). Auto-detects item from git branch/files.
+```bash
+update-handoff-quick        # Auto-detect
+update-handoff-quick FR-015 # Explicit
+```
 
-- `@update-handoff` - Full handoff (interactive)
-- `@update-handoff-quick` - Fast 30s handoff
-- `@update-status` - Update timestamp (< 5s)
-- `@update-main` - Append note (< 5s)
+### `update-status [ITEM-ID]`
+Update status.md timestamp (< 5s).
+```bash
+update-status FR-015
+```
 
-## ✅ Validation
-
-- `@validate-docs` - Check line limits & required files
-
-## 🚀 Services
-
-- `@start` - Start backend + frontend
-- `@stop` - Stop all services
+### `update-main [ITEM-ID] [note]`
+Append note to main.md (< 5s).
+```bash
+update-main FR-015 "Added API endpoint"
+```
 
 ---
 
-## Task Commands
+## Item Creation
 
-Run from `.cursor/`: `task [command]`
+- `create-feature` - Create FR-XXX
+- `create-bug` - Create BUG-XXX
+- `create-techdebt` - Create TD-XXX
+- `create-chore` - Create CHORE-XXX (NEW)
 
-- `task founder:servers:start` - Start all with health checks
-- `task founder:rules:check` - Validate founder rules
-- `task backend:dev` / `task frontend:dev` - Start services
-- `task qa:smoke:all` - All smoke tests
+---
+
+## Validation
+
+### `validate-docs`
+Check all items for required files and line limits.
+```bash
+validate-docs
+```
+
+---
+
+## Service Commands
+
+- `start` - Start backend + frontend
+- `stop` - Stop all services
+
+---
+
+## Archived
+
+Old commands moved to `archive/`:
+- `verify-worktree-isolation` (deprecated)
+- `update_handoff` / `update_handoff_quick` (replaced)
+- `test-default-run` (moved to automation/scripts/)
 
 ---
 
