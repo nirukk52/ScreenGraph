@@ -3,5 +3,10 @@
   "compilerOptions": {
     "skipLibCheck": true
   },
-  "include": ["src/**/*.d.ts", "src/**/*.svelte", "src/**/*.ts"]
+  "include": [
+    "src/**/*.d.ts",
+    "src/**/*.svelte",
+    "src/**/*.ts",
+    "vite-env.d.ts"
+  ]
 }

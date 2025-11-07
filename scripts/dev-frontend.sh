@@ -9,12 +9,27 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$SCRIPT_DIR/.."
 cd "$REPO_ROOT"
 
-# Resolve ports and export env into this shell
-eval "$(bun ./scripts/port-coordinator.mjs --no-summary)"
+# Ensure env files exist and ports are assigned
+bun ./scripts/port-coordinator.mjs --write-env --no-shell --no-summary
+
+if [ ! -f .env ]; then
+  echo "[dev] ERROR: .env file is missing. Copy .env.example to .env first." >&2
+  exit 1
+fi
+
+set -a
+source .env
+if [ -f .env.local ]; then
+  source .env.local
+fi
+set +a
+
+FRONTEND_PORT="${FRONTEND_PORT:-5173}"
+VITE_BACKEND_BASE_URL="${VITE_BACKEND_BASE_URL:-http://localhost:4000}"
 
 echo "[dev] frontend=$FRONTEND_PORT backend=$VITE_BACKEND_BASE_URL"
 
 cd frontend
-# Prefer config picking up FRONTEND_PORT; also pass explicit --port as backup
-vite dev --port "$FRONTEND_PORT"
+# Call vite directly to avoid circular dependency with package.json "dev" script
+bunx --bun vite dev --port "$FRONTEND_PORT"
 

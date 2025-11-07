@@ -18,11 +18,11 @@ bun run gen
 
 ### 2. Run Services
 ```bash
-# Terminal 1: Backend
-cd backend && encore run
+# Terminal 1: Backend (auto loads .env / .env.local)
+./scripts/dev-backend.sh
 
 # Terminal 2: Frontend  
-cd frontend && bun run dev
+./scripts/dev-frontend.sh
 ```
 
 ---
@@ -54,6 +54,11 @@ cd frontend && bun run dev
 - **All projects**: Use `bun` exclusively
 - **Backend**: `cd backend && bun install`
 - **Frontend**: `cd frontend && bun install`
+
+### Environment Files
+- `.env` (committed defaults) + `.env.local` (gitignored overrides)
+- Generate worktree ports: `bun ./scripts/port-coordinator.mjs --write-env`
+- Encrypted secrets: `.env.vault` managed via `bunx dotenvx`
 
 ---
 
