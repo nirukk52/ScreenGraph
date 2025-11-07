@@ -1,5 +1,6 @@
 ---
 alwaysApply: false
+description: "Complete Svelte 5 and SvelteKit documentation for LLMs. Covers runes ($state, $derived, $effect, $props), snippets, routing, load functions, form actions, remote functions, page options, hooks, and all framework features."
 ---
 <SYSTEM>This is the abridged developer documentation for Svelte and SvelteKit.</SYSTEM>
 

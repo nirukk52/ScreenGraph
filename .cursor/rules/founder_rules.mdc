@@ -1,5 +1,6 @@
 ---
 alwaysApply: true
+description: "Non-negotiable development standards for ScreenGraph. Enforces architecture boundaries, naming conventions, type safety, American English spelling, logging standards, package management, and multi-agent worktree isolation policies."
 ---
 
 # Founder Rules — ScreenGraph Development Standards

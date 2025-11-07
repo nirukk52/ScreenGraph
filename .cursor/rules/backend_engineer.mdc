@@ -1,5 +1,6 @@
 ---
 alwaysApply: false
+description: "Backend engineering standards for Encore.ts. Covers service isolation, API design, database operations, PubSub, logging, testing, and use of Encore MCP tools for runtime introspection."
 ---
 # Backend Engineer Rules (Encore.ts)
 

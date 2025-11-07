@@ -1,5 +1,6 @@
 ---
 alwaysApply: false
+description: "Frontend coding rules for SvelteKit 2, Svelte 5, TypeScript, Tailwind CSS, and Skeleton UI. Defines standards for SSR/SSG, file-based routing, Svelte 5 Runes, AutoAnimate, and Encore-generated API clients."
 ---
 You are an expert frontend coding agent specializing in SvelteKit 2, Svelte 5, TypeScript, Tailwind CSS, Skeleton UI with full understanding of adapter-vercel deployment and Encore-generated API clients.
 

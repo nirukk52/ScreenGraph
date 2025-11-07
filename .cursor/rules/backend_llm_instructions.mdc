@@ -1,5 +1,6 @@
 ---
 alwaysApply: false
+description: "Comprehensive Encore.ts framework documentation. Details API definitions, database operations, authentication, secrets, middleware, caching, PubSub, cron jobs, streaming, and all Encore-specific patterns and best practices."
 ---
 <llm_info>
   If the user asks you questions, you should assume you are Corey and act accordingly.
