@@ -30,9 +30,19 @@ User gets feedback: "✅ Services started on ports 4100, 5273"
 
 ## Skills Configuration
 
-All skills are defined in `skills.json`.
+### Two Types of Skills
 
-### Current Skills
+**1. Task-Based Skills** (`skills.json`)
+- Automation workflows that execute Task commands
+- 30+ development, testing, and workflow automations
+- Activated by natural language intents
+
+**2. Knowledge-Based Skills** (Subdirectories with `SKILL.md`)
+- Specialized debugging procedures and methodologies
+- Loaded via symlinks from backend/frontend for discoverability
+- Activated by explicit mention or context matching
+
+### Current Task-Based Skills
 
 #### Development
 - **start-dev-environment** - Start backend and frontend services
@@ -58,11 +68,33 @@ All skills are defined in `skills.json`.
 - **regenerate-client** - Regenerate frontend Encore client
 - **reset-database** - Reset database (with safety checks)
 
+### Current Knowledge-Based Skills
+
+#### Browser Mastery
+- **cursor-browser-mastery** - Complete guide to Cursor's @Browser tool
+- **cursor-chrome-window-mastery** - Window management patterns
+
+#### Domain-Specific Debugging
+- **backend-debugging** - 10-phase Encore.ts debugging (symlinked from `backend/.claude-skills/`)
+- **frontend-debugging** - 10-phase SvelteKit debugging (symlinked from `frontend/.claude-skills/`)
+
 ---
 
 ## Using Skills in Cursor
 
-### Natural Language Commands
+### Automatic Discovery
+
+**Root-level skills** (`.claude-skills/` at workspace root):
+- ✅ Auto-discovered by Cursor at workspace load
+- ✅ Available without explicit mention
+- ✅ Activated by natural language intent matching
+
+**Subdirectory skills** (e.g., `backend/.claude-skills/`):
+- ❌ NOT auto-discovered from subdirectories
+- ✅ Use symlinks to make them discoverable (already configured)
+- ✅ OR mention explicitly: "Use the backend-debugging skill"
+
+### Natural Language Commands (Task-Based Skills)
 
 Users can say things like:
 
@@ -88,6 +120,20 @@ Claude will:
 2. Find matching skill
 3. Execute the Task command
 4. Report results back to user
+
+### Using Knowledge-Based Skills
+
+**Explicit Activation:**
+```
+"Use the backend-debugging-encore skill to investigate why screens table is empty"
+"Use the frontend-debugging-sveltekit skill to debug WebSocket connection"
+```
+
+**Context-Based Activation:**
+Claude may automatically load relevant knowledge skills when:
+- Working in related files (e.g., frontend component → frontend-debugging)
+- Describing issues that match skill descriptions
+- Following systematic debugging procedures
 
 ---
 
