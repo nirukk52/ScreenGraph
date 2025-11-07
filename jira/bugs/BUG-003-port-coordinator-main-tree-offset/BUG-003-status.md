@@ -1,7 +1,7 @@
 # BUG-003: Port Coordinator Assigns Offset to Main Tree - Status Report
 
-**Last Updated:** 2025-11-06 20:30  
-**Current Status:** 🔍 Investigating (Awaiting Founder Decision)  
+**Last Updated:** 2025-11-07  
+**Current Status:** ✅ RESOLVED (Port coordinator removed)  
 **Owner:** Founder / Backend Team
 
 ---
@@ -74,6 +74,19 @@
 ---
 
 ## 💬 Recent Updates
+
+### 2025-11-07 - RESOLVED
+**Resolution:** Removed `backend/scripts/port-coordinator.mjs` entirely per founder rules.
+
+Rationale:
+- Founder rules explicitly state: "Do not customize ports per worktree; treat `.env` as the source of truth"
+- Port coordinator added unnecessary complexity
+- All port configuration now centralized in `.env` file
+- `backend/config/env.ts` reads from `.env` with sensible defaults
+- Scripts (`dev-backend.sh`, `dev-frontend.sh`) respect `.env` values
+- Simplified `backend/encore.app` CORS to use only base port 5173
+
+This bug is now obsolete as the offending code has been removed.
 
 ### 2025-11-06 20:30
 Created full bug report with:
