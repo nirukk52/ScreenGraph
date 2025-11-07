@@ -15,6 +15,6 @@ eval "$(bun ./scripts/port-coordinator.mjs --no-summary)"
 echo "[dev] frontend=$FRONTEND_PORT backend=$VITE_BACKEND_BASE_URL"
 
 cd frontend
-# Prefer config picking up FRONTEND_PORT; also pass explicit --port as backup
-vite dev --port "$FRONTEND_PORT"
+# Call vite directly to avoid circular dependency with package.json "dev" script
+bunx --bun vite dev --port "$FRONTEND_PORT"
 

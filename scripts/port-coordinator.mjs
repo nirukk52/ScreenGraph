@@ -70,10 +70,15 @@ function isPortFree(port) {
   });
 }
 
-async function pickPort(rangeBase, width, preferred) {
+async function pickPort(rangeBase, width, preferred, allowOccupied = false) {
   // Try preferred first
   if (preferred != null) {
-    if (await isPortFree(preferred)) return preferred;
+    const isFree = await isPortFree(preferred);
+    // If port is free, use it
+    if (isFree) return preferred;
+    // If port is occupied but we allow it (already assigned to this worktree), accept it
+    if (allowOccupied) return preferred;
+    // Otherwise, port is taken by something else
     return null;
   }
   // Linear probe within range
@@ -100,7 +105,11 @@ async function resolvePorts() {
     const offset = offsetSeed % width;
     const base = cfg.base;
     const preferred = override ?? (registry.worktrees[worktree][name] ?? base + offset);
-    let port = await pickPort(base, width, preferred);
+    
+    // Allow port to be "occupied" if it's already in the registry for this worktree
+    // This enables incremental service startup (backend first, then frontend)
+    const alreadyAssignedToThisWorktree = registry.worktrees[worktree][name] === preferred;
+    let port = await pickPort(base, width, preferred, alreadyAssignedToThisWorktree);
 
     if (override != null && (port == null || port !== override)) {
       console.error(

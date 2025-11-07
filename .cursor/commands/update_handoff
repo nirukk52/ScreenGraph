@@ -2,6 +2,10 @@
 
 Use sequential thinking to create todos for the steps below:
 
+## Deterministic Workflows (Choose one)
+- Production Release Update (uses PROC-001 from `.cursor/procedures/PROCEDURES.md`)
+- Regular Feature/Bug Handoff Update
+
 ## Step 1: Update Documentation Skills
 Update all three `SKILLS.md` files with new capabilities/patterns learned.
 
@@ -16,6 +20,25 @@ Group related information by `group_id` (e.g., feature ID, bug ID).
 
 ## Step 3: Update Handoff Documents
 Update the appropriate handoff document (BACKEND_HANDOFF.md or FRONTEND_HANDOFF.md).
+
+### 3A) Production Release Update (Deterministic Flow)
+1. Load PROC-001 from `.cursor/procedures/PROCEDURES.md`
+2. Confirm Preconditions (all must be checked):
+   - [ ] `@verify-worktree-isolation` passed on release worktree
+   - [ ] `@test-default-run` passed on release worktree
+   - [ ] CI green on release PR
+3. Update Handoff with “Release Notes Template” from PROC-001:
+   - Version/tag
+   - Date
+   - Backend changes
+   - Frontend changes
+   - Migrations
+   - Smoke test status (+ link/screenshot)
+4. Tag & Deploy summary:
+   - Tag created/pushed (value)
+   - Encore Cloud deploy status (link)
+   - Vercel production deploy status (link)
+5. Rollback plan (paste the PROC-001 rollback section verbatim)
 
 ### Handoff Template Structure:
 ```markdown
@@ -68,6 +91,17 @@ Ensure all `.md` files have updated table of contents/indexes.
 ---
 
 ## REQUIRED OUTPUT FORMAT
+
+### If “Production Release Update” was selected
+Paste the normal output plus the following:
+```
+## ✅ Production Release Verification
+- Preconditions satisfied: [yes/no]
+- Tag pushed: `<tag>`
+- Encore deploy: <status/link>
+- Vercel deploy: <status/link>
+- Smoke test (prod): <pass/fail> (<link/screenshot>)
+```
 
 After completing all steps, produce this structured output for the user to paste into the next chat:
 
