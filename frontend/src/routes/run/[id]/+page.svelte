@@ -103,23 +103,31 @@ async function handleCancel() {
 
 <div class="container mx-auto p-8">
 	<div class="flex justify-between items-center mb-6">
-		<h1 class="text-3xl font-bold">Run Timeline: {runId}</h1>
+		<h1 class="h1">Run Timeline: {runId}</h1>
 		<button
 			onclick={handleCancel}
-			class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+			class="btn variant-filled-error"
 		>
 			Cancel Run
 		</button>
 	</div>
 	
 	{#if loading}
-		<div class="text-center">Loading events...</div>
+		<div class="card variant-ghost p-6">
+			<div class="placeholder animate-pulse">
+				<div class="placeholder w-full mb-2"></div>
+				<div class="placeholder w-3/4 mb-2"></div>
+				<div class="placeholder w-1/2"></div>
+			</div>
+		</div>
 	{/if}
 	
 	{#if error}
-		<div class="p-4 bg-red-100 text-red-700 rounded mb-4">
-			{error}
-		</div>
+		<aside class="alert variant-filled-error mb-4">
+			<div class="alert-message">
+				<p>{error}</p>
+			</div>
+		</aside>
 	{/if}
 
 	<!-- Graph Visualization -->
@@ -128,18 +136,18 @@ async function handleCancel() {
 	</div>
 	
 	<!-- Run Events List -->
-	<div class="bg-white rounded-lg border p-6">
-		<h2 class="text-xl font-semibold mb-4">Run Events ({events.length})</h2>
+	<div class="card p-6">
+		<h2 class="h2 mb-4">Run Events ({events.length})</h2>
 		<div class="space-y-4" use:autoAnimate>
 			{#each events.slice().reverse() as event}
-				<div class="p-4 border rounded-lg bg-gray-50">
+				<div class="card variant-ghost p-4">
 					<div class="flex justify-between items-start mb-2">
-						<div class="font-semibold text-lg">{event.kind}</div>
-						<div class="text-xs text-gray-500">#{event.seq}</div>
+						<span class="chip variant-soft">{event.kind}</span>
+						<span class="badge variant-filled">#{event.seq}</span>
 					</div>
-					<div class="text-sm text-gray-600 mb-2">{event.timestamp}</div>
+					<div class="text-sm text-surface-600 dark:text-surface-400 mb-2">{event.timestamp}</div>
 					{#if event.data}
-						<pre class="mt-2 p-2 bg-gray-100 rounded text-xs overflow-x-auto">{JSON.stringify(event.data, null, 2)}</pre>
+						<pre class="mt-2 p-2 bg-surface-200 dark:bg-surface-800 rounded text-xs overflow-x-auto">{JSON.stringify(event.data, null, 2)}</pre>
 					{/if}
 				</div>
 			{/each}

@@ -1,15 +1,15 @@
-# FR-016: skeleton-ui-integration
+# FR-016: shadcn-svelte Design System (formerly skeleton-ui-integration)
 
-**Status:** 📋 Todo  
+**Status:** ✅ **Complete**  
 **Priority:** P2 (Medium)  
 **Milestone:** M3 - Frontend Enhancement  
-**Owner:** TBD  
-**Estimated Effort:** Medium
+**Owner:** Claude (Cursor AI)  
+**Estimated Effort:** Medium → **Completed**
 
 ---
 
 ## 📝 Description
-Integrate Skeleton UI toolkit into the SvelteKit frontend to provide a comprehensive design system with pre-built components, theming capabilities, and consistent UI patterns. This will accelerate frontend development and ensure design consistency across the application.
+~~Integrate Skeleton UI toolkit~~ **Implemented shadcn-svelte + Tailwind v4** as the ultimate vibe coding baseline design system. Provides copy-pasteable components with full source code ownership, enabling rapid, joyful frontend development with modern tooling.
 
 **Business Value:**
 - Faster feature development with ready-to-use components
