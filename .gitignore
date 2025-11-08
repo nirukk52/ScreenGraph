@@ -84,6 +84,7 @@ test-results
 # OS Files
 # ============================================
 .DS_Store
+.ds_Store
 Thumbs.db
 desktop.ini
 
