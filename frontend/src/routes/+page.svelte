@@ -4,8 +4,9 @@ Retro-modern design landing page showcasing the UX drift detection platform
 -->
 <script lang="ts">
 	import autoAnimate from '@formkit/auto-animate';
-	import { Activity, GitCompare, FileText, Check } from 'lucide-svelte';
-	import { RetroButton, RetroCard, RetroInput, RetroBadge } from '$lib/components';
+	import { Check } from 'lucide-svelte';
+	import { RetroButton, RetroCard, RetroInput, RetroBadge, TabSection } from '$lib/components';
+	import ModernJourneyFull from '$lib/components/ModernJourneyFull.svelte';
 	import DebugRetro from '$lib/components/DebugRetro.svelte';
 	import { goto } from '$app/navigation';
     import { startRun } from '$lib/api';
@@ -175,119 +176,8 @@ Retro-modern design landing page showcasing the UX drift detection platform
 		</div>
 	</section>
 
-	<!-- How It Works Section -->
-	<section id="how-it-works" class="py-16 px-8 bg-[var(--color-neutral-gray)]">
-		<div class="max-w-6xl mx-auto">
-			<div class="text-center mb-12 space-y-4">
-				<h2 class="text-4xl text-[var(--color-charcoal)] font-medium">How ScreenGraph Works</h2>
-				<p class="text-lg text-[var(--color-text-secondary)] max-w-2xl mx-auto">
-					ScreenGraph automatically maps your app, compares builds, and highlights changes so you
-					never ship broken experiences.
-				</p>
-			</div>
-
-			<div use:autoAnimate class="grid grid-cols-1 md:grid-cols-3 gap-8">
-				<!-- Step 1 -->
-				<RetroCard variant="white" class="h-full">
-					<div class="space-y-6">
-						<div
-							class="w-16 h-16 bg-[var(--color-sky-blue)] rounded-2xl retro-shadow-sm flex items-center justify-center"
-						>
-							<Activity class="w-8 h-8 text-[var(--color-charcoal)]" />
-						</div>
-						<div class="space-y-3">
-							<h3 class="text-2xl text-[var(--color-charcoal)] font-medium">1. Automated Crawls</h3>
-							<p class="text-[var(--color-text-secondary)] leading-relaxed">
-								Upload your build and ScreenGraph automatically crawls every screen, button, and flow
-								in your app. No manual setup required.
-							</p>
-						</div>
-						<div class="pt-4 space-y-2">
-							<div class="flex items-start gap-2 text-sm">
-								<Check class="w-4 h-4 mt-0.5 text-[var(--color-charcoal)] flex-shrink-0" />
-								<span class="text-[var(--color-text-secondary)]">Deep link discovery</span>
-							</div>
-							<div class="flex items-start gap-2 text-sm">
-								<Check class="w-4 h-4 mt-0.5 text-[var(--color-charcoal)] flex-shrink-0" />
-								<span class="text-[var(--color-text-secondary)]">Navigation mapping</span>
-							</div>
-							<div class="flex items-start gap-2 text-sm">
-								<Check class="w-4 h-4 mt-0.5 text-[var(--color-charcoal)] flex-shrink-0" />
-								<span class="text-[var(--color-text-secondary)]">Screenshot capture</span>
-							</div>
-						</div>
-					</div>
-				</RetroCard>
-
-				<!-- Step 2 -->
-				<RetroCard variant="white" class="h-full">
-					<div class="space-y-6">
-						<div
-							class="w-16 h-16 bg-[var(--color-warm-tan)] rounded-2xl retro-shadow-sm flex items-center justify-center"
-						>
-							<GitCompare class="w-8 h-8 text-[var(--color-charcoal)]" />
-						</div>
-						<div class="space-y-3">
-							<h3 class="text-2xl text-[var(--color-charcoal)] font-medium">2. Visual Graph</h3>
-							<p class="text-[var(--color-text-secondary)] leading-relaxed">
-								See your entire app as an interactive graph. Each node is a screen, each edge is a
-								navigation path. Explore flows visually.
-							</p>
-						</div>
-						<div class="pt-4 space-y-2">
-							<div class="flex items-start gap-2 text-sm">
-								<Check class="w-4 h-4 mt-0.5 text-[var(--color-charcoal)] flex-shrink-0" />
-								<span class="text-[var(--color-text-secondary)]">Interactive navigation map</span>
-							</div>
-							<div class="flex items-start gap-2 text-sm">
-								<Check class="w-4 h-4 mt-0.5 text-[var(--color-charcoal)] flex-shrink-0" />
-								<span class="text-[var(--color-text-secondary)]">Flow path analysis</span>
-							</div>
-							<div class="flex items-start gap-2 text-sm">
-								<Check class="w-4 h-4 mt-0.5 text-[var(--color-charcoal)] flex-shrink-0" />
-								<span class="text-[var(--color-text-secondary)]">Dead-end detection</span>
-							</div>
-						</div>
-					</div>
-				</RetroCard>
-
-				<!-- Step 3 -->
-				<RetroCard variant="white" class="h-full">
-					<div class="space-y-6">
-						<div
-							class="w-16 h-16 bg-[var(--color-soft-pink)] rounded-2xl retro-shadow-sm flex items-center justify-center"
-						>
-							<FileText class="w-8 h-8 text-[var(--color-charcoal)]" />
-						</div>
-						<div class="space-y-3">
-							<h3 class="text-2xl text-[var(--color-charcoal)] font-medium">3. Drift Reports</h3>
-							<p class="text-[var(--color-text-secondary)] leading-relaxed">
-								Compare any two builds automatically. Get instant reports on visual changes, broken
-								flows, and layout regressions.
-							</p>
-						</div>
-						<div class="pt-4 space-y-2">
-							<div class="flex items-start gap-2 text-sm">
-								<Check class="w-4 h-4 mt-0.5 text-[var(--color-charcoal)] flex-shrink-0" />
-								<span class="text-[var(--color-text-secondary)]">Visual diff detection</span>
-							</div>
-							<div class="flex items-start gap-2 text-sm">
-								<Check class="w-4 h-4 mt-0.5 text-[var(--color-charcoal)] flex-shrink-0" />
-								<span class="text-[var(--color-text-secondary)]">Layout shift analysis</span>
-							</div>
-							<div class="flex items-start gap-2 text-sm">
-								<Check class="w-4 h-4 mt-0.5 text-[var(--color-charcoal)] flex-shrink-0" />
-								<span class="text-[var(--color-text-secondary)]">Broken link alerts</span>
-							</div>
-						</div>
-					</div>
-				</RetroCard>
-			</div>
-		</div>
-	</section>
-
 	<!-- Stats Section -->
-	<section class="py-16 px-8">
+	<section class="py-16 px-8 bg-[var(--color-neutral-gray)]">
 		<div class="max-w-6xl mx-auto">
 			<div use:autoAnimate class="grid grid-cols-1 md:grid-cols-3 gap-8">
 				<div class="retro-shadow rounded-3xl p-8 bg-[var(--color-sky-blue)]">
