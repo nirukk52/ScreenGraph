@@ -16,7 +16,11 @@
     "qa:smoke:frontend": "cd .cursor && task qa:smoke:frontend",
     "qa:smoke:backend": "cd .cursor && task qa:smoke:backend",
     "lint": "cd .cursor && task frontend:lint",
-    "typecheck": "cd .cursor && task frontend:typecheck"
+    "typecheck": "cd .cursor && task frontend:typecheck",
+    "test:e2e": "turbo run test:e2e --filter=screengraph-frontend",
+    "test:e2e:headed": "turbo run test:e2e:headed --filter=screengraph-frontend",
+    "test:e2e:ci": "turbo run test:e2e:ci --filter=screengraph-frontend",
+    "test:e2e:ui": "turbo run test:e2e:ui --filter=screengraph-frontend"
   },
   "devDependencies": {
     "turbo": "^2.6.0"

@@ -27,6 +27,31 @@
     "test": {
       "outputs": []
     },
+    "test:e2e": {
+      "cache": false,
+      "outputs": [
+        "test-results/**",
+        "playwright-report/**"
+      ]
+    },
+    "test:e2e:headed": {
+      "cache": false,
+      "outputs": [
+        "test-results/**",
+        "playwright-report/**"
+      ]
+    },
+    "test:e2e:ci": {
+      "cache": false,
+      "outputs": [
+        "test-results/**",
+        "playwright-report/**"
+      ]
+    },
+    "test:e2e:ui": {
+      "cache": false,
+      "outputs": []
+    },
     "build": {
       "outputs": [
         "dist/**",

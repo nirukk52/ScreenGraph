@@ -1,15 +1,73 @@
 ---
 name: webapp-testing
-description: Playwright-first testing playbook for ScreenGraph. Automate the run page, capture screenshots, verify graph events, and fall back to Cursor browser tools when you need quick manual checks.
+description: Playwright E2E testing for ScreenGraph. Tests use .env configuration (package name is the main key). Automated tests run in pre-push hook. Use Cursor browser tools for quick manual inspection.
 ---
 
 # ScreenGraph Web App Testing (Playwright + Cursor Tools)
 
-This skill consolidates the former `cursor-browser-mastery`, `cursor-chrome-window-mastery`, and legacy webapp testing guidance into a **Playwright-first** workflow. Use Playwright (via MCP or local scripts) for reliable automation, and keep Cursor’s built-in browser tools handy for fast inspection or ad-hoc verification.
+**Updated 2025-11-08**: FR-020 implemented unified Playwright test suite integrated into pre-push hook. All tests use `.env` file as single source of truth.
 
 ---
 
-## 1. Standard Setup (Do This First)
+## 1. Automated E2E Tests (Primary Method)
+
+### Quick Start
+```bash
+# Headed mode (visual debugging with slowMo)
+bun run test:e2e:headed
+
+# CI mode (headless, fast)
+bun run test:e2e:ci
+
+# Interactive UI mode
+bun run test:e2e:ui
+
+# Run from root or frontend directory
+```
+
+### Test Configuration
+- **Package Name**: Read from `VITE_PACKAGE_NAME` in `.env` (currently: `com.jetbrains.kotlinconf`)
+- **Location**: `frontend/tests/e2e/`
+- **Config**: `frontend/playwright.config.ts` (environment-aware)
+- **Helpers**: `frontend/tests/e2e/helpers.ts` (reusable utilities)
+
+### Current Tests
+1. **Landing Page Load** - Verifies frontend health
+2. **Run Page Navigation** - Clicks "Detect My First Drift" → verifies Run Timeline heading
+
+### Pre-Push Hook Integration
+E2E tests run automatically before every push:
+```bash
+git push  # Runs smoke tests + E2E tests automatically
+```
+
+---
+
+## 2. Manual Playwright Testing (For New Tests)
+
+When creating new regression tests, place them in `frontend/tests/e2e/`:
+
+```typescript
+import { test, expect } from "@playwright/test";
+import { TEST_PACKAGE_NAME, TEST_APP_CONFIG } from "./helpers";
+
+test("my new test", async ({ page }) => {
+  await page.goto("/");
+  
+  // Your test logic here
+  // All config comes from .env via helpers
+  console.log(`Testing package: ${TEST_PACKAGE_NAME}`);
+});
+```
+
+**Key Principles:**
+- Use `.env` for all configuration (package name, Appium URL, APK path)
+- Use `helpers.ts` utilities for common operations
+- Write environment-aware tests (work in both headed and headless modes)
+
+---
+
+## 3. Cursor Browser Tools (Quick Inspection)
 1. **Start services**  
    ```bash
    .cursor/commands/start-services

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Husky pre-push hook
-# Runs smoke tests before allowing push
+# Runs smoke tests + E2E tests before allowing push
 
 echo "🧪 Running smoke tests before push (bun run qa:smoke)..."
 echo ""
@@ -9,5 +9,12 @@ echo ""
 bun run qa:smoke || exit 1
 
 echo ""
-echo "✅ All smoke tests passed - proceeding with push"
+echo "🎭 Running E2E tests before push (bun run test:e2e:ci)..."
+echo ""
+
+# Run E2E tests in headless CI mode
+bun run test:e2e:ci || exit 1
+
+echo ""
+echo "✅ All smoke tests and E2E tests passed - proceeding with push"
 
