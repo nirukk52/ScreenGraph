@@ -181,9 +181,9 @@
           <div class="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory">
             {#each phoneScreenshots as screenshot}
               {#if !failedImages.has(screenshot.assetUrl)}
-                <img 
-                  src={screenshot.assetUrl} 
-                  alt="Screenshot {screenshot.position + 1}"
+              <img 
+                src={screenshot.assetUrl} 
+                alt="Screenshot {screenshot.position + 1}"
                   class="h-96 w-auto max-w-sm rounded-lg shadow-lg flex-shrink-0 snap-start object-contain bg-surface-200 dark:bg-surface-800"
                   loading="lazy"
                   crossorigin="anonymous"

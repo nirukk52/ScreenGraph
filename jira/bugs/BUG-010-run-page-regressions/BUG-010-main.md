@@ -2,7 +2,7 @@
 
 > **Line Limit:** 150 lines max (enforced)  
 > **Priority**: P1  
-> **Status**: 🔴 Open
+> **Status**: ✅ RESOLVED (2025-11-08)
 
 ---
 
@@ -57,23 +57,21 @@ The `/run` page has three critical regressions preventing proper visualization o
 
 ---
 
-## Root Cause
-**Investigation required**. Potential causes:
-1. SSE streams not connecting (check Network tab for `/run/stream`, `/graph/stream`)
-2. Backend not publishing events (check `run_event_outbox` table)
-3. Frontend not rendering events (Svelte reactivity issue)
-4. Agent not running (check backend logs for agent activity)
+## Root Cause ✅ IDENTIFIED
 
-**Diagnostic Commands** (see `.playwright-mcp/BUG-010-INVESTIGATION.md`):
-```bash
-# Check SSE streams
-curl -N http://localhost:4000/run/stream/{runId}
+### Issue #1: Graph Projector Cursor Limit Exceeded
+**Cause:** `CURSOR_LIMIT=50` but 75 cursors exist; recent runs (position 51-75) never processed  
+**Impact:** Graph events and screenshots missing for all recent runs  
+**Fix:** Increased `CURSOR_LIMIT` from 50 → 200 in `backend/graph/projector.ts`
 
-# Check backend logs
-task backend:logs | grep -i "sse\|event"
+### Issue #2: Stop Node DB Query Blocking Execution
+**Cause:** Commit `b043afc` added DB query to Stop node that hangs/fails during execution  
+**Impact:** XState machine fails before Stop can complete, no terminal events emitted  
+**Fix:** Removed DB query from `backend/agent/nodes/terminal/Stop/node.ts`  
+**Breaking Commit:** `b043afc` (Nov 7, 5:50 PM)  
+**Regression Window:** Between run `01K9G8YXY6MG7J7875A5AM9Z4H` (success at 5:03 PM) and `01K9GDQF9JQFM8A4Q5WGMARPAT` (failed at 6:26 PM)
 
-# Check browser DevTools → Network tab → filter "stream"
-```
+**See:** `RCA.md` for complete technical analysis
 
 ---
 

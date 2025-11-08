@@ -229,9 +229,107 @@ Reusable helpers live in `./lib/playwright-helpers.ts` (launch settings, safe cl
 
 ---
 
-## 5. References
+## 5. Regression Debugging Playbook (BUG-010 Case Study)
+
+### Systematic RCA for UI Regressions
+
+**Real Example:** Three regressions on `/run` page (Nov 2025)
+- Graph events missing
+- Screenshots not visible  
+- Stop node not executing
+
+**Investigation Flow:**
+
+1. **Visual Comparison**  
+   ```bash
+   # Capture current state
+   browser_take_screenshot({ fullPage: true, filename: "current-state.png" })
+   
+   # Compare with baseline
+   # .playwright-mcp/drift-detection-with-screenshot.png (working)
+   # vs current broken state
+   ```
+
+2. **Browser MCP Diagnostics**  
+   ```text
+   browser_navigate("http://localhost:5173")
+   browser_click("Detect My First Drift")
+   browser_snapshot()  # Check UI tree for missing elements
+   browser_console_messages()  # Catch JS errors
+   browser_network_requests()  # Verify SSE streams
+   ```
+
+3. **Timeline Forensics**  
+   ```bash
+   # Find last successful run
+   bunx tsx backend/scripts/find-completed-runs.ts
+   
+   # Compare with failed run
+   bunx tsx backend/scripts/inspect-run.ts <run_id>
+   
+   # Look for missing events (e.g., Stop node at step 6)
+   ```
+
+4. **Git Bisect**  
+   ```bash
+   # Identify regression window
+   git log --oneline --since="<last_success_time>" --until="<first_failure_time>"
+   
+   # Examine suspect commits
+   git show <commit_hash> --stat
+   git show <commit_hash> <specific_file>
+   ```
+
+5. **Backend State Inspection**  
+   ```bash
+   # Check agent state
+   bunx tsx backend/scripts/check-agent-state.ts <run_id>
+   
+   # Verify graph projector cursor
+   bunx tsx backend/scripts/check-cursor-ordering.ts
+   
+   # Test projector functions in isolation
+   bunx tsx backend/scripts/test-projector.ts <run_id>
+   ```
+
+6. **Root Cause Validation**  
+   - Remove suspect code changes
+   - Restart services
+   - Run fresh test
+   - Compare events sequence with baseline
+
+### Key Diagnostic Scripts Created
+- `backend/scripts/inspect-run.ts` - Full run event timeline
+- `backend/scripts/check-agent-state.ts` - Agent state snapshots
+- `backend/scripts/check-cursor-ordering.ts` - Projector cursor health
+- `backend/scripts/find-completed-runs.ts` - Identify successful runs for comparison
+- `backend/scripts/test-projector.ts` - Isolated projector function testing
+
+### Common Regression Patterns
+| Symptom | Check | Common Cause |
+|---------|-------|--------------|
+| Graph events missing | Cursor limit, projector logs | `CURSOR_LIMIT` too low, cursor stuck |
+| Screenshots not rendering | dataUrl in stream, CORS | Missing field in projection output |
+| Stop node not executing | Agent state, XState logs | Node execution error, budget exhaustion |
+| Run fails prematurely | Worker logs, lease timeout | Database query hangs, lease expired |
+
+### Evidence Collection Checklist
+- [ ] Screenshot comparison (baseline vs current)
+- [ ] Browser console logs
+- [ ] Network tab (SSE streams)
+- [ ] Backend logs (Encore dashboard)
+- [ ] Database state (run_events, outcomes, cursors)
+- [ ] Git diff of regression window
+- [ ] Agent state snapshots
+
+**See:** `jira/bugs/BUG-010-run-page-regressions/RCA.md` for complete case study
+
+---
+
+## 6. References
 - Playwright Docs: https://playwright.dev/docs/intro  
 - Encore/Svelte debugging: see `backend_coding_rules.mdc` and `frontend_engineer.mdc`  
 - Automation commands: `.cursor/commands/start-services`, `.cursor/commands/run-default-test`, `task founder:rules:check`
+- BUG-010 RCA: `jira/bugs/BUG-010-run-page-regressions/RCA.md`
 
-Use this playbook whenever you need reproducible UI testing. Playwright gives you deterministic coverage; Cursor’s tools remain on standby for exploratory analysis.
+Use this playbook whenever you need reproducible UI testing. Playwright gives you deterministic coverage; Cursor's tools remain on standby for exploratory analysis.

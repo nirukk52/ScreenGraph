@@ -16,7 +16,7 @@ import type {
 } from "./types";
 
 const POLL_INTERVAL_MS = 300;
-const CURSOR_LIMIT = 50;
+const CURSOR_LIMIT = 200; // Increased from 50 to handle more concurrent runs
 const HYDRATE_LIMIT = 20;
 const EVENT_BATCH_SIZE = 100;
 

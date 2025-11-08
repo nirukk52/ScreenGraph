@@ -51,34 +51,14 @@ export async function stop(
     }
   });
 
-  // Query actual discovered screens from graph_persistence_outcomes
-  const discoveredScreensRows = await db.query<{ count: number }>`
-    SELECT COUNT(DISTINCT screen_id) as count
-    FROM graph_persistence_outcomes
-    WHERE run_id = ${input.runId}
-      AND outcome_kind = 'discovered'
-  `;
-
-  let actualDiscoveredScreens = 0;
-  for await (const row of discoveredScreensRows) {
-    actualDiscoveredScreens = row.count;
-  }
+  // Use metrics from input (DB query removed to fix regression)
+  const correctedMetrics = input.finalRunMetrics;
 
   logger.info("Stop node details", {
-    actualDiscoveredScreens,
-    reportedScreens: input.finalRunMetrics.uniqueScreensDiscoveredCount,
-    totalIterationsExecuted: input.finalRunMetrics.totalIterationsExecuted,
-    uniqueActionsPersistedCount: input.finalRunMetrics.uniqueActionsPersistedCount,
-    runDurationInMilliseconds: input.finalRunMetrics.runDurationInMilliseconds,
+    metrics: correctedMetrics,
     stepOrdinal: input.stepOrdinal,
     iterationOrdinalNumber: input.iterationOrdinalNumber,
   });
-
-  // Override the counter with actual database count
-  const correctedMetrics = {
-    ...input.finalRunMetrics,
-    uniqueScreensDiscoveredCount: actualDiscoveredScreens,
-  };
 
   const output: StopOutput = {
     runId: input.runId,

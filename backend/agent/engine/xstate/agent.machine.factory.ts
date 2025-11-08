@@ -77,11 +77,17 @@ export class AgentMachineFactory {
         clearPendingStop: assign(() => ({ pendingStop: null } satisfies Partial<AgentMachineContext>)),
         
         // Stores the execution result and updates machine context with new state
-        storeExecutionResult: assign(({ event }) => {
+        storeExecutionResult: assign(({ event, context }) => {
           const output = "output" in event ? (event.output as RunNodeActorOutput | undefined) : undefined;
           if (!output) {
+            dependencies.logger.warn("storeExecutionResult: no output in event", { event });
             return {} satisfies Partial<AgentMachineContext>;
           }
+          dependencies.logger.info("storeExecutionResult", {
+            nodeName: output.execution.nodeName,
+            decision: output.decision.kind,
+            nextNode: output.decision.kind === "advance" ? output.decision.nextNode : null,
+          });
           return {
             agentState: output.nextState,
             latestExecution: output.execution,
@@ -321,6 +327,8 @@ export class AgentMachineFactory {
         nodeName: executionResult.execution.nodeName,
         outcome: executionResult.execution.outcome,
         decision: decision.kind,
+        nextNode: decision.kind === "advance" ? decision.nextNode : null,
+        budgetExhausted: budgetStopReason !== null,
       });
 
       return {
