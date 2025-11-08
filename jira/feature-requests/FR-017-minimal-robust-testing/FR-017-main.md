@@ -149,7 +149,7 @@ Note: Use Bun (`bun add -d ...`) and keep versions pinned via lockfile.
 
 ### Phase 3 — Backend HTTP Checks (thin API smoke)
 - Add Supertest as devDep in `backend/` and create a test that:
-  - Starts Encore locally (reuse `@start` or dedicated script) OR expects it running.
+  - Starts Encore locally (reuse `@start-services` or dedicated script) OR expects it running.
   - Hits `GET /appinfo/com.pinterest` and asserts 200 + schema with Zod.
 - Document how to run this in CI (separate job or before E2E).
 
@@ -190,10 +190,10 @@ Note: Use Bun (`bun add -d ...`) and keep versions pinned via lockfile.
 
 ## Release Plan (PROC-001)
 - Preconditions: `@verify-worktree-isolation`, green CI.
-- Handoff: run `@update_handoff` and include new QA tasks and gating summary.
+- Handoff: run `@update-handoff` and include new QA tasks and gating summary.
 
 ## Worktree Setup Quicklinks
 - Isolation: `@verify-worktree-isolation`
-- Start services: `@start`
+- Start services: `@start-services`
 - Frontend dev: `cd frontend && bun run dev`
 - Backend: `cd backend && encore run`

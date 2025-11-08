@@ -1,10 +1,81 @@
 # CLAUDE.md - Project Quick Reference
 
 > **Purpose**: This document is personally managed by the founder. Keep it short, clear, to the point with bulletpoints/surgical edits.
+
+---
+
+## 📚 Documentation Hierarchy & Usage
+
+### 1. `.cursor/rules/founder_rules.mdc` — Non-Negotiable Standards
+**What**: Immutable development rules enforced across all agents/developers  
+**Scope**: Architecture boundaries, naming conventions, type safety, American spelling  
+**Usage**: Reference when making ANY code changes to ensure compliance
+
+**Examples:**
+- ✅ Must use `calculateTotalPrice()` not `handle()`
+- ✅ Backend/frontend completely independent (no shared node_modules)
+- ✅ No `any` types, no `console.log`, American English only
+
+---
+
+### 2. `CLAUDE.md` (This File) — Project Quick Reference
+**What**: Project-specific configuration, ports, commands  
+**Scope**: Environment values, common commands, troubleshooting  
+**Usage**: Quick lookup for "how do I run X?" or "what port is Y?"
+
+**Examples:**
+- Backend runs on `http://localhost:4000`
+- Start services: `bun run dev` or `cd .cursor && task founder:servers:start`
+- Regenerate client: `task founder:workflows:regen-client`
+
+---
+
+### 3. `.cursor/commands/` (Taskfile) — Deterministic Automation
+**What**: Shell scripts and Task commands for repeatable workflows  
+**Scope**: Dev server management, database operations, testing, deployment  
+**Usage**: Run via `cd .cursor && task <command>` for any automation
+
+**Examples:**
+```bash
+task founder:servers:start     # Start backend + frontend with health checks
+task backend:db:migrate        # Run database migrations
+task qa:smoke:all              # Run all smoke tests
+```
+
+---
+
+### 4. `.claude-skills/` — AI Conversational Playbooks
+**What**: Multi-step procedures for AI agents to orchestrate complex tasks  
+**Scope**: Debugging workflows, skill creation, analysis procedures  
+**Usage**: Say to Claude: "Run smoke tests" or "Debug the backend issue"
+
+**Types:**
+- **Task-based** (30 skills): Call Task commands + MCP tools (`skills.json`)
+- **Knowledge-based** (5 skills): Multi-phase debugging procedures (`SKILL.md`)
+
+**Examples:**
+- Say: "Run smoke tests" → Executes `task qa:smoke:all`
+- Say: "Debug backend" → Follows 10-phase Encore.ts debugging procedure
+- Say: "Create a skill for X" → Runs skill-creator workflow
+
+---
+
+## When to Use What?
+
+| Scenario | Use |
+|----------|-----|
+| "What naming convention?" | `.cursor/rules/founder_rules.mdc` |
+| "What port is frontend?" | `CLAUDE.md` |
+| "Start the dev servers" | `.cursor/commands/` (Task) |
+| "Debug this complex issue" | `.claude-skills/` |
+| "Can I use `any` type?" | `.cursor/rules/founder_rules.mdc` (NO!) |
+| "Regenerate API client" | `CLAUDE.md` → `task founder:workflows:regen-client` |
+| "Run database migration" | `.cursor/commands/` → `task backend:db:migrate` |
+| "Multi-step debugging help" | `.claude-skills/backend-debugging` |
 > 
 > **Scope**: Project-specific configurations and quick-start commands ONLY. DO NOT duplicate content from `.cursor/rules/*.mdc`.
 > 
-> **For comprehensive rules, see**: `.cursor/rules/founder_rules.mdc`, `backend_engineer.mdc`, `frontend_engineer.mdc`, `backend_llm_instructions.mdc`
+> **For comprehensive rules, see**: `.cursor/rules/founder_rules.mdc`, `backend_coding_rules.mdc`, `frontend_engineer.mdc`, `frontend_llm_instruction.mdc`
 
 ---
 
@@ -56,8 +127,8 @@ task --list
 
 ### 3. Legacy Commands (Still Work)
 ```bash
-@start      # Starts both backend + frontend
-@stop       # Stops all services
+@start-services      # Starts both backend + frontend
+@stop-services       # Stops all services
 ```
 
 ### 4. Generate Encore Client
@@ -127,11 +198,11 @@ See: `.claude-skills/skills.json` for 33 available skills
 
 **Skill Types:**
 - **Task-based** (30 skills): Automation workflows in `skills.json`
-- **Knowledge-based** (5 skills): Debugging procedures with `SKILL.md` files
+- **Knowledge-based** (5 skills): Playbooks captured in `SKILL.md`
   - `backend-debugging` - 10-phase Encore.ts debugging
   - `frontend-debugging` - 10-phase SvelteKit debugging
-  - `cursor-browser-mastery` - Browser tool comprehensive guide
-  - `cursor-chrome-window-mastery` - Window management
+  - `webapp-testing` - Playwright-first ScreenGraph testing playbook (includes Cursor tooling appendix)
+  - `graphiti-mcp-usage` - Graphiti knowledge-management workflow
   - `skill-creator` - Create new skills workflow
 
 **Creating New Skills:**
@@ -381,9 +452,9 @@ encore run
 - Quick troubleshooting for common issues
 
 ### ❌ Do NOT Add to CLAUDE.md
-- General Encore.ts concepts (→ `backend_llm_instructions.mdc`)
+- General Encore.ts concepts (→ `backend_coding_rules.mdc`)
 - General coding principles (→ `founder_rules.mdc`)
-- Backend patterns/architecture (→ `backend_engineer.mdc`)
+- Backend patterns/architecture (→ `backend_coding_rules.mdc`)
 - Frontend patterns/architecture (→ `frontend_engineer.mdc`)
 - Philosophy or "why" explanations (→ cursor rules)
 
@@ -393,3 +464,4 @@ encore run
 - Update immediately when project config changes
 - Remove outdated entries proactively
 - Link to cursor rules for detailed explanations
+- Enforce naming conventions: rule files must end `_rules`, skill artifacts end `_skill`, and `.cursor/commands` entries stay natural-language headlines of five words or fewer.

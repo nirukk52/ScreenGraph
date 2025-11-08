@@ -1,0 +1,29 @@
+#!/bin/bash
+# Stop All ScreenGraph Services
+#
+# Usage: @stop-services in Cursor chat
+
+set -e
+
+echo "🛑 Stopping ScreenGraph services..."
+echo ""
+
+# Kill backend
+if lsof -ti:4000 > /dev/null 2>&1; then
+  lsof -ti:4000 | xargs kill -9
+  echo "   ✓ Backend stopped (port 4000)"
+else
+  echo "   - Backend not running"
+fi
+
+# Kill frontend
+if lsof -ti:5173 > /dev/null 2>&1; then
+  lsof -ti:5173 | xargs kill -9
+  echo "   ✓ Frontend stopped (port 5173)"
+else
+  echo "   - Frontend not running"
+fi
+
+echo ""
+echo "✅ All services stopped"
+

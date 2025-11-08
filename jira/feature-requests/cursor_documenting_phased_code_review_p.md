@@ -11,7 +11,7 @@ Context:
 
 ## 📋 Quick Summary
 
-Documented a phased code review plan for `@update-bug-doc`, `@update-feature-doc`, and `@update-tech-debt` to add validation, confirmation, backups, safety, and a shared library.
+Documented a phased code review plan for `@update-bug-doc`, `@update-feature-doc`, and `@update-tech-debt-doc` to add validation, confirmation, backups, safety, and a shared library.
 
 ## 📍 Primary Handoff
 
@@ -37,7 +37,7 @@ Documented a phased code review plan for `@update-bug-doc`, `@update-feature-doc
 
 - `.cursor/commands/update-feature-doc`
 
-- `.cursor/commands/update-tech-debt`
+- `.cursor/commands/update-tech-debt-doc`
 
 - (planned) `.cursor/commands/lib/handoff-common.sh`
 
@@ -93,7 +93,7 @@ only change .md files
 
 
 
-@backend_engineer.mdc  @frontend_engineer.mdc 
+@backend_coding_rules.mdc  @frontend_engineer.mdc
 
 
 

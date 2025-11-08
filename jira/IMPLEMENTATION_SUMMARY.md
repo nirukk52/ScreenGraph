@@ -22,9 +22,9 @@
 ### 2. Automation Commands (`.cursor/commands/`)
 
 Three executable bash scripts:
-- `create-feature` - Creates feature request folders
-- `create-bug` - Creates bug report folders
-- `create-techdebt` - Creates tech debt folders
+- `create-feature-doc` - Creates feature request folders
+- `create-bug-doc` - Creates bug report folders
+- `create-tech-debt-doc` - Creates tech debt folders
 
 Each command:
 - Prompts for ID and title
@@ -74,17 +74,17 @@ jira/
 
 1. **When you discover a feature need:**
    ```bash
-   @create-feature
+   @create-feature-doc
    ```
 
 2. **When you find a bug:**
    ```bash
-   @create-bug
+   @create-bug-doc
    ```
 
 3. **When you identify tech debt:**
    ```bash
-   @create-techdebt
+   @create-tech-debt-doc
    ```
 
 ### Workflow
@@ -210,7 +210,7 @@ Each type follows a 4-step workflow:
 
 ## 🧪 Testing Confirmed
 
-✅ `create-feature` command tested and working  
+✅ `create-feature-doc` command tested and working  
 ✅ Folder creation successful  
 ✅ Template copying successful  
 ✅ Placeholder replacement successful  

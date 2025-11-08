@@ -24,13 +24,13 @@ Delete this example and create your own:
 
 ```bash
 # For features
-@create-feature
+@create-feature-doc
 
 # For bugs
-@create-bug
+@create-bug-doc
 
 # For tech debt
-@create-techdebt
+@create-tech-debt-doc
 ```
 
 See `jira/README.md` for complete documentation.

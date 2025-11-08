@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "description": "Claude Skills for ScreenGraph unified automation system. Automatically pick based on the Task you are doing!",
-  "last_updated": "2025-11-07",
+  "last_updated": "2025-11-08",
   "skills": [
     {
       "name": "start-dev-environment",
@@ -243,7 +243,7 @@
       "name": "backend-debugging",
       "description": "Systematic 10-phase debugging procedure for Encore.ts backend issues including service errors, API failures, database queries, PubSub, and performance bottlenecks",
       "type": "knowledge",
-      "skill_file": "backend-debugging/SKILL.md",
+      "skill_file": "backend-debugging_skill/SKILL.md",
       "category": "debugging",
       "status": "active"
     },
@@ -251,7 +251,7 @@
       "name": "frontend-debugging",
       "description": "Systematic 10-phase debugging procedure for SvelteKit 2 + Svelte 5 frontend issues including component rendering, routing, runes errors, API client failures, and build problems",
       "type": "knowledge",
-      "skill_file": "frontend-debugging/SKILL.md",
+      "skill_file": "frontend-debugging_skill/SKILL.md",
       "category": "debugging",
       "status": "active"
     },
@@ -259,7 +259,7 @@
       "name": "frontend-development",
       "description": "Comprehensive guide for SvelteKit 2 + Svelte 5 development including runes, routing, API integration, SSR/CSR, and best practices for building modern web applications",
       "type": "knowledge",
-      "skill_file": "frontend-development/SKILL.md",
+      "skill_file": "frontend-development_skill/SKILL.md",
       "category": "development",
       "status": "active"
     },
@@ -267,31 +267,15 @@
       "name": "skill-creator",
       "description": "Guide for creating effective skills. Use when creating new skills or updating existing skills to extend Claude's capabilities with specialized knowledge, workflows, or tool integrations",
       "type": "knowledge",
-      "skill_file": "skill-creator/SKILL.md",
+      "skill_file": "skill-creator_skill/SKILL.md",
       "category": "skill-management",
       "status": "active"
     },
     {
-      "name": "cursor-browser-mastery",
-      "description": "Complete guide to Cursor's built-in @Browser tool for inspecting, debugging, and interacting with web applications. Essential for frontend debugging, UI testing, and visual verification",
-      "type": "knowledge",
-      "skill_file": "cursor-browser-mastery/SKILL.md",
-      "category": "debugging",
-      "status": "active"
-    },
-    {
-      "name": "cursor-chrome-window-mastery",
-      "description": "Expert at using Cursor's Google Chrome mode (Playwright-controlled isolated window) for clean-state testing and verification. Specializes in ScreenGraph application testing including run lifecycle, WebSocket debugging, and graph visualization",
-      "type": "knowledge",
-      "skill_file": "cursor-chrome-window-mastery/SKILL.md",
-      "category": "debugging",
-      "status": "active"
-    },
-    {
       "name": "webapp-testing",
-      "description": "Toolkit for testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing screenshots, and viewing browser logs",
+      "description": "Playwright-first ScreenGraph testing playbook covering automated run flow verification and optional Cursor browser tooling",
       "type": "knowledge",
-      "skill_file": "webapp-testing/SKILL.md",
+      "skill_file": "webapp-testing_skill/SKILL.md",
       "category": "testing",
       "status": "active"
     },
@@ -299,7 +283,7 @@
       "name": "theme-factory",
       "description": "Toolkit for styling artifacts with themes. Apply 10 pre-set themes with colors/fonts to slides, docs, reports, HTML pages, or generate new themes on-the-fly",
       "type": "knowledge",
-      "skill_file": "theme-factory/SKILL.md",
+      "skill_file": "theme-factory_skill/SKILL.md",
       "category": "design",
       "status": "active"
     },
@@ -307,7 +291,7 @@
       "name": "brand-guidelines",
       "description": "Applies Anthropic's official brand colors and typography to artifacts. Use when brand colors, style guidelines, visual formatting, or company design standards apply",
       "type": "knowledge",
-      "skill_file": "brand-guidelines/SKILL.md",
+      "skill_file": "brand-guidelines_skill/SKILL.md",
       "category": "design",
       "status": "active"
     },
@@ -315,8 +299,96 @@
       "name": "mcp-builder",
       "description": "Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services. Supports Python (FastMCP) and Node/TypeScript (MCP SDK)",
       "type": "knowledge",
-      "skill_file": "mcp-builder/SKILL.md",
+      "skill_file": "mcp-builder_skill/SKILL.md",
       "category": "development",
+      "status": "active"
+    },
+    {
+      "name": "algorithmic-art",
+      "description": "Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this when users request creating art using code, generative art, algorithmic art, flow fields, or particle systems",
+      "type": "knowledge",
+      "skill_file": "algorithmic-art_skill/SKILL.md",
+      "category": "creative",
+      "status": "active"
+    },
+    {
+      "name": "artifacts-builder",
+      "description": "Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web technologies (React, Tailwind CSS, shadcn/ui). Use for complex artifacts requiring state management, routing, or shadcn/ui components",
+      "type": "knowledge",
+      "skill_file": "artifacts-builder_skill/SKILL.md",
+      "category": "development",
+      "status": "active"
+    },
+    {
+      "name": "canvas-design",
+      "description": "Create beautiful visual art in .png and .pdf documents using design philosophy. Use when creating posters, art, designs, or other static visual pieces",
+      "type": "knowledge",
+      "skill_file": "canvas-design_skill/SKILL.md",
+      "category": "creative",
+      "status": "active"
+    },
+    {
+      "name": "docx",
+      "description": "Comprehensive document creation, editing, and analysis with support for tracked changes, comments, formatting preservation, and text extraction. Use when working with professional Word documents",
+      "type": "knowledge",
+      "skill_file": "document-skills_skill/docx/SKILL.md",
+      "category": "documents",
+      "status": "active"
+    },
+    {
+      "name": "pdf",
+      "description": "Comprehensive PDF manipulation toolkit for extracting text and tables, creating new PDFs, merging/splitting documents, and handling forms. Use when working with PDF documents",
+      "type": "knowledge",
+      "skill_file": "document-skills_skill/pdf/SKILL.md",
+      "category": "documents",
+      "status": "active"
+    },
+    {
+      "name": "pptx",
+      "description": "Presentation creation, editing, and analysis. Use when working with PowerPoint presentations for creating slides, modifying content, working with layouts, or adding comments",
+      "type": "knowledge",
+      "skill_file": "document-skills_skill/pptx/SKILL.md",
+      "category": "documents",
+      "status": "active"
+    },
+    {
+      "name": "xlsx",
+      "description": "Comprehensive spreadsheet creation, editing, and analysis with support for formulas, formatting, data analysis, and visualization. Use when working with Excel spreadsheets",
+      "type": "knowledge",
+      "skill_file": "document-skills_skill/xlsx/SKILL.md",
+      "category": "documents",
+      "status": "active"
+    },
+    {
+      "name": "internal-comms",
+      "description": "Resources for writing internal communications using company formats. Use for status reports, leadership updates, newsletters, FAQs, incident reports, and project updates",
+      "type": "knowledge",
+      "skill_file": "internal-comms_skill/SKILL.md",
+      "category": "communication",
+      "status": "active"
+    },
+    {
+      "name": "graphiti-mcp-usage",
+      "description": "Guidance for using Graphiti MCP tools to search existing knowledge and capture new preferences, procedures, and facts",
+      "type": "knowledge",
+      "skill_file": "graphiti-mcp-usage_skill/SKILL.md",
+      "category": "graphiti",
+      "status": "active"
+    },
+    {
+      "name": "slack-gif-creator",
+      "description": "Toolkit for creating animated GIFs optimized for Slack with size constraints and composable animation primitives. Use when creating animated GIFs or emoji animations for Slack",
+      "type": "knowledge",
+      "skill_file": "slack-gif-creator_skill/SKILL.md",
+      "category": "creative",
+      "status": "active"
+    },
+    {
+      "name": "template-skill",
+      "description": "Basic template to use as a starting point for creating new custom skills. Use when you need a scaffold for a new skill",
+      "type": "knowledge",
+      "skill_file": "template_skill/SKILL.md",
+      "category": "skill-management",
       "status": "active"
     }
   ],
@@ -328,6 +400,10 @@
     "skill-management": "Create, validate, and package Claude skills",
     "debugging": "Systematic debugging procedures and browser tools",
     "design": "UI/UX design, branding, and theming tools",
+    "creative": "Generative art, design, animations, and creative content",
+    "documents": "Document creation and manipulation (Word, PDF, PowerPoint, Excel)",
+    "communication": "Internal and external communication templates and tools",
+    "graphiti": "Graphiti MCP workflows for knowledge graph maintenance and retrieval",
     "help": "Help and documentation"
   },
   "usage": {

@@ -226,6 +226,13 @@ cd frontend && bun run dev
 
 **NEVER run from root** — always `cd` into service directory
 
+**Skills vs Commands:**
+- Deterministic automation lives in `.cursor/commands` and underlying scripts; treat them as the single source for repeatable shell workflows.
+- `.claude-skills` entries describe conversational playbooks for Claude/or any other coding agent (Like You); they may call Task commands and MCP tools, but their job is human-facing orchestration and analysis.
+- Add new rules about skill vs command usage here as soon as a workflow becomes canonical so the whole team stays aligned.
+- Rule definition files must end with `_rules`; skill directories must end with `_skill` (the internal `SKILL.md` stays as-is); Task command descriptions in `.cursor/commands` must be natural language phrases of five words or fewer.
+- If suffixing a document or skill cleanly isn’t possible, fold its content into the appropriate consolidated artifact instead of forcing an exception.
+
 ---
 
 ### 🌐 Build & Deployment

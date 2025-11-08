@@ -44,9 +44,9 @@ Three cursor commands are available in `.cursor/commands/`:
 
 ### 1. Create Feature Request
 ```bash
-# In Cursor, mention: @create-feature
+# In Cursor, mention: @create-feature-doc
 # Or run directly:
-.cursor/commands/create-feature
+.cursor/commands/create-feature-doc
 ```
 **Prompts for:**
 - Feature ID (e.g., `FR-012`)
@@ -60,9 +60,9 @@ Three cursor commands are available in `.cursor/commands/`:
 
 ### 2. Create Bug Report
 ```bash
-# In Cursor, mention: @create-bug
+# In Cursor, mention: @create-bug-doc
 # Or run directly:
-.cursor/commands/create-bug
+.cursor/commands/create-bug-doc
 ```
 **Prompts for:**
 - Bug ID (e.g., `BUG-003`)
@@ -76,9 +76,9 @@ Three cursor commands are available in `.cursor/commands/`:
 
 ### 3. Create Tech Debt
 ```bash
-# In Cursor, mention: @create-techdebt
+# In Cursor, mention: @create-tech-debt-doc
 # Or run directly:
-.cursor/commands/create-techdebt
+.cursor/commands/create-tech-debt-doc
 ```
 **Prompts for:**
 - Tech Debt ID (e.g., `TD-001`)
@@ -96,7 +96,7 @@ Three cursor commands are available in `.cursor/commands/`:
 
 1. **Discovery**: When you discover a feature need
    ```bash
-   @create-feature
+   @create-feature-doc
    # Enter: FR-012, api-rate-limiting
    ```
 
@@ -122,7 +122,7 @@ Three cursor commands are available in `.cursor/commands/`:
 
 1. **Discovery**: When you discover a bug
    ```bash
-   @create-bug
+   @create-bug-doc
    # Enter: BUG-003, api-timeout-error
    ```
 
@@ -148,7 +148,7 @@ Three cursor commands are available in `.cursor/commands/`:
 
 1. **Discovery**: When you identify tech debt
    ```bash
-   @create-techdebt
+   @create-tech-debt-doc
    # Enter: TD-001, refactor-logging-layer
    ```
 
@@ -233,7 +233,7 @@ Three cursor commands are available in `.cursor/commands/`:
 The commands integrate seamlessly with Cursor's @ system:
 
 1. When you discover something during development
-2. Type `@create-feature`, `@create-bug`, or `@create-techdebt`
+2. Type `@create-feature-doc`, `@create-bug-doc`, or `@create-tech-debt-doc`
 3. Answer the prompts
 4. Folder and files are created instantly
 5. Start documenting immediately
@@ -243,7 +243,7 @@ The commands integrate seamlessly with Cursor's @ system:
 ### Scenario 1: New Feature Discovered
 ```
 Developer: "We need rate limiting on the API"
-→ @create-feature
+→ @create-feature-doc
 → FR-013, api-rate-limiting
 → Fill out FR-013-main.md with requirements
 → Start development
@@ -254,7 +254,7 @@ Developer: "We need rate limiting on the API"
 ### Scenario 2: Bug Found
 ```
 QA: "Graph projection failing on large datasets"
-→ @create-bug
+→ @create-bug-doc
 → BUG-004, graph-projection-failure
 → Fill out BUG-004-main.md with repro steps
 → Update BUG-004-status.md during investigation
@@ -264,7 +264,7 @@ QA: "Graph projection failing on large datasets"
 ### Scenario 3: Tech Debt Identified
 ```
 Engineer: "Logging layer is inconsistent and hard to maintain"
-→ @create-techdebt
+→ @create-tech-debt-doc
 → TD-002, standardize-logging
 → Fill out TD-002-main.md with current pain points
 → Update TD-002-status.md during refactor

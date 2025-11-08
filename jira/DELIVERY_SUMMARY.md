@@ -25,9 +25,9 @@
 
 ### 2. Automation Commands (3 files)
 
-- ✅ `.cursor/commands/create-feature` - Creates feature folders
-- ✅ `.cursor/commands/create-bug` - Creates bug folders  
-- ✅ `.cursor/commands/create-techdebt` - Creates tech debt folders
+- ✅ `.cursor/commands/create-feature-doc` - Creates feature folders
+- ✅ `.cursor/commands/create-bug-doc` - Creates bug folders  
+- ✅ `.cursor/commands/create-tech-debt-doc` - Creates tech debt folders
 
 **All commands are:**
 - ✅ Executable (chmod +x applied)
@@ -60,7 +60,7 @@ You find: "We need API rate limiting"
 ### Step 2: Create Folder
 In Cursor, type:
 ```
-@create-feature
+@create-feature-doc
 ```
 
 ### Step 3: Answer Prompts
@@ -142,7 +142,7 @@ Each retro template includes:
 
 ## 🤖 Command Features
 
-All three commands (`create-feature`, `create-bug`, `create-techdebt`):
+All three commands (`create-feature-doc`, `create-bug-doc`, `create-tech-debt-doc`):
 
 ✅ **Interactive** - Prompts for ID and title  
 ✅ **Validated** - Checks for required inputs  
@@ -205,9 +205,9 @@ Everything is:
 **You can start using it immediately:**
 
 ```bash
-@create-feature  # For new features
-@create-bug      # For bugs
-@create-techdebt # For tech debt
+@create-feature-doc  # For new features
+@create-bug-doc      # For bugs
+@create-tech-debt-doc # For tech debt
 ```
 
 ---
@@ -220,9 +220,9 @@ Everything is:
 - `jira/tech-debt/TEMPLATE-*.md`
 
 ### Commands
-- `.cursor/commands/create-feature`
-- `.cursor/commands/create-bug`
-- `.cursor/commands/create-techdebt`
+- `.cursor/commands/create-feature-doc`
+- `.cursor/commands/create-bug-doc`
+- `.cursor/commands/create-tech-debt-doc`
 
 ### Documentation
 - `jira/README.md` (start here)
@@ -252,5 +252,5 @@ Everything is:
 **Documented**: ✅ YES  
 **Ready to Use**: ✅ YES  
 
-**Next Step**: Try `@create-feature` and create your first feature folder! 🚀
+**Next Step**: Try `@create-feature-doc` and create your first feature folder! 🚀
 

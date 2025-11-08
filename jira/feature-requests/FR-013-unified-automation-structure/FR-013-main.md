@@ -636,7 +636,7 @@ console.log('✅ All founder rules passed\n');
       "category": "quality"
     },
     {
-      "name": "create-feature-request",
+      "name": "create-feature-doc",
       "description": "Create new feature request folder with templates",
       "command": "task founder:jira:new-feature",
       "category": "project-management"
@@ -679,11 +679,11 @@ console.log('✅ All founder rules passed\n');
 - **Preconditions:**
   - [x] `@verify-worktree-isolation` passes
   - [ ] All 6 phases complete
-  - [ ] `@test-default-run` passes on this worktree
+  - [ ] `@run-default-test` passes on this worktree
   - [ ] Team reviewed and approved new structure
   - [ ] Documentation complete
 - **Handoff:**
-  - After merge to main, run `@update_handoff` and choose "Production Release Update"
+  - After merge to main, run `@update-handoff` and choose "Production Release Update"
 - **Notes:**
   - This is infrastructure change - deploy during low-traffic window
   - Monitor first few commits/pushes for hook issues
@@ -694,5 +694,5 @@ console.log('✅ All founder rules passed\n');
 - **Isolation**: `@verify-worktree-isolation`
 - **Start Backend**: `./scripts/dev-backend.sh`
 - **Start Frontend**: `./scripts/dev-frontend.sh`
-- **Smoke Test**: `@test-default-run`
+- **Smoke Test**: `@run-default-test`
 

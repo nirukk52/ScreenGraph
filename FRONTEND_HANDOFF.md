@@ -44,7 +44,7 @@ This document is the single place where frontend agents leave status for each ot
   - `frontend/src/lib/api.ts` (added streamGraphEvents function)
   - `frontend/src/routes/run/[id]/+page.svelte` (integrated graph visualization)
   - `frontend/src/lib/components/index.ts` (exported ScreenGraph component)
-  - `frontend/.claude-skills/frontend-debugging/SKILL.md` (new - systematic debugging)
+  - `.claude-skills/frontend-debugging_skill/SKILL.md` (new - systematic debugging)
 
 - **Work status rating (out of 5)**: 3
 
@@ -56,8 +56,8 @@ This document is the single place where frontend agents leave status for each ot
   - Collaboration Pattern Full Stack Debugging: `queued-position-3`
 
 - **Related docs**:
-  - `frontend/.claude-skills/frontend-debugging/SKILL.md` (systematic debugging procedures)
-  - `backend/.claude-skills/backend-debugging/SKILL.md` (backend debugging procedures)
+  - `.claude-skills/frontend-debugging_skill/SKILL.md` (systematic debugging procedures)
+  - `.claude-skills/backend-debugging_skill/SKILL.md` (backend debugging procedures)
   - `jira/feature-requests/FR-009-graph-stream-endpoint.md` (backend implementation complete)
 
 - **Notes for next agent**:
@@ -94,7 +94,7 @@ This document is the single place where frontend agents leave status for each ot
 
 - **Related docs**:
   - `jira/feature-requests/FR-009-graph-stream-endpoint.md`
-  - `frontend/.claude-skills/frontend-debugging/SKILL.md`
+  - `.claude-skills/frontend-debugging_skill/SKILL.md`
 
 - **Notes for next agent**:
   - Backend ports 4000/9400 have been closed; start Docker, then run backend again

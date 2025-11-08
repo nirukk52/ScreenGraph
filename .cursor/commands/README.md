@@ -12,11 +12,11 @@ Update handoff for FR/BUG/TD/CHORE item. Interactive prompts.
 update-handoff FR-015
 ```
 
-### `update-handoff-quick [ITEM-ID]`
+### `quick-update-handoff [ITEM-ID]`
 Fast handoff (30s). Auto-detects item from git branch/files.
 ```bash
-update-handoff-quick        # Auto-detect
-update-handoff-quick FR-015 # Explicit
+quick-update-handoff        # Auto-detect
+quick-update-handoff FR-015 # Explicit
 ```
 
 ### `update-status [ITEM-ID]`
@@ -35,9 +35,9 @@ update-main FR-015 "Added API endpoint"
 
 ## Item Creation
 
-- `create-feature` - Create FR-XXX
-- `create-bug` - Create BUG-XXX
-- `create-techdebt` - Create TD-XXX
+- `create-feature-doc` - Create FR-XXX
+- `create-bug-doc` - Create BUG-XXX
+- `create-tech-debt-doc` - Create TD-XXX
 - `create-chore` - Create CHORE-XXX (NEW)
 
 ---
@@ -54,8 +54,8 @@ validate-docs
 
 ## Service Commands
 
-- `start` - Start backend + frontend
-- `stop` - Stop all services
+- `start-services` - Start backend + frontend
+- `stop-services` - Stop all services
 
 ---
 
@@ -63,8 +63,6 @@ validate-docs
 
 Old commands moved to `archive/`:
 - `verify-worktree-isolation` (deprecated)
-- `update_handoff` / `update_handoff_quick` (replaced)
-- `test-default-run` (moved to automation/scripts/)
 
 ---
 

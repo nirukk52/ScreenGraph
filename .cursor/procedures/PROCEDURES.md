@@ -81,7 +81,7 @@ Standardize the release flow to production ensuring isolation, reproducibility, 
      - Verify WebSocket/stream connects
      - Confirm at least one screen discovered
 6) Handoff and docs
-   - Run `@update_handoff` and select “Production Release Update”
+   - Run `@update-handoff` and select “Production Release Update”
    - Paste Release Notes (see template below)
 
 ### Verification (must be true)
@@ -124,8 +124,8 @@ Use full `update-handoff` for production releases or major milestones.
 
 ### Steps
 1) Ensure you're working on a tracked item (FR/BUG/TD/CHORE)
-2) Run: `update-handoff-quick [ITEM-ID]`
-   - Or just `update-handoff-quick` to auto-detect from git
+2) Run: `quick-update-handoff [ITEM-ID]`
+   - Or just `quick-update-handoff` to auto-detect from git
 3) Answer prompts:
    - What are you doing? (1 line)
    - Work rating (0-5)
@@ -186,9 +186,9 @@ Standardize creation of features, bugs, tech debt, and chores.
 ### Steps
 1) Choose appropriate creation command:
    ```bash
-   create-feature    # For FR-XXX
-   create-bug        # For BUG-XXX
-   create-techdebt   # For TD-XXX
+   create-feature-doc    # For FR-XXX
+   create-bug-doc        # For BUG-XXX
+   create-tech-debt-doc   # For TD-XXX
    create-chore      # For CHORE-XXX (NEW)
    ```
 2) Follow prompts to fill in details

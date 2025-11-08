@@ -149,8 +149,7 @@ This document is the single place where agents leave status for each other. Alwa
 
 - **Modules I am touching**:
   - `ARCHITECTURE_REVIEW.md`
-  - `.claude-skills/cursor-browser-mastery/SKILL.md`
-  - `.claude-skills/cursor-chrome-window-mastery/SKILL.md`
+- `.claude-skills/webapp-testing_skill/SKILL.md`
   - `BACKEND_HANDOFF.md`
 
 - **Work status rating (out of 5)**: 4
@@ -163,9 +162,8 @@ This document is the single place where agents leave status for each other. Alwa
 
 - **Related docs**:
   - `ARCHITECTURE_REVIEW.md`
-  - `.claude-skills/cursor-browser-mastery/SKILL.md`
-  - `.claude-skills/cursor-chrome-window-mastery/SKILL.md`
-  - `.cursor/commands/update_handoff`
+- `.claude-skills/webapp-testing_skill/SKILL.md`
+  - `.cursor/commands/update-handoff`
 
 - **Notes for next agent**:
   - Keep capturing live evidence (screenshots + console/network logs) whenever ARCHITECTURE_REVIEW.md is updated; link artifacts in the document references.
@@ -208,7 +206,7 @@ This document is the single place where agents leave status for each other. Alwa
 - **Related docs**:
   - `.cursor/rules/founder_rules.mdc` (founder rules with new spelling section)
   - `FOUNDERS.md` (also contains spelling rule reference)
-  - `.cursor/commands/update_handoff` (handoff procedure documentation)
+  - `.cursor/commands/update-handoff` (handoff procedure documentation)
 
 - **Notes for next agent**:
   - **Critical Issue**: Database enum `run_status_enum` currently uses British spelling `'cancelled'` but TypeScript code uses American `'canceled'`. This causes SQL errors when updating run status to canceled.
@@ -717,7 +715,7 @@ This document is the single place where agents leave status for each other. Alwa
 
 ## Handoff #15 — Update Commands for Ticket-Level Handoff Documentation
 
-- **What I am doing**: ✅ **COMPLETED** - Created three new Cursor commands (@update-bug-doc, @update-feature-doc, @update-tech-debt) that add handoff entries to individual ticket folders. These commands list existing tickets, let users select one, and append structured handoff entries to a per-ticket handoff.md file. Also created TEMPLATE-handoff.md templates in bugs/, feature-requests/, and tech-debt/ directories.
+- **What I am doing**: ✅ **COMPLETED** - Created three new Cursor commands (@update-bug-doc, @update-feature-doc, @update-tech-debt-doc) that add handoff entries to individual ticket folders. These commands list existing tickets, let users select one, and append structured handoff entries to a per-ticket handoff.md file. Also created TEMPLATE-handoff.md templates in bugs/, feature-requests/, and tech-debt/ directories.
 
 - **What is pending**:
   - [x] Code: Three update commands created and made executable
@@ -733,7 +731,7 @@ This document is the single place where agents leave status for each other. Alwa
 - **Modules I am touching**:
   - `.cursor/commands/update-bug-doc` (new executable script)
   - `.cursor/commands/update-feature-doc` (new executable script)
-  - `.cursor/commands/update-tech-debt` (new executable script)
+  - `.cursor/commands/update-tech-debt-doc` (new executable script)
   - `jira/bugs/TEMPLATE-handoff.md` (new template)
   - `jira/feature-requests/TEMPLATE-handoff.md` (new template)
   - `jira/tech-debt/TEMPLATE-handoff.md` (new template)
@@ -748,8 +746,8 @@ This document is the single place where agents leave status for each other. Alwa
   - Bash Script Implementation - Interactive Folder Selection: `queued-position-3`
 
 - **Related docs**:
-  - `.cursor/commands/create-bug`, `create-feature`, `create-techdebt` (corresponding create commands)
-  - `.cursor/commands/update_handoff` (main handoff command)
+  - `.cursor/commands/create-bug-doc`, `create-feature-doc`, `create-tech-debt-doc` (corresponding create commands)
+  - `.cursor/commands/update-handoff` (main handoff command)
   - `jira/bugs/TEMPLATE-*.md` (all bug templates)
   - `jira/feature-requests/TEMPLATE-*.md` (all feature templates)
   - `jira/tech-debt/TEMPLATE-*.md` (all tech debt templates)
@@ -768,7 +766,7 @@ This document is the single place where agents leave status for each other. Alwa
 
 ## Handoff #16 — Code Review Best Practices Plan for Update Commands
 
-- **What I am doing**: Documented a phased plan to bring `.cursor/commands/update-bug-doc`, `update-feature-doc`, and `update-tech-debt` up to code review best practices: input validation with retries, preview/confirm, backups, error handling, constants (no magic values), help/dry-run flags, atomic writes, bash safety, colored output, exit codes, optional verbose/debug modes, and de-duplication via a shared library (`handoff-common.sh`).
+- **What I am doing**: Documented a phased plan to bring `.cursor/commands/update-bug-doc`, `update-feature-doc`, and `update-tech-debt-doc` up to code review best practices: input validation with retries, preview/confirm, backups, error handling, constants (no magic values), help/dry-run flags, atomic writes, bash safety, colored output, exit codes, optional verbose/debug modes, and de-duplication via a shared library (`handoff-common.sh`).
 
 - **What is pending**:
   - [ ] Phase 1 (Critical): Input validation with retry; preview + confirmation; backup creation; constants; basic error handling; `--help`
@@ -782,7 +780,7 @@ This document is the single place where agents leave status for each other. Alwa
 - **Modules I am touching**:
   - `.cursor/commands/update-bug-doc`
   - `.cursor/commands/update-feature-doc`
-  - `.cursor/commands/update-tech-debt`
+  - `.cursor/commands/update-tech-debt-doc`
   - (planned) `.cursor/commands/lib/handoff-common.sh`
 
 - **Work status rating (out of 5)**: 3
@@ -792,7 +790,7 @@ This document is the single place where agents leave status for each other. Alwa
   - Phased Implementation Plan – Update Commands: `queued-position-2`
 
 - **Related docs**:
-  - `.cursor/commands/update_handoff`
+  - `.cursor/commands/update-handoff`
   - `CODE_REVIEW.md`
 
 - **Notes for next agent**:

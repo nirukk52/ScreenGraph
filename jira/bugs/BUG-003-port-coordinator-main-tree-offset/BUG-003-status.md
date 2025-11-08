@@ -32,7 +32,7 @@
 ---
 
 ## 🔨 Work Completed (Last Update)
-- Identified discrepancy during cursor-chrome-window-mastery skill creation
+- Identified discrepancy while building the unified webapp-testing skill
 - Traced root cause to port-coordinator.mjs lines 93-102
 - Verified behavior on main tree: returns 4007/5180 instead of 4000/5173
 - Updated skill documentation to reflect actual behavior (not ideal behavior)
@@ -102,7 +102,7 @@ Current behavior is **not breaking** functionality because:
 - No hardcoded port assumptions in new code
 
 ### 2025-11-06 20:15
-Discovered issue while implementing cursor-chrome-window-mastery skill:
+Discovered issue while implementing the original cursor Chrome testing playbook (now merged into webapp-testing):
 - Expected main tree to use 4000/5173 (per founder rules)
 - Port coordinator returned 4007/5180
 - Investigated and found no main tree special case

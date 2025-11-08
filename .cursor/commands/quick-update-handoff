@@ -1,0 +1,125 @@
+# Quick Handoff Command
+
+**Fast, deterministic handoff for regular work sessions (30 seconds vs 2-3 minutes).**
+
+## Steps
+
+1. ✅ **Read current state** (git, modified files, branch)
+2. ✅ **Create 1-2 Graphiti episodes** (key changes + notes)
+3. ✅ **Update handoff doc** with pre-filled template
+4. ✅ **Commit and push**
+
+## What's Skipped
+
+- ⏭️ SKILLS.md updates (do periodically, not every handoff)
+- ⏭️ Retro docs (only for completed work)
+- ⏭️ Extensive documentation updates
+- ⏭️ Production release procedures (use `@update-handoff` for those)
+
+## Workflow
+
+### 1. Auto-Read Context
+- Extract current branch name
+- Get git status and modified files
+- Read latest commit message
+- Identify backend vs frontend changes
+
+### 2. Create Focused Graphiti Episodes
+Create 1-2 episodes max:
+- **Episode 1**: What changed (files, features, fixes)
+- **Episode 2**: Key learnings/gotchas (if any critical issues discovered)
+
+Use appropriate `group_id` based on work context (FR-XXX, BUG-XXX, or session identifier).
+
+### 3. Auto-Fill Handoff Template
+
+Determine which handoff doc to update:
+- Modified `backend/*` → `BACKEND_HANDOFF.md`
+- Modified `frontend/*` → `FRONTEND_HANDOFF.md`
+- Both → Update both
+
+Auto-populate template with:
+- **Handoff number**: Auto-increment from last handoff
+- **Date**: Current date (YYYY-MM-DD)
+- **What I am doing**: Infer from modified files + commit messages
+- **Modules I am touching**: Extract from git status
+- **Pending items**: Auto-check based on file types (code, tests, docs)
+- **Branch**: Current branch name
+- **Graphiti episode IDs**: From step 2
+
+Prompt user only for:
+- Work status rating (0-5)
+- Notes for next agent (optional, can be empty)
+- Next steps (optional, can be auto-inferred)
+
+### 4. Commit and Push
+
+- Stage all changes (handoff docs + modified files)
+- Auto-generate commit message: `docs(handoff): quick update - [brief summary]`
+- Push to remote
+
+### 5. Output Structured Summary
+
+Provide compact summary:
+
+```markdown
+# 🔄 Quick Handoff Complete
+
+## 📋 Summary
+[1-sentence summary of what was done]
+
+## 📍 Updated Handoffs
+- **Backend**: Handoff #[N] or ⏭️ skipped
+- **Frontend**: Handoff #[N] or ⏭️ skipped
+
+## 🧠 Graphiti Episodes
+- `[queued-position-X]` - [brief description]
+
+## 🔗 Git
+- **Branch**: `[branch-name]`
+- **Commit**: `[hash]` - "[message]"
+
+## ⏱️ Time Saved
+Completed in ~30 seconds (vs 2-3 min with full handoff)
+```
+
+---
+
+## When to Use This Command
+
+✅ **Use Quick Handoff** for:
+- Regular development work
+- Bug fixes in progress
+- Feature iterations
+- Documentation updates
+- Dependency updates
+- Minor refactoring
+
+❌ **Use Full Handoff** (`@update-handoff`) for:
+- Production releases (PROC-001)
+- Major architectural changes
+- Feature completions requiring retros
+- Skills/documentation updates
+- End-of-milestone summaries
+
+---
+
+## Example Usage
+
+```bash
+# After working on a feature for 1-2 hours
+@update-handoff_quick
+# Rate your work (0-5): 4
+# Notes for next agent (optional): Fixed type issue with decimal conversion
+# ✅ Done! Handoff #X created, committed, pushed.
+```
+
+---
+
+## Fallback
+
+If Graphiti MCP is down:
+- Alert user: 🚨 GRAPHITI DOWN - SKIPPING EPISODES 🚨
+- Create handoff without episode IDs
+- Continue with commit/push
+

@@ -256,7 +256,7 @@ None. All changes additive.
 
 ### Backward Compatibility
 - Old scripts still work (`./scripts/dev-backend.sh`, etc.)
-- Old commands still work (`@start`, `@stop`)
+- Old commands still work (`@start-services`, `@stop-services`)
 - Gradual migration recommended
 - No forced adoption
 

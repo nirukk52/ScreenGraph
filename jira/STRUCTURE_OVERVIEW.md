@@ -57,9 +57,9 @@
 ```
 /Users/priyankalalge/ScreenGraph/Code/ScreenGraph/.cursor/commands/
 │
-├── 🚀 create-feature              ← Creates feature folder
-├── 🐛 create-bug                  ← Creates bug folder
-├── 🔧 create-techdebt             ← Creates tech debt folder
+├── 🚀 create-feature-doc              ← Creates feature folder
+├── 🐛 create-bug-doc                  ← Creates bug folder
+├── 🔧 create-tech-debt-doc             ← Creates tech debt folder
 │
 └── 📖 README-JIRA-COMMANDS.md     ← Quick reference guide
 ```
@@ -78,9 +78,9 @@ You identify: "We need API rate limiting"
 ### 2. Creation Phase
 ```bash
 # In Cursor, type one of:
-@create-feature
-@create-bug
-@create-techdebt
+@create-feature-doc
+@create-bug-doc
+@create-tech-debt-doc
 
 # Answer prompts:
 ID: FR-012
@@ -152,7 +152,7 @@ Done
 
 ### Week 1
 ```
-Mon: @create-feature → Fill FR-012-main.md
+Mon: @create-feature-doc → Fill FR-012-main.md
 Tue: Start development
 Fri: First status.md update → "Database schema designed, 20% complete"
 ```
@@ -197,9 +197,9 @@ jira/feature-requests/FR-001-post-run-endpoint/
 
 | Task | Command |
 |------|---------|
-| New feature | `@create-feature` |
-| New bug | `@create-bug` |
-| New tech debt | `@create-techdebt` |
+| New feature | `@create-feature-doc` |
+| New bug | `@create-bug-doc` |
+| New tech debt | `@create-tech-debt-doc` |
 | Read guide | Open `jira/README.md` |
 | Quick tips | Open `.cursor/commands/README-JIRA-COMMANDS.md` |
 

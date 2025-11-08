@@ -6,8 +6,8 @@
 - Keep entries short and actionable; link out to deeper service docs.
 - Prefer type-safe, Encore-first backend patterns and SvelteKit v2 + Svelte v5 Runes on the frontend.
 - Do not duplicate content from rules; link to them:
-  - @backend_engineer.mdc, @frontend_engineer.mdc
-  - @backend_llm_instructions.mdc, @frontend_llm_instruction.mdc
+  - @backend_coding_rules.mdc, @frontend_engineer.mdc
+  - @backend_coding_rules.mdc, @frontend_llm_instruction.mdc
 
 ---
 
@@ -225,8 +225,8 @@ Related JIRA notes (see `jira/feature-requests/`):
   - `backend/artifacts/README.md`, `backend/artifacts/IMPLEMENTATION.md`
   - `backend/agent/ARCHITECTURE_SUMMARY.md`, `backend/agent/orchestrator/README.md`
 - Rules and engineering guides:
-  - @backend_engineer.mdc, @frontend_engineer.mdc
-  - @backend_llm_instructions.mdc, @frontend_llm_instruction.mdc
+  - @backend_coding_rules.mdc, @frontend_engineer.mdc
+  - @backend_coding_rules.mdc, @frontend_llm_instruction.mdc
 - Quick start & conventions:
   - `CLAUDE.md` (root), `backend/CLAUDE.md`, `frontend/CLAUDE.md`
   - `BACKEND_HANDOFF.md`, `FRONTEND_HANDOFF.md`

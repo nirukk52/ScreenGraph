@@ -466,7 +466,7 @@ lsof -ti:4000 | xargs kill
 
 ### Cursor Commands
 The project includes cursor commands in `.cursor/commands/` directory to help with common workflows:
-- `update_handoff` - Update BACKEND_HANDOFF.md or FRONTEND_HANDOFF.md with current work status
+- `update-handoff` - Update BACKEND_HANDOFF.md or FRONTEND_HANDOFF.md with current work status
 - `open-pr` - Commit, push, and open a PR towards main branch
 - `create_a_bug_for_it` - Create a bug report in /docs/bug-logs
 - `update_knowledge_graph.txt` - Update Graphiti MCP Memory System with session summary

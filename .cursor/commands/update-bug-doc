@@ -111,6 +111,6 @@ echo ""
 echo "🚀 Next steps:"
 echo "   1. Review the handoff entry in ${HANDOFF_FILE}"
 echo "   2. Update ${BUG_ID}-status.md if needed"
-echo "   3. Run @update_handoff when ready to commit"
+echo "   3. Run @update-handoff when ready to commit"
 
 

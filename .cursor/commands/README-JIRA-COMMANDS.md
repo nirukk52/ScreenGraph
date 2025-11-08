@@ -2,12 +2,12 @@
 
 ## Available Commands
 
-### @create-feature
+### @create-feature-doc
 Creates a new feature request folder with all necessary documents.
 
 **Usage:**
 ```bash
-@create-feature
+@create-feature-doc
 ```
 
 **You'll be prompted for:**
@@ -24,12 +24,12 @@ jira/feature-requests/FR-012-api-rate-limiting/
 
 ---
 
-### @create-bug
+### @create-bug-doc
 Creates a new bug report folder with all necessary documents.
 
 **Usage:**
 ```bash
-@create-bug
+@create-bug-doc
 ```
 
 **You'll be prompted for:**
@@ -46,12 +46,12 @@ jira/bugs/BUG-003-api-timeout-error/
 
 ---
 
-### @create-techdebt
+### @create-tech-debt-doc
 Creates a new tech debt folder with all necessary documents.
 
 **Usage:**
 ```bash
-@create-techdebt
+@create-tech-debt-doc
 ```
 
 **You'll be prompted for:**
@@ -74,9 +74,9 @@ jira/tech-debt/TD-001-refactor-logging-layer/
 
 | Command | When to Use |
 |---------|-------------|
-| `@create-feature` | New functionality, API endpoints, UI components, integrations |
-| `@create-bug` | Something broken, incorrect behavior, errors, crashes |
-| `@create-techdebt` | Code that needs refactoring, performance improvements, maintainability issues |
+| `@create-feature-doc` | New functionality, API endpoints, UI components, integrations |
+| `@create-bug-doc` | Something broken, incorrect behavior, errors, crashes |
+| `@create-tech-debt-doc` | Code that needs refactoring, performance improvements, maintainability issues |
 
 ### Naming Guidelines
 
@@ -106,19 +106,19 @@ jira/tech-debt/TD-001-refactor-logging-layer/
 ## Workflow Reminder
 
 ### For Features
-1. `@create-feature` → Create folder
+1. `@create-feature-doc` → Create folder
 2. Fill out `main.md` → Plan the feature
 3. Update `status.md` → Track progress weekly
 4. Complete `retro.md` → Capture learnings
 
 ### For Bugs
-1. `@create-bug` → Create folder
+1. `@create-bug-doc` → Create folder
 2. Fill out `main.md` → Document the bug
 3. Update `status.md` → Track investigation
 4. Complete `retro.md` → Analyze root cause
 
 ### For Tech Debt
-1. `@create-techdebt` → Create folder
+1. `@create-tech-debt-doc` → Create folder
 2. Fill out `main.md` → Describe the problem
 3. Update `status.md` → Track refactoring
 4. Complete `retro.md` → Measure impact
@@ -131,7 +131,7 @@ jira/tech-debt/TD-001-refactor-logging-layer/
 🎯 Scenario: You discover a new feature is needed
 
 Step 1: Type in Cursor
-@create-feature
+@create-feature-doc
 
 Step 2: Answer prompts
 Feature ID (e.g., FR-012): FR-014

@@ -38,8 +38,8 @@ The port coordinator was implemented to assign unique ports to all worktrees to 
 
 - [ ] Manual test: Clear registry and verify main tree gets base ports
 - [ ] Manual test: Create worktree and verify it gets offset ports
-- [ ] Manual test: Run cursor-chrome-window-mastery skill on main tree
-- [ ] Manual test: Run cursor-chrome-window-mastery skill on worktree
+- [ ] Manual test: Run webapp-testing Playwright flow on main tree
+- [ ] Manual test: Run webapp-testing Playwright flow on worktree
 - [ ] Automated test: Port coordinator returns correct ports for main tree
 - [ ] Automated test: Port coordinator returns offset ports for worktrees
 - [ ] Regression test: No port conflicts between multiple worktrees
@@ -103,7 +103,7 @@ The port coordinator was implemented to assign unique ports to all worktrees to 
 
 ## 📝 Additional Notes
 
-**Discovered During**: Creation of `cursor-chrome-window-mastery` skill when testing port detection logic.
+**Discovered During**: Building the original cursor Chrome testing playbook (now merged into `webapp-testing`) while validating port detection logic.
 
 **Why It Wasn't Caught Earlier**:
 - Port coordinator was working correctly from a functional perspective

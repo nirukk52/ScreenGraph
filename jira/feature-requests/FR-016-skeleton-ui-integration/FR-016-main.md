@@ -173,9 +173,9 @@ bunx shadcn-svelte@latest add dialog toast input
 - Follow PROC-001 "Production Release" in `.cursor/procedures/PROCEDURES.md`
 - Preconditions:
   - [ ] `@verify-worktree-isolation` passes
-  - [ ] `@test-default-run` passes on this worktree
+  - [ ] `@run-default-test` passes on this worktree
 - Handoff:
-  - After merge to main, run `@update_handoff` and choose the "Production Release Update" workflow
+  - After merge to main, run `@update-handoff` and choose the "Production Release Update" workflow
 - Notes:
   - Frontend version bump (semver) required before tagging
   - Tag format: `v<frontend>-<date>-<shortsha>`
@@ -184,5 +184,5 @@ bunx shadcn-svelte@latest add dialog toast input
 - Isolation: `@verify-worktree-isolation`
 - Start Backend: `./scripts/dev-backend.sh`
 - Start Frontend: `./scripts/dev-frontend.sh`
-- Smoke Test: `@test-default-run`
+- Smoke Test: `@run-default-test`
 

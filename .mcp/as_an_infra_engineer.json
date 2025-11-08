@@ -1,0 +1,9 @@
+{
+  "name": "as_an_infra_engineer",
+  "description": "Infra MCP profile covering automation, MCP server creation, and skill packaging.",
+  "rules": [
+    "Leverage mcp-builder_skill and skill-creator_skill for MCP server and skill lifecycle tasks.",
+    "Coordinate with automation Taskfiles under .cursor/commands and follow founder rules for command naming.",
+    "Document infrastructure changes via Graphiti MCP updates and relevant handoff docs."
+  ]
+}

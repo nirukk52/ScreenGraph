@@ -419,7 +419,7 @@ jira/scripts/
 
 ```bash
 # 1. Create bug
-@create-bug BUG-004 "Frontend crashes on empty data"
+@create-bug-doc BUG-004 "Frontend crashes on empty data"
 
 # 2. Link to related work
 @link-work-items BUG-004 relates-to FR-008
@@ -439,7 +439,7 @@ jira/scripts/
 
 ```bash
 # 1. Create feature
-@create-feature FR-015 "Real-time collaboration"
+@create-feature-doc FR-015 "Real-time collaboration"
 
 # 2. Check dependencies
 @work-graph FR-015
@@ -604,11 +604,11 @@ jira/scripts/
 - Follow PROC-001 "Production Release" in `.cursor/procedures/PROCEDURES.md`
 - Preconditions:
   - [ ] `@verify-worktree-isolation` passes
-  - [ ] `@test-default-run` passes on this worktree
+  - [ ] `@run-default-test` passes on this worktree
   - [ ] All 4 phases implemented and tested
   - [ ] Migration script for existing work items
 - Handoff:
-  - After merge to main, run `@update_handoff` and choose the "Production Release Update" workflow
+  - After merge to main, run `@update-handoff` and choose the "Production Release Update" workflow
 - Notes:
   - This is internal tooling (no frontend version bump)
   - Tag format: `tools-v1.0.0-doc-management`
@@ -618,5 +618,5 @@ jira/scripts/
 - Isolation: `@verify-worktree-isolation`
 - Start Backend: `./scripts/dev-backend.sh` (not needed for this feature)
 - Start Frontend: `./scripts/dev-frontend.sh` (not needed for this feature)
-- Smoke Test: `@test-default-run` (not applicable - tooling only)
+- Smoke Test: `@run-default-test` (not applicable - tooling only)
 

@@ -42,44 +42,69 @@ User gets feedback: "✅ Services started on ports 4100, 5273"
 - Loaded via symlinks from backend/frontend for discoverability
 - Activated by explicit mention or context matching
 
-### Current Task-Based Skills
+### Current Task-Based Skills (selected)
 
-#### Development
-- **start-dev-environment** - Start backend and frontend services
-- **stop-dev-environment** - Stop all running services
-- **check-service-status** - Show service status and ports
+Task skills execute Taskfile commands from natural language. Full inventory lives in `skills.json`; key categories include:
+
+#### Development & Operations
+- **start-dev-environment**, **stop-dev-environment**, **restart-dev-environment**
+- **check-service-status**, **show-port-assignments**, **print-environment**
+- **view-backend-logs**, **view-frontend-logs**, **check-backend-health**
+- **open-database-shell**, **list-all-tasks**, **show-task-help**
 
 #### Testing
-- **run-smoke-tests** - Run smoke tests for both backend and frontend
-- **test-backend** - Run backend tests only
-- **test-frontend** - Run frontend tests only
+- **run-smoke-tests**, **run-all-smoke-tests**, **test-backend**, **test-frontend**
+- **smoke-test-backend**, **smoke-test-frontend**
+- **start-appium-server**, **stop-appium-server**, **webapp-testing** (knowledge companion below)
 
-#### Quality
-- **check-founder-rules** - Validate all founder rules compliance
-- **check-worktree-isolation** - Verify worktree setup
-- **typecheck-code** - Run TypeScript type checking
+#### Quality & Safety
+- **check-founder-rules**, **check-worktree-isolation**, **run-preflight-checks**
+- **typecheck-frontend**, **lint-frontend**, **validate-port-configuration**
 
-#### Project Management
-- **create-feature-request** - Create new feature request folder
-- **create-bug-report** - Create new bug report folder
-- **generate-status-report** - Generate JIRA status report
+#### Workflows & Tooling
+- **regenerate-encore-client**, **reset-database**, **migrate-database**, **build-frontend**
+- **regenerate-encore-client** keeps frontend clients aligned with backend schemas
+- **create-bug-doc**, **create-feature-doc**, **create-tech-debt-doc**, **create-chore** scaffold JIRA folders
 
-#### Workflows
-- **regenerate-client** - Regenerate frontend Encore client
-- **reset-database** - Reset database (with safety checks)
+#### Documentation & Handoff
+- **update-handoff**, **quick-update-handoff**, **update-status**, **update-main**
+- **validate-docs** enforces ticket line limits and required files
 
 ### Current Knowledge-Based Skills
 
+All knowledge skills live in directories suffixed with `_skill`; the skill trigger names below remain unchanged.
+
 #### Browser Mastery
-- **cursor-browser-mastery** - Complete guide to Cursor's @Browser tool
-- **cursor-chrome-window-mastery** - Window management patterns
+- **cursor-browser-mastery** (`cursor-browser-mastery_skill/`) - Complete guide to Cursor's @Browser tool
+- **cursor-chrome-window-mastery** (`cursor-chrome-window-mastery_skill/`) - Window management patterns
 
 #### Domain-Specific Debugging
-- **backend-debugging** - 10-phase Encore.ts debugging (symlinked from `backend/.claude-skills/`)
-- **frontend-debugging** - 10-phase SvelteKit debugging (symlinked from `frontend/.claude-skills/`)
+- **backend-debugging** (`backend-debugging_skill/`) - 10-phase Encore.ts debugging (symlinked from `backend/.claude-skills/`)
+- **frontend-debugging** (`frontend-debugging_skill/`) - 10-phase SvelteKit debugging (symlinked from `frontend/.claude-skills/`)
+- **frontend-development** (`frontend-development_skill/`) - End-to-end SvelteKit development playbook
+
+#### Graphiti Knowledge Graph
+- **graphiti-mcp-usage** (`graphiti-mcp-usage_skill/`) - Workflow for searching, updating, and organizing graph knowledge with Graphiti MCP tools
+
+#### Documents & Communication
+- **document-skills** (`document-skills_skill/`) - Docx, PDF, PPTX, and XLSX toolkits
+- **internal-comms** (`internal-comms_skill/`) - Templates for internal updates and briefs
+
+#### Design & Creative
+- **theme-factory** (`theme-factory_skill/`) - Theming toolkit for artifacts
+- **brand-guidelines** (`brand-guidelines_skill/`) - Anthropic brand application guide
+- **canvas-design** (`canvas-design_skill/`) - Static visual design workflows
+- **algorithmic-art** (`algorithmic-art_skill/`) - Generative art recipes
+- **slack-gif-creator** (`slack-gif-creator_skill/`) - Animated GIF production for Slack
+
+#### Development Utilities
+- **mcp-builder** (`mcp-builder_skill/`) - Building MCP servers
+- **artifacts-builder** (`artifacts-builder_skill/`) - Rich HTML artifact generation
+- **webapp-testing** (`webapp-testing_skill/`) - Playwright automation toolkit
 
 #### Skill Creation & Management
-- **skill-creator** - Complete guide for creating new skills (copied from Anthropic's skills repository)
+- **skill-creator** (`skill-creator_skill/`) - Complete guide for creating new skills (copied from Anthropic's skills repository)
+- **template_skill** (`template_skill/`) - Lightweight scaffold for bootstrapping new skills
 
 ---
 
@@ -115,7 +140,7 @@ Users can say things like:
 → Triggers: regenerate-client
 
 "Create a new feature request"
-→ Triggers: create-feature-request
+→ Triggers: create-feature-doc
 ```
 
 Claude will:

@@ -173,7 +173,7 @@ node automation/scripts/check-founder-rules.mjs
 ### Cursor Command Usage
 
 ```bash
-# .cursor/commands/start
+# .cursor/commands/start-services
 #!/bin/bash
 node automation/scripts/env.mjs status
 ```
