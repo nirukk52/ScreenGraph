@@ -28,20 +28,36 @@ Playwright-first automation and documentation so engineers can reliably test the
 ---
 
 ## Technical Approach
-- Treat Playwright MCP as the default execution path while keeping Cursor browser tooling as a documented option
-- Provide TypeScript helpers under `webapp-testing_skill/lib/` so agents can reuse launch + wait primitives
-- Update `skills.json`, `CLAUDE.md`, handoffs, and bug docs to reference the unified skill
-- Remove redundant knowledge skill directories to avoid drift
+**UNIFIED TEST STRATEGY:** Single Playwright test suite with environment-based configuration (one test file runs in both dev and CI)
+
+**Key Decisions:**
+- Environment variable `HEADLESS` controls browser visibility (true for CI, false for local dev)
+- `process.env.CI` auto-adjusts retries, reporters, and video recording
+- Tests live in `frontend/tests/e2e/` (proper frontend isolation)
+- Integrated into pre-push Husky hook for automated verification
+- No separate dev/CI test files (eliminates drift, easier maintenance)
+
+**Execution Modes:**
+- Local dev: `bun run test:e2e:headed` (visual debugging with slowMo)
+- Pre-push hook: `bun run test:e2e:ci` (headless, fast)
+- CI: `bun run test:e2e:ci` (headless with video on failure)
 
 ---
 
 ## Implementation Details
 
 ### Backend Changes
-- None (documentation + tooling only)
+- None (E2E testing only)
 
 ### Frontend Changes
-- None (regression harness exercises existing UI but requires Appium/device availability for screenshot capture)
+- Add `@playwright/test` to devDependencies
+- Create `playwright.config.ts` with CI detection and environment-aware settings
+- Create `tests/e2e/run-page.spec.ts` with first test (Run Timeline visibility)
+- Add test scripts to `package.json` (test:e2e, test:e2e:headed, test:e2e:ci, test:e2e:ui)
+- Optional: `tests/e2e/helpers.ts` for reusable utilities
+
+### Husky Integration
+- Update `.husky/pre-push` to run E2E tests before allowing push
 
 ---
 
@@ -62,8 +78,11 @@ Playwright-first automation and documentation so engineers can reliably test the
 ## Testing Strategy
 - **Unit Tests**: N/A
 - **Integration Tests**: N/A
-- **E2E Tests**: Manual Playwright script executed via Bun or MCP
-- **Manual Testing**: Follow the sample script to ensure `/run` renders events, screenshots, and stop node
+- **E2E Tests**: Playwright automated tests in `frontend/tests/e2e/`
+  - `run-page.spec.ts` verifies Run Timeline text appears
+  - Runs automatically in pre-push hook (headless mode)
+  - Can run locally in headed mode for debugging
+- **Manual Testing**: Use `bun run test:e2e:headed` to visually verify flow
 
 ---
 

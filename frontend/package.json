@@ -12,7 +12,11 @@
     "format": "bunx biome format --write .",
     "format:check": "bunx biome format --write=false .",
     "lint": "bunx biome lint .",
-    "lint:fix": "bunx biome lint --apply ."
+    "lint:fix": "bunx biome lint --apply .",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "HEADLESS=false playwright test",
+    "test:e2e:ci": "HEADLESS=true playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@formkit/auto-animate": "^0.8.2",
@@ -24,6 +28,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.2",
+    "@playwright/test": "^1.48.0",
     "@skeletonlabs/skeleton": "^4.2.4",
     "@skeletonlabs/skeleton-svelte": "^4.2.4",
     "@sveltejs/adapter-vercel": "^4.0.0",
