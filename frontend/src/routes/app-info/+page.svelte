@@ -18,6 +18,15 @@
     const img = event.target as HTMLImageElement;
     if (img.src) {
       failedImages.add(img.src);
+      console.warn("Failed to load screenshot:", img.src);
+    }
+  }
+  
+  /** Handle successful image loads */
+  function handleImageLoad(event: Event) {
+    const img = event.target as HTMLImageElement;
+    if (failedImages.has(img.src)) {
+      failedImages.delete(img.src);
     }
   }
 </script>
@@ -177,7 +186,10 @@
                   alt="Screenshot {screenshot.position + 1}"
                   class="h-96 w-auto max-w-sm rounded-lg shadow-lg flex-shrink-0 snap-start object-contain bg-surface-200 dark:bg-surface-800"
                   loading="lazy"
+                  crossorigin="anonymous"
+                  referrerpolicy="no-referrer"
                   onerror={handleImageError}
+                  onload={handleImageLoad}
                 />
               {:else}
                 <div class="h-96 w-64 rounded-lg shadow-lg flex-shrink-0 snap-start bg-surface-200 dark:bg-surface-800 flex items-center justify-center">

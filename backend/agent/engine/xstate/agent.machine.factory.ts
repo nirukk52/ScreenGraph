@@ -124,7 +124,13 @@ export class AgentMachineFactory {
       },
       guards: {
         // Checks if execution should be aborted due to pending stop
-        shouldAbort: ({ context }) => Boolean(context.pendingStop?.stop),
+        // Allow Stop node to execute even if cancellation requested (terminal node must run)
+        shouldAbort: ({ context }) => {
+          if (context.currentNode === "Stop") {
+            return false;
+          }
+          return Boolean(context.pendingStop?.stop);
+        },
         // Checks if the latest decision is to retry
         hasRetryDecision: ({ context }) => context.latestDecision?.kind === "retry",
         // Checks if the latest decision is to backtrack

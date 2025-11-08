@@ -1,6 +1,8 @@
 import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
 import type { EventKind } from "../../../domain/events";
 import db from "../../../../db";
+import log from "encore.dev/log";
+import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
 
 export interface StopInput extends CommonNodeInput {
   runId: string;
@@ -32,6 +34,23 @@ export async function stop(
   output: StopOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
 }> {
+  const logger = log.with({
+    module: MODULES.AGENT,
+    actor: AGENT_ACTORS.ORCHESTRATOR,
+    runId: input.runId,
+    nodeName: "Stop",
+  });
+  logger.info("Stop INPUT", { 
+    input: {
+      runId: input.runId,
+      stepOrdinal: input.stepOrdinal,
+      iterationOrdinalNumber: input.iterationOrdinalNumber,
+      intendedTerminalDisposition: input.intendedTerminalDisposition,
+      terminalizationBasis: input.terminalizationBasis,
+      finalRunMetrics: input.finalRunMetrics,
+    }
+  });
+
   // Query actual discovered screens from graph_persistence_outcomes
   const discoveredScreensRows = await db.query<{ count: number }>`
     SELECT COUNT(DISTINCT screen_id) as count
@@ -44,6 +63,16 @@ export async function stop(
   for await (const row of discoveredScreensRows) {
     actualDiscoveredScreens = row.count;
   }
+
+  logger.info("Stop node details", {
+    actualDiscoveredScreens,
+    reportedScreens: input.finalRunMetrics.uniqueScreensDiscoveredCount,
+    totalIterationsExecuted: input.finalRunMetrics.totalIterationsExecuted,
+    uniqueActionsPersistedCount: input.finalRunMetrics.uniqueActionsPersistedCount,
+    runDurationInMilliseconds: input.finalRunMetrics.runDurationInMilliseconds,
+    stepOrdinal: input.stepOrdinal,
+    iterationOrdinalNumber: input.iterationOrdinalNumber,
+  });
 
   // Override the counter with actual database count
   const correctedMetrics = {
@@ -65,6 +94,15 @@ export async function stop(
     retryable: null,
     humanReadableFailureSummary: null,
   };
+
+  logger.info("Stop OUTPUT", { 
+    output: {
+      runId: output.runId,
+      confirmedTerminalDisposition: output.confirmedTerminalDisposition,
+      stepOrdinal: output.stepOrdinal,
+      correctedMetrics,
+    }
+  });
 
   return {
     output,
