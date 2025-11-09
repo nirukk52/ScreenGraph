@@ -91,7 +91,7 @@
     },
     {
       "skill": "backend-testing",
-      "when": "Backend testing strategies and patterns",
+      "when": "API testing with Encore MCP - write tests, validate contracts, debug with traces",
       "type": "knowledge"
     }
   ],

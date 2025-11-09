@@ -106,7 +106,7 @@
     },
     {
       "skill": "backend-testing",
-      "when": "Backend testing strategies and patterns",
+      "when": "API testing with Encore MCP - comprehensive patterns for testing backend endpoints, integration flows, and service contracts",
       "type": "knowledge"
     },
     {
