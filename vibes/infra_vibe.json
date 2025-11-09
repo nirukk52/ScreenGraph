@@ -1,0 +1,161 @@
+{
+  "name": "infra_vibe",
+  "description": "Infrastructure engineering vibe for automation, MCP server creation, skill development, and DevOps workflows.",
+  "version": "1.0",
+  "extends": "base_vibe",
+  "domain": "infrastructure",
+  "mcp_tools": [
+    {
+      "name": "github",
+      "purpose": "Repository management and CI/CD workflows",
+      "when_to_use": [
+        "Manage GitHub Actions workflows",
+        "Configure repository settings",
+        "Review automation-related PRs",
+        "Manage branch protection and webhooks"
+      ],
+      "key_operations": [
+        "github.create_workflow",
+        "github.update_repository_settings",
+        "github.manage_secrets"
+      ]
+    },
+    {
+      "name": "vercel",
+      "purpose": "Frontend deployment and configuration",
+      "when_to_use": [
+        "Configure deployment settings",
+        "Manage environment variables",
+        "Debug deployment issues",
+        "Monitor production metrics"
+      ],
+      "key_operations": [
+        "vercel.deploy_to_vercel",
+        "vercel.list_deployments",
+        "vercel.get_deployment_build_logs"
+      ]
+    }
+  ],
+  "rules": [
+    "Use @mcp-builder_skill for creating new MCP servers (4-phase process)",
+    "Use @skill-creator for creating new Claude skills",
+    "All automation must go in .cursor/commands with Task definitions",
+    "Command descriptions must be natural language (5 words or fewer)",
+    "Rule files must end with _rules, skill directories with _skill",
+    "Document infrastructure changes via Graphiti.add_episode",
+    "Follow founder_rules.mdc for naming and conventions",
+    "Never customize ports per worktree (use standard .env)"
+  ],
+  "documentation": [
+    ".cursor/commands/README.md",
+    "automation/README.md",
+    ".claude-skills/README.md",
+    ".husky/README.md",
+    "CLAUDE.md"
+  ],
+  "task_commands": [
+    {
+      "command": "task founder:servers:start",
+      "when": "Start all services with health checks"
+    },
+    {
+      "command": "task founder:servers:stop",
+      "when": "Stop all services"
+    },
+    {
+      "command": "task founder:servers:status",
+      "when": "Check service status and ports"
+    },
+    {
+      "command": "task founder:rules:check",
+      "when": "Validate founder rules compliance"
+    },
+    {
+      "command": "task qa:smoke:all",
+      "when": "Run all smoke tests"
+    },
+    {
+      "command": "task ops:env:print",
+      "when": "Print environment variables"
+    },
+    {
+      "command": "task ops:ports:show",
+      "when": "Show port assignments"
+    },
+    {
+      "command": "task ops:ports:validate",
+      "when": "Validate port configuration"
+    },
+    {
+      "command": "task --list",
+      "when": "List all available Task commands"
+    }
+  ],
+  "claude_skills": [
+    {
+      "skill": "mcp-builder",
+      "when": "Create high-quality MCP servers (Python or TypeScript)",
+      "type": "knowledge"
+    },
+    {
+      "skill": "skill-creator",
+      "when": "Create new Claude skills with proper structure",
+      "type": "knowledge"
+    },
+    {
+      "skill": "graphiti-mcp-usage",
+      "when": "Guidance on using Graphiti for knowledge management",
+      "type": "knowledge"
+    }
+  ],
+  "workflow_patterns": {
+    "mcp_server_creation": [
+      "1. Load @mcp-builder_skill/SKILL.md",
+      "2. Phase 1: Research API docs and plan tools",
+      "3. Phase 2: Implement in Python/TypeScript",
+      "4. Phase 3: Review code quality",
+      "5. Phase 4: Create evaluations",
+      "6. Add to .cursor/mcp.json",
+      "7. Update relevant vibe with new tool",
+      "8. Document in Graphiti"
+    ],
+    "skill_creation": [
+      "1. Load @skill-creator/SKILL.md",
+      "2. Define skill purpose and scope",
+      "3. Create via: python3 skills-main/skill-creator/scripts/init_skill.py",
+      "4. Add to .claude-skills/skills.json",
+      "5. Test skill invocation",
+      "6. Document in Graphiti"
+    ],
+    "automation_workflow": [
+      "1. Define workflow purpose and triggers",
+      "2. Create Task command in .cursor/commands/Taskfile.yml",
+      "3. Implement script in automation/scripts/",
+      "4. Add to .claude-skills/skills.json as task-based skill",
+      "5. Test via task <command>",
+      "6. Add to git hooks if pre-commit/pre-push check",
+      "7. Document in automation/README.md"
+    ],
+    "devops_configuration": [
+      "1. Use vercel MCP for deployment config",
+      "2. Use github MCP for workflow management",
+      "3. Update .env for environment variables",
+      "4. Test with task founder:servers:start",
+      "5. Validate with task qa:smoke:all",
+      "6. Document changes in Graphiti"
+    ]
+  },
+  "common_pitfalls": [
+    "❌ Creating root node_modules or shared dependencies",
+    "✅ Keep backend/frontend completely isolated",
+    "❌ Customizing ports per worktree",
+    "✅ Use standard ports from .env",
+    "❌ Creating skills without proper structure",
+    "✅ Use @skill-creator for proper scaffolding",
+    "❌ Building MCP servers without evaluations",
+    "✅ Follow @mcp-builder 4-phase process (includes evals)",
+    "❌ Forgetting to document infrastructure changes",
+    "✅ Always use Graphiti.add_episode for decisions"
+  ]
+}
+

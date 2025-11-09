@@ -1,9 +1,0 @@
-{
-  "name": "as_a_frontend_engineer",
-  "description": "Frontend MCP profile for SvelteKit/Svelte 5 engineering tasks.",
-  "rules": [
-    "Refer to frontend_engineer.mdc and frontend_llm_instruction.mdc for canonical guidance.",
-    "Use Playwright/Browser MCP tools for UI/state inspection while keeping runes-only syntax and Tailwind/Skeleton conventions.",
-    "Coordinate with Encore-generated clients for typed API interactions."
-  ]
-}

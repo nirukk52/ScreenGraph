@@ -1,0 +1,170 @@
+{
+  "name": "frontend_vibe",
+  "description": "Frontend engineering vibe for SvelteKit 2 + Svelte 5 development with runes, SSR, and modern UI patterns.",
+  "version": "1.0",
+  "extends": "base_vibe",
+  "domain": "frontend",
+  "mcp_tools": [
+    {
+      "name": "playwright",
+      "purpose": "Browser automation for UI inspection and testing",
+      "when_to_use": [
+        "Inspect live UI state and DOM structure",
+        "Test user interactions and flows",
+        "Debug visual issues or layout problems",
+        "Capture screenshots for verification"
+      ],
+      "key_operations": [
+        "playwright.navigate (load pages)",
+        "playwright.snapshot (get DOM structure)",
+        "playwright.click (simulate interactions)",
+        "playwright.screenshot (visual verification)",
+        "playwright.evaluate (run JS in browser)"
+      ]
+    },
+    {
+      "name": "svelte",
+      "purpose": "Svelte 5 documentation and best practices",
+      "when_to_use": [
+        "Working with Svelte 5 runes ($state, $derived, $effect, $props)",
+        "SvelteKit routing and load functions",
+        "SSR/CSR patterns and page options",
+        "Component composition and snippets"
+      ],
+      "key_operations": [
+        "svelte.list-sections (discover relevant docs)",
+        "svelte.get-documentation (fetch specific sections)",
+        "svelte.playground-link (create shareable examples)"
+      ]
+    },
+    {
+      "name": "figma",
+      "purpose": "Design handoff and component implementation",
+      "when_to_use": [
+        "Implementing designs from Figma",
+        "Extracting design tokens and styles",
+        "Verifying component fidelity"
+      ]
+    },
+    {
+      "name": "vercel",
+      "purpose": "Deployment and production debugging",
+      "when_to_use": [
+        "Deploy frontend to production",
+        "Debug production issues",
+        "View deployment logs and metrics"
+      ]
+    }
+  ],
+  "rules": [
+    "Follow frontend_engineer.mdc and frontend_llm_instruction.mdc",
+    "Use Svelte 5 runes syntax ONLY ($state, $derived, $effect, $props)",
+    "NEVER use legacy Svelte reactivity (no $ prefix on regular variables)",
+    "Always use Encore-generated client for API calls (NEVER manual fetch)",
+    "After backend API changes, run: task founder:workflows:regen-client",
+    "Use Tailwind CSS v4 for styling (utility-first)",
+    "Use Skeleton UI v4 components when appropriate",
+    "Validate with svelte.autofixer before sending code to user"
+  ],
+  "documentation": [
+    ".cursor/rules/frontend_engineer.mdc",
+    ".cursor/rules/frontend_llm_instruction.mdc",
+    "frontend/CLAUDE.md",
+    "FRONTEND_HANDOFF.md"
+  ],
+  "task_commands": [
+    {
+      "command": "task frontend:dev",
+      "when": "Start frontend dev server only"
+    },
+    {
+      "command": "task frontend:build",
+      "when": "Build frontend for production"
+    },
+    {
+      "command": "task frontend:test",
+      "when": "Run frontend unit tests"
+    },
+    {
+      "command": "task frontend:typecheck",
+      "when": "Check TypeScript types"
+    },
+    {
+      "command": "task frontend:lint",
+      "when": "Lint frontend code"
+    },
+    {
+      "command": "task frontend:gen",
+      "when": "Regenerate Encore client"
+    },
+    {
+      "command": "task frontend:logs",
+      "when": "View frontend dev server logs"
+    },
+    {
+      "command": "task qa:smoke:frontend",
+      "when": "Run frontend smoke tests"
+    }
+  ],
+  "claude_skills": [
+    {
+      "skill": "frontend-debugging",
+      "when": "Systematic 10-phase debugging for SvelteKit/Svelte 5 issues",
+      "type": "knowledge"
+    },
+    {
+      "skill": "frontend-development",
+      "when": "Comprehensive Svelte 5 + SvelteKit development guide",
+      "type": "knowledge"
+    },
+    {
+      "skill": "webapp-testing",
+      "when": "Playwright testing strategies for ScreenGraph",
+      "type": "knowledge"
+    }
+  ],
+  "workflow_patterns": {
+    "component_development": [
+      "1. Load svelte.list-sections to find relevant docs",
+      "2. Use svelte.get-documentation for specific runes/patterns",
+      "3. Implement component with Svelte 5 runes syntax",
+      "4. Use playwright.navigate to inspect in browser",
+      "5. Validate with svelte.autofixer",
+      "6. OPTIONALLY: Create svelte.playground-link for user",
+      "7. Document new patterns in Graphiti"
+    ],
+    "api_integration": [
+      "1. Ensure backend API changes are deployed",
+      "2. Run task founder:workflows:regen-client",
+      "3. Import from ~encore/clients (typed)",
+      "4. Handle loading/error states properly",
+      "5. Test via playwright automation"
+    ],
+    "debugging_ui": [
+      "1. Load @frontend-debugging skill (10-phase process)",
+      "2. Use playwright.snapshot to inspect DOM",
+      "3. Use playwright.screenshot for visual verification",
+      "4. Check console via playwright.console_messages",
+      "5. Use sequential-thinking for systematic analysis",
+      "6. Document solution in Graphiti"
+    ],
+    "design_implementation": [
+      "1. Use figma.get_design_context to fetch design specs",
+      "2. Extract design tokens (colors, spacing, typography)",
+      "3. Implement with Tailwind v4 utilities",
+      "4. Use Skeleton UI v4 components where applicable",
+      "5. Verify fidelity via playwright.screenshot"
+    ]
+  },
+  "common_pitfalls": [
+    "❌ Using legacy Svelte reactivity ($: reactive statements)",
+    "✅ Use Svelte 5 runes: $state(), $derived(), $effect()",
+    "❌ Manual fetch() calls to backend",
+    "✅ Use Encore-generated client: import { service } from '~encore/clients'",
+    "❌ Forgetting to regenerate client after API changes",
+    "✅ Always run: task founder:workflows:regen-client",
+    "❌ Using deprecated Svelte syntax in new code",
+    "✅ Validate with svelte.autofixer before delivery"
+  ]
+}
+

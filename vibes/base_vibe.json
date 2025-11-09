@@ -1,0 +1,91 @@
+{
+  "name": "base_vibe",
+  "description": "Foundation vibe inherited by all engineering vibes. Contains core MCP tools and workflows used across all domains.",
+  "version": "1.0",
+  "core_mcp_tools": [
+    {
+      "name": "graphiti",
+      "purpose": "Knowledge graph for capturing architectural decisions, preferences, and facts",
+      "when_to_use": [
+        "Document significant architectural decisions",
+        "Capture new patterns or procedures",
+        "Search for existing knowledge before implementing",
+        "Record debugging insights for future reference"
+      ],
+      "key_operations": [
+        "graphiti.add_memory (capture new knowledge)",
+        "graphiti.search_memory_nodes (find related concepts)",
+        "graphiti.search_memory_facts (search specific facts)"
+      ]
+    },
+    {
+      "name": "context7",
+      "purpose": "Context management and documentation retrieval",
+      "when_to_use": [
+        "Need up-to-date library documentation",
+        "Working with external APIs or frameworks",
+        "Looking up best practices for unfamiliar tech"
+      ],
+      "key_operations": [
+        "context7.resolve-library-id (find library)",
+        "context7.get-library-docs (fetch documentation)"
+      ]
+    },
+    {
+      "name": "sequential-thinking",
+      "purpose": "Complex reasoning and multi-step problem solving",
+      "when_to_use": [
+        "Debugging complex issues requiring systematic analysis",
+        "Planning multi-step refactoring or migrations",
+        "Analyzing architectural trade-offs",
+        "Breaking down ambiguous requirements"
+      ],
+      "key_operations": [
+        "sequentialthinking (step-by-step reasoning)"
+      ]
+    }
+  ],
+  "universal_rules": [
+    "ALWAYS search Graphiti before implementing new patterns (avoid reinventing)",
+    "AFTER solving complex issues, document via Graphiti for future reference",
+    "FOR unfamiliar libraries, use Context7 to fetch latest docs",
+    "WHEN stuck, use sequential-thinking for systematic problem breakdown",
+    "Follow founder_rules.mdc for non-negotiable standards (naming, types, spelling)"
+  ],
+  "universal_workflow": {
+    "before_starting": [
+      "Load appropriate vibe (backend/frontend/infra/qa)",
+      "Search Graphiti for existing knowledge on the topic",
+      "Review relevant .cursor/rules/*.mdc files",
+      "Check .claude-skills for applicable skills"
+    ],
+    "during_work": [
+      "Use vibe-specific MCP tools for domain tasks",
+      "Run appropriate Task commands from .cursor/commands",
+      "Document discoveries via Graphiti as you learn",
+      "Follow vibe-specific rules and conventions"
+    ],
+    "after_completing": [
+      "Run quality checks (founder rules, linting, type checking)",
+      "Capture architectural decisions in Graphiti",
+      "Update relevant handoff docs if significant changes",
+      "Run smoke tests to verify functionality"
+    ]
+  },
+  "integration_points": {
+    "documentation": [
+      ".cursor/rules/founder_rules.mdc (universal standards)",
+      "CLAUDE.md (project quick reference)",
+      "steering-docs/ (architectural context)"
+    ],
+    "automation": [
+      ".cursor/commands/Taskfile.yml (deterministic workflows)",
+      ".claude-skills/skills.json (task-based skills)"
+    ],
+    "knowledge": [
+      ".claude-skills/*_skill/SKILL.md (knowledge-based playbooks)",
+      "steering-docs/ (project context and decisions)"
+    ]
+  }
+}
+

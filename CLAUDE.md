@@ -60,6 +60,28 @@ task qa:smoke:all              # Run all smoke tests
 
 ---
 
+### 5. `vibes/` — Engineering Persona System ⭐
+**What**: Role-based profiles that configure AI agents with domain-specific tools, rules, and workflows  
+**Scope**: Context switching, MCP tool selection, documentation priorities, workflow patterns  
+**Usage**: Load appropriate vibe at start of work: "Load backend_vibe and [task]"
+
+**Available Vibes:**
+- **base_vibe** → Foundation (graphiti, context7, sequential-thinking)
+- **backend_vibe** → Backend/API work (encore-mcp, github)
+- **frontend_vibe** → Frontend/UI work (playwright, svelte, figma, vercel)
+- **infra_vibe** → DevOps/automation (github, vercel, mcp-builder, skill-creator)
+- **qa_vibe** → Testing/QA (playwright, encore-mcp, webapp-testing)
+
+**Examples:**
+- "Load backend_vibe and optimize agent state" → Uses encore-mcp, backend-debugging skill
+- "Load frontend_vibe and build nav component" → Uses playwright, svelte docs
+- "Load qa_vibe and write E2E tests" → Uses webapp-testing skill, playwright
+- "Load infra_vibe and create MCP server" → Uses @mcp-builder_skill
+
+**See:** `vibes/README.md` for full vibe decision tree and workflow patterns
+
+---
+
 ## When to Use What?
 
 | Scenario | Use |
@@ -72,6 +94,10 @@ task qa:smoke:all              # Run all smoke tests
 | "Regenerate API client" | `CLAUDE.md` → `task founder:workflows:regen-client` |
 | "Run database migration" | `.cursor/commands/` → `task backend:db:migrate` |
 | "Multi-step debugging help" | `.claude-skills/backend-debugging` |
+| "Fix backend API" | `vibes/backend_vibe` + encore-mcp |
+| "Build UI component" | `vibes/frontend_vibe` + playwright |
+| "Create MCP server" | `vibes/infra_vibe` + @mcp-builder |
+| "Write E2E tests" | `vibes/qa_vibe` + webapp-testing |
 > 
 > **Scope**: Project-specific configurations and quick-start commands ONLY. DO NOT duplicate content from `.cursor/rules/*.mdc`.
 > 
