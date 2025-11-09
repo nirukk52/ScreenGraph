@@ -1,469 +1,206 @@
-# Git Hooks (Husky)
+# Husky Git Hooks
 
-**Purpose:** Local enforcement of code quality and project standards via Git hooks.
-
-Husky provides the **first line of defense** against common mistakes by running validation checks before commits and pushes. This catches violations early—before they hit CI/CD.
+**Purpose:** Automated quality gates enforced on every git operation.
 
 ---
 
-## Overview
+## Active Hooks
 
-### Multi-Layer Enforcement
-
-```
-┌─────────────────────────────────────────────┐
-│  1. Local Git Hooks (Husky) ← YOU ARE HERE  │  Fastest feedback
-├─────────────────────────────────────────────┤
-│  2. Cursor Commands (Manual)                │  On-demand checks
-├─────────────────────────────────────────────┤
-│  3. GitHub Actions (CI/CD)                  │  Pre-merge validation
-├─────────────────────────────────────────────┤
-│  4. Claude Skills (AI-assisted)             │  Intelligent helpers
-└─────────────────────────────────────────────┘
-```
-
-**Same checks at every level** - all call the same Task commands from `automation/`.
-
----
-
-## Installed Hooks
-
-### `pre-commit` - Founder Rules Validation
-
-**Triggers:** Before every commit  
-**Command:** `task founder:rules:check`
+### `pre-commit`
+**When:** Before every `git commit`  
+**What:**
+1. Validates founder rules compliance
+2. Validates cursor documentation
 
 **Checks:**
-- ❌ No `console.log` (must use `encore.dev/log`)
+- ❌ No `console.log` in code
 - ❌ No `any` types
-- ❌ No root `package.json` with backend/frontend deps
-- ❌ No British spelling (must use American)
-- ⚠️  Functions/classes should have comments
+- ✅ American English spelling
+- ✅ Proper naming conventions
 
-**Example Output:**
+**Bypass (emergency only):**
 ```bash
-$ git commit -m "Add new feature"
-
-🔍 Checking founder rules...
-
-🚨 Founder Rules Violations:
-
-❌ no-console (1 violation):
-   backend/agent/orchestrator/main.ts:45 - Found console.log (use encore.dev/log instead)
-
-❗ Fix these issues before committing.
-```
-
-**How to Fix:**
-1. Address the violations in your code
-2. Run `task founder:rules:check` to verify
-3. Commit again
-
----
-
-### `pre-push` - Smoke Tests
-
-**Triggers:** Before every push to remote  
-**Command:** `task qa:smoke:backend && task qa:smoke:frontend`
-
-**Checks:**
-- Backend API is functional
-- Frontend builds successfully
-- Basic integration works
-
-**Example Output:**
-```bash
-$ git push origin feature-branch
-
-🧪 Running smoke tests before push...
-
-✅ Backend smoke tests passed
-✅ Frontend smoke tests passed
-
-Enumerating objects: 12, done.
-...
-```
-
-**How to Fix:**
-1. If tests fail, investigate the error
-2. Fix the broken functionality
-3. Run `task qa:smoke:backend` and `task qa:smoke:frontend` locally
-4. Push again when green
-
----
-
-### `commit-msg` - Conventional Commits
-
-**Triggers:** Before commit message is finalized  
-**Command:** `task shared:validate:commit-message`
-
-**Enforces:**
-- Conventional commit format: `type(scope): message`
-- Valid types: `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `test`
-
-**Example:**
-```bash
-# ✅ Valid
-git commit -m "feat(agent): add retry logic to state transitions"
-
-# ❌ Invalid
-git commit -m "added stuff"
-→ Error: Commit message must follow format: type(scope): message
+HUSKY=0 git commit -m "message"
 ```
 
 ---
 
-## Hook Lifecycle
+### `pre-push` ⭐ UPDATED
+**When:** Before every `git push`  
+**What:**
+1. **Vibe Manager cleanup** - Moves temporary docs to `jira/reports/`
+2. **Smoke tests** - Health checks for backend + frontend
+3. **E2E tests** - Playwright tests in CI mode
 
-### Normal Workflow
-
+**Flow:**
 ```
-1. Developer makes changes
-2. git add <files>
-3. git commit -m "..."
-   ├─→ pre-commit runs
-   │   └─→ task founder:rules:check
-   ├─→ commit-msg runs
-   │   └─→ task shared:validate:commit-message
-   └─→ Commit succeeds ✅
-
-4. git push
-   ├─→ pre-push runs
-   │   └─→ task qa:smoke:*
-   └─→ Push succeeds ✅
+git push
+    ↓
+1. Cleanup root docs (vibe_manager_vibe)
+   - Moves TESTING_*.md → jira/reports/
+   - Moves ARCHITECTURE_REVIEW*.md → jira/reports/
+   - Keeps CLAUDE.md, README.md, *_HANDOFF.md, VIBE_*.md
+    ↓
+2. Run smoke tests (task qa:smoke)
+   - Backend health check
+   - Frontend availability check
+    ↓
+3. Run E2E tests (playwright headless)
+   - Full user workflows
+    ↓
+✅ Push allowed
 ```
 
-### When Hooks Fail
+**Script:** `automation/scripts/cleanup-root-docs.mjs`
 
-```
-1. git commit -m "..."
-2. pre-commit runs
-3. ❌ Violations found
-4. Commit BLOCKED
-5. Developer fixes issues
-6. git commit -m "..." (try again)
-7. ✅ Clean - commit succeeds
+**What Gets Moved:**
+- `TESTING_COMMANDS_ANALYSIS.md` → `jira/reports/`
+- `TESTING_CONSOLIDATION_SUMMARY.md` → `jira/reports/`
+- `TESTING_QUICK_REFERENCE.md` → `jira/reports/`
+- `ARCHITECTURE_REVIEW.md` → `jira/reports/`
+- `ARCHITECTURE_REVIEW_RETRO.md` → `jira/reports/`
+- `BROWSER_DEBUGGING_OPTIONS_ANALYSIS.md` → `jira/reports/`
+
+**What Stays at Root:**
+- `CLAUDE.md` - Project quick reference
+- `README.md` - Project overview
+- `WHAT_WE_ARE_MAKING.md` - Product vision
+- `*_HANDOFF.md` - Architecture handoffs
+- `VIBE_*.md` - Vibe system documentation
+- `FOUNDERS_NOTEPAD.md` - Founder notes
+- `plan.md` - Planning doc
+
+**Bypass (emergency only):**
+```bash
+HUSKY=0 git push
 ```
 
 ---
 
-## Bypassing Hooks (Emergency Only)
+## Philosophy
 
-### When to Bypass
+### Why Vibe Manager Cleans Root
 
-**ONLY in emergencies:**
-- Critical hotfix that can't wait for full validation
-- Known false positive you'll fix in next commit
-- Hook itself is broken and needs fixing
+**Rationale:**
+- Root should only contain **core, permanent** documentation
+- **Analysis/temporary docs** belong in `jira/reports/` for reference
+- Keeps root clean and discoverable
+- vibe_manager_vibe owns root organization
 
-**NEVER bypass for:**
-- "I don't want to fix the violations"
-- "I'm in a hurry"
-- "I'll fix it later" (you won't)
+**What is "Core" Documentation:**
+1. **Quick references** - CLAUDE.md (developer quick lookup)
+2. **Architecture** - Handoff docs, vibe system docs
+3. **Product** - WHAT_WE_ARE_MAKING.md, README.md
+4. **Founder** - FOUNDERS_NOTEPAD.md, plan.md
 
-### How to Bypass
+**What is "Analysis" Documentation:**
+1. Testing analysis/consolidation docs
+2. Architecture review retrospectives
+3. Debugging options analysis
+4. Temporary investigation reports
 
-```bash
-# Skip all hooks (use sparingly!)
-HUSKY_SKIP_HOOKS=1 git commit -m "emergency hotfix"
+### Why Run Tests on Pre-Push
 
-# Or use --no-verify flag
-git commit -m "emergency hotfix" --no-verify
-git push --no-verify
-```
+**Rationale:**
+- Catch issues before they reach remote
+- Smoke tests (< 5s) catch 90% of problems
+- E2E tests ensure critical flows work
+- Pre-push is the last gate before collaboration
 
-**⚠️  WARNING:** Bypassed commits will still fail in CI if violations exist!
-
----
-
-## Hook Configuration
-
-### Installation
-
-Husky is configured in `package.json` (if at root) or via `bun add husky`:
-
-```json
-{
-  "scripts": {
-    "prepare": "husky install"
-  },
-  "devDependencies": {
-    "husky": "^9.0.0"
-  }
-}
-```
-
-Run once after clone:
-```bash
-bun install
-```
-
-This creates `.husky/` and installs hooks.
-
-### Hook Files
-
-Each hook is a simple shell script:
-
-**`.husky/pre-commit`**
-```bash
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-# Run founder rules check
-task founder:rules:check
-```
-
-**`.husky/pre-push`**
-```bash
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-echo "🧪 Running smoke tests before push..."
-
-# Run smoke tests (parallel)
-task qa:smoke:backend &
-BACKEND_PID=$!
-
-task qa:smoke:frontend &
-FRONTEND_PID=$!
-
-# Wait for both
-wait $BACKEND_PID || exit 1
-wait $FRONTEND_PID || exit 1
-
-echo "✅ Smoke tests passed"
-```
-
----
-
-## Customizing Hooks
-
-### Adding Checks to pre-commit
-
-Edit `.husky/pre-commit`:
-
-```bash
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-# Existing check
-task founder:rules:check
-
-# Add new check
-task frontend:typecheck
-```
-
-### Making Hooks Faster
-
-If hooks are too slow:
-
-1. **Parallelize checks:**
-```bash
-task founder:rules:check &
-task frontend:typecheck &
-wait
-```
-
-2. **Cache results:**
-```bash
-# Only check changed files
-CHANGED_FILES=$(git diff --cached --name-only)
-if echo "$CHANGED_FILES" | grep -q "\.ts$"; then
-  task founder:rules:check
-fi
-```
-
-3. **Split checks:**
-- Fast checks in `pre-commit` (< 1s)
-- Slow checks in `pre-push` (< 30s)
+**Exit Codes:**
+- Non-zero exit = Push blocked
+- Cleanup warnings are non-blocking
+- Test failures block the push
 
 ---
 
 ## Troubleshooting
 
-### "Husky: command not found"
-
-**Cause:** Husky not installed.
-
-**Fix:**
+### Cleanup Script Fails
 ```bash
-cd /path/to/project
-bun install
-bun run prepare  # Installs hooks
+# Run manually to debug
+node automation/scripts/cleanup-root-docs.mjs
+
+# Check jira/reports/ exists
+ls -la jira/reports/
 ```
 
-### Hooks not running
-
-**Cause:** Git hooks not enabled.
-
-**Fix:**
+### Smoke Tests Fail
 ```bash
-# Re-initialize Husky
-rm -rf .husky/_
-bunx husky install
+# Check services running
+task founder:servers:status
+
+# Start services
+task founder:servers:start
+
+# Try push again
+git push
 ```
 
-### Hook script errors
-
-**Cause:** Script syntax error or missing task.
-
-**Fix:**
-1. Test hook manually:
+### E2E Tests Fail
 ```bash
-.husky/pre-commit
+# Appium probably not running
+task qa:appium:start
+
+# Or skip E2E in emergency
+HUSKY=0 git push
 ```
 
-2. Check task exists:
+### Need to Skip All Hooks
 ```bash
-task --list | grep founder:rules:check
-```
-
-3. Run with verbose output:
-```bash
-sh -x .husky/pre-commit
-```
-
-### Hooks too slow
-
-**Cause:** Running too many checks.
-
-**Solution:**
-- Move slow checks from `pre-commit` to `pre-push`
-- Add `--fast` flag to tasks if available
-- Parallelize independent checks
-
----
-
-## Best Practices
-
-### 1. Keep pre-commit Fast (< 1s)
-
-Users commit frequently. Slow hooks are annoying.
-
-**Fast checks for pre-commit:**
-- Linting staged files only
-- Founder rules on changed files only
-- Quick syntax checks
-
-**Slow checks for pre-push:**
-- Full test suite
-- Type checking entire codebase
-- Build validation
-
-### 2. Provide Clear Error Messages
-
-```bash
-# ✅ Good
-echo "❌ Commit message must start with 'feat:', 'fix:', or 'chore:'"
-echo "   Example: feat(backend): add user authentication"
-
-# ❌ Bad
-echo "Invalid commit"
-```
-
-### 3. Exit Codes Matter
-
-```bash
-# Hook fails on non-zero exit
-task founder:rules:check || exit 1
-
-# Hook continues even if command fails
-task founder:rules:check || true  # DON'T DO THIS
-```
-
-### 4. Document Bypass Instructions
-
-Include bypass instructions in error output for emergencies.
-
----
-
-## Integration with Other Systems
-
-### Same Checks in CI
-
-`.github/workflows/ci.yml` runs the **same tasks**:
-
-```yaml
-- name: Check Founder Rules
-  run: task founder:rules:check
-
-- name: Run Smoke Tests
-  run: |
-    task qa:smoke:backend
-    task qa:smoke:frontend
-```
-
-**Benefit:** If hooks pass locally, CI will pass too.
-
-### Same Checks in Cursor
-
-Developers can run manually:
-
-```bash
-task founder:rules:check      # Pre-commit check
-task qa:smoke:backend         # Pre-push check (backend)
-```
-
-### Same Checks via Claude
-
-Claude Skills can trigger:
-
-```
-"Run the pre-commit checks"
-→ Executes: task founder:rules:check
+# Emergency bypass (use sparingly)
+HUSKY=0 git push
 ```
 
 ---
 
-## Maintenance
+## Configuration
 
-### Updating Hooks
+### Enabling/Disabling Hooks
 
-Hooks are version-controlled. To update:
-
-1. Edit hook file (e.g., `.husky/pre-commit`)
-2. Test locally: `.husky/pre-commit`
-3. Commit and push
-4. Team gets updates on next `git pull`
-
-### Adding New Hooks
-
+**Disable temporarily:**
 ```bash
-# Create new hook
-bunx husky add .husky/post-merge "task shared:check-dependencies"
-
-# Make executable
-chmod +x .husky/post-merge
-
-# Commit
-git add .husky/post-merge
-git commit -m "chore: add post-merge dependency check"
+export HUSKY=0
+git commit ...
+git push ...
+unset HUSKY
 ```
 
-### Removing Hooks
-
+**Disable permanently (not recommended):**
 ```bash
-# Delete hook file
-rm .husky/pre-commit
+# Remove .husky/ directory or rename hooks
+```
 
-# Commit
-git add .husky/pre-commit
-git commit -m "chore: remove pre-commit hook"
+### Modifying Hooks
+
+**Location:** `.husky/pre-commit`, `.husky/pre-push`
+
+**After modifying:**
+```bash
+chmod +x .husky/pre-push
 ```
 
 ---
 
-## Related Documentation
+## Integration with Vibe System
 
-- `automation/README.md` - Scripts called by hooks
-- `.cursor/commands/README.md` - Task command reference
-- `.claude-skills/README.md` - AI integration
-- `FR-013-main.md` - Unified automation architecture
-- Husky docs: https://typicode.github.io/husky/
+### Vibe Manager Ownership
+
+The **vibe_manager_vibe** is responsible for:
+- ✅ Maintaining clean root directory
+- ✅ Organizing documentation
+- ✅ Ensuring founder rules are enforced
+- ✅ Managing git hooks that enforce organization
+
+**Pre-push hook** is a vibe_manager responsibility because:
+- It manages root documentation cleanup
+- It enforces organizational standards
+- It ensures quality before code leaves local environment
 
 ---
 
-**Last Updated:** 2025-11-07  
-**Status:** Phase 4 - Hooks Defined (Not Yet Installed)  
-**Maintainer:** Founder
-
+**Last Updated:** 2025-11-09  
+**See Also:**
+- `automation/scripts/cleanup-root-docs.mjs` - Cleanup script
+- `vibes/vibe_manager_vibe.json` - Vibe manager definition
+- `VIBE_OWNERSHIP_MAP.md` - What vibe_manager owns

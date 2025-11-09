@@ -71,12 +71,14 @@ task qa:smoke:all              # Run all smoke tests
 - **frontend_vibe** → Frontend/UI work (playwright, svelte, figma, vercel)
 - **infra_vibe** → DevOps/automation (github, vercel, mcp-builder, skill-creator)
 - **qa_vibe** → Testing/QA (playwright, encore-mcp, webapp-testing)
+- **vibe_manager_vibe** → Vibe/skill/MCP organization (graphiti, github)
 
 **Examples:**
 - "Load backend_vibe and optimize agent state" → Uses encore-mcp, backend-debugging skill
 - "Load frontend_vibe and build nav component" → Uses playwright, svelte docs
 - "Load qa_vibe and write E2E tests" → Uses webapp-testing skill, playwright
 - "Load infra_vibe and create MCP server" → Uses @mcp-builder_skill
+- "Load vibe_manager_vibe and consolidate commands" → Manages organizational infrastructure
 
 **See:** `vibes/README.md` for full vibe decision tree and workflow patterns
 

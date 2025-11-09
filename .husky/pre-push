@@ -1,7 +1,16 @@
 #!/bin/sh
 # Husky pre-push hook
-# Runs smoke tests + E2E tests before allowing push
+# 1. Cleanup root documentation (vibe_manager_vibe responsibility)
+# 2. Run smoke tests
+# 3. Run E2E tests
 
+echo "🧹 Vibe Manager: Cleaning up root documentation..."
+echo ""
+
+# Clean up temporary/analysis docs from root
+node automation/scripts/cleanup-root-docs.mjs || echo "⚠️  Cleanup had warnings (non-blocking)"
+
+echo ""
 echo "🧪 Running smoke tests before push (bun run qa:smoke)..."
 echo ""
 
@@ -16,5 +25,5 @@ echo ""
 bun run test:e2e:ci || exit 1
 
 echo ""
-echo "✅ All smoke tests and E2E tests passed - proceeding with push"
+echo "✅ All checks passed - proceeding with push"
 

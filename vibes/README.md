@@ -26,6 +26,7 @@
 | **`frontend_vibe`** | Frontend/UI work | playwright, svelte, figma, vercel | frontend-debugging, frontend-development, webapp-testing |
 | **`infra_vibe`** | DevOps/automation | github, vercel | mcp-builder, skill-creator, graphiti-mcp-usage |
 | **`qa_vibe`** | Testing/QA | playwright, encore-mcp, github | webapp-testing, backend-testing |
+| **`vibe_manager_vibe`** | Vibe/skill/MCP organization | graphiti, github | skill-creator, mcp-builder, graphiti-mcp-usage |
 
 ---
 
@@ -67,8 +68,11 @@
 ├─ Testing, QA, smoke tests, E2E flows, Playwright?
 │  └─> Load qa_vibe
 │
-└─ Automation, MCP servers, skills, DevOps, CI/CD?
-   └─> Load infra_vibe
+├─ Automation, MCP servers, skills, DevOps, CI/CD?
+│  └─> Load infra_vibe
+│
+└─ Vibes, skills, MCP config, root docs, organizational infrastructure?
+   └─> Load vibe_manager_vibe
 ```
 
 ---
@@ -270,6 +274,44 @@ task frontend:test           # Frontend unit tests
 - **E2E Creation:** Load @webapp-testing → Identify journey → Write test → Debug via playwright → Verify deterministic
 - **API Testing:** Test via encore-mcp → Write test in backend → Run tests → Document
 - **Debugging:** Reproduce → Screenshot → Check traces → Systematic analysis → Document
+
+---
+
+### 🎛️ Vibe Manager Vibe (Meta Infrastructure)
+
+**File:** `vibe_manager_vibe.json`
+
+**Purpose:** Manages the organizational layer - vibes, skills, MCP tools, root documentation, and coding agent infrastructure.
+
+**Core Responsibilities:**
+- **Vibes:** All vibe definitions in `vibes/` directory
+- **Skills:** All skill definitions in `.claude-skills/`
+- **MCP Registry:** `.cursor/mcp.json` and `.cursor/mcp.local.json`
+- **Root Docs:** `CLAUDE.md`, `README.md`, `WHAT_WE_ARE_MAKING.md`, etc.
+- **Rules:** `.cursor/rules/founder_rules.mdc`
+- **Task Organization:** `.cursor/commands/` structure and naming
+
+**MCP Tools:**
+- **graphiti** - Document organizational decisions
+- **github** - Manage repository structure
+
+**What Vibe Manager Does NOT Touch:**
+- ❌ Service code (`backend/`, `frontend/`)
+- ❌ Test implementation (owned by qa_vibe)
+- ❌ Deployment configs (owned by infra_vibe)
+
+**Workflow Patterns:**
+- **Create Vibe:** Search Graphiti → Identify tools → Create JSON → Assign skills → Document → Test
+- **Create Skill:** Use skill-creator → Choose type → Add to skills.json or SKILL.md → Assign to vibes
+- **Add MCP:** Config in mcp.json → Assign to vibes → Document → Test
+- **Reorganize Tasks:** Identify overlap → Consolidate → Update vibes/skills/docs → Test
+
+**Example Usage:**
+```
+"Load vibe_manager_vibe and create a new deployment_vibe"
+"Load vibe_manager_vibe and reorganize the testing commands"
+"Load vibe_manager_vibe and add Stripe MCP to backend_vibe"
+```
 
 ---
 
