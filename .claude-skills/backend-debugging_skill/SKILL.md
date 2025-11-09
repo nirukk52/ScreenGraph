@@ -1,144 +1,500 @@
+---
+name: backend-debugging
+description: This skill should be used when debugging Encore.ts backend code or test failures. Leverages Encore MCP tools for runtime introspection, database queries, trace analysis, and systematic 10-phase debugging. Use this when tests fail, debugging production issues, or analyzing system behavior.
+---
+
 # Backend Debugging Skill
 
-**Purpose:** Systematic 10-phase debugging procedure for Encore.ts backend issues.
+**Purpose:** Systematic debugging for Encore.ts backends using Encore MCP tools for runtime introspection.
 
 ---
 
 ## When to Use
 
-- Backend service errors or crashes
-- API endpoint failures
-- Database query issues
-- PubSub message delivery problems
-- Performance bottlenecks
+Use this skill when:
+- Backend tests fail and need investigation
+- API endpoints return unexpected results
+- Database queries produce wrong data
+- PubSub messages aren't being delivered
+- Performance issues or bottlenecks
+- Analyzing agent run failures
+- Understanding system behavior in production
+
+**Prerequisite:** `encore run` must be active for MCP tools to work
+
+---
+
+## Encore MCP Tools - Your Primary Debugging Interface 🔥
+
+**Key Principle:** Always use Encore MCP tools first before manual inspection
+
+### Why Encore MCP?
+
+1. **Programmatic** - Query systems via API, not manual clicks
+2. **Repeatable** - Same queries work every time
+3. **AI-Friendly** - Claude can use tools directly
+4. **Fast** - No dashboard navigation needed
+5. **Version Controlled** - Save queries for reuse
+
+### MCP Tool Categories
+
+| Category | Tools | Use Case |
+|----------|-------|----------|
+| **Database** | `query_database`, `get_databases` | Inspect data, validate state |
+| **Services** | `get_services`, `call_endpoint` | Map APIs, test endpoints |
+| **Traces** | `get_traces`, `get_trace_spans` | Analyze latency, find errors |
+| **PubSub** | `get_pubsub` | Verify subscriptions, message flows |
+| **Storage** | `get_storage_buckets`, `get_objects` | Check artifacts, files |
+| **Metrics** | `get_metrics` | Monitor performance |
 
 ---
 
 ## 10-Phase Debugging Process
 
 ### Phase 1: Health Check
+
 ```bash
 task backend:health
 task backend:logs
 ```
 
+**What to look for:**
+- Is backend responding?
+- Any crash logs?
+- Database connected?
+
 ### Phase 2: Service Status
+
 ```bash
 task founder:servers:status
 encore logs
 ```
 
+**What to look for:**
+- Are all services running?
+- Any error messages?
+- Worker subscriptions active?
+
 ### Phase 3: Database State
-```bash
-task backend:db:shell
-# Check recent migrations
+
+**Use Encore MCP:**
+
+```typescript
+// Get database schema
+mcp_encore-mcp_get_databases({ include_tables: true })
+
+// Query recent runs
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: "SELECT run_id, status, stop_reason FROM runs ORDER BY created_at DESC LIMIT 5"
+  }]
+})
 ```
 
-### Phase 4: Encore Dashboard
-- Open http://localhost:9400
-- Review traces, logs, metrics
+**What to look for:**
+- Recent runs and their statuses
+- Any failed runs?
+- Stop reasons meaningful?
 
-### Phase 5: Type Safety
+### Phase 4: Service Introspection
+
+**Use Encore MCP:**
+
+```typescript
+// Get all services and endpoints
+mcp_encore-mcp_get_services({ 
+  include_endpoints: true,
+  include_schemas: true
+})
+
+// Get specific service
+mcp_encore-mcp_get_services({
+  services: ["run", "agent"],
+  include_endpoints: true
+})
+```
+
+**What to look for:**
+- Endpoint signatures correct?
+- Types match expectations?
+- All expected services present?
+
+### Phase 5: Type Safety Check
+
 ```bash
 task backend:test
-# Check for type errors
 ```
 
-### Phase 6: Structured Logging
-- Review `encore.dev/log` usage
-- Check for proper context fields
+**What to look for:**
+- TypeScript errors?
+- Type mismatches?
+- Missing properties?
 
-### Phase 7: PubSub/Outbox
-- Verify message delivery
-- Check outbox publisher status
+### Phase 6: Structured Logging Analysis
 
-### Phase 8: Isolation Testing
-- Test endpoint in isolation
-- Mock dependencies
+**Use Encore MCP to query logs:**
 
-### Phase 9: Integration Tests
+```typescript
+// Get run events (structured logs)
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: `
+      SELECT kind, sequence, payload, created_at
+      FROM run_events 
+      WHERE run_id = '01K9KEVM6VFB6M5AB7AE04Y1RW'
+      ORDER BY sequence
+    `
+  }]
+})
+```
+
+**What to look for:**
+- Event sequence complete?
+- Missing events in timeline?
+- Error payloads with details?
+
+### Phase 7: PubSub/Outbox Analysis
+
+**Use Encore MCP:**
+
+```typescript
+// Get all PubSub topics and subscriptions
+mcp_encore-mcp_get_pubsub()
+
+// Query run job status
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: `
+      SELECT run_id, status, processing_by
+      FROM runs 
+      WHERE status = 'queued'
+      ORDER BY created_at DESC
+    `
+  }]
+})
+```
+
+**What to look for:**
+- Subscriptions registered?
+- Jobs being picked up?
+- Workers claiming runs?
+
+**Critical Notes:**
+- `encore test`: Subscriptions only load if imported
+- `encore run`: All subscriptions auto-loaded
+- Import statement: `import "../orchestrator/subscription"`
+
+### Phase 8: Trace Analysis
+
+**Use Encore MCP:**
+
+```typescript
+// Get recent traces
+mcp_encore-mcp_get_traces({ 
+  limit: "10",
+  service: "run"
+})
+
+// Get detailed trace spans
+mcp_encore-mcp_get_trace_spans({ 
+  trace_ids: ["trace_id_here"]
+})
+```
+
+**What to look for:**
+- Slow endpoints?
+- Failed requests?
+- Timeout issues?
+
+### Phase 9: Isolation Testing
+
+**Test endpoint in isolation:**
+
+```typescript
+// Use MCP to call endpoint directly
+mcp_encore-mcp_call_endpoint({
+  service: "run",
+  endpoint: "start",
+  method: "POST",
+  path: "/run.start",
+  payload: JSON.stringify({
+    apkPath: "/path/to/test.apk",
+    appiumServerUrl: "http://127.0.0.1:4723/",
+    packageName: "com.example.test",
+    appActivity: ".*"
+  })
+})
+```
+
+**What to look for:**
+- Does endpoint respond?
+- Correct response type?
+- Expected side effects?
+
+### Phase 10: Integration Tests
+
+**Use `backend-testing` skill:**
+
 ```bash
-encore test
+encore test agent/tests/metrics.test.ts
 ```
 
-### Phase 10: MCP Tools
-- Use Encore MCP for runtime introspection
-- Check metadata, traces, database schemas
+**What to look for:**
+- Tests passing?
+- Assertions failing?
+- Timeouts occurring?
+
+See: `.claude-skills/backend-testing_skill/SKILL.md`
 
 ---
 
-## Common Issues
+## Common Debugging Queries
 
-### Database Connection Failures
-- Check migrations applied
+### 1. Get Latest Run
+
+```typescript
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: "SELECT run_id, status, stop_reason, created_at FROM runs ORDER BY created_at DESC LIMIT 1"
+  }]
+})
+```
+
+### 2. Get Run Events Timeline
+
+```typescript
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: `
+      SELECT kind, sequence, payload, created_at
+      FROM run_events 
+      WHERE run_id = '01K9KEVM6VFB6M5AB7AE04Y1RW'
+      ORDER BY sequence
+    `
+  }]
+})
+```
+
+### 3. Get Agent State
+
+```typescript
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: `
+      SELECT 
+        snapshot->>'nodeName' as node_name,
+        snapshot->>'status' as status,
+        snapshot->>'stopReason' as stop_reason,
+        created_at
+      FROM agent_state_snapshots 
+      WHERE run_id = '01K9KEVM6VFB6M5AB7AE04Y1RW'
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `
+  }]
+})
+```
+
+### 4. Count Discovered Screens
+
+```typescript
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: `
+      SELECT COUNT(DISTINCT screen_id) as screen_count
+      FROM graph_persistence_outcomes 
+      WHERE run_id = '01K9KEVM6VFB6M5AB7AE04Y1RW'
+        AND upsert_kind = 'discovered'
+    `
+  }]
+})
+```
+
+### 5. Find Failed Runs
+
+```typescript
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: `
+      SELECT run_id, stop_reason, created_at 
+      FROM runs 
+      WHERE status = 'failed' 
+      ORDER BY created_at DESC 
+      LIMIT 10
+    `
+  }]
+})
+```
+
+### 6. Find Runs Stuck at Specific Node
+
+```typescript
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: `
+      SELECT r.run_id, a.snapshot->>'nodeName' as stuck_node, r.stop_reason
+      FROM runs r
+      JOIN agent_state_snapshots a ON r.run_id = a.run_id
+      WHERE r.status = 'failed'
+        AND a.created_at = (
+          SELECT MAX(created_at) 
+          FROM agent_state_snapshots 
+          WHERE run_id = r.run_id
+        )
+      ORDER BY r.created_at DESC
+      LIMIT 10
+    `
+  }]
+})
+```
+
+### 7. Compare Successful vs Failed Runs
+
+```typescript
+// Get event count for successful run
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: "SELECT COUNT(*) as event_count FROM run_events WHERE run_id = 'successful_run_id'"
+  }]
+})
+
+// Get event count for failed run
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: "SELECT COUNT(*) as event_count FROM run_events WHERE run_id = 'failed_run_id'"
+  }]
+})
+
+// Find missing events in failed run
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: `
+      SELECT DISTINCT kind 
+      FROM run_events 
+      WHERE run_id = 'successful_run_id'
+      AND kind NOT IN (
+        SELECT kind FROM run_events WHERE run_id = 'failed_run_id'
+      )
+    `
+  }]
+})
+```
+
+---
+
+## Common Backend Issues
+
+### Issue 1: Database Connection Failures
+
+**Symptoms:**
+- "failed to connect to database"
+- Timeout errors
+
+**Debug with MCP:**
+```typescript
+mcp_encore-mcp_get_databases({ include_tables: true })
+```
+
+**Fixes:**
+- Check migrations applied: `task backend:db:migrate`
 - Verify connection string
-- Reset database if needed: `task founder:workflows:db-reset`
+- Reset database: `task founder:workflows:db-reset`
 
-### Type Errors
+### Issue 2: Type Errors
+
+**Symptoms:**
+- TypeScript compilation errors
+- Type mismatches at runtime
+
+**Debug with MCP:**
+```typescript
+mcp_encore-mcp_get_services({
+  services: ["run"],
+  include_schemas: true
+})
+```
+
+**Fixes:**
 - Regenerate client: `task founder:workflows:regen-client`
 - Check for `any` types (forbidden)
+- Validate endpoint signatures
 
-### Logging Issues
+### Issue 3: PubSub Messages Not Delivered
+
+**Symptoms:**
+- Jobs stay in "queued" status
+- Worker not picking up messages
+
+**Debug with MCP:**
+```typescript
+// Check subscriptions
+mcp_encore-mcp_get_pubsub()
+
+// Check queued runs
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: "SELECT run_id, status, created_at FROM runs WHERE status = 'queued' ORDER BY created_at"
+  }]
+})
+```
+
+**Fixes:**
+- In `encore test`: Import subscription
+- In `encore run`: Check worker logs
+- Verify subscription registered
+
+### Issue 4: Logging Issues
+
+**Symptoms:**
+- No structured logs
+- `console.log` being used
+
+**Fixes:**
 - Never use `console.log` (use `encore.dev/log`)
-- Always include structured context
+- Always include structured context: `module`, `actor`, `runId`
 
 ---
 
-## BUG-010 Case Study: Advanced Debugging Techniques
-
-### Diagnostic Scripts Arsenal
-
-Created during BUG-010 investigation (all in `backend/scripts/`):
-
-1. **`inspect-run.ts`** - Complete run event timeline
-   ```bash
-   bunx tsx backend/scripts/inspect-run.ts <runId>
-   # Shows: events, graph outcomes, cursor state, run record
-   ```
-
-2. **`check-agent-state.ts`** - Agent state snapshots
-   ```bash
-   bunx tsx backend/scripts/check-agent-state.ts <runId>
-   # Shows: nodeName, status, counters, budgets, timestamps
-   ```
-
-3. **`check-cursor-ordering.ts`** - Projector cursor health
-   ```bash
-   bunx tsx backend/scripts/check-cursor-ordering.ts
-   # Reveals: cursor limit issues, stuck cursors, ordering problems
-   ```
-
-4. **`find-completed-runs.ts`** / **`find-latest-run.ts`**
-   ```bash
-   bunx tsx backend/scripts/find-completed-runs.ts  # Successful runs
-   bunx tsx backend/scripts/find-latest-run.ts      # Recent runs (any status)
-   ```
-
-5. **`test-projector.ts`** - Isolated projector testing
-   ```bash
-   bunx tsx backend/scripts/test-projector.ts <runId>
-   # Tests: cursor hydration, event fetch, screen projection
-   ```
+## Advanced Debugging Techniques
 
 ### Git Forensics for Regressions
 
 **Timeline Method:**
 ```bash
 # 1. Find last successful run
-bunx tsx backend/scripts/find-completed-runs.ts
-# Example: 01K9G8YXY6MG7J7875A5AM9Z4H at 2025-11-07 17:03
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: "SELECT run_id, created_at FROM runs WHERE status = 'completed' ORDER BY created_at DESC LIMIT 1"
+  }]
+})
 
 # 2. Find first failed run
-bunx tsx backend/scripts/find-latest-run.ts
-# Example: 01K9GDQF9JQFM8A4Q5WGMARPAT at 2025-11-07 18:26
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: "SELECT run_id, created_at FROM runs WHERE status = 'failed' ORDER BY created_at LIMIT 1"
+  }]
+})
 
 # 3. Identify commits in regression window
 git log --oneline --since="Nov 7 17:00" --until="Nov 7 19:00"
 
 # 4. Examine suspect commits
-git show <commit_hash> --stat               # Files changed
-git show <commit_hash> <file_path>          # Detailed diff
-git show <commit_hash>~1:<file_path>       # Before version
+git show <commit_hash> --stat
 ```
 
 **Binary Search Method:**
@@ -146,137 +502,118 @@ git show <commit_hash>~1:<file_path>       # Before version
 git bisect start
 git bisect bad HEAD                         # Current broken state
 git bisect good <last_known_good_commit>    # From timeline
-# Test each commit automatically until culprit found
-git bisect reset                            # Exit bisect mode
-```
-
-### Database Query Analysis
-
-**Stop Node Hang (BUG-010 Example):**
-```typescript
-// PROBLEM: Query inside node execution blocks XState machine
-const rows = await db.query`SELECT COUNT(*) FROM graph_persistence_outcomes WHERE run_id = ${runId}`;
-
-// SYMPTOMS:
-// - Worker times out after 30s lease
-// - Agent state shows "running" but stuck
-// - No "agent.node.finished" event emitted
-
-// DIAGNOSIS:
-// 1. Check worker lease timeout logs
-// 2. Inspect agent state (last snapshot shows incomplete node)
-// 3. Test query in isolation (encore exec bunx tsx test-query.ts)
-// 4. Profile query execution time
-
-// FIX:
-// Move heavy queries OUTSIDE critical execution path
-// Use lightweight operations in terminal nodes
-```
-
-### Cursor Limit Investigation
-
-**Projector Stalling Pattern:**
-```typescript
-// SYMPTOM: Recent runs never get graph_persistence_outcomes
-// CHECK: backend/graph/projector.ts
-const CURSOR_LIMIT = 50;  // ❌ Only processes 50 oldest cursors
-
-// DIAGNOSIS:
-bunx tsx backend/scripts/check-cursor-ordering.ts
-// Output: 75 total cursors, positions 51-75 never processed
-
-// VALIDATION:
-SELECT COUNT(*) FROM graph_projection_cursors;  -- Shows 75
-SELECT * FROM graph_projection_cursors ORDER BY updated_at ASC LIMIT 50;  -- Top 50
-SELECT * FROM graph_projection_cursors ORDER BY updated_at DESC LIMIT 10; -- Recent (excluded)
-
-// FIX:
-const CURSOR_LIMIT = 200;  // Scale with concurrent runs
+# Test each commit
+git bisect reset
 ```
 
 ### Worker State Inspection
 
-**Understanding Worker Lifecycle:**
-```bash
-# 1. Check run claim status
-SELECT processing_by, processing_started_at FROM runs WHERE run_id = '<runId>';
-
-# 2. Verify lease heartbeat
-# Watch Encore logs for "extending lease" messages
-
-# 3. Inspect final disposition
-SELECT status, stop_reason FROM runs WHERE run_id = '<runId>';
-# status=failed indicates worker crash/timeout before Stop node
+```typescript
+// Check run claim status
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: "SELECT processing_by, processing_started_at FROM runs WHERE run_id = 'xxx'"
+  }]
+})
 ```
 
-### Phase 11: Advanced Regression Analysis (NEW)
+### Database Query Analysis
 
-When standard phases 1-10 don't reveal the issue:
+**Symptom:** Node execution hangs
 
-1. **Compare successful vs failed run events side-by-side**
-   ```bash
-   diff <(bunx tsx backend/scripts/inspect-run.ts <good_run>) \
-        <(bunx tsx backend/scripts/inspect-run.ts <bad_run>)
-   ```
+**Diagnosis:**
+```typescript
+// Check agent state
+mcp_encore-mcp_query_database({
+  queries: [{
+    database: "db",
+    query: `
+      SELECT snapshot->>'nodeName' as node, created_at
+      FROM agent_state_snapshots 
+      WHERE run_id = 'xxx'
+      ORDER BY created_at DESC
+    `
+  }]
+})
+```
 
-2. **Identify missing events in sequence**
-   - Successful run: 19 events (includes Stop at step 6)
-   - Failed run: 15 events (stops at WaitIdle step 5)
-   - Missing: `agent.node.started Stop`, `agent.run.finished`
+**Fix:** Move heavy queries outside critical execution path
 
-3. **Trace XState machine transitions**
-   - Add logging to guards and actions in `agent.machine.factory.ts`
-   - Monitor which guards evaluate true/false
-   - Identify unexpected state transitions
+---
 
-4. **Test node execution in isolation**
-   ```typescript
-   // scripts/test-node-isolation.ts
-   import { stop } from "../agent/nodes/terminal/Stop/node";
-   const input = { /* build input from failed run state */ };
-   const result = await stop(input);
-   console.log("Node output:", result);
-   ```
-
-### Common Backend Regression Patterns
+## Common Backend Regression Patterns
 
 | Issue | Symptom | Investigation | Common Cause |
 |-------|---------|---------------|--------------|
-| **Cursor Limit** | Recent runs stuck at seq=1 | `check-cursor-ordering.ts` | `CURSOR_LIMIT` too low |
-| **Node Hangs** | Agent state "running" indefinitely | `check-agent-state.ts` | DB query blocks execution |
+| **Node Hangs** | Agent state "running" indefinitely | Check agent snapshots | DB query blocks execution |
 | **Lease Timeout** | Run fails after 30s | Worker logs, database `processing_by` | Heavy sync operations |
-| **Missing Events** | Timeline incomplete | `inspect-run.ts`, compare with baseline | Event not emitted or lost |
-| **State Machine Stuck** | No transitions after event | XState logs, guard evaluation | Guard logic error |
+| **Missing Events** | Timeline incomplete | Compare with baseline | Event not emitted |
+| **State Machine Stuck** | No transitions after event | XState logs | Guard logic error |
 
-### Lesson: Avoid Heavy Operations in Critical Path
+---
 
-**Bad Pattern (BUG-010):**
-```typescript
-export async function stop(input: StopInput) {
-  // ❌ DB query inside terminal node execution
-  const rows = await db.query`SELECT COUNT(*) ...`;
-  // If query hangs, entire machine stalls
-}
-```
+## MCP Tool Reference
 
-**Good Pattern:**
-```typescript
-export async function stop(input: StopInput) {
-  // ✅ Use pre-computed metrics from input
-  const metrics = input.finalRunMetrics;
-  // Terminal nodes must be lightweight and deterministic
-}
-```
+### Database Tools
 
-**Rationale:**
-- Terminal nodes finalize run state → must complete reliably
-- Heavy queries → post-run analytics layer
-- Critical path → optimized for latency, not accuracy
+**`mcp_encore-mcp_get_databases`**
+- Get database schema and table structure
+- Use when: Writing queries, understanding relationships
+
+**`mcp_encore-mcp_query_database`**
+- Query database with custom SQL
+- Use when: Inspecting run status, events, graph data
+
+### Service Tools
+
+**`mcp_encore-mcp_get_services`**
+- Get service metadata and endpoints
+- Use when: Understanding API structure, validating types
+
+**`mcp_encore-mcp_call_endpoint`**
+- Call endpoint directly
+- Use when: Testing endpoints in isolation
+
+### Trace Tools
+
+**`mcp_encore-mcp_get_traces`**
+- List recent request traces
+- Use when: Analyzing performance, finding slow endpoints
+
+**`mcp_encore-mcp_get_trace_spans`**
+- Get detailed trace spans
+- Use when: Deep debugging of request flows
+
+### PubSub Tools
+
+**`mcp_encore-mcp_get_pubsub`**
+- List topics and subscriptions
+- Use when: Verifying message flows, debugging subscriptions
+
+---
+
+## Integration with Backend Testing
+
+When tests fail, use this debugging workflow:
+
+1. **Run test** (from `backend-testing` skill)
+2. **Get latest run ID** (MCP query)
+3. **Inspect run events** (MCP query)
+4. **Check agent state** (MCP query)
+5. **Analyze traces** (MCP tool)
+6. **Fix code** (from `backend_coding_rules.mdc`)
+7. **Re-run test** (verify fix)
 
 ---
 
 ## References
-- BUG-010 RCA: `jira/bugs/BUG-010-run-page-regressions/RCA.md`
-- Diagnostic Scripts: `backend/scripts/`
-- Encore Debugging: `backend_coding_rules.mdc`
 
+- **Backend Testing**: `.claude-skills/backend-testing_skill/SKILL.md`
+- **Backend Coding Rules**: `.cursor/rules/backend_coding_rules.mdc`
+- **Encore MCP Workflow**: `.claude-skills/ENCORE_MCP_TESTING_WORKFLOW.md`
+- **Encore Documentation**: Use `mcp_encore-mcp_search_docs`
+
+---
+
+**Last Updated**: 2025-11-09

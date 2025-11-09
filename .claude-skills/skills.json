@@ -390,6 +390,14 @@
       "skill_file": "template_skill/SKILL.md",
       "category": "skill-management",
       "status": "active"
+    },
+    {
+      "name": "backend-testing",
+      "description": "Comprehensive guidance for testing Encore.ts backends. Covers test environment boundaries (encore test vs encore run), Encore MCP integration for debugging, database testing, PubSub testing with subscriptions, and trace analysis. Use when writing, debugging, or running backend tests",
+      "type": "knowledge",
+      "skill_file": "backend-testing_skill/SKILL.md",
+      "category": "testing",
+      "status": "active"
     }
   ],
   "categories": {

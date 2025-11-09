@@ -165,6 +165,7 @@ task founder:servers:status          # Check service status
 task qa:smoke:backend                # Backend smoke test
 task qa:smoke:frontend               # Frontend smoke test
 task qa:smoke:all                    # All smoke tests
+task backend:integration:metrics     # Backend metrics integration test
 
 # Quality
 task founder:rules:check             # Validate founder rules
@@ -198,8 +199,9 @@ See: `.claude-skills/skills.json` for 33 available skills
 
 **Skill Types:**
 - **Task-based** (30 skills): Automation workflows in `skills.json`
-- **Knowledge-based** (5 skills): Playbooks captured in `SKILL.md`
-  - `backend-debugging` - 10-phase Encore.ts debugging
+- **Knowledge-based** (6 skills): Playbooks captured in `SKILL.md`
+  - `backend-testing` - Encore.ts testing with MCP integration (encore test vs encore run)
+  - `backend-debugging` - 10-phase Encore.ts debugging with MCP tools
   - `frontend-debugging` - 10-phase SvelteKit debugging
   - `webapp-testing` - Playwright-first ScreenGraph testing playbook (includes Cursor tooling appendix)
   - `graphiti-mcp-usage` - Graphiti knowledge-management workflow
@@ -360,8 +362,11 @@ task backend:db:shell
 ```bash
 cd .cursor
 
-# Backend tests
+# Backend unit tests
 task backend:test
+
+# Backend metrics integration test (requires Appium + device)
+task backend:integration:metrics
 
 # Frontend tests
 task frontend:test
@@ -370,12 +375,27 @@ task frontend:test
 task qa:smoke:all
 ```
 
+**Prerequisites for Integration Tests:**
+- ✅ Appium server running (start manually via Appium Inspector)
+- ✅ Android emulator/device connected (start via Android Studio)
+- ✅ App from .env is installed (VITE_PACKAGE_NAME)
+- ✅ **No `encore run` needed** - test runs in isolated `encore test` runtime
+- ✅ **Use Encore MCP tools** for debugging instead of dashboard
+
 ### Legacy Commands (Still Work)
 ```bash
 # Old way (still functional)
 cd frontend && bun run gen
 cd backend && encore db reset
 cd backend && encore test
+
+# Direct test execution (no prerequisite checks)
+cd backend && encore test agent/tests/metrics.test.ts
+
+# Debug tests with Encore MCP (recommended)
+# Use mcp_encore-mcp_query_database to inspect test results
+# Use mcp_encore-mcp_get_services for service metadata
+# See: .claude-skills/ENCORE_MCP_TESTING_WORKFLOW.md
 ```
 
 ---

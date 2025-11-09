@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { bool, cleanEnv, port, str, url } from "envalid";
+import { bool, cleanEnv, num, port, str, url } from "envalid";
 
 /**
  * env exposes validated, typed environment variables for the backend runtime.
@@ -52,6 +52,10 @@ export const env = cleanEnv(process.env, {
     default: true,
     desc: "Toggle for enabling the cloud-based XState inspector",
   }),
+  EXPECTED_UNIQUE_SCREENS_DISCOVERED: num({
+    default: 1,
+    desc: "Expected number of unique screens discovered for deterministic testing with default app config",
+  }),
 });
 
 export const {
@@ -66,4 +70,5 @@ export const {
   ENABLE_MULTI_WORKTREE,
   ENABLE_GRAPH_STREAM,
   XSTATE_INSPECTOR_ENABLED,
+  EXPECTED_UNIQUE_SCREENS_DISCOVERED,
 } = env;
