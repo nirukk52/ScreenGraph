@@ -31,8 +31,9 @@ description: "Non-negotiable development standards for ScreenGraph. Enforces arc
 15. [Single Environment Execution](#single-environment-execution)
 16. [Worktree Usage](#worktree-usage)
 17. [Standard Ports](#standard-ports)
-18. [Cursor Modes](#cursor-dropdown-modes)
-19. [Enforcement Rules](#enforcement-what-agents-cannot-do)
+18. [Git Operations](#git-operations)
+19. [Cursor Modes](#cursor-dropdown-modes)
+20. [Enforcement Rules](#enforcement-what-agents-cannot-do)
 
 ---
 
@@ -341,6 +342,23 @@ cd frontend && bun run dev # Service-specific when needed
 - Scripts `./automation/scripts/dev-backend.sh` and `./automation/scripts/dev-frontend.sh` respect `.env` values.
 - Husky/CI always start services on the standard ports defined above.
 
+### Git Operations
+
+**CRITICAL: Git commits and pushes require explicit founder approval**
+
+- ❌ **NEVER commit changes** unless the founder explicitly says "commit" or "commit this" in the prompt
+- ❌ **NEVER push changes** unless the founder explicitly says "push" or "push this" in the prompt
+- ❌ **NEVER run `git commit`** proactively, even if you think the work is complete
+- ❌ **NEVER stage files** (`git add`) unless explicitly requested
+
+**Rationale:**
+- The founder controls when code is committed to history
+- Commits are permanent and must be intentional
+- AI agents should implement changes, not decide when they're "done"
+- Pre-commit hooks may have side effects that need manual oversight
+
+**Violation:** If you commit or push without explicit founder approval, you are being too proactive and overstepping boundaries.
+
 ---
 
-**Last Updated**: 2025-11-07
+**Last Updated**: 2025-11-09
