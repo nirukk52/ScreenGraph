@@ -1,5 +1,5 @@
 <script lang="ts">
-import { onMount, onDestroy } from "svelte";
+import { onDestroy } from "svelte";
 import { page } from "$app/state";
 import autoAnimate from "@formkit/auto-animate";
 import { streamRunEvents, streamGraphEvents, cancelRun } from "$lib/api";
@@ -14,10 +14,40 @@ let error = $state("");
 let cleanup = $state(null);
 let graphCleanup = $state(null);
 
-onMount(() => {
-  runId = page.params.id || "";
-  startStreaming();
-  startGraphStreaming();
+/**
+ * Reacts to route param changes and resets component state.
+ * PURPOSE: Prevents stale screenshots from previous runs appearing when navigating between run pages.
+ * BUG-014 FIX: SvelteKit reuses component instances on same-route navigation, so we must explicitly
+ * reset state arrays and restart streams when page.params.id changes.
+ */
+$effect(() => {
+  const newRunId = page.params.id || "";
+  
+  // Cleanup previous streams if runId changed
+  if (newRunId !== runId && runId !== "") {
+    if (cleanup) {
+      cleanup();
+      cleanup = null;
+    }
+    if (graphCleanup) {
+      graphCleanup();
+      graphCleanup = null;
+    }
+  }
+  
+  // Reset state for new run
+  runId = newRunId;
+  events = [];
+  graphNodes = [];
+  graphEvents = [];
+  loading = true;
+  error = "";
+  
+  // Start streaming for new run
+  if (runId) {
+    startStreaming();
+    startGraphStreaming();
+  }
 });
 
 onDestroy(() => {
