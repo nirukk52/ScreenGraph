@@ -129,10 +129,10 @@ describe("Metrics Test", () => {
           kind: string;
           sequence: number;
         }>`
-          SELECT kind, sequence
+          SELECT kind, seq AS sequence
           FROM run_events
           WHERE run_id = ${runId}
-          ORDER BY sequence DESC
+          ORDER BY seq DESC
           LIMIT 5
         `;
         
@@ -178,7 +178,7 @@ describe("Metrics Test", () => {
         FROM run_events
         WHERE run_id = ${runId}
           AND kind = 'agent.run.finished'
-        ORDER BY sequence DESC
+        ORDER BY seq DESC
         LIMIT 1
       `;
 

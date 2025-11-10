@@ -9,7 +9,7 @@ export async function countUniqueScreensDiscovered(runId: string): Promise<numbe
     SELECT COUNT(*)::text as count
     FROM graph_persistence_outcomes
     WHERE run_id = ${runId}
-    AND upsert_kind = 'screen_discovered'
+    AND upsert_kind = 'discovered'
   `;
 
   return result ? Number.parseInt(result.count, 10) : 0;
@@ -25,7 +25,7 @@ export async function getUniqueScreensDiscovered(runId: string): Promise<string[
     SELECT screen_id
     FROM graph_persistence_outcomes
     WHERE run_id = ${runId}
-    AND upsert_kind = 'screen_discovered'
+    AND upsert_kind = 'discovered'
     ORDER BY created_at ASC
   `) {
     screens.push(row.screen_id);
