@@ -36,7 +36,18 @@ export type EventKind =
  */
 export type EventPayloadMap = {
   "agent.run.started": { startedAt: string };
-  "agent.run.finished": { finishedAt: string; stopReason: string };
+  "agent.run.finished": {
+    finishedAt: string;
+    stopReason: string;
+    disposition?: string;
+    basis?: string;
+    metrics?: {
+      totalIterationsExecuted: number;
+      uniqueScreensDiscoveredCount: number;
+      uniqueActionsPersistedCount: number;
+      runDurationInMilliseconds: number;
+    };
+  };
   "agent.run.failed": { reason: string };
   "agent.run.canceled": { canceledAt: string };
   "agent.run.continuation_decided": { action: string; rationale?: string };

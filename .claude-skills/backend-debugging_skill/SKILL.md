@@ -1,282 +1,416 @@
+---
+name: backend-debugging
+description: Systematic debugging for Encore.ts backend issues using diagnostic scripts, database queries, and structured logs. Use when backend tests fail, services crash, or async flows stall.
+---
+
 # Backend Debugging Skill
 
-**Purpose:** Systematic 10-phase debugging procedure for Encore.ts backend issues.
+## Purpose
+
+Systematic approach to debugging Encore.ts backend failures using:
+- Diagnostic scripts in `backend/scripts/`
+- Direct database queries
+- Structured log analysis
+- Test failure investigation
 
 ---
 
-## When to Use
+## Quick Debugging Workflow
 
-- Backend service errors or crashes
-- API endpoint failures
-- Database query issues
-- PubSub message delivery problems
-- Performance bottlenecks
+### Step 1: Identify What Failed
 
----
-
-## 10-Phase Debugging Process
-
-### Phase 1: Health Check
 ```bash
-task backend:health
-task backend:logs
+# Check test output
+encore test ./run/start.integration.test.ts
+
+# Look for:
+# - Which assertion failed
+# - Last logged status
+# - Error messages
 ```
 
-### Phase 2: Service Status
-```bash
-task founder:servers:status
-encore logs
+### Step 2: Query Database State
+
+```sql
+-- Check run status
+SELECT run_id, status, stop_reason, created_at
+FROM runs
+ORDER BY created_at DESC
+LIMIT 5;
+
+-- Check events emitted
+SELECT seq, kind, created_at
+FROM run_events
+WHERE run_id = '<runId>'
+ORDER BY seq;
+
+-- Check graph projection
+SELECT outcome_id, upsert_kind, screen_id
+FROM graph_persistence_outcomes
+WHERE run_id = '<runId>';
+
+-- Check agent state
+SELECT snapshot->>'nodeName' as node, snapshot->>'status' as status
+FROM run_state_snapshots
+WHERE run_id = '<runId>'
+ORDER BY step_ordinal DESC
+LIMIT 1;
 ```
 
-### Phase 3: Database State
+### Step 3: Use Diagnostic Scripts
+
 ```bash
-task backend:db:shell
-# Check recent migrations
-```
+# Inspect complete run timeline
+bunx tsx backend/scripts/inspect-run.ts <runId>
 
-### Phase 4: Encore Dashboard
-- Open http://localhost:9400
-- Review traces, logs, metrics
+# Check agent state snapshots
+bunx tsx backend/scripts/check-agent-state.ts <runId>
 
-### Phase 5: Type Safety
-```bash
-task backend:test
-# Check for type errors
-```
-
-### Phase 6: Structured Logging
-- Review `encore.dev/log` usage
-- Check for proper context fields
-
-### Phase 7: PubSub/Outbox
-- Verify message delivery
-- Check outbox publisher status
-
-### Phase 8: Isolation Testing
-- Test endpoint in isolation
-- Mock dependencies
-
-### Phase 9: Integration Tests
-```bash
-encore test
-```
-
-### Phase 10: MCP Tools
-- Use Encore MCP for runtime introspection
-- Check metadata, traces, database schemas
-
----
-
-## Common Issues
-
-### Database Connection Failures
-- Check migrations applied
-- Verify connection string
-- Reset database if needed: `task founder:workflows:db-reset`
-
-### Type Errors
-- Regenerate client: `task founder:workflows:regen-client`
-- Check for `any` types (forbidden)
-
-### Logging Issues
-- Never use `console.log` (use `encore.dev/log`)
-- Always include structured context
-
----
-
-## BUG-010 Case Study: Advanced Debugging Techniques
-
-### Diagnostic Scripts Arsenal
-
-Created during BUG-010 investigation (all in `backend/scripts/`):
-
-1. **`inspect-run.ts`** - Complete run event timeline
-   ```bash
-   bunx tsx backend/scripts/inspect-run.ts <runId>
-   # Shows: events, graph outcomes, cursor state, run record
-   ```
-
-2. **`check-agent-state.ts`** - Agent state snapshots
-   ```bash
-   bunx tsx backend/scripts/check-agent-state.ts <runId>
-   # Shows: nodeName, status, counters, budgets, timestamps
-   ```
-
-3. **`check-cursor-ordering.ts`** - Projector cursor health
-   ```bash
-   bunx tsx backend/scripts/check-cursor-ordering.ts
-   # Reveals: cursor limit issues, stuck cursors, ordering problems
-   ```
-
-4. **`find-completed-runs.ts`** / **`find-latest-run.ts`**
-   ```bash
-   bunx tsx backend/scripts/find-completed-runs.ts  # Successful runs
-   bunx tsx backend/scripts/find-latest-run.ts      # Recent runs (any status)
-   ```
-
-5. **`test-projector.ts`** - Isolated projector testing
-   ```bash
-   bunx tsx backend/scripts/test-projector.ts <runId>
-   # Tests: cursor hydration, event fetch, screen projection
-   ```
-
-### Git Forensics for Regressions
-
-**Timeline Method:**
-```bash
-# 1. Find last successful run
-bunx tsx backend/scripts/find-completed-runs.ts
-# Example: 01K9G8YXY6MG7J7875A5AM9Z4H at 2025-11-07 17:03
-
-# 2. Find first failed run
+# Find recent runs
 bunx tsx backend/scripts/find-latest-run.ts
-# Example: 01K9GDQF9JQFM8A4Q5WGMARPAT at 2025-11-07 18:26
 
-# 3. Identify commits in regression window
-git log --oneline --since="Nov 7 17:00" --until="Nov 7 19:00"
-
-# 4. Examine suspect commits
-git show <commit_hash> --stat               # Files changed
-git show <commit_hash> <file_path>          # Detailed diff
-git show <commit_hash>~1:<file_path>       # Before version
-```
-
-**Binary Search Method:**
-```bash
-git bisect start
-git bisect bad HEAD                         # Current broken state
-git bisect good <last_known_good_commit>    # From timeline
-# Test each commit automatically until culprit found
-git bisect reset                            # Exit bisect mode
-```
-
-### Database Query Analysis
-
-**Stop Node Hang (BUG-010 Example):**
-```typescript
-// PROBLEM: Query inside node execution blocks XState machine
-const rows = await db.query`SELECT COUNT(*) FROM graph_persistence_outcomes WHERE run_id = ${runId}`;
-
-// SYMPTOMS:
-// - Worker times out after 30s lease
-// - Agent state shows "running" but stuck
-// - No "agent.node.finished" event emitted
-
-// DIAGNOSIS:
-// 1. Check worker lease timeout logs
-// 2. Inspect agent state (last snapshot shows incomplete node)
-// 3. Test query in isolation (encore exec bunx tsx test-query.ts)
-// 4. Profile query execution time
-
-// FIX:
-// Move heavy queries OUTSIDE critical execution path
-// Use lightweight operations in terminal nodes
-```
-
-### Cursor Limit Investigation
-
-**Projector Stalling Pattern:**
-```typescript
-// SYMPTOM: Recent runs never get graph_persistence_outcomes
-// CHECK: backend/graph/projector.ts
-const CURSOR_LIMIT = 50;  // ❌ Only processes 50 oldest cursors
-
-// DIAGNOSIS:
+# Check projector cursor health
 bunx tsx backend/scripts/check-cursor-ordering.ts
-// Output: 75 total cursors, positions 51-75 never processed
-
-// VALIDATION:
-SELECT COUNT(*) FROM graph_projection_cursors;  -- Shows 75
-SELECT * FROM graph_projection_cursors ORDER BY updated_at ASC LIMIT 50;  -- Top 50
-SELECT * FROM graph_projection_cursors ORDER BY updated_at DESC LIMIT 10; -- Recent (excluded)
-
-// FIX:
-const CURSOR_LIMIT = 200;  // Scale with concurrent runs
 ```
-
-### Worker State Inspection
-
-**Understanding Worker Lifecycle:**
-```bash
-# 1. Check run claim status
-SELECT processing_by, processing_started_at FROM runs WHERE run_id = '<runId>';
-
-# 2. Verify lease heartbeat
-# Watch Encore logs for "extending lease" messages
-
-# 3. Inspect final disposition
-SELECT status, stop_reason FROM runs WHERE run_id = '<runId>';
-# status=failed indicates worker crash/timeout before Stop node
-```
-
-### Phase 11: Advanced Regression Analysis (NEW)
-
-When standard phases 1-10 don't reveal the issue:
-
-1. **Compare successful vs failed run events side-by-side**
-   ```bash
-   diff <(bunx tsx backend/scripts/inspect-run.ts <good_run>) \
-        <(bunx tsx backend/scripts/inspect-run.ts <bad_run>)
-   ```
-
-2. **Identify missing events in sequence**
-   - Successful run: 19 events (includes Stop at step 6)
-   - Failed run: 15 events (stops at WaitIdle step 5)
-   - Missing: `agent.node.started Stop`, `agent.run.finished`
-
-3. **Trace XState machine transitions**
-   - Add logging to guards and actions in `agent.machine.factory.ts`
-   - Monitor which guards evaluate true/false
-   - Identify unexpected state transitions
-
-4. **Test node execution in isolation**
-   ```typescript
-   // scripts/test-node-isolation.ts
-   import { stop } from "../agent/nodes/terminal/Stop/node";
-   const input = { /* build input from failed run state */ };
-   const result = await stop(input);
-   console.log("Node output:", result);
-   ```
-
-### Common Backend Regression Patterns
-
-| Issue | Symptom | Investigation | Common Cause |
-|-------|---------|---------------|--------------|
-| **Cursor Limit** | Recent runs stuck at seq=1 | `check-cursor-ordering.ts` | `CURSOR_LIMIT` too low |
-| **Node Hangs** | Agent state "running" indefinitely | `check-agent-state.ts` | DB query blocks execution |
-| **Lease Timeout** | Run fails after 30s | Worker logs, database `processing_by` | Heavy sync operations |
-| **Missing Events** | Timeline incomplete | `inspect-run.ts`, compare with baseline | Event not emitted or lost |
-| **State Machine Stuck** | No transitions after event | XState logs, guard evaluation | Guard logic error |
-
-### Lesson: Avoid Heavy Operations in Critical Path
-
-**Bad Pattern (BUG-010):**
-```typescript
-export async function stop(input: StopInput) {
-  // ❌ DB query inside terminal node execution
-  const rows = await db.query`SELECT COUNT(*) ...`;
-  // If query hangs, entire machine stalls
-}
-```
-
-**Good Pattern:**
-```typescript
-export async function stop(input: StopInput) {
-  // ✅ Use pre-computed metrics from input
-  const metrics = input.finalRunMetrics;
-  // Terminal nodes must be lightweight and deterministic
-}
-```
-
-**Rationale:**
-- Terminal nodes finalize run state → must complete reliably
-- Heavy queries → post-run analytics layer
-- Critical path → optimized for latency, not accuracy
 
 ---
 
-## References
-- BUG-010 RCA: `jira/bugs/BUG-010-run-page-regressions/RCA.md`
-- Diagnostic Scripts: `backend/scripts/`
-- Encore Debugging: `backend_coding_rules.mdc`
+## Common Test Failures
 
+### Failure 1: "Run stayed 'queued'"
+
+**Symptom:**
+```
+Timeout: status=queued after 60000ms
+```
+
+**Cause:** Worker subscription not loaded
+
+**Fix:**
+```typescript
+// Add at top of test file
+import "../agent/orchestrator/subscription";
+```
+
+---
+
+### Failure 2: "Service call hangs"
+
+**Symptom:** Test times out with no error
+
+**Cause:** Service not loaded in test runtime
+
+**Fix:**
+```typescript
+// Import required services
+import "../artifacts/store";
+import "../graph/encore.service.ts";
+```
+
+---
+
+### Failure 3: "Path alias not found"
+
+**Symptom:**
+```
+Error: Failed to load ~encore/clients
+```
+
+**Fix:** Add to `backend/vitest.config.ts`:
+```typescript
+resolve: {
+  alias: {
+    "~encore": resolve(__dirname, "./encore.gen"),
+  },
+},
+```
+
+---
+
+### Failure 4: "0 screens discovered"
+
+**Symptom:** Agent completes but `projectedScreens: 0`
+
+**Cause:** Graph projector runs async, test checks too early
+
+**Fix:**
+```typescript
+expect(runStatus).toBe("completed");
+
+// Wait for async projection
+await new Promise(r => setTimeout(r, 5000));
+
+// NOW check screens
+const count = await queryScreens(runId);
+```
+
+---
+
+### Failure 5: "Budget exhausted"
+
+**Symptom:**
+```
+stop_reason: "budget_exhausted"
+stepsTotal: 5
+```
+
+**Cause:** `maxSteps` too low with retries/backtracking
+
+**Fix:**
+```typescript
+const response = await start({
+  ...request,
+  maxSteps: 20,  // Increase to allow retries
+});
+```
+
+---
+
+## Diagnostic Scripts Arsenal
+
+Located in `backend/scripts/`:
+
+### 1. `inspect-run.ts`
+Complete run event timeline with graph outcomes and cursor state.
+
+```bash
+bunx tsx backend/scripts/inspect-run.ts <runId>
+```
+
+**Shows:**
+- All run_events with seq and kind
+- Graph persistence outcomes
+- Cursor state
+- Run record details
+
+### 2. `check-agent-state.ts`
+Agent state snapshots and progression.
+
+```bash
+bunx tsx backend/scripts/check-agent-state.ts <runId>
+```
+
+**Shows:**
+- nodeName, status, counters, budgets
+- Step-by-step state evolution
+- Timestamps and transitions
+
+### 3. `check-cursor-ordering.ts`
+Graph projector cursor health check.
+
+```bash
+bunx tsx backend/scripts/check-cursor-ordering.ts
+```
+
+**Shows:**
+- Total cursors vs processed
+- Stuck cursors
+- Ordering issues
+
+### 4. `find-latest-run.ts` / `find-completed-runs.ts`
+Find runs for comparison.
+
+```bash
+bunx tsx backend/scripts/find-latest-run.ts
+bunx tsx backend/scripts/find-completed-runs.ts
+```
+
+### 5. `test-projector.ts`
+Test graph projector in isolation.
+
+```bash
+bunx tsx backend/scripts/test-projector.ts <runId>
+```
+
+---
+
+## Database Query Patterns
+
+### Check If Worker Claimed Run
+
+```sql
+SELECT run_id, status, worker_id, created_at, updated_at
+FROM runs
+WHERE run_id = '<runId>';
+```
+
+**Expected:** `worker_id` should be populated
+
+---
+
+### Check Event Sequence
+
+```sql
+SELECT seq, kind, node_name, created_at
+FROM run_events
+WHERE run_id = '<runId>'
+ORDER BY seq;
+```
+
+**Expected:** Continuous sequence with no gaps
+
+---
+
+### Check Screen Discovery
+
+```sql
+SELECT 
+  gpo.outcome_id,
+  gpo.upsert_kind,
+  gpo.screen_id,
+  gpo.step_ordinal,
+  gpo.created_at
+FROM graph_persistence_outcomes gpo
+WHERE gpo.run_id = '<runId>'
+ORDER BY gpo.step_ordinal;
+```
+
+**Expected:** At least one `upsert_kind = 'discovered'`
+
+---
+
+### Check Projection Lag
+
+```sql
+SELECT 
+  r.run_id,
+  r.status,
+  COUNT(re.seq) as events_count,
+  COUNT(gpo.outcome_id) as projections_count,
+  (COUNT(re.seq) - COUNT(gpo.outcome_id)) as lag
+FROM runs r
+LEFT JOIN run_events re ON r.run_id = re.run_id
+LEFT JOIN graph_persistence_outcomes gpo ON r.run_id = gpo.run_id
+WHERE r.run_id = '<runId>'
+GROUP BY r.run_id, r.status;
+```
+
+---
+
+## Debugging Checklist
+
+When a test fails, check in order:
+
+- [ ] 1. Did worker claim run? (status != 'queued')
+- [ ] 2. Are subscriptions imported in test?
+- [ ] 3. Did run complete? (status = 'completed')
+- [ ] 4. Were events emitted? (COUNT run_events > 0)
+- [ ] 5. Did graph project? (COUNT graph_persistence_outcomes > 0)
+- [ ] 6. Waited long enough for async? (5s after completion)
+- [ ] 7. Using correct column names? (seq, upsert_kind)
+- [ ] 8. Is Appium running? (http://127.0.0.1:4723/status)
+- [ ] 9. Is device connected? (adb devices)
+- [ ] 10. Check stop_reason for clues
+
+---
+
+## Integration Test Debugging Example
+
+**Test fails with "0 screens discovered":**
+
+```typescript
+// 1. Check if run completed
+const run = await db.queryRow`
+  SELECT status, stop_reason FROM runs WHERE run_id = ${runId}
+`;
+console.log("Run:", run);  // { status: "completed", stop_reason: "success" }
+
+// 2. Check events
+const events = await db.queryAll`
+  SELECT seq, kind FROM run_events WHERE run_id = ${runId} ORDER BY seq
+`;
+console.log("Events:", events.length);  // 19 events
+
+// 3. Check if screen_perceived event exists
+const perceived = events.find(e => e.kind === "agent.event.screen_perceived");
+console.log("Screen perceived?", !!perceived);  // true
+
+// 4. Check projector outcomes
+const outcomes = await db.queryAll`
+  SELECT upsert_kind FROM graph_persistence_outcomes WHERE run_id = ${runId}
+`;
+console.log("Outcomes:", outcomes);  // []
+
+// 5. Diagnosis: Projector didn't run OR ran too slow
+// Fix: Add 5s delay before checking OR increase poll interval
+```
+
+---
+
+## Critical Rules
+
+### Rule 1: Never Use `console.log` in Production
+
+❌ **Bad:**
+```typescript
+console.log("Run started:", runId);
+```
+
+✅ **Good:**
+```typescript
+import log from "encore.dev/log";
+const logger = log.with({ module: "run", actor: "start", runId });
+logger.info("Run started");
+```
+
+### Rule 2: Always Import Subscriptions in Tests
+
+❌ **Bad:**
+```typescript
+it("should process job", async () => {
+  await publishToTopic({ runId });
+  // Worker never runs - subscription not loaded!
+});
+```
+
+✅ **Good:**
+```typescript
+import "../agent/orchestrator/subscription";
+
+it("should process job", async () => {
+  await publishToTopic({ runId });
+  // Worker processes job
+});
+```
+
+### Rule 3: Poll, Don't Sleep
+
+❌ **Bad:**
+```typescript
+await new Promise(r => setTimeout(r, 20000));
+const status = await getStatus(runId);
+```
+
+✅ **Good:**
+```typescript
+while (Date.now() - start < timeout) {
+  const status = await getStatus(runId);
+  if (status === "completed") break;
+  await new Promise(r => setTimeout(r, 2000));
+}
+```
+
+---
+
+## Testing in CI/CD
+
+```yaml
+# .github/workflows/test.yml
+- name: Run backend tests
+  run: |
+    cd backend
+    encore test
+```
+
+**Requirements:**
+- Appium must be running (or skip tests that need it)
+- Android emulator setup (for integration tests)
+- Environment variables configured
+
+---
+
+## Related Skills
+
+- **backend-testing** - Patterns for writing tests
+- **webapp-testing** - E2E tests with Playwright
+- **graphiti-mcp-usage** - Documenting debugging discoveries

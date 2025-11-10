@@ -54,21 +54,21 @@ describe("Run Events Invariants", () => {
   it.skip("ensures canonical run logs include single start and single terminal stop", async () => {
     const now = () => new Date().toISOString();
 
-    await repo.appendEvent(createRunStartedEvent(ulid(), runId, tenantId, projectId, 1, now()));
+    await repo.appendEvent(createRunStartedEvent(ulid(), runId, 1, now()));
     await repo.appendEvent(
-      createNodeStartedEvent(ulid(), runId, tenantId, projectId, 2, now(), "EnsureDevice", 1),
+      createNodeStartedEvent(ulid(), runId, 2, now(), "EnsureDevice", 1),
     );
     await repo.appendEvent(
-      createNodeFinishedEvent(ulid(), runId, tenantId, projectId, 3, now(), "EnsureDevice", 1, "success"),
+      createNodeFinishedEvent(ulid(), runId, 3, now(), "EnsureDevice", 1, "success"),
     );
     await repo.appendEvent(
-      createNodeStartedEvent(ulid(), runId, tenantId, projectId, 4, now(), "ProvisionApp", 2),
+      createNodeStartedEvent(ulid(), runId, 4, now(), "ProvisionApp", 2),
     );
     await repo.appendEvent(
-      createNodeFinishedEvent(ulid(), runId, tenantId, projectId, 5, now(), "ProvisionApp", 2, "success"),
+      createNodeFinishedEvent(ulid(), runId, 5, now(), "ProvisionApp", 2, "success"),
     );
     await repo.appendEvent(
-      createRunFinishedEvent(ulid(), runId, tenantId, projectId, 6, now(), "goal_reached"),
+      createRunFinishedEvent(ulid(), runId, 6, now(), "goal_reached"),
     );
 
     const events = await repo.getEvents(runId);
@@ -82,9 +82,9 @@ describe("Run Events Invariants", () => {
   it("rejects event logs containing multiple terminal stop entries", () => {
     const now = () => new Date().toISOString();
     const invalidEvents: DomainEvent[] = [
-      createRunStartedEvent(ulid(), runId, tenantId, projectId, 1, now()),
-      createRunFinishedEvent(ulid(), runId, tenantId, projectId, 2, now(), "goal_reached"),
-      createRunFinishedEvent(ulid(), runId, tenantId, projectId, 3, now(), "max_steps_reached"),
+      createRunStartedEvent(ulid(), runId, 1, now()),
+      createRunFinishedEvent(ulid(), runId, 2, now(), "goal_reached"),
+      createRunFinishedEvent(ulid(), runId, 3, now(), "max_steps_reached"),
     ];
 
     expect(() => assertRunEventsInvariant(invalidEvents)).toThrowError(
@@ -95,10 +95,10 @@ describe("Run Events Invariants", () => {
   it("rejects event logs where the terminal event is not a stop", () => {
     const now = () => new Date().toISOString();
     const invalidEvents: DomainEvent[] = [
-      createRunStartedEvent(ulid(), runId, tenantId, projectId, 1, now()),
-      createNodeStartedEvent(ulid(), runId, tenantId, projectId, 2, now(), "EnsureDevice", 1),
-      createRunFinishedEvent(ulid(), runId, tenantId, projectId, 3, now(), "goal_reached"),
-      createNodeFinishedEvent(ulid(), runId, tenantId, projectId, 4, now(), "EnsureDevice", 1, "success"),
+      createRunStartedEvent(ulid(), runId, 1, now()),
+      createNodeStartedEvent(ulid(), runId, 2, now(), "EnsureDevice", 1),
+      createRunFinishedEvent(ulid(), runId, 3, now(), "goal_reached"),
+      createNodeFinishedEvent(ulid(), runId, 4, now(), "EnsureDevice", 1, "success"),
     ];
 
     expect(() => assertRunEventsInvariant(invalidEvents)).toThrowError(
@@ -109,8 +109,8 @@ describe("Run Events Invariants", () => {
   it("rejects event logs missing the initial start", () => {
     const now = () => new Date().toISOString();
     const invalidEvents: DomainEvent[] = [
-      createNodeStartedEvent(ulid(), runId, tenantId, projectId, 1, now(), "EnsureDevice", 1),
-      createRunFinishedEvent(ulid(), runId, tenantId, projectId, 2, now(), "goal_reached"),
+      createNodeStartedEvent(ulid(), runId, 1, now(), "EnsureDevice", 1),
+      createRunFinishedEvent(ulid(), runId, 2, now(), "goal_reached"),
     ];
 
     expect(() => assertRunEventsInvariant(invalidEvents)).toThrowError(

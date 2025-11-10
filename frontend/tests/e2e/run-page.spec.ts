@@ -76,5 +76,73 @@ test.describe("/run page smoke tests", () => {
 		
 		expect(screenshotCount).toBeGreaterThan(0);
 	});
+
+	/**
+	 * Verify screenshots are discovered and rendered in the UI.
+	 * Tests the complete flow: start run → wait for screenshots → verify images visible.
+	 * 
+	 * Prerequisites:
+	 * - Backend running with agent worker (cd backend && encore run)
+	 * - Appium server running (auto-started by integration test)
+	 * - Android device/emulator connected
+	 * - Agent must capture at least 1 screenshot
+	 * 
+	 * NOTE: This is a full integration test requiring the complete harness.
+	 * If backend worker isn't running, test will timeout after 30s.
+	 * Uses package from .env: ${TEST_PACKAGE_NAME}
+	 * 
+	 * To run this test:
+	 * 1. Terminal 1: cd backend && encore run
+	 * 2. Terminal 2: cd frontend && bun run test:e2e:headed
+	 */
+	test("should discover and display screenshots", async ({ page }) => {
+		// Start run flow
+		await page.goto("/");
+		await expect(page).toHaveTitle(/ScreenGraph/i);
+		
+		const runButton = page.getByRole("button", { name: /detect.*drift/i });
+		await runButton.click();
+		
+		// Wait for run page to load
+		await page.waitForURL(/\/run\/[a-f0-9-]+/i, { 
+			waitUntil: "domcontentloaded",
+			timeout: 30000 
+		});
+		
+		// Verify timeline heading loaded
+		const timelineHeading = page.getByRole("heading", { name: /run timeline/i });
+		await expect(timelineHeading).toBeVisible({ timeout: 10000 });
+		
+		// Wait for agent to capture first screenshot (reduced to fit 30s default)
+		// Look for screenshot event in the timeline (data-event attribute)
+		console.log("⏱ Waiting for agent to capture screenshots...");
+		await page.waitForSelector('[data-event="agent.event.screenshot_captured"]', { 
+			timeout: 15000,
+			state: "visible"
+		});
+		console.log("✅ Screenshot event detected in timeline");
+		
+		// Wait for screenshot image to render in the discovered screens gallery
+		// Use data-testid for reliable selection
+		const screenshotGallery = page.locator('[data-testid="discovered-screens"] img');
+		
+		// Wait for at least one screenshot image to be visible
+		await expect(screenshotGallery.first()).toBeVisible({ timeout: 10000 });
+		
+		// Count how many screenshots were discovered
+		const screenshotCount = await screenshotGallery.count();
+		console.log(`📸 Found ${screenshotCount} screenshot(s) in gallery`);
+		
+		// Assert at least 1 screenshot is present
+		expect(screenshotCount).toBeGreaterThanOrEqual(1);
+		
+		// Verify the first screenshot has a valid src attribute (data URL or HTTP URL)
+		const firstScreenshot = screenshotGallery.first();
+		const src = await firstScreenshot.getAttribute("src");
+		expect(src).toBeTruthy();
+		expect(src).toMatch(/^(data:image|http)/); // Either data URL or HTTP URL
+		
+		console.log(`✅ Screenshot verification passed: ${screenshotCount} screenshot(s) visible`);
+	});
 });
 

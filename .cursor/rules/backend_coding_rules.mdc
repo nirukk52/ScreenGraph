@@ -6,17 +6,104 @@ description: "Unified Encore.ts backend coding rules, combining high-level engin
 
 This rulebook merges the former `@backend_engineer.mdc` practice guide with `@backend_llm_instructions.mdc`, giving every backend contributor a single, authoritative reference.
 
-You are a genius and high coding standard backend engineer, one of the thing that makes you so good is your habit of constantly using encore MCP.  
-You have full access to the Encore MCP Tool Suite, which exposes real-time introspection and control over the running Encore app.  
-Use these tools to query, audit, and reason about the backend’s live state — **NOT TO MUTATE IT.**
+You are a genius backend engineer with high coding standards. One thing that makes you exceptional is your habit of **constantly using Encore MCP tools** for debugging and introspection.
 
-Helpful Guidelines:
-- Use Database Tools (`get_databases`, `query_database`) to inspect schemas, validate migrations, or debug orchestration data consistency.
-- Use API Tools (`get_services`, `call_endpoint`) to map service contracts, test endpoint responses, and verify type-safety.
-- Use Trace & Metrics Tools (`get_traces`, `get_metrics`) to analyze latency, detect event-loop stalls, or verify deterministic agent loops.
-- Use PubSub & Storage Tools to ensure reliable event propagation and object persistence integrity (aligns with `run_outbox` and `artifacts_index` invariants).
-- Use Cron & Secret Tools to list scheduled jobs or verify secret configuration without exposing values.
-- Use Docs Tools to fetch specific Encore API behaviors for runtime reasoning (validation, auth, streaming, etc.).
+## 📑 Table of Contents
+
+### Part I: Development Workflow
+1. [Encore MCP Integration](#encore-mcp-integration) ⭐ **Primary Tool**
+2. [Coding Standards](#coding-standards)
+3. [Architecture & Scope](#scope--architecture)
+4. [Testing & Debugging](#testing--debugging-workflow)
+
+### Part II: Encore.ts Reference
+5. [API Design](#api-design-encorets)
+6. [Service-to-Service Calls](#service-to-service-calls)
+7. [Database (PostgreSQL)](#database-postgresql-via-encore)
+8. [Pub/Sub & Scheduling](#pubsub--scheduling)
+9. [Streaming & Static](#streaming--static)
+10. [Secrets & Config](#secrets--config)
+11. [Logging & Observability](#logging--observability)
+12. [CORS & Security](#cors--security)
+
+### Part III: Detailed Encore.ts Documentation
+13. [Complete API Reference](#encore-ts-detailed-reference)
+14. [Absolute Prohibitions](#absolute-prohibitions)
+
+---
+
+## Encore MCP Integration
+
+**You have full access to the Encore MCP Tool Suite** for real-time introspection of the running Encore app.
+
+### When to Use MCP Tools
+
+**Use for:**
+- Debugging test failures (query database, inspect traces)
+- Understanding service structure (get endpoints, schemas)
+- Analyzing performance (traces, metrics)
+- Validating PubSub flows (check subscriptions)
+- Inspecting database state (query tables, check migrations)
+
+**NOT for:**
+- Mutating state (MCP is read-only for safety)
+- Running in `encore test` (MCP requires `encore run`)
+
+### Quick Reference
+
+**Database:**
+- `mcp_encore-mcp_get_databases` - Get schema and tables
+- `mcp_encore-mcp_query_database` - Run custom SQL queries
+
+**Services:**
+- `mcp_encore-mcp_get_services` - Get endpoints and schemas
+- `mcp_encore-mcp_call_endpoint` - Test endpoints directly
+
+**Traces:**
+- `mcp_encore-mcp_get_traces` - List recent traces
+- `mcp_encore-mcp_get_trace_spans` - Detailed trace analysis
+
+**PubSub:**
+- `mcp_encore-mcp_get_pubsub` - List topics and subscriptions
+
+**See:** `.claude-skills/backend-debugging_skill/SKILL.md` for complete MCP guide
+
+---
+
+## Testing & Debugging Workflow
+
+### Write Code → Write Tests → Debug
+
+**1. Write Code** (this document)
+- Follow coding standards
+- Use Encore.ts patterns
+- Add structured logging
+
+**2. Write Tests** (`.claude-skills/backend-testing_skill/SKILL.md`)
+- Unit tests for endpoints
+- Integration tests for PubSub flows
+- Metrics tests for deterministic validation
+
+**3. Debug** (`.claude-skills/backend-debugging_skill/SKILL.md`)
+- Use Encore MCP tools
+- Query database state
+- Analyze traces
+- Fix issues
+
+**Commands:**
+```bash
+cd backend && encore test              # Run tests
+cd .cursor && task backend:test        # Run all tests
+cd .cursor && task backend:integration:metrics  # Integration test
+```
+
+**When tests fail:**
+- Use `backend-debugging` skill with Encore MCP
+- Query database for run details
+- Inspect events and agent state
+- Analyze traces for performance issues
+
+---
 
 ## Scope & Architecture
 - **Service isolation**: Backend (`backend/`) and frontend (`frontend/`) are independent. Never import frontend code from backend, and vice versa.

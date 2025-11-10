@@ -438,6 +438,14 @@
       "skill_file": "code-review_skill/SKILL.md",
       "category": "quality",
       "status": "active"
+    },
+    {
+      "name": "backend-testing",
+      "description": "Minimal, integration-first testing pattern for Encore.ts backend services. Focuses on importing subscriptions/services into encore test, polling async flows, verifying database state, and cleaning up test data.",
+      "type": "knowledge",
+      "skill_file": "backend-testing_skill/SKILL.md",
+      "category": "testing",
+      "status": "active"
     }
   ],
   "categories": {

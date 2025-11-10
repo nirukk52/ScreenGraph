@@ -1,483 +1,219 @@
 ---
 name: backend-testing
-description: Backend API testing skill using Encore MCP for introspection, validation, and debugging. This skill should be used when writing or debugging backend API tests, validating Encore.ts endpoints, testing service integrations, or diagnosing API failures using traces and metrics.
+description: Minimal, integration-first testing pattern for Encore.ts backend services. Focuses on importing subscriptions/services into encore test, polling async flows, verifying database state, and cleaning up test data.
 ---
 
-# Backend Testing
+# Backend Testing Skill
 
-## Overview
+## Core Principles
 
-This skill provides comprehensive guidance for testing Encore.ts backend APIs using the Encore MCP toolkit. It emphasizes API contract testing, service integration validation, and trace-driven debugging to ensure backend reliability and type safety.
+**Test user-facing behavior, not implementation detail.**
 
-## Core Testing Philosophy
+- ✅ Integration tests that cover the full flow
+- ✅ Database state verification
+- ✅ Polling with timeouts (no fixed sleeps)
+- ❌ No petty unit tests
+- ❌ No mocking internal functions
+- ❌ No framework internals
 
-Backend testing for ScreenGraph follows these principles:
+---
 
-1. **API-first testing** - Test complete request/response flows, not isolated functions
-2. **Type safety validation** - Verify TypeScript types propagate correctly through API boundaries
-3. **Deterministic behavior** - All tests must be repeatable with consistent results
-4. **Flow reliability** - Focus on critical paths and service orchestration, not edge cases
-5. **Trace-driven debugging** - Use Encore MCP traces to diagnose failures systematically
-
-## When to Use This Skill
-
-Use this skill when:
-- Writing new API endpoint tests
-- Debugging failing backend tests
-- Validating API contracts after schema changes
-- Testing service-to-service integrations
-- Analyzing request traces for performance issues
-- Verifying database operations in API flows
-- Testing pub/sub event handling
-- Validating authentication and authorization
-
-## Testing Workflow
-
-### Phase 1: Understand the API Surface
-
-Before writing tests, use Encore MCP to introspect the backend:
-
-**1. Map available services and endpoints:**
+## The Pattern
 
 ```typescript
-// Use Encore MCP to discover services
-encore-mcp.get_services({
-  include_endpoints: true,
-  include_schemas: true
-})
-```
+// backend/run/start.integration.test.ts
+import { describe, it, expect } from "vitest";
+import { start } from "./start";
+import db from "../db";
 
-**2. Review endpoint schemas:**
+// ✅ Import everything the flow needs
+import "../agent/orchestrator/subscription";  // Worker
+import "../artifacts/store";                  // Storage
+import "../artifacts/get";                    // Optional fetch helpers
+import "../graph/encore.service.ts";          // Graph projector
 
-Examine request/response types to understand what to test:
-- Required vs optional fields
-- Path parameters and query strings
-- Authentication requirements
-- Expected error codes
+describe("Integration: POST /run/start", () => {
+  it("discovers at least one screen", async () => {
+    const request = {
+      apkPath: process.env.VITE_APK_PATH,
+      appiumServerUrl: process.env.VITE_APPIUM_SERVER_URL ?? "http://127.0.0.1:4723/",
+      packageName: process.env.VITE_PACKAGE_NAME,
+      appActivity: ".*",
+      maxSteps: 20,
+    };
 
-**3. Check database dependencies:**
+    const response = await start(request);
+    const { runId } = response;
 
-```typescript
-// Inspect database schemas that endpoints depend on
-encore-mcp.get_databases({
-  include_tables: true
-})
-```
+    // Poll until worker finishes (no fixed delay)
+    const maxWaitMs = 60_000;
+    const pollMs = 2_000;
+    const startedAt = Date.now();
+    let status = "queued";
 
-### Phase 2: Write API Tests
+    while (Date.now() - startedAt < maxWaitMs) {
+      await new Promise((resolve) => setTimeout(resolve, pollMs));
 
-Use the standard Encore.ts testing approach with type-safe generated clients.
+      const row = await db.queryRow<{ status: string }>`
+        SELECT status FROM runs WHERE run_id = ${runId}
+      `;
+      status = row?.status ?? "queued";
 
-**Test Structure:**
-
-```typescript
-import { describe, test, expect } from "vitest";
-import { api } from "~encore/clients";
-
-describe("ServiceName API", () => {
-  test("endpoint name - success case", async () => {
-    // Arrange: Setup test data
-    const request = { /* typed request */ };
-    
-    // Act: Call API endpoint
-    const response = await api.service.endpoint(request);
-    
-    // Assert: Verify response
-    expect(response).toMatchObject({
-      // Expected fields
-    });
-  });
-  
-  test("endpoint name - error case", async () => {
-    // Test error handling
-    await expect(
-      api.service.endpoint({ /* invalid data */ })
-    ).rejects.toThrow(/* expected error */);
-  });
-});
-```
-
-**Best Practices:**
-
-- Use generated clients from `~encore/clients` - never manual fetch
-- Test complete request/response flows, not internal functions
-- Include authentication context when `auth: true`
-- Verify error codes match expected `APIError` types
-- Test idempotency for non-GET endpoints
-- Validate structured logging output (check `encore.dev/log` usage)
-
-### Phase 3: Test Execution and Validation
-
-**Run tests:**
-
-```bash
-# Backend tests
-cd backend && encore test
-
-# Or via Task command
-cd .cursor && task backend:test
-```
-
-**Validate test coverage:**
-
-Focus on:
-- ✅ All public API endpoints have tests
-- ✅ Success and failure paths covered
-- ✅ Authentication/authorization tested
-- ✅ Database operations verified
-- ✅ Service-to-service calls tested
-
-**NOT required:**
-- ❌ Testing every possible edge case
-- ❌ Mocking internal implementation details
-- ❌ Testing framework internals (Encore handles this)
-
-### Phase 4: Debug with Encore MCP
-
-When tests fail, use Encore MCP for systematic debugging:
-
-**1. Capture traces:**
-
-```typescript
-// Get traces for failed requests
-encore-mcp.get_traces({
-  endpoint: "service.endpoint",
-  error: "true",
-  limit: "10"
-})
-```
-
-**2. Analyze trace details:**
-
-```typescript
-// Deep dive into specific trace
-encore-mcp.get_trace_spans({
-  trace_ids: ["<trace_id>"]
-})
-```
-
-Look for:
-- Slow database queries
-- Service-to-service call failures
-- Authentication issues
-- Validation errors
-- Panic/exception stack traces
-
-**3. Query database state:**
-
-```typescript
-// Verify database state during test
-encore-mcp.query_database({
-  queries: [
-    {
-      database: "mydb",
-      query: "SELECT * FROM table WHERE id = $1"
+      if (status === "completed" || status === "failed") {
+        break;
+      }
     }
-  ]
-})
-```
 
-**4. Check metrics:**
+    expect(status).toBe("completed");
 
-```typescript
-// Identify performance bottlenecks
-encore-mcp.get_metrics()
-```
+    // Graph projector runs async → wait a moment
+    await new Promise((resolve) => setTimeout(resolve, 5_000));
 
-### Phase 5: Integration Testing
-
-For multi-service workflows, test complete flows:
-
-**Example: Run Creation Flow**
-
-```typescript
-describe("Run Integration Flow", () => {
-  test("complete run lifecycle", async () => {
-    // 1. Start run (run service)
-    const run = await api.run.start({
-      appId: "com.example.app",
-      deviceId: "test-device"
-    });
-    
-    // 2. Verify agent state created (agent service)
-    const agentState = await api.agent.getState({
-      runId: run.id
-    });
-    expect(agentState.status).toBe("planning");
-    
-    // 3. Verify graph initialized (graph service)
-    const graph = await api.graph.getProjection({
-      runId: run.id
-    });
-    expect(graph.nodes).toHaveLength(1); // Initial screen
-    
-    // 4. Cancel run
-    await api.run.cancel({ runId: run.id });
-    
-    // 5. Verify cleanup
-    const finalState = await api.agent.getState({
-      runId: run.id
-    });
-    expect(finalState.status).toBe("canceled");
-  });
-});
-```
-
-**Integration Test Best Practices:**
-
-- Test realistic user workflows end-to-end
-- Verify event propagation (pub/sub)
-- Check artifact storage and retrieval
-- Validate cleanup/cancellation flows
-- Use Encore MCP traces to verify all service calls
-- Keep tests deterministic (avoid time-based flakiness)
-
-## Common Testing Patterns
-
-### Pattern 1: Testing Authenticated Endpoints
-
-```typescript
-import { api } from "~encore/clients";
-
-describe("Authenticated API", () => {
-  test("requires auth", async () => {
-    // Without auth, should fail
-    await expect(
-      api.service.protectedEndpoint({})
-    ).rejects.toThrow("unauthenticated");
-  });
-  
-  test("with valid auth", async () => {
-    // Set auth context (test helper)
-    const response = await api.service.protectedEndpoint(
-      {},
-      { auth: { userId: "test-user" } }
-    );
-    expect(response).toBeDefined();
-  });
-});
-```
-
-### Pattern 2: Testing Database Operations
-
-```typescript
-describe("Database-backed API", () => {
-  beforeEach(async () => {
-    // Setup: Clean test data
-    await db.exec`DELETE FROM test_table`;
-  });
-  
-  test("creates record", async () => {
-    const response = await api.service.create({
-      name: "Test Item"
-    });
-    
-    // Verify in database
-    const row = await db.queryRow`
-      SELECT * FROM test_table WHERE id = ${response.id}
+    const screenCount = await db.queryRow<{ count: string }>`
+      SELECT COUNT(*)::text AS count
+      FROM graph_persistence_outcomes
+      WHERE run_id = ${runId} AND upsert_kind = 'discovered'
     `;
-    expect(row?.name).toBe("Test Item");
-  });
+
+    const discovered = Number.parseInt(screenCount?.count ?? "0", 10);
+    expect(discovered).toBeGreaterThanOrEqual(1);
+
+    // Cleanup
+    await db.exec`DELETE FROM graph_persistence_outcomes WHERE run_id = ${runId}`;
+    await db.exec`DELETE FROM run_events WHERE run_id = ${runId}`;
+    await db.exec`DELETE FROM runs WHERE run_id = ${runId}`;
+  }, 90_000);
 });
 ```
 
-### Pattern 3: Testing Pub/Sub Handlers
+**Run it:**
+```bash
+cd backend && encore test ./run/start.integration.test.ts
+```
+
+---
+
+## Critical Setup
+
+### 1. Import Subscriptions
+`encore test` does **not** auto-register PubSub workers. Import them explicitly:
+```typescript
+import "../agent/orchestrator/subscription";
+```
+
+### 2. Import Services
+Any service you call (directly or via generated client) must be imported:
+```typescript
+import "../artifacts/store";
+import "../graph/encore.service.ts";
+```
+
+### 3. Configure Path Alias
+Add alias once in `backend/vitest.config.ts`:
+```typescript
+resolve: {
+  alias: {
+    "~encore": resolve(__dirname, "./encore.gen"),
+  },
+},
+```
+
+---
+
+## Polling > Fixed Sleep
 
 ```typescript
-import { Topic } from "encore.dev/pubsub";
+// ❌ wrong
+await new Promise((r) => setTimeout(r, 20000));
 
-describe("Event Handler", () => {
-  test("processes event correctly", async () => {
-    // Publish event
-    await myTopic.publish({
-      userId: "test-user",
-      action: "signup"
-    });
-    
-    // Wait for processing (or use test helpers)
-    await waitForEventProcessing();
-    
-    // Verify side effects via API
-    const user = await api.users.get({ userId: "test-user" });
-    expect(user.welcomeEmailSent).toBe(true);
-  });
-});
+// ✅ correct
+for (let i = 0; i < 30; i++) {
+  const status = await getStatus(runId);
+  if (status === "completed") break;
+  await new Promise((r) => setTimeout(r, 2000));
+}
 ```
 
-### Pattern 4: Testing Error Handling
+Benefits: faster, clearer failures, resilient.
 
+---
+
+## Database Checks
+
+```sql
+-- Run status
+SELECT run_id, status, stop_reason FROM runs WHERE run_id = '<runId>';
+
+-- Events emitted
+SELECT seq, kind FROM run_events WHERE run_id = '<runId>' ORDER BY seq;
+
+-- Screens discovered
+SELECT upsert_kind, screen_id FROM graph_persistence_outcomes WHERE run_id = '<runId>';
+
+-- Agent state snapshot
+SELECT snapshot FROM run_state_snapshots WHERE run_id = '<runId>' ORDER BY step_ordinal DESC LIMIT 1;
+```
+
+---
+
+## Cleanup Checklist
+
+- `DELETE FROM graph_persistence_outcomes WHERE run_id = ?`
+- `DELETE FROM run_events WHERE run_id = ?`
+- `DELETE FROM runs WHERE run_id = ?`
+
+Keep the test database clean.
+
+---
+
+## Common Issues
+
+| Symptom | Fix |
+|---------|-----|
+| Run stuck in `queued` | Import subscription file |
+| Service calls hang | Import service modules |
+| `~encore/clients` not found | Add alias in `vitest.config.ts` |
+| No screens discovered | Wait for projector (~5s) |
+| Column `"sequence"` missing | Use `seq` and `upsert_kind = 'discovered'` |
+
+---
+
+## Multiservice Flows
+
+Need multiple subscribers/services? Import them all at the top of the test:
 ```typescript
-import { APIError, ErrCode } from "encore.dev/api";
+import "../agent/orchestrator/subscription";
+import "../notifications/email-subscription";
+import "../analytics/event-subscription";
+import "../webhooks/delivery-subscription";
 
-describe("Error Handling", () => {
-  test("returns proper error code", async () => {
-    try {
-      await api.service.endpoint({ invalid: "data" });
-      fail("Should have thrown error");
-    } catch (err) {
-      expect(err).toBeInstanceOf(APIError);
-      expect(err.code).toBe(ErrCode.InvalidArgument);
-      expect(err.message).toContain("invalid field");
-    }
-  });
-});
+import "../notifications/encore.service.ts";
+import "../analytics/encore.service.ts";
+import "../webhooks/encore.service.ts";
 ```
 
-## Encore MCP Testing Commands
+The same polling + verification pattern scales to any number of services.
 
-### Introspection Commands
-
-```bash
-# List all services and endpoints
-encore-mcp.get_services({ include_endpoints: true })
-
-# Get endpoint schemas
-encore-mcp.get_services({
-  services: ["run", "agent"],
-  include_schemas: true
-})
-
-# List databases
-encore-mcp.get_databases({ include_tables: true })
-
-# Check pub/sub topics
-encore-mcp.get_pubsub()
-
-# List metrics
-encore-mcp.get_metrics()
-
-# View cron jobs
-encore-mcp.get_cronjobs()
-
-# Check auth handlers
-encore-mcp.get_auth_handlers()
-```
-
-### Testing Commands
-
-```bash
-# Call endpoint directly
-encore-mcp.call_endpoint({
-  service: "run",
-  endpoint: "start",
-  method: "POST",
-  path: "/run/start",
-  payload: JSON.stringify({
-    appId: "com.example.app",
-    deviceId: "test-device"
-  })
-})
-
-# Query database
-encore-mcp.query_database({
-  queries: [{
-    database: "rundb",
-    query: "SELECT * FROM runs WHERE status = 'active'"
-  }]
-})
-```
-
-### Debugging Commands
-
-```bash
-# Get recent traces
-encore-mcp.get_traces({
-  service: "agent",
-  start_time: "2025-01-01T00:00:00Z",
-  limit: "20"
-})
-
-# Get error traces only
-encore-mcp.get_traces({
-  endpoint: "run.start",
-  error: "true"
-})
-
-# Analyze specific trace
-encore-mcp.get_trace_spans({
-  trace_ids: ["<trace-id>"]
-})
-```
-
-## Testing Checklist
-
-Before marking API tests complete, verify:
-
-**Endpoint Coverage:**
-- [ ] All public endpoints have success case tests
-- [ ] Error cases tested (validation, auth, not found)
-- [ ] Path parameters and query strings validated
-- [ ] Request/response types match schemas
-
-**Integration:**
-- [ ] Service-to-service calls tested
-- [ ] Database operations verified
-- [ ] Pub/sub events tested (if applicable)
-- [ ] Authentication/authorization validated
-
-**Quality:**
-- [ ] Tests are deterministic (no flakiness)
-- [ ] Test data isolated (no shared state)
-- [ ] Cleanup happens in teardown
-- [ ] Structured logging validated (no console.log)
-- [ ] Error codes match APIError types
-
-**Documentation:**
-- [ ] Complex test scenarios documented in comments
-- [ ] Test patterns added to Graphiti for reuse
-- [ ] API contracts documented (if new endpoint)
-
-## Common Pitfalls
-
-**❌ Avoid:**
-- Testing internal implementation details
-- Using manual `fetch()` instead of generated clients
-- Hardcoding URLs or endpoints
-- Ignoring error cases
-- Writing non-deterministic tests (random data, time-based)
-- Testing petty edge cases instead of critical flows
-- Skipping cleanup in test teardown
-
-**✅ Instead:**
-- Test complete API request/response flows
-- Use type-safe generated clients (`~encore/clients`)
-- Let Encore handle routing and validation
-- Test expected error codes explicitly
-- Use fixed test data and deterministic mocks
-- Focus on user-facing reliability
-- Clean up test data properly
-
-## References
-
-This skill includes additional reference documentation:
-
-- `references/encore_mcp_testing_patterns.md` - Detailed Encore MCP testing examples
-- `references/api_testing_examples.md` - Common ScreenGraph API test scenarios
-- `references/integration_test_patterns.md` - Multi-service testing strategies
-
-Read these references when you need deeper examples or specific testing patterns.
+---
 
 ## Task Commands
 
 ```bash
-# Run backend tests
+# All backend tests
+cd backend && encore test
+
+# Focused integration test
+cd backend && encore test ./run/start.integration.test.ts
+
+# From automation layer
 cd .cursor && task backend:test
-
-# Run smoke tests
-cd .cursor && task qa:smoke:backend
-
-# Start backend for manual testing
-cd .cursor && task backend:dev
-
-# Check backend health
-cd .cursor && task backend:health
-
-# Run database migrations (test env)
-cd .cursor && task backend:db:migrate
 ```
+
+---
 
 ## Related Skills
 
-- **backend-debugging** - For debugging complex backend issues
-- **webapp-testing** - For E2E testing that spans frontend + backend
-- **graphiti-mcp-usage** - For documenting test patterns and discoveries
+- **backend-debugging** – Deep dive debugging for Encore.ts backend failures
+- **webapp-testing** – Playwright-first E2E test playbook
+- **graphiti-mcp-usage** – Document discoveries in Graphiti
+

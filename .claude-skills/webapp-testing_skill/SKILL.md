@@ -30,10 +30,36 @@ bun run test:e2e:ui
 - **Location**: `frontend/tests/e2e/`
 - **Config**: `frontend/playwright.config.ts` (environment-aware)
 - **Helpers**: `frontend/tests/e2e/helpers.ts` (reusable utilities)
+- **Default Timeout**: 30 seconds (Playwright default, no override)
+
+### Timeout Policy (Standardized 2025-11-09)
+All Playwright tests must complete within **30 seconds total**. Individual waits must fit within this budget:
+
+| Operation | Timeout | Notes |
+|-----------|---------|-------|
+| Test Total | 30s | Playwright default, no `test.setTimeout()` override |
+| Page Navigation | 30s | Initial page load via `page.goto()` |
+| Element Visibility | 10s | Headings, buttons, basic UI elements |
+| Agent Events | 15s | Screenshot capture, graph events (SSE) |
+| Image Rendering | 10s | Screenshots in gallery, artifacts |
+
+**Example Breakdown:**
+```typescript
+test("example", async ({ page }) => {
+  // No test.setTimeout() - use 30s default
+  await page.goto("/");                              // ~2s
+  await page.getByRole("button").click();            // ~1s
+  await page.waitForURL(/\/run\/.+/);                // ~3s
+  await expect(heading).toBeVisible({ timeout: 10000 }); // max 10s
+  await page.waitForSelector('[data-event="..."]', { timeout: 15000 }); // max 15s
+  // Total: ~31s max (fits in 30s with fast agent)
+});
+```
 
 ### Current Tests
-1. **Landing Page Load** - Verifies frontend health
-2. **Run Page Navigation** - Clicks "Detect My First Drift" → verifies Run Timeline heading
+1. **Landing Page Load** - Verifies frontend health (no agent required)
+2. **Run Page Navigation** - Clicks "Detect My First Drift" → verifies Run Timeline heading (no agent required)
+3. **Screenshot Discovery** - Full integration test: start run → wait for screenshots → verify images visible (requires agent + Appium)
 
 ### Pre-Push Hook Integration
 E2E tests run automatically before every push:
