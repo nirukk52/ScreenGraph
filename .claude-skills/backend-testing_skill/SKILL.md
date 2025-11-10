@@ -1,649 +1,389 @@
 ---
 name: backend-testing
-description: This skill should be used when writing Encore.ts backend tests. Covers test environment boundaries (encore test vs encore run), testing patterns (unit, integration, PubSub, metrics), database testing with type-safe queries, and using Encore MCP for debugging. Use this when writing or improving backend tests.
+description: Backend testing for Encore.ts - focused on integration tests that verify user-facing behavior. Covers the critical pattern of importing subscriptions/services into encore test, polling async flows, and debugging with structured logs. Use when writing or debugging backend tests.
 ---
 
 # Backend Testing Skill
 
-## Purpose
+## Core Philosophy
 
-Comprehensive guide for writing, running, and debugging Encore.ts backend tests. This skill covers:
+**Test user-facing behavior, not implementation details.**
 
-1. **Test Environment Boundaries**: Understanding `encore test` (isolated) vs `encore run` (full stack)
-2. **Testing Patterns**: Unit, integration, PubSub, and metrics tests
-3. **Database Testing**: Type-safe queries and validation
-4. **PubSub Testing**: Worker subscriptions in test runtime
-5. **Writing Integration Tests**: Structure, polling, and best practices
-6. **Task Commands**: Running tests efficiently
-7. **Encore MCP Integration**: Using MCP tools for debugging (see `backend-debugging` skill)
+- ✅ Integration tests that verify complete flows
+- ✅ Database state verification
+- ✅ Async polling (not fixed delays)
+- ❌ NO petty unit tests
+- ❌ NO mocking internal functions
+- ❌ NO testing framework internals
 
-## When to Use This Skill
+---
 
-Use this skill when:
-- Writing new backend tests
-- Setting up integration tests with external dependencies
-- Understanding `encore test` vs `encore run` differences
-- Testing PubSub message flows
-- Validating deterministic agent behavior
-- Debugging test failures (use with `backend-debugging` skill)
+## The ONE Pattern You Need
 
-## Test Environment Boundaries
-
-### `encore test` — Isolated Testing ⭐ PRIMARY
-
-**Purpose**: Isolated unit and integration tests with ephemeral resources
-
-**Characteristics:**
-- ✅ Isolated Encore runtime (clean slate each run)
-- ✅ Ephemeral test database (auto-provisioned)
-- ✅ Type-safe, fast feedback loop
-- ✅ PubSub subscriptions work IF explicitly imported
-- ✅ No `encore run` required
-- ✅ Perfect for CI/CD
-- ❌ Separate from `encore run` runtime
-
-**When to use:**
-- Unit tests for endpoints, repositories, domain logic
-- Integration tests with imported subscriptions
-- Fast feedback during development
-- CI/CD pipelines
-
-**Example:**
-```bash
-cd backend && encore test
-cd backend && encore test agent/tests/metrics.test.ts
-```
-
-**Critical Rule for PubSub:**
-```typescript
-// Import subscription at top of test file to enable worker
-import "../orchestrator/subscription";
-```
-
-### `encore run` — Full Stack Development
-
-**Purpose**: Full backend for manual testing and debugging
-
-**Characteristics:**
-- ✅ All services with hot reload
-- ✅ PubSub subscriptions active automatically
-- ✅ Encore dashboard at `http://localhost:9400`
-- ✅ Connected to external services
-- ❌ NOT for automated tests
-
-**When to use:**
-- Manual API testing
-- Debugging with Encore MCP tools (requires running instance)
-- Integration with external services
-
-**Example:**
-```bash
-cd backend && encore run
-```
-
-### Key Differences
-
-| Feature | `encore test` | `encore run` |
-|---------|--------------|-------------|
-| **Database** | Ephemeral test DB | Persistent local DB |
-| **PubSub** | Manual import required | Auto-loaded |
-| **Purpose** | Automated tests | Manual development |
-| **Isolation** | Full isolation | Shared state |
-| **MCP Access** | Not available | Available |
-
-## Testing Patterns
-
-### Pattern 1: Unit Test (Endpoint)
-
-**Purpose**: Test single endpoint without external dependencies
+### Integration Test with Encore
 
 ```typescript
+// backend/run/start.integration.test.ts
 import { describe, it, expect } from "vitest";
-import { health } from "../run/health";
-
-describe("health endpoint", () => {
-  it("returns healthy status", async () => {
-    const result = await health();
-    expect(result.status).toBe("healthy");
-    expect(result.timestamp).toBeDefined();
-  });
-});
-```
-
-**Run:**
-```bash
-cd backend && encore test run/health.test.ts
-```
-
-**Characteristics:**
-- ✅ Fast (no external dependencies)
-- ✅ Deterministic
-- ✅ No database or PubSub required
-
-### Pattern 2: Integration Test (Database)
-
-**Purpose**: Test endpoint with database interaction
-
-```typescript
-import { describe, it, expect } from "vitest";
-import { start } from "../run/start";
+import { start } from "./start";
 import db from "../db";
 
-describe("start endpoint", () => {
-  it("persists run to database", async () => {
-    const result = await start({
-      apkPath: "/path/to/test.apk",
-      appiumServerUrl: "http://127.0.0.1:4723/",
-      packageName: "com.example.test",
+// ✅ CRITICAL: Import all services needed
+import "../agent/orchestrator/subscription";  // Worker subscription
+import "../artifacts/store";  // Artifacts storage
+import "../artifacts/get";    // Artifacts retrieval  
+import "../graph/encore.service.ts";  // Graph projector
+
+describe("Integration: POST /run/start", () => {
+  it("should discover at least 1 unique screen", async () => {
+    // GIVEN: Test configuration
+    const request = {
+      apkPath: process.env.VITE_APK_PATH,
+      appiumServerUrl: process.env.VITE_APPIUM_SERVER_URL || "http://127.0.0.1:4723/",
+      packageName: process.env.VITE_PACKAGE_NAME,
       appActivity: ".*",
-    });
-    
-    expect(result.runId).toBeDefined();
-    
-    // Validate database persistence
-    const row = await db.queryRow<{ run_id: string; status: string }>`
-      SELECT run_id, status 
-      FROM runs 
-      WHERE run_id = ${result.runId}
-    `;
-    
-    expect(row).toBeDefined();
-    expect(row!.status).toBe("queued");
-  });
-});
-```
+      maxSteps: 20,
+    };
 
-**Run:**
-```bash
-cd backend && encore test run/start.test.ts
-```
+    // WHEN: Start run
+    const response = await start(request);
+    const { runId } = response;
 
-**Characteristics:**
-- ✅ Tests database persistence
-- ✅ Validates data integrity
-- ✅ Ephemeral test database
-
-### Pattern 3: Integration Test (PubSub)
-
-**Purpose**: Test PubSub flow with worker subscription
-
-```typescript
-import { describe, it, expect } from "vitest";
-import { start } from "../../run/start";
-import db from "../../db";
-
-// ⭐ CRITICAL: Import subscription to enable worker
-import "../orchestrator/subscription";
-
-describe("Run Flow with PubSub", () => {
-  it("processes job via worker subscription", async () => {
-    // Publish job
-    const { runId } = await start({
-      apkPath: "/path/to/test.apk",
-      appiumServerUrl: "http://127.0.0.1:4723/",
-      packageName: "com.example.test",
-      appActivity: ".*",
-    });
-    
-    // Poll for worker to process job
-    let status = "queued";
-    const maxWaitMs = 10000;
+    // THEN: Poll for completion (NOT fixed delay!)
+    const maxWaitMs = 60_000;
+    const pollIntervalMs = 2000;
     const startTime = Date.now();
-    
-    while (status === "queued" && Date.now() - startTime < maxWaitMs) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+    let runStatus = "queued";
+
+    while (Date.now() - startTime < maxWaitMs) {
+      await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
       
       const row = await db.queryRow<{ status: string }>`
         SELECT status FROM runs WHERE run_id = ${runId}
       `;
       
-      status = row!.status;
-    }
-    
-    // Assert worker processed the job
-    expect(status).not.toBe("queued");
-  });
-});
-```
-
-**Run:**
-```bash
-cd backend && encore test agent/tests/pubsub.test.ts
-```
-
-**Characteristics:**
-- ✅ Tests full PubSub flow
-- ✅ Validates worker processing
-- ⚠️ Requires subscription import (line 6)
-
-**Common Error:**
-```
-Run stayed in 'queued' status for 10s.
-CAUSE: Subscription must be imported (import "../orchestrator/subscription")
-```
-
-### Pattern 4: Metrics Test (Deterministic E2E)
-
-**Purpose**: Validate agent metrics against expected values from `.env`
-
-**External Prerequisites (manual setup):**
-- Appium server running (Appium Inspector)
-- Android emulator/device connected (Android Studio)
-- App installed from `.env`
-
-```typescript
-import { describe, it, expect } from "vitest";
-import { start } from "../../run/start";
-import db from "../../db";
-import { EXPECTED_UNIQUE_SCREENS_DISCOVERED } from "../../config/env";
-import "../orchestrator/subscription"; // ⭐ CRITICAL
-
-describe("Metrics Test", () => {
-  it(
-    "discovers expected number of screens",
-    async () => {
-      // Step 1: Read config from .env
-      const apkPath = process.env.VITE_APK_PATH;
-      const appiumServerUrl = process.env.VITE_APPIUM_SERVER_URL || "http://127.0.0.1:4723/";
-      const packageName = process.env.VITE_PACKAGE_NAME;
-      const appActivity = process.env.VITE_APP_ACTIVITY || ".*";
-
-      expect(apkPath).toBeDefined();
-      expect(packageName).toBeDefined();
-
-      // Step 2: Start run
-      const { runId } = await start({
-        apkPath: apkPath!,
-        appiumServerUrl,
-        packageName: packageName!,
-        appActivity,
-      });
-
-      // Step 3: Poll for completion
-      let status = "queued";
-      const maxWaitMs = 5 * 60 * 1000; // 5 minutes
-      const pollIntervalMs = 2000;
-      const startTime = Date.now();
-
-      while ((status === "queued" || status === "running") && Date.now() - startTime < maxWaitMs) {
-        await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
-        
-        const row = await db.queryRow<{ status: string }>`
-          SELECT status FROM runs WHERE run_id = ${runId}
-        `;
-        
-        status = row!.status;
+      runStatus = row?.status || "queued";
+      
+      if (runStatus === "completed" || runStatus === "failed") {
+        break;
       }
+    }
 
-      expect(status).toBe("completed");
+    // THEN: Should complete successfully
+    expect(runStatus).toBe("completed");
 
-      // Step 4: Extract metrics from event
-      const finishedEvent = await db.queryRow<{ payload: Record<string, unknown> }>`
-        SELECT payload
-        FROM run_events
-        WHERE run_id = ${runId}
-          AND kind = 'agent.run.finished'
-        ORDER BY sequence DESC
-        LIMIT 1
-      `;
-
-      const metrics = finishedEvent!.payload.metrics as Record<string, unknown>;
-      const reportedScreenCount = metrics.uniqueScreensDiscoveredCount as number;
-
-      // Step 5: Query actual screens from database
-      const actualCount = await db.queryRow<{ count: string }>`
-        SELECT COUNT(DISTINCT screen_id)::text as count
-        FROM graph_persistence_outcomes
-        WHERE run_id = ${runId}
-          AND upsert_kind = 'discovered'
-      `;
-
-      const screenCount = Number.parseInt(actualCount!.count, 10);
-
-      // Step 6: Assert consistency and expectation
-      expect(reportedScreenCount).toBe(screenCount);
-      expect(screenCount).toBe(EXPECTED_UNIQUE_SCREENS_DISCOVERED);
-    },
-    { timeout: 5 * 60 * 1000 }
-  );
-});
-```
-
-**Run:**
-```bash
-cd .cursor && task backend:integration:metrics
-```
-
-## Database Testing
-
-### Type-Safe Queries
-
-Always use type annotations:
-
-```typescript
-// ❌ BAD: No type safety
-const row = await db.queryRow`SELECT * FROM runs WHERE run_id = ${runId}`;
-
-// ✅ GOOD: Type-safe
-const row = await db.queryRow<{ 
-  run_id: string; 
-  status: string; 
-  stop_reason: string | null; 
-}>`
-  SELECT run_id, status, stop_reason 
-  FROM runs 
-  WHERE run_id = ${runId}
-`;
-```
-
-### Common Database Queries
-
-**Get run status:**
-```typescript
-const run = await db.queryRow<{ status: string; stop_reason: string | null }>`
-  SELECT status, stop_reason 
-  FROM runs 
-  WHERE run_id = ${runId}
-`;
-```
-
-**Get run events:**
-```typescript
-const events = await db.query<{ kind: string; payload: Record<string, unknown> }>`
-  SELECT kind, payload 
-  FROM run_events 
-  WHERE run_id = ${runId}
-  ORDER BY sequence
-`;
-
-for await (const event of events) {
-  console.log(`Event: ${event.kind}`);
-}
-```
-
-**Count discovered screens:**
-```typescript
-const result = await db.queryRow<{ count: string }>`
-  SELECT COUNT(DISTINCT screen_id)::text as count
-  FROM graph_persistence_outcomes 
-  WHERE run_id = ${runId}
-    AND upsert_kind = 'discovered'
-`;
-
-const screenCount = Number.parseInt(result!.count, 10);
-```
-
-### Validating Data Consistency
-
-Always validate event payloads match database state:
-
-```typescript
-// Get metric from event
-const finishedEvent = await db.queryRow<{ payload: Record<string, unknown> }>`
-  SELECT payload 
-  FROM run_events 
-  WHERE run_id = ${runId} 
-    AND kind = 'agent.run.finished'
-`;
-
-const eventMetric = (finishedEvent!.payload.metrics as Record<string, unknown>)
-  .uniqueScreensDiscoveredCount as number;
-
-// Get actual count from database
-const dbCount = await db.queryRow<{ count: string }>`
-  SELECT COUNT(DISTINCT screen_id)::text as count
-  FROM graph_persistence_outcomes 
-  WHERE run_id = ${runId}
-`;
-
-const actualCount = Number.parseInt(dbCount!.count, 10);
-
-// Assert they match
-expect(eventMetric).toBe(actualCount);
-```
-
-## PubSub Testing
-
-### Critical Rule: Import Subscriptions
-
-**In `encore test`, PubSub subscriptions are NOT auto-loaded.**
-
-You MUST explicitly import:
-
-```typescript
-// ⭐ CRITICAL: Import subscription to enable worker
-import "../orchestrator/subscription";
-```
-
-**Why:**
-- Without import: Jobs stay "queued" forever
-- With import: Worker processes jobs in test runtime
-
-## Writing Integration Tests
-
-### Test Structure
-
-```typescript
-import { describe, it, expect } from "vitest";
-import "../orchestrator/subscription"; // If testing PubSub
-
-describe("Feature Name", () => {
-  it("should validate specific behavior", async () => {
-    // 1. Setup: Create test data or call endpoint
-    const result = await someEndpoint({ /* params */ });
+    // THEN: Wait for graph projector (runs async)
+    await new Promise(resolve => setTimeout(resolve, 5000));
     
-    // 2. Action: Trigger behavior (may involve polling)
+    // THEN: Verify screens discovered
+    const screenCount = await db.queryRow<{ count: string }>`
+      SELECT COUNT(*)::text as count
+      FROM graph_persistence_outcomes
+      WHERE run_id = ${runId} AND upsert_kind = 'discovered'
+    `;
     
-    // 3. Assert: Validate outcome
-    expect(result.property).toBe(expectedValue);
-    
-    // 4. Verify: Query database to confirm persistence
-    const dbRow = await db.queryRow`SELECT * FROM table WHERE id = ${result.id}`;
-    expect(dbRow).toBeDefined();
-  });
+    const count = Number.parseInt(screenCount?.count || "0", 10);
+    expect(count).toBeGreaterThanOrEqual(1);
+
+    // Cleanup
+    await db.exec`DELETE FROM graph_persistence_outcomes WHERE run_id = ${runId}`;
+    await db.exec`DELETE FROM run_events WHERE run_id = ${runId}`;
+    await db.exec`DELETE FROM runs WHERE run_id = ${runId}`;
+  }, 90_000);
 });
 ```
 
-### Environment Configuration
-
-**Add to `.env`:**
+**Run it:**
 ```bash
-VITE_APK_PATH=/path/to/test-app.apk
-VITE_PACKAGE_NAME=com.example.testapp
-VITE_APP_ACTIVITY=.*
-EXPECTED_UNIQUE_SCREENS_DISCOVERED=1
+cd backend && encore test ./run/start.integration.test.ts
 ```
-
-**Load in test:**
-```typescript
-import { EXPECTED_UNIQUE_SCREENS_DISCOVERED } from "../../config/env";
-const apkPath = process.env.VITE_APK_PATH;
-```
-
-### Polling Pattern
-
-For async operations:
-
-```typescript
-const maxWaitMs = 60000; // 60 seconds
-const pollIntervalMs = 2000; // 2 seconds
-const startTime = Date.now();
-let status = "pending";
-
-while (status === "pending" && Date.now() - startTime < maxWaitMs) {
-  await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
-  
-  const row = await db.queryRow<{ status: string }>`
-    SELECT status FROM table WHERE id = ${id}
-  `;
-  
-  status = row!.status;
-}
-
-expect(status).toBe("completed");
-```
-
-### Console Logging
-
-Add helpful logs:
-
-```typescript
-console.log(`[Test] Starting run for ${packageName}`);
-console.log(`[Test] Run started: ${runId}`);
-console.log(`[Test] Poll #${pollCount} (${elapsed}s): status=${status}`);
-console.log(`[Test] ✅ SUCCESS`);
-```
-
-## Task Commands
-
-### Run All Backend Tests
-```bash
-cd .cursor && task backend:test
-```
-
-### Run Metrics Integration Test
-```bash
-cd .cursor && task backend:integration:metrics
-```
-
-**Manual Prerequisites:**
-- Start Appium via Appium Inspector
-- Start Android emulator via Android Studio
-- Ensure app installed
-
-### Run Specific Test
-```bash
-cd backend && encore test path/to/test.ts
-```
-
-## Best Practices
-
-### 1. Structured Assertions
-
-**❌ BAD:**
-```typescript
-expect(result).toBeTruthy();
-```
-
-**✅ GOOD:**
-```typescript
-expect(result, "Result should have runId").toHaveProperty("runId");
-expect(result.runId).toMatch(/^[a-zA-Z0-9]+$/);
-```
-
-### 2. Console Logs
-
-```typescript
-console.log(`[Test] Starting: ${testName}`);
-console.log(`[Test] Config:`, { apkPath, packageName });
-console.log(`[Test] ✅ SUCCESS`);
-```
-
-### 3. Query Both Event and Database
-
-```typescript
-const eventMetric = event.payload.metrics.uniqueScreensDiscoveredCount;
-const dbCount = await db.queryRow`SELECT COUNT(DISTINCT screen_id) ...`;
-expect(eventMetric).toBe(dbCount);
-```
-
-### 4. Environment Variables
-
-**❌ BAD:**
-```typescript
-const expectedScreens = 1; // Hardcoded
-```
-
-**✅ GOOD:**
-```typescript
-import { EXPECTED_UNIQUE_SCREENS_DISCOVERED } from "../../config/env";
-expect(actualCount).toBe(EXPECTED_UNIQUE_SCREENS_DISCOVERED);
-```
-
-### 5. Import Subscriptions
-
-**❌ BAD:**
-```typescript
-describe("Test", () => {
-  it("should process job", async () => {
-    await start({ /* ... */ });
-    // Stays "queued" forever
-  });
-});
-```
-
-**✅ GOOD:**
-```typescript
-import "../orchestrator/subscription"; // ⭐ CRITICAL
-
-describe("Test", () => {
-  it("should process job", async () => {
-    await start({ /* ... */ });
-    // Worker processes job ✅
-  });
-});
-```
-
-### 6. Type-Safe Queries
-
-**✅ GOOD:**
-```typescript
-const row = await db.queryRow<{ status: string; stop_reason: string | null }>`
-  SELECT status, stop_reason FROM runs WHERE run_id = ${runId}
-`;
-```
-
-### 7. Helpful Error Messages
-
-**✅ GOOD:**
-```typescript
-expect(
-  status, 
-  `Run should complete within ${maxWaitMs / 1000}s, got: ${status}`
-).toBe("completed");
-```
-
-## Debugging Failed Tests
-
-When tests fail, use the **`backend-debugging` skill** with Encore MCP tools:
-
-1. Query database state
-2. Inspect run events
-3. Check agent state snapshots
-4. Analyze traces
-
-See: `.claude-skills/backend-debugging_skill/SKILL.md`
-
-## Common Issues
-
-### Issue: "Run stayed in 'queued' status"
-
-**Fix:** Import subscription
-```typescript
-import "../orchestrator/subscription";
-```
-
-### Issue: "Run failed with stop_reason: X"
-
-**Fix:**
-1. Check external dependencies (Appium, device)
-2. Query database: `SELECT stop_reason FROM runs WHERE run_id = 'xxx'`
-3. Use `backend-debugging` skill
-
-### Issue: "Test timeout exceeded"
-
-**Fix:**
-1. Increase timeout: `{ timeout: 5 * 60 * 1000 }`
-2. Verify external services running
-3. Check subscription imported
-
-## References
-
-- **Backend Debugging**: `.claude-skills/backend-debugging_skill/SKILL.md`
-- **Backend Coding Rules**: `.cursor/rules/backend_coding_rules.mdc`
-- **Encore MCP Workflow**: `.claude-skills/ENCORE_MCP_TESTING_WORKFLOW.md`
-- **Metrics Test Example**: `backend/agent/tests/metrics.test.ts`
 
 ---
 
-**Last Updated**: 2025-11-09
+## Critical Setup Requirements
+
+### 1. Import Subscriptions in Tests
+
+PubSub subscriptions DON'T auto-load in `encore test`. You MUST import them:
+
+```typescript
+// At top of test file
+import "../agent/orchestrator/subscription";
+```
+
+**Why:** Encore only loads what's explicitly imported in test files.
+
+### 2. Import Required Services
+
+If your test calls other services (via generated clients), import them:
+
+```typescript
+import "../artifacts/store";  // For storage operations
+import "../graph/encore.service.ts";  // For graph projection
+```
+
+### 3. Configure Path Aliases
+
+**File:** `backend/vitest.config.ts`
+
+```typescript
+import { defineConfig } from "vitest/config";
+import { resolve } from "node:path";
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      "~encore": resolve(__dirname, "./encore.gen"),
+    },
+  },
+  test: {
+    testTimeout: 10000,
+    env: process.env,
+  },
+});
+```
+
+**Why:** Allows `import { artifacts } from "~encore/clients"` to resolve correctly.
+
+---
+
+## Testing Async Flows
+
+### ❌ DON'T: Fixed Delays
+
+```typescript
+await new Promise(r => setTimeout(r, 20000)); // Always waits 20s
+const status = await getStatus(runId);
+// If fails, no idea why (never started? crashed? just slow?)
+```
+
+### ✅ DO: Polling with Timeout
+
+```typescript
+const maxWaitMs = 60_000;
+const pollIntervalMs = 2000;
+const startTime = Date.now();
+
+while (Date.now() - startTime < maxWaitMs) {
+  const status = await getStatus(runId);
+  console.log(`Status: ${status}`);  // Log progress
+  
+  if (status === "completed") break;
+  
+  await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
+}
+
+// Clear failure message if timeout
+if (status !== "completed") {
+  throw new Error(`Timeout: status=${status} after ${maxWaitMs}ms`);
+}
+```
+
+**Benefits:**
+- ⚡ Fast (finishes as soon as condition met)
+- 🔍 Clear failures (exact timeout message)
+- 📊 Progress visibility (console logs)
+- 🎯 Reliable (adjusts to system speed)
+
+---
+
+## Common Issues & Solutions
+
+### Issue 1: Worker Never Claims Run
+
+**Symptom:** Run stays "queued" forever
+
+**Fix:** Import subscription in test:
+```typescript
+import "../agent/orchestrator/subscription";
+```
+
+### Issue 2: Service Calls Hang
+
+**Symptom:** Test times out calling artifacts/graph service
+
+**Fix:** Import service endpoints:
+```typescript
+import "../artifacts/store";
+import "../graph/encore.service.ts";
+```
+
+### Issue 3: Path Alias Not Found
+
+**Symptom:** `Error: Failed to load ~encore/clients`
+
+**Fix:** Add alias to `vitest.config.ts`:
+```typescript
+alias: { "~encore": resolve(__dirname, "./encore.gen") }
+```
+
+### Issue 4: Graph Projector Returns 0 Screens
+
+**Symptom:** Agent completes but `projectedScreens: 0`
+
+**Fix:** Wait for async projection:
+```typescript
+await new Promise(resolve => setTimeout(resolve, 5000));
+```
+
+### Issue 5: Database Column Not Found
+
+**Symptom:** `ERROR: column "sequence" does not exist`
+
+**Fix:** Use correct column names from schema:
+- ✅ `seq` not `sequence`
+- ✅ `upsert_kind = 'discovered'` not `'screen_discovered'`
+
+---
+
+## Test Structure
+
+### Minimal Integration Test
+
+```typescript
+import "../agent/orchestrator/subscription";
+import "../artifacts/store";
+import "../graph/encore.service.ts";
+
+it("tests user behavior", async () => {
+  // 1. Call API
+  const { runId } = await start({ ... });
+  
+  // 2. Poll for completion
+  while (status !== "completed") { await poll(); }
+  
+  // 3. Wait for async processing
+  await sleep(5000);
+  
+  // 4. Verify database state
+  const result = await db.queryRow`...`;
+  expect(result).toBeDefined();
+  
+  // 5. Cleanup
+  await db.exec`DELETE FROM ...`;
+}, 90_000);
+```
+
+---
+
+## Debugging Failed Tests
+
+### 1. Check Run Status
+```sql
+SELECT run_id, status, stop_reason
+FROM runs
+WHERE run_id = '<runId>';
+```
+
+### 2. Check Events Emitted
+```sql
+SELECT seq, kind, created_at
+FROM run_events
+WHERE run_id = '<runId>'
+ORDER BY seq;
+```
+
+### 3. Check Graph Projection
+```sql
+SELECT outcome_id, upsert_kind, screen_id, created_at
+FROM graph_persistence_outcomes
+WHERE run_id = '<runId>';
+```
+
+### 4. Check Agent State
+```sql
+SELECT snapshot
+FROM run_state_snapshots
+WHERE run_id = '<runId>'
+ORDER BY step_ordinal DESC
+LIMIT 1;
+```
+
+---
+
+## What NOT to Test
+
+❌ **Avoid these:**
+- Internal helper functions (like `countUniqueScreensDiscovered`)
+- Database query syntax
+- Type checking (TypeScript does this)
+- Framework behavior (Encore handles this)
+- Edge cases that don't affect users
+- Mocked/stubbed flows
+
+✅ **Instead test:**
+- Complete user workflows end-to-end
+- Real async flows (PubSub → Worker → Agent)
+- Database state after operations
+- Error handling for user-facing failures
+
+---
+
+## Task Commands
+
+```bash
+# Run all backend tests
+cd backend && encore test
+
+# Run specific test
+cd backend && encore test ./run/start.integration.test.ts
+
+# Via Task command
+cd .cursor && task backend:test
+```
+
+---
+
+## Key Learnings
+
+### 1. Services Must Be Explicitly Loaded
+
+In `encore test`, nothing auto-loads. Import what you need:
+
+```typescript
+import "../agent/orchestrator/subscription";  // ← Makes worker run
+import "../artifacts/store";  // ← Makes storage work
+import "../graph/encore.service.ts";  // ← Makes projector run
+```
+
+### 2. Polling > Fixed Delays
+
+Always poll with timeout, never use fixed delays.
+
+### 3. Graph Projection is Async
+
+Even after run completes, projector needs time:
+
+```typescript
+expect(runStatus).toBe("completed");
+await new Promise(r => setTimeout(r, 5000));  // Wait for projector
+const screens = await queryDiscoveredScreens(runId);
+```
+
+### 4. Database Schema Matters
+
+Use exact column names from migrations:
+- `seq` not `sequence`
+- `upsert_kind` not `outcome_kind`
+- `'discovered'` not `'screen_discovered'`
+
+---
+
+## Testing Strategy Summary
+
+| What to Test | How | Duration |
+|--------------|-----|----------|
+| **User flows** | Integration tests with `encore test` | 10-20s |
+| **Async processing** | Poll with timeout | Variable |
+| **Database state** | Direct queries | <1s |
+| **Error handling** | Test failure paths | 5-10s |
+
+**ONE focused test > many petty tests**
+
+---
+
+## Related Skills
+
+- **backend-debugging** - For debugging test failures with Encore MCP
+- **webapp-testing** - For E2E tests spanning backend + frontend
+- **graphiti-mcp-usage** - For documenting test discoveries

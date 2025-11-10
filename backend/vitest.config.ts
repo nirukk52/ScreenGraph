@@ -6,6 +6,11 @@ import { resolve } from "node:path";
 config({ path: resolve(__dirname, "../.env") });
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "~encore": resolve(__dirname, "./encore.gen"),
+    },
+  },
   test: {
     testTimeout: 10000,
     env: process.env, // Pass env vars to test environment
