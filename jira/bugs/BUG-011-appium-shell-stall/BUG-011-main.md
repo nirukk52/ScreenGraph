@@ -1,6 +1,6 @@
 # BUG-011: appium-shell-stall
 
-> **Line Limit:** 150 lines max (enforced)  
+> **Line Limit:** 250 lines max (enforced)  
 > **Purpose:** Core bug documentation and implementation details
 
 ---
