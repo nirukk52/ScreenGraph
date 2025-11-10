@@ -1,0 +1,233 @@
+{
+  "name": "qa_vibe",
+  "description": "QA engineering vibe for testing, quality assurance, smoke tests, E2E flows, and mobile app automation.",
+  "version": "1.0",
+  "extends": "base_vibe",
+  "domain": "quality-assurance",
+  "mcp_tools": [
+    {
+      "name": "playwright",
+      "purpose": "Web application E2E testing and browser automation",
+      "when_to_use": [
+        "Write and run E2E tests for web flows",
+        "Verify user journeys across frontend",
+        "Debug test failures with screenshots",
+        "Inspect live application state during testing"
+      ],
+      "key_operations": [
+        "playwright.navigate (load test pages)",
+        "playwright.click (simulate user actions)",
+        "playwright.snapshot (verify DOM state)",
+        "playwright.screenshot (visual regression)",
+        "playwright.evaluate (run assertions in browser)"
+      ]
+    },
+    {
+      "name": "encore-mcp",
+      "purpose": "Backend API testing and validation",
+      "when_to_use": [
+        "Test API endpoints directly",
+        "Verify API contracts and responses",
+        "Debug backend integration issues",
+        "Trace request flows for failures"
+      ],
+      "key_operations": [
+        "encore-mcp.call_endpoint (test API calls)",
+        "encore-mcp.get_traces (debug request flows)",
+        "encore-mcp.get_services (verify endpoints exist)"
+      ]
+    },
+    {
+      "name": "github",
+      "purpose": "CI/CD pipeline management and test reporting",
+      "when_to_use": [
+        "Configure GitHub Actions test workflows",
+        "Review test failures in CI",
+        "Manage test reporting and artifacts"
+      ]
+    }
+  ],
+  "rules": [
+    "Follow webapp-testing_skill for Playwright-first testing strategy",
+    "Always run smoke tests before major changes (task qa:smoke:all)",
+    "Write tests that verify complete user workflows, not petty edge cases",
+    "Focus on flow reliability and creative consistency",
+    "Use Playwright for web E2E, Appium for mobile automation",
+    "All tests must be deterministic and repeatable",
+    "Document test patterns and common scenarios in Graphiti"
+  ],
+  "documentation": [
+    ".claude-skills/webapp-testing_skill/SKILL.md",
+    ".claude-skills/backend-testing_skill/SKILL.md",
+    "frontend/playwright.config.ts",
+    "backend/vitest.config.ts",
+    "automation/TEST_PLAN.md",
+    "automation/TEST_EXECUTION_REPORT.md"
+  ],
+  "task_commands": [
+    {
+      "command": "task qa:smoke:all",
+      "when": "Run all smoke tests (backend + frontend + integration)"
+    },
+    {
+      "command": "task qa:smoke:backend",
+      "when": "Run backend smoke tests only"
+    },
+    {
+      "command": "task qa:smoke:frontend",
+      "when": "Run frontend smoke tests only"
+    },
+    {
+      "command": "task qa:appium:start",
+      "when": "Start Appium server for mobile testing"
+    },
+    {
+      "command": "task qa:appium:stop",
+      "when": "Stop Appium server"
+    },
+    {
+      "command": "task backend:test",
+      "when": "Run backend unit/integration tests"
+    },
+    {
+      "command": "task frontend:test",
+      "when": "Run frontend unit tests"
+    },
+    {
+      "command": "task founder:testing:smoke",
+      "when": "Legacy smoke test command (use qa:smoke:all)"
+    }
+  ],
+  "claude_skills": [
+    {
+      "skill": "webapp-testing",
+      "when": "Playwright-first testing playbook for ScreenGraph",
+      "type": "knowledge"
+    },
+    {
+      "skill": "backend-testing",
+      "when": "API testing with Encore MCP - comprehensive patterns for testing backend endpoints, integration flows, and service contracts",
+      "type": "knowledge"
+    },
+    {
+      "skill": "backend-debugging",
+      "when": "Debug backend test failures",
+      "type": "knowledge"
+    },
+    {
+      "skill": "frontend-debugging",
+      "when": "Debug frontend test failures",
+      "type": "knowledge"
+    }
+  ],
+  "workflow_patterns": {
+    "smoke_testing": [
+      "1. Ensure services are running (task founder:servers:status)",
+      "2. Run task qa:smoke:all",
+      "3. Review output for failures",
+      "4. If failures, use appropriate debugging skill",
+      "5. Fix and re-run smoke tests",
+      "6. Document flaky tests or patterns in Graphiti"
+    ],
+    "e2e_test_creation": [
+      "1. Load @webapp-testing skill for guidance",
+      "2. Identify critical user journey to test",
+      "3. Write Playwright test in frontend/tests/e2e/",
+      "4. Use playwright MCP to debug test locally",
+      "5. Verify test is deterministic (run 3x)",
+      "6. Add to CI workflow if critical path",
+      "7. Document test coverage in TEST_PLAN.md"
+    ],
+    "api_testing": [
+      "1. Identify API endpoint to test",
+      "2. Use encore-mcp.call_endpoint to test manually",
+      "3. Write test in backend/<service>/*.test.ts",
+      "4. Run task backend:test",
+      "5. Verify test coverage for edge cases",
+      "6. Document API contract testing patterns"
+    ],
+    "mobile_testing": [
+      "1. Start task qa:appium:start",
+      "2. Configure test in backend/tests/ or frontend/tests/",
+      "3. Run mobile flow tests",
+      "4. Use Appium Inspector for debugging",
+      "5. Stop task qa:appium:stop",
+      "6. Document mobile testing patterns"
+    ],
+    "debugging_test_failures": [
+      "1. Reproduce failure locally",
+      "2. Use playwright.screenshot to capture state",
+      "3. Check encore-mcp.get_traces for API issues",
+      "4. Use sequential-thinking for systematic analysis",
+      "5. Fix root cause (not just test)",
+      "6. Document solution in Graphiti"
+    ],
+    "integration_testing": [
+      "1. Start full stack (task founder:servers:start)",
+      "2. Test complete user flow end-to-end",
+      "3. Verify backend via encore-mcp.get_traces",
+      "4. Verify frontend via playwright.snapshot",
+      "5. Run task qa:smoke:all as sanity check",
+      "6. Document integration points and gotchas"
+    ]
+  },
+  "test_categories": {
+    "smoke_tests": {
+      "purpose": "Quick validation that system is functional",
+      "frequency": "Every commit, pre-push, CI",
+      "focus": "Critical paths only",
+      "examples": [
+        "Backend health endpoint responds",
+        "Frontend loads without errors",
+        "Database connection works",
+        "API endpoints return valid responses"
+      ]
+    },
+    "unit_tests": {
+      "purpose": "Test individual functions and components",
+      "frequency": "During development",
+      "focus": "Business logic, edge cases, utilities",
+      "examples": [
+        "Screen hash calculation",
+        "State machine transitions",
+        "Component rendering with props",
+        "Utility functions with various inputs"
+      ]
+    },
+    "integration_tests": {
+      "purpose": "Test service interactions and data flow",
+      "frequency": "Before releases",
+      "focus": "Service boundaries, API contracts",
+      "examples": [
+        "Run start -> Agent orchestration -> Graph projection",
+        "Frontend -> Backend API -> Database",
+        "PubSub event flow between services",
+        "Artifact storage and retrieval"
+      ]
+    },
+    "e2e_tests": {
+      "purpose": "Test complete user workflows",
+      "frequency": "Before releases, critical paths in CI",
+      "focus": "User journeys, real-world scenarios",
+      "examples": [
+        "User creates run and views results",
+        "Agent explores app and captures screens",
+        "Graph visualization updates live",
+        "Canceling run mid-execution"
+      ]
+    }
+  },
+  "common_pitfalls": [
+    "❌ Writing brittle tests that fail on minor UI changes",
+    "✅ Test behavior and workflows, not implementation details",
+    "❌ Testing edge cases instead of critical flows",
+    "✅ Focus on reliability of main user journeys",
+    "❌ Not running smoke tests before pushing",
+    "✅ Always run: task qa:smoke:all (enforced by pre-push hook)",
+    "❌ Ignoring flaky tests",
+    "✅ Fix flaky tests immediately or document in Graphiti",
+    "❌ Testing petty details that don't matter",
+    "✅ Test for creative consistency and flow reliability"
+  ]
+}
+

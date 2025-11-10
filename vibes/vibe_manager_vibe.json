@@ -1,0 +1,391 @@
+{
+  "name": "vibe_manager_vibe",
+  "description": "Meta-vibe for managing the ScreenGraph organizational layer: vibes, skills, MCP tools, root documentation, and coding agent infrastructure.",
+  "version": "1.0",
+  "extends": "base_vibe",
+  "domain": "meta-infrastructure",
+  "mcp_tools": [
+    {
+      "name": "graphiti",
+      "purpose": "Document vibe patterns, skill organization decisions, and MCP tool configurations",
+      "when_to_use": [
+        "Capture vibe design decisions",
+        "Document skill organization patterns",
+        "Record MCP tool configurations and why they're assigned to specific vibes"
+      ],
+      "key_operations": [
+        "graphiti.add_entity (new vibe/skill/MCP server)",
+        "graphiti.add_episode (vibe refactoring decisions)",
+        "graphiti.search (find existing organizational patterns)"
+      ]
+    },
+    {
+      "name": "github",
+      "purpose": "Manage repository structure and documentation files",
+      "when_to_use": [
+        "Update root-level documentation",
+        "Review organizational changes",
+        "Validate vibe/skill structure"
+      ]
+    }
+  ],
+  "rules": [
+    "Vibe Manager owns all root-level organizational infrastructure",
+    "NEVER modify service code (backend/frontend) - that's for domain vibes",
+    "ALWAYS maintain the vibe inheritance hierarchy (all vibes extend base_vibe)",
+    "Skills must have clear ownership: task-based (skills.json) or knowledge-based (SKILL.md)",
+    "MCP tools must be explicitly assigned to vibes based on domain relevance",
+    "Root documentation must stay synchronized with actual vibe/skill capabilities",
+    "Follow skill naming convention: directories end with _skill, files end with .json or .md",
+    "Task command descriptions in .cursor/commands must be 5 words or fewer"
+  ],
+  "ownership": {
+    "root_documentation": [
+      "CLAUDE.md - Project quick reference",
+      "README.md - Project overview",
+      "WHAT_WE_ARE_MAKING.md - Product vision",
+      "ARCHITECTURE_*.md - Architecture docs",
+      "TESTING_*.md - Testing documentation"
+    ],
+    "organizational_systems": [
+      "vibes/ - All vibe definitions and README",
+      ".claude-skills/ - All skills (task-based and knowledge-based)",
+      ".cursor/ - Root Taskfile, MCP config, command automation"
+    ],
+    "configuration_files": [
+      ".cursor/mcp.json - MCP server registry (template)",
+      ".cursor/mcp.local.json - Local MCP secrets (gitignored)",
+      ".cursor/Taskfile.yml - Root orchestration",
+      ".cursor/commands/ - Domain-specific Task namespaces"
+    ],
+    "rules_and_procedures": [
+      ".cursor/rules/founder_rules.mdc - Non-negotiable standards",
+      ".cursor/procedures/ - Workflow procedures"
+    ],
+    "does_not_own": [
+      "backend/ - Owned by backend_vibe",
+      "frontend/ - Owned by frontend_vibe",
+      "Service-specific tests - Owned by qa_vibe",
+      "Deployment configs - Owned by infra_vibe"
+    ]
+  },
+  "documentation": [
+    "vibes/README.md",
+    ".claude-skills/README.md",
+    ".cursor/commands/README.md",
+    "CLAUDE.md",
+    ".cursor/rules/founder_rules.mdc"
+  ],
+  "task_commands": [
+    {
+      "command": "task --list-all",
+      "when": "See all available Task commands across all namespaces"
+    },
+    {
+      "command": "task founder:rules:check",
+      "when": "Validate founder rules compliance"
+    },
+    {
+      "command": "task help",
+      "when": "Show common commands for developers"
+    }
+  ],
+  "claude_skills": [
+    {
+      "skill": "skill-creator",
+      "when": "Create new Claude skills (task-based or knowledge-based)",
+      "type": "knowledge"
+    },
+    {
+      "skill": "mcp-builder",
+      "when": "Create new MCP servers for tool integrations",
+      "type": "knowledge"
+    },
+    {
+      "skill": "graphiti-mcp-usage",
+      "when": "Document organizational decisions in Graphiti",
+      "type": "knowledge"
+    }
+  ],
+  "layering_architecture": {
+    "description": "ScreenGraph uses a 5-layer architecture for organizing coding agent infrastructure",
+    "layers": [
+      {
+        "layer": 1,
+        "name": "Base Infrastructure",
+        "owns": "base_vibe.json",
+        "provides": [
+          "Universal MCP tools (graphiti, context7, sequential-thinking)",
+          "Core workflow patterns",
+          "Foundation rules that all vibes inherit"
+        ],
+        "used_by": "All other vibes (inherited)"
+      },
+      {
+        "layer": 2,
+        "name": "Domain Vibes",
+        "owns": "backend_vibe.json, frontend_vibe.json, qa_vibe.json, infra_vibe.json",
+        "provides": [
+          "Domain-specific MCP tools (encore-mcp, playwright, svelte, etc.)",
+          "Service-specific Task commands",
+          "Domain-specific Claude skills",
+          "Workflow patterns for that domain"
+        ],
+        "used_by": "Coding agents working in that domain"
+      },
+      {
+        "layer": 3,
+        "name": "Meta Vibe (This One)",
+        "owns": "vibe_manager_vibe.json",
+        "provides": [
+          "Vibe organization and management",
+          "Skill creation and organization",
+          "MCP tool assignment to vibes",
+          "Root documentation maintenance"
+        ],
+        "used_by": "Agents working on organizational infrastructure"
+      },
+      {
+        "layer": 4,
+        "name": "Task Automation",
+        "owns": ".cursor/commands/*/Taskfile.yml, automation/scripts/",
+        "provides": [
+          "Deterministic shell automation",
+          "Service orchestration (founder:*)",
+          "Domain operations (backend:*, frontend:*, qa:*)",
+          "Environment management (ops:*, shared:*)"
+        ],
+        "used_by": "All vibes via task_commands, Claude skills, Husky hooks, CI/CD"
+      },
+      {
+        "layer": 5,
+        "name": "Skills System",
+        "owns": ".claude-skills/skills.json, .claude-skills/*_skill/",
+        "provides": [
+          "Task-based skills (natural language → Task commands)",
+          "Knowledge-based skills (debugging procedures, methodologies)",
+          "Conversational workflows for AI agents"
+        ],
+        "used_by": "All vibes via claude_skills field"
+      }
+    ]
+  },
+  "vibe_ownership_matrix": {
+    "description": "What each vibe owns and is responsible for",
+    "vibes": {
+      "base_vibe": {
+        "owns": "Universal patterns and tools",
+        "responsibilities": [
+          "Provide graphiti, context7, sequential-thinking to all vibes",
+          "Define core workflow patterns (before/during/after work)",
+          "Establish universal rules (search Graphiti first, document after)"
+        ],
+        "does_not_touch": "Domain-specific code or tools"
+      },
+      "backend_vibe": {
+        "owns": "Backend codebase and API layer",
+        "responsibilities": [
+          "backend/ directory (services, tests, migrations)",
+          "Encore.ts services and endpoints",
+          "Database schemas and queries",
+          "Backend-specific MCP tool: encore-mcp",
+          "Backend Task commands (backend:*)",
+          "Backend debugging and testing skills"
+        ],
+        "does_not_touch": "Frontend code, infrastructure config, vibe definitions"
+      },
+      "frontend_vibe": {
+        "owns": "Frontend codebase and UI layer",
+        "responsibilities": [
+          "frontend/ directory (routes, components, stores)",
+          "SvelteKit routes and Svelte 5 components",
+          "Frontend styling (Tailwind CSS v4, Skeleton UI v4)",
+          "Frontend-specific MCP tools: playwright, svelte, figma",
+          "Frontend Task commands (frontend:*)",
+          "Frontend debugging and development skills"
+        ],
+        "does_not_touch": "Backend code, infrastructure config, vibe definitions"
+      },
+      "qa_vibe": {
+        "owns": "Testing infrastructure and quality assurance",
+        "responsibilities": [
+          "Test suites (unit, E2E, smoke)",
+          "QA Task commands (qa:*)",
+          "Testing MCP tools: playwright, encore-mcp (for API testing)",
+          "Testing skills: webapp-testing, backend-testing",
+          "Test documentation and procedures"
+        ],
+        "does_not_touch": "Service implementation code, vibe definitions"
+      },
+      "infra_vibe": {
+        "owns": "DevOps, automation, and tooling",
+        "responsibilities": [
+          "CI/CD pipelines (GitHub Actions, Husky hooks)",
+          "Deployment configurations",
+          "MCP server creation (mcp-builder skill)",
+          "Skill creation (skill-creator skill)",
+          "Infrastructure MCP tools: github, vercel"
+        ],
+        "does_not_touch": "Service code, test implementation, vibe definitions"
+      },
+      "vibe_manager_vibe": {
+        "owns": "Organizational infrastructure",
+        "responsibilities": [
+          "All vibe definitions (vibes/)",
+          "All skill definitions (.claude-skills/)",
+          "MCP registry (.cursor/mcp.json)",
+          "Root documentation (CLAUDE.md, README.md, etc.)",
+          "Founder rules (.cursor/rules/)",
+          "Task command organization (.cursor/commands/)",
+          "Ensure vibes/skills/MCPs are correctly organized"
+        ],
+        "does_not_touch": "Service implementation code (backend/frontend/)"
+      }
+    }
+  },
+  "mcp_tool_assignment_strategy": {
+    "description": "How MCP tools are assigned to vibes based on domain relevance",
+    "principles": [
+      "Universal tools (graphiti, context7, sequential-thinking) live in base_vibe",
+      "Domain-specific tools assigned to the vibe that uses them most",
+      "Testing tools can be shared (playwright in both qa_vibe and frontend_vibe)",
+      "Infrastructure tools (github, vercel) assigned to infra_vibe",
+      "Meta tools (graphiti for org decisions) used by vibe_manager_vibe"
+    ],
+    "registry": {
+      "base_vibe": ["graphiti", "context7", "sequential-thinking"],
+      "backend_vibe": ["encore-mcp", "github"],
+      "frontend_vibe": ["playwright", "svelte", "figma", "vercel"],
+      "qa_vibe": ["playwright", "encore-mcp", "github"],
+      "infra_vibe": ["github", "vercel"],
+      "vibe_manager_vibe": ["graphiti", "github"]
+    }
+  },
+  "skill_organization_strategy": {
+    "description": "How Claude skills are organized and assigned to vibes",
+    "skill_types": {
+      "task_based": {
+        "location": ".claude-skills/skills.json",
+        "format": "JSON entries mapping natural language → Task commands",
+        "count": "30+ automation workflows",
+        "examples": [
+          "start-dev-environment → task founder:servers:start",
+          "run-smoke-tests → task qa:smoke",
+          "regenerate-encore-client → task founder:workflows:regen-client"
+        ],
+        "ownership": "Shared across all vibes based on task_commands field"
+      },
+      "knowledge_based": {
+        "location": ".claude-skills/*_skill/SKILL.md",
+        "format": "Markdown procedures and methodologies",
+        "count": "19+ specialized skills",
+        "examples": [
+          "backend-debugging_skill - 10-phase Encore.ts debugging",
+          "frontend-debugging_skill - 10-phase SvelteKit debugging",
+          "webapp-testing_skill - Playwright-first testing playbook",
+          "mcp-builder_skill - 4-phase MCP server creation",
+          "skill-creator_skill - Create new skills workflow"
+        ],
+        "ownership": "Assigned to vibes via claude_skills field"
+      }
+    },
+    "naming_conventions": {
+      "directories": "Must end with _skill (e.g., backend-debugging_skill/)",
+      "task_skills": "Hyphenated names in skills.json (e.g., start-dev-environment)",
+      "knowledge_skills": "Directory name without _skill suffix (e.g., backend-debugging)",
+      "files": "SKILL.md for knowledge skills, skills.json for task skills"
+    }
+  },
+  "workflow_patterns": {
+    "create_new_vibe": [
+      "1. Search Graphiti for existing vibe patterns",
+      "2. Identify domain and which MCP tools it needs",
+      "3. Create vibes/{name}_vibe.json extending base_vibe",
+      "4. Assign domain-specific MCP tools, Task commands, Claude skills",
+      "5. Document in vibes/README.md with decision tree entry",
+      "6. Test by loading vibe and running representative workflow",
+      "7. Capture decision in Graphiti"
+    ],
+    "create_new_skill": [
+      "1. Use skill-creator skill for guided workflow",
+      "2. Decide: task-based (skills.json) or knowledge-based (SKILL.md)?",
+      "3. Task-based: Add JSON entry in skills.json mapping intent → Task command",
+      "4. Knowledge-based: Create {name}_skill/ directory with SKILL.md",
+      "5. Assign skill to relevant vibes via claude_skills field",
+      "6. Document in .claude-skills/README.md",
+      "7. Test by invoking skill in appropriate vibe context",
+      "8. Capture pattern in Graphiti"
+    ],
+    "add_mcp_tool": [
+      "1. Add server config to .cursor/mcp.json (or mcp.local.json for secrets)",
+      "2. Determine which vibe(s) should have access",
+      "3. Add to mcp_tools field in relevant vibe JSON files",
+      "4. Document tool purpose, when_to_use, key_operations",
+      "5. Update vibe README.md with tool assignment",
+      "6. Test tool in vibe context",
+      "7. Capture MCP tool assignment decision in Graphiti"
+    ],
+    "reorganize_task_commands": [
+      "1. Identify overlapping or redundant Task commands",
+      "2. Propose consolidation strategy (like qa:* consolidation)",
+      "3. Update .cursor/commands/*/Taskfile.yml",
+      "4. Update root package.json scripts to match",
+      "5. Update all vibes' task_commands fields",
+      "6. Update .claude-skills/skills.json task-based skill mappings",
+      "7. Update documentation (CLAUDE.md, command READMEs)",
+      "8. Test all affected commands",
+      "9. Capture consolidation rationale in Graphiti"
+    ],
+    "update_root_documentation": [
+      "1. Identify which root doc needs updating",
+      "2. CLAUDE.md - Quick reference, commands, ports",
+      "3. vibes/README.md - Vibe system, decision tree",
+      "4. .claude-skills/README.md - Skills inventory",
+      "5. .cursor/commands/README.md - Task command reference",
+      "6. Keep all docs synchronized with actual capabilities",
+      "7. Surgical edits only (per founder rules)",
+      "8. Verify links and cross-references work"
+    ]
+  },
+  "common_pitfalls": [
+    "❌ Creating vibes that overlap in responsibility",
+    "✅ Each vibe has clear domain ownership, refer to vibe_ownership_matrix",
+    "❌ Assigning MCP tools to vibes that don't use them",
+    "✅ Only assign tools that the vibe's domain actually needs",
+    "❌ Creating skills without clear task-based vs knowledge-based distinction",
+    "✅ Task-based = natural language → Task command, Knowledge-based = procedure/methodology",
+    "❌ Modifying service code (backend/frontend/) while in vibe_manager_vibe",
+    "✅ Vibe Manager only touches organizational infrastructure, never service code",
+    "❌ Forgetting to update vibes when adding new Task commands or skills",
+    "✅ Keep vibes synchronized with actual automation capabilities",
+    "❌ Creating root documentation that duplicates .cursor/rules/ content",
+    "✅ CLAUDE.md for quick reference, founder_rules.mdc for detailed standards"
+  ],
+  "quality_checklist": {
+    "after_vibe_changes": [
+      "✓ All vibes extend base_vibe",
+      "✓ MCP tools assigned based on domain relevance",
+      "✓ Task commands match what's actually in .cursor/commands/",
+      "✓ Claude skills are correctly categorized (task vs knowledge)",
+      "✓ vibes/README.md updated with new vibe",
+      "✓ Decision tree includes new vibe",
+      "✓ Vibe ownership matrix is accurate"
+    ],
+    "after_skill_changes": [
+      "✓ Task-based skills in skills.json map to actual Task commands",
+      "✓ Knowledge-based skills in {name}_skill/ directories",
+      "✓ Skills assigned to vibes that use them",
+      "✓ .claude-skills/README.md updated",
+      "✓ Naming conventions followed (_skill suffix for directories)",
+      "✓ Skill documented in Graphiti if complex"
+    ],
+    "after_mcp_changes": [
+      "✓ MCP server in .cursor/mcp.json or mcp.local.json",
+      "✓ Tool assigned to relevant vibes only",
+      "✓ Tool purpose and key_operations documented in vibe",
+      "✓ vibes/README.md reflects MCP tool assignments",
+      "✓ Tool tested in vibe context"
+    ]
+  }
+}
+

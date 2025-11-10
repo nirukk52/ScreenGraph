@@ -1,34 +1,128 @@
 version: '3'
 
 # QA commands
-# Testing and quality assurance tasks
+# Consolidated testing and quality assurance tasks
 
 tasks:
-  smoke:backend:
-    desc: "Run backend smoke tests"
+  # Smoke tests (parallel health checks)
+  smoke:
+    desc: "Health checks for all services"
     cmds:
-      - echo "🧪 Running backend smoke tests..."
-      - echo "   Testing backend health endpoint..."
+      - echo "🧪 Running smoke tests..."
+      - |
+        BACKEND_FAIL=0
+        FRONTEND_FAIL=0
+        
+        curl -sf http://localhost:${BACKEND_PORT:-4000}/health > /dev/null && echo "✅ Backend healthy" || { echo "❌ Backend smoke test failed"; BACKEND_FAIL=1; } &
+        PID_BACKEND=$!
+        
+        curl -sf http://localhost:${FRONTEND_PORT:-5173} > /dev/null && echo "✅ Frontend healthy" || { echo "❌ Frontend smoke test failed"; FRONTEND_FAIL=1; } &
+        PID_FRONTEND=$!
+        
+        wait $PID_BACKEND || BACKEND_FAIL=1
+        wait $PID_FRONTEND || FRONTEND_FAIL=1
+        
+        if [ $BACKEND_FAIL -eq 0 ] && [ $FRONTEND_FAIL -eq 0 ]; then
+          echo "✅ All smoke tests passed"
+          exit 0
+        else
+          echo "❌ Some smoke tests failed"
+          exit 1
+        fi
+    silent: false
+
+  smoke:backend:
+    desc: "Backend health check only"
+    cmds:
+      - echo "🧪 Testing backend health..."
       - curl -f http://localhost:${BACKEND_PORT:-4000}/health || (echo "❌ Backend smoke test failed" && exit 1)
-      - echo "✅ Backend smoke tests passed"
+      - echo "✅ Backend smoke test passed"
     silent: false
 
   smoke:frontend:
-    desc: "Run frontend smoke tests"
+    desc: "Frontend availability check only"
     cmds:
-      - echo "🧪 Running frontend smoke tests..."
-      - echo "   Testing frontend accessibility..."
+      - echo "🧪 Testing frontend availability..."
       - curl -f http://localhost:${FRONTEND_PORT:-5173} > /dev/null || (echo "❌ Frontend smoke test failed" && exit 1)
-      - echo "✅ Frontend smoke tests passed"
+      - echo "✅ Frontend smoke test passed"
     silent: false
 
-  smoke:all:
-    desc: "Run all smoke tests"
+  # Static analysis
+  lint:
+    desc: "Lint both services"
     cmds:
-      - task: smoke:backend
-      - task: smoke:frontend
+      - echo "🔍 Linting backend..."
+      - cd ../../../backend && bunx biome lint .
+      - echo "🔍 Linting frontend..."
+      - cd ../../../frontend && bunx biome lint .
+      - echo "✅ Linting complete"
     silent: false
 
+  typecheck:
+    desc: "TypeScript checking for both services"
+    cmds:
+      - echo "🔍 Type checking frontend..."
+      - cd ../../../frontend && bun run check
+      - echo "✅ Frontend types valid"
+    silent: false
+
+  # Unit tests
+  unit:backend:
+    desc: "Backend unit tests"
+    cmds:
+      - echo "🧪 Running backend unit tests..."
+      - cd ../../../backend && encore test
+    silent: false
+
+  unit:frontend:
+    desc: "Frontend unit tests"
+    cmds:
+      - echo "⚠️  No frontend unit tests configured yet"
+      - echo "   Frontend uses Playwright for E2E tests (use qa:e2e)"
+    silent: false
+
+  unit:
+    desc: "All unit tests (backend only, frontend has no unit tests)"
+    cmds:
+      - task: unit:backend
+      - echo "Note - Frontend has no unit tests (uses E2E tests instead)"
+    silent: false
+
+  # E2E tests
+  e2e:
+    desc: "Frontend E2E tests (headless)"
+    cmds:
+      - echo "🧪 Running E2E tests..."
+      - cd ../../../frontend && bun run test:e2e
+    silent: false
+
+  e2e:headed:
+    desc: "Frontend E2E tests (headed mode)"
+    cmds:
+      - echo "🧪 Running E2E tests (headed)..."
+      - cd ../../../frontend && bun run test:e2e:headed
+    silent: false
+
+  e2e:ui:
+    desc: "Playwright UI mode"
+    cmds:
+      - echo "🎭 Opening Playwright UI..."
+      - cd ../../../frontend && bun run test:e2e:ui
+    silent: false
+
+  # Complete test suite
+  all:
+    desc: "Complete test suite (smoke + lint + typecheck + unit + e2e)"
+    cmds:
+      - task: smoke
+      - task: lint
+      - task: typecheck
+      - task: unit
+      - task: e2e
+      - echo "🎉 All tests passed!"
+    silent: false
+
+  # Appium (mobile testing)
   appium:start:
     desc: "Start Appium server"
     cmds:
@@ -43,11 +137,4 @@ tasks:
       - echo "🛑 Stopping Appium server..."
       - lsof -ti:${APPIUM_PORT:-4723} 2>/dev/null | xargs kill -9 2>/dev/null || true
       - echo "✅ Appium server stopped"
-    silent: false
-
-  e2e:
-    desc: "Run end-to-end tests"
-    cmds:
-      - echo "🧪 Running E2E tests..."
-      - cd ../../backend && bun run test:e2e
     silent: false

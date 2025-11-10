@@ -25,13 +25,15 @@ description: "Non-negotiable development standards for ScreenGraph. Enforces arc
 11. [Commands](#commands)
 12. [Build & Deployment](#build--deployment)
 13. [Handoff Documentation](#handoff-documentation)
+14. [Vibe Usage](#vibe-usage-engineering-personas)
 
 ### Part II: Environment Policy
-14. [Single Environment Execution](#single-environment-execution)
-15. [Worktree Usage](#worktree-usage)
-16. [Standard Ports](#standard-ports)
-17. [Cursor Modes](#cursor-dropdown-modes)
-18. [Enforcement Rules](#enforcement-what-agents-cannot-do)
+15. [Single Environment Execution](#single-environment-execution)
+16. [Worktree Usage](#worktree-usage)
+17. [Standard Ports](#standard-ports)
+18. [Git Operations](#git-operations)
+19. [Cursor Modes](#cursor-dropdown-modes)
+20. [Enforcement Rules](#enforcement-what-agents-cannot-do)
 
 ---
 
@@ -253,6 +255,71 @@ Update after significant changes.
 
 ---
 
+### 🎭 Vibe Usage (Engineering Personas)
+
+**ALWAYS load appropriate vibe before starting domain-specific work:**
+
+**What are vibes?**
+- Role-based profiles that configure AI agents with domain-specific MCP tools, documentation, Task commands, and workflow patterns
+- Every vibe extends `base_vibe` (graphiti, context7, sequential-thinking)
+- Located in `vibes/` directory
+
+**Available Vibes:**
+- **backend_vibe** — Backend/API work (encore-mcp, github, backend-debugging)
+- **frontend_vibe** — Frontend/UI work (playwright, svelte, figma, vercel)
+- **infra_vibe** — DevOps/automation (mcp-builder, skill-creator, github, vercel)
+- **qa_vibe** — Testing/QA (playwright, encore-mcp, webapp-testing)
+
+**Mandatory Workflow:**
+```
+1. BEFORE starting work: Load appropriate vibe
+   "Load backend_vibe and [task]"
+   "Load frontend_vibe and [task]"
+   
+2. DURING work:
+   - Use vibe-specific MCP tools (not manual scripting)
+   - Follow vibe-specific rules and documentation
+   - Run vibe-recommended Task commands
+   - Leverage vibe-specific Claude skills
+   
+3. AFTER completing:
+   - Run quality checks (founder rules, tests, smoke tests)
+   - Document discoveries via Graphiti
+   - Update handoff docs if significant changes
+```
+
+**Examples:**
+```
+✅ "Load backend_vibe and optimize agent state machine"
+   → Uses encore-mcp for introspection, backend-debugging skill
+
+✅ "Load frontend_vibe and build navigation component"
+   → Uses playwright for inspection, svelte docs, autofixer
+
+✅ "Load qa_vibe and write E2E tests for run flow"
+   → Uses webapp-testing skill, playwright automation
+
+✅ "Load infra_vibe and create Stripe MCP server"
+   → Uses @mcp-builder_skill 4-phase process
+```
+
+**MCP Tools Registry:**
+- **Location:** `.cursor/mcp.json` (template) and `.cursor/mcp.local.json` (secrets, gitignored)
+- All vibes reference tools from this registry
+- To add new tool: Update mcp.json → Update relevant vibe → Document in Graphiti
+
+**Enforcement:**
+- ❌ Never work without loading appropriate vibe (you'll miss critical tools/context)
+- ❌ Never ignore vibe-specific rules (they ensure consistency)
+- ❌ Never skip Graphiti search before implementing (avoid reinventing)
+- ✅ ALWAYS search Graphiti for existing patterns before starting
+- ✅ ALWAYS document solutions via Graphiti after solving complex issues
+- ✅ ALWAYS use vibe-specific MCP tools instead of manual work
+
+**See:** `vibes/README.md` for complete vibe documentation and decision tree
+
+---
+
 ## Part II: Environment Policy
 
 ### Single Environment Execution
@@ -275,6 +342,23 @@ cd frontend && bun run dev # Service-specific when needed
 - Scripts `./automation/scripts/dev-backend.sh` and `./automation/scripts/dev-frontend.sh` respect `.env` values.
 - Husky/CI always start services on the standard ports defined above.
 
+### Git Operations
+
+**CRITICAL: Git commits and pushes require explicit founder approval**
+
+- ❌ **NEVER commit changes** unless the founder explicitly says "commit" or "commit this" in the prompt
+- ❌ **NEVER push changes** unless the founder explicitly says "push" or "push this" in the prompt
+- ❌ **NEVER run `git commit`** proactively, even if you think the work is complete
+- ❌ **NEVER stage files** (`git add`) unless explicitly requested
+
+**Rationale:**
+- The founder controls when code is committed to history
+- Commits are permanent and must be intentional
+- AI agents should implement changes, not decide when they're "done"
+- Pre-commit hooks may have side effects that need manual oversight
+
+**Violation:** If you commit or push without explicit founder approval, you are being too proactive and overstepping boundaries.
+
 ---
 
-**Last Updated**: 2025-11-07
+**Last Updated**: 2025-11-09

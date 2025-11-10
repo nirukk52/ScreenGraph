@@ -1,0 +1,134 @@
+{
+  "name": "backend_vibe",
+  "description": "Backend engineering vibe for Encore.ts API development, database operations, and service orchestration.",
+  "version": "1.0",
+  "extends": "base_vibe",
+  "domain": "backend",
+  "mcp_tools": [
+    {
+      "name": "encore-mcp",
+      "purpose": "Live Encore.ts backend introspection and API testing",
+      "when_to_use": [
+        "Inspect current API endpoints and schemas",
+        "Test API calls without manual curl",
+        "Debug service configuration issues",
+        "Verify endpoint behavior before frontend integration"
+      ],
+      "key_operations": [
+        "encore-mcp.get_services (list all services)",
+        "encore-mcp.get_metadata (full app metadata)",
+        "encore-mcp.call_endpoint (test API calls)",
+        "encore-mcp.get_traces (debugging request flows)"
+      ]
+    },
+    {
+      "name": "github",
+      "purpose": "Repository operations and code review",
+      "when_to_use": [
+        "Review related PRs for context",
+        "Check commit history for changes",
+        "Search codebase for patterns"
+      ]
+    }
+  ],
+  "rules": [
+    "Follow backend_coding_rules.mdc for Encore.ts patterns",
+    "Use Encore MCP for live introspection (never mutate production state)",
+    "ALWAYS use structured logging via encore.dev/log (NEVER console.log)",
+    "Database queries must use typed results with SQLDatabase",
+    "After API changes, run: task founder:workflows:regen-client",
+    "Use explicit literal unions (NOT indexed access types for Encore parser)",
+    "Every function/class/type must have purpose comment"
+  ],
+  "documentation": [
+    ".cursor/rules/backend_coding_rules.mdc",
+    "backend/CLAUDE.md",
+    "BACKEND_HANDOFF.md"
+  ],
+  "task_commands": [
+    {
+      "command": "task backend:dev",
+      "when": "Start backend service only"
+    },
+    {
+      "command": "task backend:health",
+      "when": "Check if backend is responding"
+    },
+    {
+      "command": "task backend:test",
+      "when": "Run backend unit tests"
+    },
+    {
+      "command": "task backend:db:migrate",
+      "when": "Run database migrations"
+    },
+    {
+      "command": "task backend:db:shell",
+      "when": "Open database shell for queries"
+    },
+    {
+      "command": "task backend:logs",
+      "when": "View backend service logs"
+    },
+    {
+      "command": "task qa:smoke:backend",
+      "when": "Run backend smoke tests"
+    },
+    {
+      "command": "task founder:workflows:regen-client",
+      "when": "Regenerate frontend client after API changes"
+    },
+    {
+      "command": "task founder:workflows:db-reset",
+      "when": "Reset database (DESTRUCTIVE)"
+    }
+  ],
+  "claude_skills": [
+    {
+      "skill": "backend-debugging",
+      "when": "Systematic 10-phase debugging for Encore.ts issues",
+      "type": "knowledge"
+    },
+    {
+      "skill": "backend-testing",
+      "when": "API testing with Encore MCP - write tests, validate contracts, debug with traces",
+      "type": "knowledge"
+    }
+  ],
+  "workflow_patterns": {
+    "api_development": [
+      "1. Search Graphiti for existing patterns",
+      "2. Define types and DTOs (no 'any' types)",
+      "3. Implement endpoint with typed request/response",
+      "4. Add structured logging with context",
+      "5. Test via encore-mcp.call_endpoint",
+      "6. Run task founder:workflows:regen-client",
+      "7. Document via Graphiti if new pattern"
+    ],
+    "database_changes": [
+      "1. Create migration in backend/db/migrations/",
+      "2. Run task backend:db:migrate",
+      "3. Update repository with typed queries",
+      "4. Test queries via task backend:db:shell",
+      "5. Document schema changes in BACKEND_HANDOFF.md"
+    ],
+    "debugging_issues": [
+      "1. Load @backend-debugging skill (10-phase process)",
+      "2. Use encore-mcp.get_traces for request tracing",
+      "3. Check logs via task backend:logs",
+      "4. Use sequential-thinking for systematic analysis",
+      "5. Document solution in Graphiti for future reference"
+    ]
+  },
+  "common_pitfalls": [
+    "❌ Using indexed access types: (typeof ARRAY)[number]",
+    "✅ Use explicit literal unions instead",
+    "❌ Using console.log for logging",
+    "✅ Use encore.dev/log with structured context",
+    "❌ Untyped database queries",
+    "✅ Always specify generic type: db.query<ResultType>",
+    "❌ Magic strings for status/enums",
+    "✅ Use literal unions or const objects"
+  ]
+}
+

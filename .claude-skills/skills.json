@@ -392,8 +392,56 @@
       "status": "active"
     },
     {
+      "name": "load-backend-vibe",
+      "description": "Load backend engineering vibe for Encore.ts API development, database operations, and service orchestration. Configures encore-mcp, github tools, backend-debugging skill, and backend-specific workflows",
+      "type": "vibe",
+      "vibe_file": "vibes/backend_vibe.json",
+      "category": "vibes",
+      "status": "active"
+    },
+    {
+      "name": "load-frontend-vibe",
+      "description": "Load frontend engineering vibe for SvelteKit 2 + Svelte 5 development with runes, SSR, and modern UI patterns. Configures playwright, svelte, figma, vercel tools and frontend-specific workflows",
+      "type": "vibe",
+      "vibe_file": "vibes/frontend_vibe.json",
+      "category": "vibes",
+      "status": "active"
+    },
+    {
+      "name": "load-infra-vibe",
+      "description": "Load infrastructure engineering vibe for automation, MCP server creation, skill development, and DevOps workflows. Configures github, vercel tools, mcp-builder and skill-creator skills",
+      "type": "vibe",
+      "vibe_file": "vibes/infra_vibe.json",
+      "category": "vibes",
+      "status": "active"
+    },
+    {
+      "name": "load-qa-vibe",
+      "description": "Load QA engineering vibe for testing, quality assurance, smoke tests, E2E flows, and mobile app automation. Configures playwright, encore-mcp tools and webapp-testing skill",
+      "type": "vibe",
+      "vibe_file": "vibes/qa_vibe.json",
+      "category": "vibes",
+      "status": "active"
+    },
+    {
+      "name": "load-base-vibe",
+      "description": "Load base vibe foundation with universal MCP tools (graphiti, context7, sequential-thinking) and core workflows inherited by all engineering vibes",
+      "type": "vibe",
+      "vibe_file": "vibes/base_vibe.json",
+      "category": "vibes",
+      "status": "active"
+    },
+    {
+      "name": "code-review",
+      "description": "Conduct focused code reviews emphasizing clarity, data flow understanding, and minimal assumptions. Produces structured reviews with priority-based feedback (High/Med/Low). Automatically saves reviews to JIRA ticket folders when references are detected.",
+      "type": "knowledge",
+      "skill_file": "code-review_skill/SKILL.md",
+      "category": "quality",
+      "status": "active"
+    },
+    {
       "name": "backend-testing",
-      "description": "Comprehensive guidance for testing Encore.ts backends. Covers test environment boundaries (encore test vs encore run), Encore MCP integration for debugging, database testing, PubSub testing with subscriptions, and trace analysis. Use when writing, debugging, or running backend tests",
+      "description": "Minimal, integration-first testing pattern for Encore.ts backend services. Focuses on importing subscriptions/services into encore test, polling async flows, verifying database state, and cleaning up test data.",
       "type": "knowledge",
       "skill_file": "backend-testing_skill/SKILL.md",
       "category": "testing",
@@ -412,11 +460,13 @@
     "documents": "Document creation and manipulation (Word, PDF, PowerPoint, Excel)",
     "communication": "Internal and external communication templates and tools",
     "graphiti": "Graphiti MCP workflows for knowledge graph maintenance and retrieval",
+    "vibes": "Engineering persona system configuring domain-specific tools, rules, and workflows",
     "help": "Help and documentation"
   },
   "usage": {
     "from_cursor": "Skills can be triggered by natural language in Cursor chat",
     "from_cli": "Run directly: cd .cursor && task <command>",
-    "list_skills": "View all skills in this file or run: task --list"
+    "list_skills": "View all skills in this file or run: task --list",
+    "vibes": "Load vibes by saying: 'Load backend_vibe and [task]' or 'Load frontend_vibe and [task]'"
   }
 }

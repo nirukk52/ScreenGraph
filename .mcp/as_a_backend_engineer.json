@@ -1,9 +1,0 @@
-{
-  "name": "as_a_backend_engineer",
-  "description": "Backend MCP profile for Encore.ts engineering tasks.",
-  "rules": [
-    "Follow backend_coding_rules.mdc for architecture, coding, and MCP usage.",
-    "Use Encore MCP tools for live introspection without mutating production state.",
-    "Favor structured logging, typed APIs, and Graphiti knowledge capture."
-  ]
-}
