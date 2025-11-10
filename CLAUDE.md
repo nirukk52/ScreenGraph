@@ -513,3 +513,46 @@ encore run
 - Remove outdated entries proactively
 - Link to cursor rules for detailed explanations
 - Enforce naming conventions: rule files must end `_rules`, skill artifacts end `_skill`, and `.cursor/commands` entries stay natural-language headlines of five words or fewer.
+
+// ✅ MUST import subscriptions in encore test
+// encore test for backend testing
+import "../agent/orchestrator/subscription";
+import "../artifacts/store";
+import "../graph/encore.service.ts";
+// Import ALL subscriptions you need
+import "../agent/orchestrator/subscription";      // Agent worker
+import "../notifications/email-subscription";    // Email service
+import "../analytics/event-subscription";        // Analytics
+import "../webhooks/delivery-subscription";      // Webhooks
+
+// Import ALL services
+import "../artifacts/store";
+import "../graph/encore.service.ts";
+import "../notifications/encore.service.ts";
+import "../analytics/encore.service.ts";
+
+it("tests multi-service flow", async () => {
+  // ALL services run in same encore test environment
+  const { runId } = await start({ ... });
+  
+  // Verify agent processed
+  while (runStatus !== "completed") { await poll(); }
+  
+  // Verify email sent
+  const email = await db.queryRow`
+    SELECT * FROM emails WHERE run_id = ${runId}
+  `;
+  expect(email).toBeDefined();
+  
+  // Verify analytics tracked
+  const event = await db.queryRow`
+    SELECT * FROM analytics_events WHERE run_id = ${runId}
+  `;
+  expect(event).toBeDefined();
+  
+  // Verify webhook delivered
+  const webhook = await db.queryRow`
+    SELECT * FROM webhook_deliveries WHERE run_id = ${runId}
+  `;
+  expect(webhook).toBeDefined();
+});

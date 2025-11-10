@@ -20,6 +20,8 @@
   },
   "dependencies": {
     "@formkit/auto-animate": "^0.8.2",
+    "@skeletonlabs/skeleton": "^4.2.4",
+    "@skeletonlabs/skeleton-svelte": "^4.2.4",
     "clsx": "^2.1.1",
     "envalid": "^8.1.1",
     "lucide-svelte": "^0.425.0",
@@ -29,8 +31,6 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.2",
     "@playwright/test": "^1.56.1",
-    "@skeletonlabs/skeleton": "^4.2.4",
-    "@skeletonlabs/skeleton-svelte": "^4.2.4",
     "@sveltejs/adapter-vercel": "^4.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",

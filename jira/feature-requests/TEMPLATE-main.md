@@ -10,6 +10,15 @@
 
 ---
 
+## Metadata (Optional)
+- **Status**: [Todo | In Progress | Done]
+- **Priority**: [P0 | P1 | P2 | P3]
+- **Milestone**: [Milestone name or number]
+- **Owner**: [Team or person]
+- **Estimated Effort**: [S | M | L | XL]
+
+---
+
 ## User Story
 **As a** [user type]
 **I want** [capability]
@@ -18,14 +27,15 @@
 ---
 
 ## Acceptance Criteria
-- [ ] Criterion 1
+- [ ] Criterion 1  
+  _Optional:_ Group criteria by phases (Phase 1, Phase 2, etc.) when rollout is staged.
 - [ ] Criterion 2
 - [ ] Criterion 3
 
 ---
 
 ## Technical Approach
-[Architecture, design decisions, key technologies]
+[Architecture, design decisions, key technologies. Highlight key insights or trade-offs discovered during analysis.]
 
 ---
 
@@ -85,5 +95,39 @@ interface ResponseDTO {}
 ---
 
 ## Notes
-[Additional context, links, design references, discussion]
+- **Context**: [Additional background, links, design references]
+- **Risks / Mitigations**: [Potential pitfalls and safeguards]
+- **Related Requests**: [Connect to FR/BUG/TD items]
+
+---
+
+## Success Metrics (Optional)
+- [Metric 1: Definition + target]
+- [Metric 2: Definition + target]
+
+---
+
+## Future Enhancements (Optional)
+- [Follow-up idea 1]
+- [Follow-up idea 2]
+
+---
+
+## Release Plan (PROC-001)
+- Follow PROC-001 “Production Release” in `.cursor/procedures/PROCEDURES.md`
+- Preconditions:
+  - [ ] `@run-default-test` (or relevant command) passes
+  - [ ] [Add additional precondition]
+- Handoff:
+  - After merge to main, run `@update-handoff` and choose the appropriate workflow
+- Notes:
+  - [Release tagging guidance, versioning, rollout cautions]
+
+---
+
+## Worktree Setup Quicklinks
+- Start Backend: `./scripts/dev-backend.sh`
+- Start Frontend: `./scripts/dev-frontend.sh`
+- Smoke Tests: `@run-default-test`
+- Isolation Check: `@verify-worktree-isolation`
 
