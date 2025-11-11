@@ -87,3 +87,18 @@ Labels & Notes – Tag screens (“Paywall”, “KYC”), leave short reviews, 
 
 Helpful commands
 open "/Users/priyankalalge/Library/Caches/encore/objects/d3u8d93djnh82bnf6l1g/artifacts/obj:/artifacts/"     
+
+
+Update: both e2e and backend failed. Which is good since atleast now both are on the same page.
+
+Update @base_vibe.json  and @frontend_vibe.json 
+and update other skills as necessary
+Skill improvements note:
+We that we dont need to use timers etc inside tests we can just use the @events.ts (1-2) @events.ts (37-38) 
+Events can be real nice way for quick verification.
+
+Create/update a bug for the appium issue do a quick verification before @create-bug-doc /update that both are actually failing at the same place.
+
+Create/update a bug for your changes if already does not exists and mark it done.
+
+Use seq thinking to plan todos.

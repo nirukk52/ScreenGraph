@@ -183,8 +183,27 @@ export function createRunFinishedEvent(
   sequence: number,
   ts: string,
   stopReason: string,
+  extras?: {
+    disposition?: string;
+    basis?: string;
+    metrics?: {
+      totalIterationsExecuted: number;
+      uniqueScreensDiscoveredCount: number;
+      uniqueActionsPersistedCount: number;
+      runDurationInMilliseconds: number;
+    };
+  },
 ): DomainEvent {
-  const payload = { finishedAt: ts, stopReason };
+  const payload: EventPayloadMap["agent.run.finished"] = { finishedAt: ts, stopReason };
+  if (extras?.disposition) {
+    payload.disposition = extras.disposition;
+  }
+  if (extras?.basis) {
+    payload.basis = extras.basis;
+  }
+  if (extras?.metrics) {
+    payload.metrics = extras.metrics;
+  }
   return {
     eventId,
     runId,

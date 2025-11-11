@@ -185,3 +185,6 @@ The fix is validated by code inspection:
 **Date:** 2025-11-10  
 **Vibe:** `frontend_vibe` + `frontend-debugging_skill`
 
+
+
+

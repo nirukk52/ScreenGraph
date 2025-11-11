@@ -84,3 +84,6 @@ Initial finding: the agent treats signature verification failure as recoverable,
 - Issue confirmed multiple times on 2025-11-10; screenshot persisted on frontend even after Appium shutdown.
 
 
+
+
+

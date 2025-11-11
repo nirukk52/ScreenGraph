@@ -38,12 +38,15 @@ export async function waitIdle(
     nodeName: "WaitIdle",
   });
   logger.info("WaitIdle INPUT", { input });
+  console.log(`[WAITIDLE NODE] STARTING with config minQuiet=${input.idleHeuristicsConfiguration.minQuietMillis}ms maxWait=${input.idleHeuristicsConfiguration.maxWaitMillis}ms`);
 
   try {
+    console.log(`[WAITIDLE NODE] Calling idleDetectorPort.waitIdle...`);
     const quietWindowMillis = await idleDetectorPort.waitIdle(
       input.idleHeuristicsConfiguration.minQuietMillis,
       input.idleHeuristicsConfiguration.maxWaitMillis,
     );
+    console.log(`[WAITIDLE NODE] idleDetectorPort returned: ${quietWindowMillis}ms`);
     logger.info("Quiet window observed", { quietWindowMillis });
 
     const output: WaitIdleOutput = {

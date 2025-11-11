@@ -45,6 +45,7 @@ export async function perceive(
     nodeName: "Perceive",
   });
   logger.info("Perceive INPUT", { input });
+  console.log(`[PERCEIVE NODE] START - capturing screenshot and UI hierarchy`);
 
   if (input.captureDirectives.delayBeforeCaptureMs > 0) {
     await new Promise((resolve) => setTimeout(resolve, input.captureDirectives.delayBeforeCaptureMs));
@@ -57,11 +58,13 @@ export async function perceive(
     ? perceptionPort.dumpUiHierarchy()
     : Promise.resolve(null);
 
+  console.log(`[PERCEIVE NODE] Waiting for screenshot and UI hierarchy...`);
   const [screenshotData, uiHierarchyData, screenDimensions] = await Promise.all([
     screenshotPromise,
     uiHierarchyPromise,
     deviceInfoPort.getScreenDimensions(),
   ]);
+  console.log(`[PERCEIVE NODE] Got screenshot and UI hierarchy, storing artifacts...`);
 
   const captureTimestampMs = Date.now();
 
@@ -73,6 +76,7 @@ export async function perceive(
     throw new Error("UI hierarchy capture returned null despite being required");
   }
 
+  console.log(`[PERCEIVE NODE] Storing screenshot artifact...`);
   const screenshotResult = await storagePort.storeArtifact(
     input.runId,
     "screenshot",
@@ -84,7 +88,9 @@ export async function perceive(
       captureTimestampMs,
     },
   );
+  console.log(`[PERCEIVE NODE] Screenshot stored: ${screenshotResult.refId}`);
 
+  console.log(`[PERCEIVE NODE] Storing UI hierarchy artifact...`);
   const uiHierarchyResult = await storagePort.storeArtifact(
     input.runId,
     "ui_hierarchy",
@@ -93,6 +99,7 @@ export async function perceive(
       captureTimestampMs: uiHierarchyData.captureTimestampMs ?? captureTimestampMs,
     },
   );
+  console.log(`[PERCEIVE NODE] UI hierarchy stored: ${uiHierarchyResult.refId}`);
 
   const perceptualHash = crypto
     .createHash("sha256")
@@ -152,6 +159,7 @@ export async function perceive(
   };
 
   logger.info("Perceive OUTPUT", { output });
+  console.log(`[PERCEIVE NODE] COMPLETE - created output with ${events.length} events, returning SUCCESS`);
 
   return {
     output,
