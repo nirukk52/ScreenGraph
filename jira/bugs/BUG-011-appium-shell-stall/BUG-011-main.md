@@ -83,6 +83,39 @@ Initial finding: the agent treats signature verification failure as recoverable,
 - Tests `agent/tests/metrics.test.ts` and `backend/run/start.integration.test.ts` fail with timeout when this occurs.
 - Issue confirmed multiple times on 2025-11-10; screenshot persisted on frontend even after Appium shutdown.
 
+---
+
+## Update 2025-11-11: Appium Instrumentation Crash
+
+**New Symptom**: UiAutomator2 instrumentation process crashes mid-execution, affecting BOTH frontend E2E and backend tests.
+
+**Error**:
+```
+WebDriverError: 'GET /screenshot' cannot be proxied to UiAutomator2 server because 
+the instrumentation process is not running (probably crashed).
+```
+
+**Impact**:
+- ❌ Backend `encore test`: `agent/tests/metrics.test.ts` fails (Perceive hangs on screenshot capture)
+- ❌ Backend `encore test`: `run/start.integration.test.ts` fails (run status → "failed")
+- ❌ Frontend E2E: `run-validation.spec.ts` fails (API never returns, navigation timeout)
+
+**Root Cause**: Appium UiAutomator2 server loses connection to device instrumentation during execution, leaving all Appium calls hanging or erroring.
+
+**Temporary Workaround**:
+- Restart Appium + emulator between test runs
+- Reduce concurrent test sessions (run tests serially, not parallel)
+
+**Permanent Fix Needed**:
+1. Investigate emulator stability (logcat for crash signals)
+2. Add Appium health checks before/during tests
+3. Implement automatic session recovery when instrumentation dies
+4. Consider switching to more stable Appium driver or device setup
+
+
+
+
+
 
 
 
