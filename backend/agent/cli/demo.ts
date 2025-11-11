@@ -1,3 +1,4 @@
+import log from "encore.dev/log";
 import { Orchestrator } from "../orchestrator/orchestrator";
 import { InMemoryRepo } from "../persistence/in-memory-repo";
 import { FakeSessionPort } from "../adapters/fakes/fake-session.port";
@@ -22,7 +23,8 @@ import { provisionApp } from "../nodes/setup/ProvisionApp/node";
 import { stop } from "../nodes/terminal/Stop/node";
 
 async function runDemo() {
-  console.log("🚀 ScreenGraph Agent Demo Starting...\n");
+  const logger = log.with({ module: "demo-cli", actor: "demo" });
+  logger.info("ScreenGraph Agent Demo Starting");
 
   const repo = new InMemoryRepo();
   const orchestrator = new Orchestrator(repo, repo, repo, repo);
@@ -45,8 +47,7 @@ async function runDemo() {
     appRestartTimeoutMs: 15000,
   };
 
-  console.log(`📋 Run ID: ${runId}`);
-  console.log(`🎯 Budgets: maxSteps=${budgets.maxSteps}, maxTimeMs=${budgets.maxTimeMs}ms\n`);
+  logger.info("Run initialized", { runId, maxSteps: budgets.maxSteps, maxTimeMs: budgets.maxTimeMs });
 
   const runRecord = await repo.claimRun(runId, "demo-worker", 30_000);
   if (!runRecord) {
@@ -54,11 +55,11 @@ async function runDemo() {
   }
 
   const { state } = await orchestrator.initialize(runRecord, budgets);
-  console.log("✅ Run created\n");
+  logger.info("Run created");
 
-  console.log("=== SETUP PHASE ===\n");
+  logger.info("Starting setup phase");
 
-  console.log("🔧 Step 1: EnsureDevice");
+  logger.info("Step 1: EnsureDevice");
   const deviceResult = await ensureDevice(
     {
       runId,
@@ -79,9 +80,9 @@ async function runDemo() {
   state.deviceRuntimeContextId = deviceResult.output.deviceRuntimeContextId;
   await orchestrator.recordNodeEvents(state, "EnsureDevice", deviceResult.events as never);
   await repo.saveSnapshot(runId, 0, state);
-  console.log(`   → Device session: ${deviceResult.output.deviceRuntimeContextId}\n`);
+  logger.info("Device session created", { deviceRuntimeContextId: deviceResult.output.deviceRuntimeContextId });
 
-  console.log("📦 Step 2: ProvisionApp");
+  logger.info("Step 2: ProvisionApp");
   if (!state.deviceRuntimeContextId) {
     throw new Error("Device runtime context ID is missing");
   }
@@ -99,34 +100,32 @@ async function runDemo() {
   });
   await orchestrator.recordNodeEvents(state, "ProvisionApp", provisionResult.events as never);
   await repo.saveSnapshot(runId, 1, state);
-  console.log(
-    `   → App status: ${provisionResult.output.applicationProvisioningOutcome.appPresenceStatus}\n`,
-  );
+  logger.info("App provisioned", { appPresenceStatus: provisionResult.output.applicationProvisioningOutcome.appPresenceStatus });
 
   // TODO: Implement LaunchOrAttach and WaitIdle capsules
-  console.log("🚀 Step 3: LaunchOrAttach (Skipped - not yet migrated to capsule)");
+  logger.info("Step 3: LaunchOrAttach (Skipped - not yet migrated to capsule)");
   state.applicationForegroundContextId = "fake-context-id";
   await repo.saveSnapshot(runId, 2, state);
-  console.log(`   → App foreground context: ${state.applicationForegroundContextId}\n`);
+  logger.info("App foreground context set", { applicationForegroundContextId: state.applicationForegroundContextId });
 
-  console.log("⏳ Step 4: WaitIdle (Skipped - not yet migrated to capsule)");
+  logger.info("Step 4: WaitIdle (Skipped - not yet migrated to capsule)");
   await repo.saveSnapshot(runId, 3, state);
-  console.log(`   → Quiet window: 500ms\n`);
+  logger.info("Quiet window completed", { quietWindowMs: 500 });
 
-  console.log("=== MAIN LOOP (Stubbed - 3 iterations) ===\n");
+  logger.info("Starting main loop with 3 iterations");
 
   for (let i = 1; i <= 3; i++) {
-    console.log(`🔄 Iteration ${i}`);
+    logger.info("Iteration progress", { iteration: i });
     state.iterationOrdinalNumber = i;
     state.stepOrdinal++;
     state.counters.stepsTotal++;
     await repo.saveSnapshot(runId, state.stepOrdinal, state);
-    console.log(`   → Step ${state.stepOrdinal} completed\n`);
+    logger.info("Step completed", { stepOrdinal: state.stepOrdinal });
   }
 
-  console.log("=== TERMINAL PHASE ===\n");
+  logger.info("Starting terminal phase");
 
-  console.log("🛑 Step Final: Stop");
+  logger.info("Step Final: Stop");
   const stopResult = await stop({
     runId,
     stepOrdinal: state.stepOrdinal + 1,
@@ -147,22 +146,22 @@ async function runDemo() {
   await repo.saveSnapshot(runId, state.stepOrdinal + 1, state);
 
   await orchestrator.finalizeRun(state, "success");
-  console.log(`   → Terminal disposition: ${stopResult.output.confirmedTerminalDisposition}\n`);
+  logger.info("Terminal disposition set", { confirmedTerminalDisposition: stopResult.output.confirmedTerminalDisposition });
 
   const allEvents = await repo.getEvents(runId);
-  console.log("📊 Final Stats:");
-  console.log(`   - Total events: ${allEvents.length}`);
-  console.log(`   - Total steps: ${state.counters.stepsTotal}`);
-  console.log(`   - Status: ${state.status}`);
-  console.log(`   - Stop reason: ${state.stopReason}\n`);
+  logger.info("Demo completed successfully", {
+    totalEvents: allEvents.length,
+    totalSteps: state.counters.stepsTotal,
+    status: state.status,
+    stopReason: state.stopReason,
+  });
 
-  console.log("✅ Demo completed successfully!\n");
   return { runId, state, events: allEvents };
 }
 
 if (require.main === module) {
   runDemo().catch((err) => {
-    console.error("❌ Demo failed:", err);
+    log.error("Demo failed", { err: String(err) });
     process.exit(1);
   });
 }
