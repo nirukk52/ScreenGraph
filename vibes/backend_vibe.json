@@ -128,7 +128,9 @@
     "❌ Untyped database queries",
     "✅ Always specify generic type: db.query<ResultType>",
     "❌ Magic strings for status/enums",
-    "✅ Use literal unions or const objects"
+    "✅ Use literal unions or const objects",
+    "❌ Using timers/sleep for backend test verification",
+    "✅ Query run_events table with typed EventKind/EventPayloadMap for deterministic assertions"
   ]
 }
 

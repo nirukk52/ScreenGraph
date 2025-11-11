@@ -227,7 +227,9 @@
     "❌ Ignoring flaky tests",
     "✅ Fix flaky tests immediately or document in Graphiti",
     "❌ Testing petty details that don't matter",
-    "✅ Test for creative consistency and flow reliability"
+    "✅ Test for creative consistency and flow reliability",
+    "❌ Using arbitrary sleep() timers for backend test verification",
+    "✅ Query run_events table with typed EventKind/EventPayloadMap for deterministic assertions"
   ]
 }
 
