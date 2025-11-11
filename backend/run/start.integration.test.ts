@@ -62,6 +62,36 @@ describe("Integration: POST /run/start discovers screens", () => {
         await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
         pollCount++;
 
+        // Check for launch failure first (fast-fail)
+        const launchFailedEvent = await db.queryRow<{
+          payload: string;
+        }>`
+          SELECT payload
+          FROM run_events
+          WHERE run_id = ${runId}
+            AND kind = 'agent.app.launch_failed'
+          ORDER BY seq DESC
+          LIMIT 1
+        `;
+
+        if (launchFailedEvent) {
+          const payload = JSON.parse(launchFailedEvent.payload);
+          throw new Error(
+            `❌ App launch failed!
+
+Package: ${payload.packageId || "unknown"}
+Error: ${payload.errorKind || "unknown"}
+Attempt: ${payload.attempt || 0}
+Duration: ${payload.durationMs || 0}ms
+
+Common causes:
+- Appium not running (http://127.0.0.1:4723)
+- Device not connected (adb devices)
+- App not installed or installation failed
+- Appium server misconfigured (check --allow-insecure flags)`,
+          );
+        }
+
         const row = await db.queryRow<{ status: string; stop_reason: string | null }>`
           SELECT status, stop_reason
           FROM runs

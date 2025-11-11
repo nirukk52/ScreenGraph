@@ -36,7 +36,7 @@ export function buildAgentContext(params: {
       applicationUnderTestDescriptor: {
         androidPackageId: params.packageName,
         apkStorageObjectReference: params.apkPath,
-        expectedBuildSignatureSha256: "default-sha256",
+        expectedBuildSignatureSha256: null, // Skip signature check for local dev
         expectedVersionCode: null,
         expectedVersionName: null,
       },

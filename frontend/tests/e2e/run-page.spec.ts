@@ -116,12 +116,52 @@ test.describe("/run page smoke tests", () => {
     await expect(timelineHeading).toBeVisible({ timeout: 10000 });
 
     // Wait for agent to capture first screenshot (reduced to fit 30s default)
-    // Look for screenshot event in the timeline (data-event attribute)
+    // Race between screenshot success and launch failure (fast-fail)
     console.log("⏱ Waiting for agent to capture screenshots...");
-    await page.waitForSelector('[data-event="agent.event.screenshot_captured"]', {
-      timeout: 15000,
-      state: "visible",
-    });
+
+    const screenshotEventSelector = '[data-event="agent.event.screenshot_captured"]';
+    const launchFailedEventSelector = '[data-event="agent.app.launch_failed"]';
+
+    const startTime = Date.now();
+    const timeout = 15000;
+    let screenshotFound = false;
+
+    while (!screenshotFound && Date.now() - startTime < timeout) {
+      // Check for launch failure first
+      const launchFailedEvent = page.locator(launchFailedEventSelector);
+      const launchFailedCount = await launchFailedEvent.count();
+
+      if (launchFailedCount > 0) {
+        const eventText = await launchFailedEvent.first().textContent();
+        throw new Error(
+          `❌ App launch failed during E2E test!
+
+Event detected in UI: ${eventText || "No details available"}
+
+Common causes:
+- Appium not running (http://127.0.0.1:4723)
+- Device not connected (adb devices)
+- App not installed or installation failed
+- Backend unable to connect to Appium server`,
+        );
+      }
+
+      // Check if screenshot event is visible
+      const screenshotEvent = page.locator(screenshotEventSelector);
+      const screenshotCount = await screenshotEvent.count();
+      if (screenshotCount > 0) {
+        screenshotFound = await screenshotEvent.first().isVisible();
+        if (screenshotFound) break;
+      }
+
+      // Wait before next poll
+      await page.waitForTimeout(500);
+    }
+
+    if (!screenshotFound) {
+      throw new Error("Timeout waiting for screenshot event (no launch failure detected)");
+    }
+
     console.log("✅ Screenshot event detected in timeline");
 
     // Wait for screenshot image to render in the discovered screens gallery
