@@ -1,31 +1,111 @@
 # GitHub Workflows
 
-**Status:** Scaffolded (not yet active)  
-**Purpose:** CI/CD automation using unified Task system
+**Status:** Active  
+**Purpose:** Fast parallel CI/CD automation for backend and frontend
 
 ---
 
-## Available Workflows
+## Active Workflows
 
-### 📋 `ci.yml.scaffold` - Continuous Integration
+### 🔧 `backend-test.yml` - Backend Encore Tests
+
+**Status:** ✅ Active
 
 **What it does:**
+- Runs backend unit and integration tests via `encore test`
+- Executes on changes to `backend/**` files
+- Uses dependency caching for faster runs
+
+**Triggers:**
+- Push to `main` or `develop` branches
+- Pull requests to `main` or `develop` branches
+- Only runs when backend files change
+
+**Runtime:** ~5-10 minutes
+
+**Key features:**
+- Bun dependency caching
+- Encore CLI installation
+- Parallel execution with `frontend-e2e.yml`
+- Test result artifact uploads
+
+---
+
+### 🎭 `frontend-e2e.yml` - Frontend E2E Tests
+
+**Status:** ✅ Active
+
+**What it does:**
+- Runs Playwright E2E tests in headless mode
+- Executes on changes to `frontend/**` files
+- Uses Playwright browser caching for faster runs
+
+**Triggers:**
+- Push to `main` or `develop` branches
+- Pull requests to `main` or `develop` branches
+- Only runs when frontend files change
+
+**Runtime:** ~10-15 minutes
+
+**Key features:**
+- Bun dependency caching
+- Playwright browser caching
+- Chromium-only for CI speed
+- Playwright report and test result uploads
+- Frontend build validation
+
+---
+
+### 📋 `ci.yml.scaffold` - Legacy Unified CI (Inactive)
+
+**Status:** ⚠️ Scaffolded (not active)
+
+**Note:** This monolithic workflow has been replaced by the faster, parallel `backend-test.yml` and `frontend-e2e.yml` workflows. The scaffold is kept for reference.
+
+**What it did:**
 - Validates founder rules
 - Runs backend smoke tests
 - Runs frontend smoke tests
 - Checks TypeScript types
 
-**Commands used:**
-- `task founder:rules:check`
-- `task qa:smoke:backend`
-- `task qa:smoke:frontend`
-- `task frontend:typecheck`
+**Why replaced:**
+- Parallel execution is faster (workflows run simultaneously)
+- Path-based filtering prevents unnecessary runs
+- Smaller, focused workflows are easier to debug
+- Better aligns with qa_vibe.json layered architecture
 
-**Activation:**
-1. Rename `ci.yml.scaffold` → `ci.yml`
-2. Test in feature branch first
-3. Verify all jobs pass
-4. Merge to main
+---
+
+## CI Architecture: Fast Parallel Execution
+
+Following qa_vibe.json principles, the CI is designed for speed and reliability:
+
+```
+┌─────────────────────────────────────────┐
+│  PR/Push to main/develop                │
+└─────────────────────────────────────────┘
+                 │
+                 ├──────────────────────────────┐
+                 ▼                              ▼
+    ┌─────────────────────────┐   ┌─────────────────────────┐
+    │  backend-test.yml       │   │  frontend-e2e.yml       │
+    │  (if backend/* changed) │   │  (if frontend/* changed)│
+    └─────────────────────────┘   └─────────────────────────┘
+                 │                              │
+                 ├──────────────────────────────┤
+                 ▼                              ▼
+    ┌─────────────────────────┐   ┌─────────────────────────┐
+    │  encore test            │   │  playwright test        │
+    │  ~5-10 min              │   │  ~10-15 min             │
+    └─────────────────────────┘   └─────────────────────────┘
+```
+
+**Benefits:**
+- ⚡ **Parallel execution** - Backend and frontend tests run simultaneously
+- 🎯 **Path-based filtering** - Only runs tests for changed code
+- 🚀 **Smart caching** - Dependencies and browsers cached for speed
+- 🔍 **Focused feedback** - Clear separation of backend vs frontend issues
+- ♻️ **Cancellation** - Auto-cancels outdated runs on new pushes
 
 ---
 
@@ -124,21 +204,121 @@
 
 ---
 
+## Workflow Details
+
+### Backend Test Workflow
+
+**File:** `backend-test.yml`
+
+**Steps:**
+1. Checkout code
+2. Setup Bun (latest)
+3. Install Encore CLI
+4. Cache Bun dependencies (keyed by `backend/bun.lock`)
+5. Install backend dependencies
+6. Run `encore test` (Encore's test runner wraps vitest with additional features)
+7. Upload test results as artifacts
+
+**Why Encore test instead of vitest directly?**
+- `encore test` provides additional context and setup for Encore services
+- Automatically handles service mocking and database provisioning
+- Provides better error messages for API-related test failures
+
+**Optimizations:**
+- Dependency caching reduces install time
+- Path-based filtering prevents unnecessary runs
+- Concurrency cancellation for outdated runs
+- 15-minute timeout for fast feedback
+
+---
+
+### Frontend E2E Test Workflow
+
+**File:** `frontend-e2e.yml`
+
+**Steps:**
+1. Checkout code
+2. Setup Bun (latest)
+3. Cache Bun dependencies (keyed by `frontend/bun.lock`)
+4. Install frontend dependencies
+5. Cache Playwright browsers (keyed by `frontend/bun.lock`)
+6. Install Playwright browsers (Chromium only for speed)
+7. Install Encore CLI and backend dependencies
+8. Start backend service (required for E2E tests)
+9. Build frontend
+10. Run Playwright E2E tests in CI mode
+11. Stop backend service
+12. Upload backend logs, Playwright report, and test results as artifacts
+
+**Why does E2E need the backend?**
+- E2E tests validate complete user workflows including API calls
+- Tests create runs, stream events, and verify real-time updates
+- Backend provides health endpoint for readiness checks
+- True integration testing requires full stack
+
+**Optimizations:**
+- Chromium-only testing (faster than all browsers)
+- Browser caching for subsequent runs
+- Separate system deps install if cache hit
+- Path-based filtering for frontend OR backend changes
+- Backend started in background with health check polling
+- 20-minute timeout for comprehensive E2E coverage
+
+---
+
+## Testing the Workflows
+
+### Local Validation (Syntax)
+
+```bash
+# Install act (GitHub Actions local runner)
+brew install act  # macOS
+# or
+curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash  # Linux
+
+# Validate workflow syntax
+act --list --workflows .github/workflows/
+
+# Dry run backend tests
+act push --workflows .github/workflows/backend-test.yml --dry-run
+
+# Dry run frontend E2E tests
+act push --workflows .github/workflows/frontend-e2e.yml --dry-run
+```
+
+### Testing in CI
+
+1. Push changes to feature branch
+2. Monitor workflow runs in GitHub Actions tab
+3. Verify both workflows execute correctly
+4. Check for any failures or timeout issues
+5. Review uploaded artifacts
+
+---
+
 ## Future Enhancements
 
 ### Planned Additions
 
-1. **Deployment workflow** (deploy.yml.scaffold)
+1. **Linting workflow** (lint.yml)
+   - Run Biome linter on both backend and frontend
+   - Separate from test workflows for faster feedback
+
+2. **Type checking workflow** (typecheck.yml)
+   - TypeScript type validation
+   - Frontend Svelte type checking
+
+3. **Deployment workflow** (deploy.yml.scaffold)
    - Deploy backend to Encore Cloud
    - Deploy frontend to Vercel
    - Smoke tests on staging
 
-2. **Release workflow** (release.yml.scaffold)
+4. **Release workflow** (release.yml.scaffold)
    - Create GitHub releases
    - Generate changelog
    - Tag versions
 
-3. **Performance monitoring** (performance.yml.scaffold)
+5. **Performance monitoring** (performance.yml.scaffold)
    - Lighthouse scores
    - Bundle size checks
    - API performance tests
@@ -149,42 +329,65 @@
 
 ### Common Issues
 
-**"Task command not found"**
+**Backend Tests**
+
+**"Encore CLI not found"**
 ```yaml
-# Add this before running tasks:
-- run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+# Verify PATH setup after Encore install:
+- run: echo "$HOME/.encore/bin" >> $GITHUB_PATH
 ```
 
-**"automation scripts fail"**
+**"Tests timeout"**
 ```yaml
-# Ensure Node.js is installed:
-- uses: actions/setup-node@v4
-```
-
-**"Services don't start"**
-```yaml
-# Give services time to start:
-- run: sleep 5  # After starting service
+# Increase timeout if needed:
+timeout-minutes: 20
 ```
 
 ---
 
-## Activation Checklist
+**Frontend E2E Tests**
 
-Before renaming `.scaffold` files to `.yml`:
+**"Playwright browsers not found"**
+```yaml
+# Install system dependencies separately if cache hit:
+- run: bunx playwright install-deps chromium
+  if: steps.playwright-cache.outputs.cache-hit == 'true'
+```
 
-- [ ] All local tasks tested and passing
-- [ ] Dependencies documented
-- [ ] Environment variables configured
-- [ ] Test database setup (if needed)
-- [ ] Secrets configured (if needed)
-- [ ] Team notified of new CI checks
-- [ ] Feature branch test successful
-- [ ] Documentation updated
+**"Build fails"**
+```yaml
+# Ensure PUBLIC_API_BASE is set:
+env:
+  PUBLIC_API_BASE: http://localhost:4000
+```
+
+**"E2E tests flaky"**
+- Review Playwright report artifact
+- Check for timing issues in tests
+- Consider increasing timeouts in `playwright.config.ts`
+- Use `test.describe.serial()` for dependent tests
 
 ---
 
-**Last Updated:** 2025-11-07  
-**Status:** Scaffolded, ready for future activation  
+## Monitoring &amp; Maintenance
+
+### Key Metrics to Track
+
+- **Workflow duration** (target: <15 min total)
+- **Cache hit rate** (should be >80% for dependencies)
+- **Test failure rate** (should be <5%)
+- **Artifact upload success** (should be 100%)
+
+### Regular Maintenance
+
+- **Monthly:** Review and update action versions
+- **Quarterly:** Audit cache effectiveness
+- **As needed:** Adjust timeouts based on test suite growth
+- **On failures:** Investigate and fix immediately (don't ignore flaky tests per qa_vibe.json)
+
+---
+
+**Last Updated:** 2025-11-11  
+**Status:** Active - Fast parallel CI workflows for backend and frontend  
 **Maintainer:** Founder
 
