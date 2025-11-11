@@ -27,13 +27,16 @@ description: "Non-negotiable development standards for ScreenGraph. Enforces arc
 13. [Handoff Documentation](#handoff-documentation)
 14. [Vibe Usage](#vibe-usage-engineering-personas)
 
-### Part II: Environment Policy
-15. [Single Environment Execution](#single-environment-execution)
-16. [Worktree Usage](#worktree-usage)
-17. [Standard Ports](#standard-ports)
-18. [Git Operations](#git-operations)
-19. [Cursor Modes](#cursor-dropdown-modes)
-20. [Enforcement Rules](#enforcement-what-agents-cannot-do)
+### Part II: Scripting Architecture & Policy
+15. [Scripting Governance](#scripting-governance)
+16. [Where Scripts Live](#where-scripts-live)
+17. [Forbidden Practices](#forbidden-practices)
+
+### Part III: Environment Policy
+18. [Single Environment Execution](#single-environment-execution)
+19. [Worktree Usage](#worktree-usage)
+20. [Standard Ports](#standard-ports)
+21. [Git Operations](#git-operations)
 
 ---
 
@@ -320,7 +323,161 @@ Update after significant changes.
 
 ---
 
-## Part II: Environment Policy
+## Part II: Scripting Architecture & Policy
+
+### 🔧 Scripting Governance
+
+**Single Source of Truth:**
+- All automation flows through **four entry points** that all call `automation/` library
+- No duplication across Husky, Taskfile, GitHub Actions, or Claude Skills
+- Each script is both CLI tool AND reusable module (dual interface pattern)
+
+**Four Authorized Entry Points:**
+
+| Entry Point | Location | Use Case | Guardrail |
+|------------|----------|----------|-----------|
+| **Taskfile** | `.cursor/commands/` | Primary dev/CI entry | Task descriptions ≤ 5 words |
+| **Husky Hooks** | `.husky/` | Git commit/push enforcement | Prevent bad commits/pushes |
+| **GitHub Actions** | `.github/workflows/` | CI/CD pipeline | Automated on pull/push |
+| **Claude Skills** | `.claude-skills/` | AI agent workflows | Call Tasks + MCP tools |
+
+**All four layers call the same `automation/scripts/` library.** Never duplicate business logic.
+
+---
+
+### 📍 Where Scripts Live
+
+**✅ AUTHORIZED Locations:**
+
+1. **Central Authority: `automation/scripts/`**
+   - Environment resolution (`env.mjs`)
+   - Founder rules enforcement (`check-founder-rules.mjs`)
+   - Documentation management (`cleanup-root-docs.mjs`)
+   - **Rule**: Reusable modules with dual CLI + export interface
+   - **Example**: `node automation/scripts/env.mjs status` OR `import { getPorts } from './automation/scripts/env.mjs'`
+
+2. **Speckit Automation: `.specify/scripts/bash/`**
+   - Spec creation (`create-new-feature.sh`)
+   - Plan setup (`setup-plan.sh`)
+   - Prerequisite checks (`check-prerequisites.sh`)
+   - **Rule**: Bash scripts, used by spec-driven workflows
+   - **Not part of standard dev cycle** — only for spec-kit operations
+
+3. **Service NPM Scripts: `backend/package.json` & `frontend/package.json`**
+   - Service-level dev/test commands
+   - **Rule**: Must delegate to service code, not orchestration
+   - **Examples**: `dev`, `test`, `lint`, `build`
+
+4. **Backend Inspection Tools: `backend/scripts/`**
+   - Debugging utilities (`check-agent-state.ts`, `inspect-run.ts`)
+   - **Rule**: Must be prefixed with `check-` or `inspect-` (not part of workflow)
+   - **Purpose**: Ad-hoc investigation only
+
+---
+
+### ❌ Forbidden Practices
+
+**NEVER create:**
+
+1. **Free-floating shell scripts at root or in service roots**
+   - ❌ `./run-something.sh`
+   - ❌ `./backend/debug.sh`
+   - ✅ Either add to Taskfile OR put in `backend/scripts/check-*.sh`
+
+2. **Helper scripts outside recognized locations**
+   - ❌ `./helpers/my-script.sh`
+   - ❌ `./scripts/utility.mjs`
+   - ✅ Either add to `automation/scripts/` (if reusable) OR backend/scripts/check-* (if debug-only)
+
+3. **Service commands that duplicate automation logic**
+   - ❌ Backend NPM script that reimplements `check-founder-rules.mjs`
+   - ✅ Backend NPM script that CALLS `node automation/scripts/check-founder-rules.mjs`
+
+4. **Inline scripts in Taskfiles without module exports**
+   - ❌ Complex bash logic directly in task YAML
+   - ✅ Extract to `automation/scripts/` module, call from Taskfile
+
+5. **Scripts with no CLI interface (import-only)**
+   - ❌ Module that only works as `import { fn } from './script.mjs'`
+   - ✅ Both: `node script.mjs [command]` AND `import { fn } from './script.mjs'`
+
+---
+
+### 📋 Script Design Requirements
+
+**Every script MUST have:**
+
+| Requirement | Example |
+|-------------|---------|
+| **Purpose comment** | `// Validates all Founder Rules before commits` |
+| **CLI usage** | Works when run directly: `node check-founder-rules.mjs` |
+| **Module exports** | `export function checkNoConsoleLog()` for reuse |
+| **Exit codes** | `0` = success, `1` = failure |
+| **Human-friendly output** | JSON-compatible but readable by default |
+| **Optional `--json` flag** | `node script.mjs --json` for machine parsing |
+| **Documentation** | Listed in `automation/README.md` or task description |
+
+**Example Pattern:**
+```javascript
+#!/usr/bin/env node
+// Purpose: Check for console.log violations in TypeScript files
+
+export async function checkNoConsoleLog() {
+  // Implementation
+  return { violations: [...], passed: boolean };
+}
+
+// CLI interface
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const result = await checkNoConsoleLog();
+  console.log(result.passed ? '✅ All checks passed' : '❌ Violations found');
+  process.exit(result.passed ? 0 : 1);
+}
+```
+
+---
+
+### 🎯 Common Patterns
+
+**Adding New Automation:**
+
+1. **Is it recurring?** → Add to `automation/scripts/` (reusable + CLI)
+2. **Is it service-specific?** → Add to service NPM scripts
+3. **Is it debug-only?** → Add to `backend/scripts/check-*.ts` or `inspect-*.ts`
+4. **Is it one-time?** → Put in `.specify/scripts/` (spec-kit only)
+
+**Calling Automation From Different Layers:**
+
+```yaml
+# Taskfile: call automation script
+tasks:
+  preflight:
+    cmds:
+      - node ../automation/scripts/check-founder-rules.mjs
+```
+
+```bash
+# Husky hook: call automation script
+#!/bin/sh
+node automation/scripts/check-founder-rules.mjs
+```
+
+```json
+// NPM script: delegate to automation
+"scripts": {
+  "check:rules": "node ../automation/scripts/check-founder-rules.mjs"
+}
+```
+
+```yaml
+# GitHub Action: call automation script
+- name: Validate
+  run: node automation/scripts/check-founder-rules.mjs
+```
+
+---
+
+## Part III: Environment Policy
 
 ### Single Environment Execution
 - All local development uses the shared `.env` file checked into the repo.
@@ -361,4 +518,4 @@ cd frontend && bun run dev # Service-specific when needed
 
 ---
 
-**Last Updated**: 2025-11-09
+**Last Updated**: 2025-11-11
