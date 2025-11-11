@@ -21,3 +21,6 @@ description: Quick links for creating or updating Jira artifacts from Cursor cha
 - All templates live inside the `jira/` tree; customize there if formats change.
 - After any edits, run `update-handoff [ITEM-ID]` to sync the central summary.
 
+
+
+

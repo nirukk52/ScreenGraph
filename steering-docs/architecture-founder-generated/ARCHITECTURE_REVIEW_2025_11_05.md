@@ -710,3 +710,6 @@ The founder's mental model ("we never write business state twice; we derive it f
 
 *End of Review*
 
+
+
+

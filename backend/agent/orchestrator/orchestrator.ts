@@ -2,7 +2,6 @@ import { type AgentState, createInitialState, type Budgets } from "../domain/sta
 import {
   createDomainEvent,
   createRunStartedEvent,
-  createRunFinishedEvent,
   type DomainEvent,
   type EventKind,
   type EventPayloadMap,
@@ -158,20 +157,17 @@ export class Orchestrator {
         throw new Error("Failed to update run status (CAS violation)");
       }
 
-      logger.info("Creating finished event");
+      const metrics = {
+        totalIterationsExecuted: state.counters.stepsTotal,
+        uniqueScreensDiscoveredCount: state.counters.screensNew,
+        uniqueActionsPersistedCount: state.availableActionCandidateIds.length,
+        runDurationInMilliseconds: Math.max(
+          0,
+          Date.parse(now) - Date.parse(state.timestamps.createdAt),
+        ),
+      };
 
-      const finishedEvent = createRunFinishedEvent(
-        this.generateId(),
-        state.runId,
-        this.nextSequence(),
-        now,
-        stopReason,
-      );
-
-      logger.info("Recording finished event");
-      await this.recordEvent(finishedEvent);
-      
-      logger.info("Run finalized successfully");
+      logger.info("Run finalized successfully (stop node emitted finished event)");
     } catch (err) {
       logger.error("Error in finalizeRun", {
         err,

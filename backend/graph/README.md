@@ -427,3 +427,6 @@ Acceptance:
 - Available actions per current screen with provenance and selectors
 - Unexplored actions prioritized by coverage deficit
 - Strict DTOs only; no magic strings; enums for verbs and origins
+
+
+
