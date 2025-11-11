@@ -608,6 +608,110 @@ console.log('User logged in:', user);
 
 ---
 
+## E2E Testing Patterns
+
+### 1. **Testing User Flows (Playwright)**
+
+Write deterministic E2E tests that verify complete user journeys:
+
+```typescript
+// ✅ GOOD: Test complete user flow
+test("run validation", async ({ page }) => {
+  // 1. Navigate to landing
+  await page.goto("/");
+  await expect(page).toHaveTitle(/ScreenGraph/i);
+  
+  // 2. Start run via CTA
+  const button = page.getByRole("button", { name: /detect.*drift/i });
+  await expect(button).toBeVisible();
+  
+  // 3. Handle navigation + API response together
+  await Promise.all([
+    page.waitForURL(/\/run\/[a-f0-9-]+/i, {
+      waitUntil: "domcontentloaded",
+      timeout: 30000
+    }),
+    button.click()
+  ]);
+  
+  // 4. Verify UI fully loaded
+  const heading = page.getByRole("heading", { name: /run timeline/i });
+  await expect(heading).toBeVisible();
+  
+  // 5. Verify data appears (events, screenshots)
+  const events = page.locator('[data-testid="run-events"]');
+  await expect(events).toBeVisible();
+});
+```
+
+### 2. **Test Selectors with Data Attributes**
+
+Always use data attributes for reliable test selectors:
+
+```svelte
+<!-- ✅ GOOD: Data attributes for testing -->
+<div class="run-events" data-testid="run-events">
+  {#each events as event}
+    <div data-event-kind={event.kind}>
+      {event.kind}
+    </div>
+  {/each}
+</div>
+
+<!-- ✅ GOOD: Semantic selectors -->
+<button class="btn variant-filled-primary">
+  {#if loading}
+    Starting...
+  {:else}
+    Detect My First Drift
+  {/if}
+</button>
+
+<!-- ❌ BAD: Fragile selectors -->
+<div class="space-y-4">
+  {#each events}
+    <div class="card">Event</div>
+  {/each}
+</div>
+```
+
+### 3. **Handling Navigation + API Together**
+
+Never wait for API response then navigation—race them together:
+
+```typescript
+// ❌ BAD: Sequential waits (Playwright hangs)
+await button.click();
+await page.waitForResponse(...);  // Hangs!
+await page.waitForURL(...);
+
+// ✅ GOOD: Parallel with Promise.all
+await Promise.all([
+  page.waitForURL(/\/run\/[a-f0-9-]+/i, {
+    waitUntil: "domcontentloaded",
+    timeout: 30000
+  }),
+  button.click()
+]);
+```
+
+### 4. **Verifying Real-Time Data**
+
+Wait for content to appear, not intermediate states:
+
+```typescript
+// ❌ BAD: Wait for intermediate status
+await page.waitForSelector('[data-event="agent.event.screenshot_captured"]');
+
+// ✅ GOOD: Wait for final rendered output
+const gallery = page.locator('[data-testid="discovered-screens"] img');
+await expect(gallery.first()).toBeVisible({ timeout: 20000 });
+const count = await gallery.count();
+expect(count).toBeGreaterThan(0);
+```
+
+---
+
 ## Quality Checklist
 
 Before committing frontend code, verify:
@@ -622,6 +726,7 @@ Before committing frontend code, verify:
 - [ ] Uses AutoAnimate for transitions
 - [ ] Follows file-based routing conventions
 - [ ] American English spelling (canceled, color, etc.)
+- [ ] Data attributes (`data-testid`, `data-event-*`) for test selectors
 - [ ] Build passes: `bun run build`
 - [ ] Type check passes: `bun run check`
 
@@ -635,10 +740,11 @@ Before committing frontend code, verify:
 - [Svelte 5 Docs](https://svelte.dev/docs/svelte/overview)
 - [Tailwind CSS v4](https://tailwindcss.com/docs)
 - [AutoAnimate](https://auto-animate.formkit.com/)
+- [Playwright Testing](https://playwright.dev/docs/intro)
 
 ---
 
-**Last Updated:** 2025-11-07  
+**Last Updated:** 2025-11-11  
 **Maintainer:** ScreenGraph Team  
 **Status:** Active ✅
 
