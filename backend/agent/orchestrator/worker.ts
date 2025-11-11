@@ -6,14 +6,16 @@ import { buildAgentContext } from "../nodes/context";
 import type { AgentNodeName, AgentPorts, AgentContext } from "../nodes/types";
 import type { GraphPort } from "../ports/graph";
 import type { NodeRegistry } from "../engine/types";
-import { WebDriverIOSessionAdapter } from "../adapters/appium/webdriverio/session.adapter";
-import { WebDriverIOAppLifecycleAdapter } from "../adapters/appium/webdriverio/app-lifecycle.adapter";
-import { WebDriverIOIdleDetectorAdapter } from "../adapters/appium/webdriverio/idle-detector.adapter";
-import { WebDriverIOPackageManagerAdapter } from "../adapters/appium/webdriverio/package-manager.adapter";
-import { WebDriverIOPerceptionAdapter } from "../adapters/appium/webdriverio/perception.adapter";
-import { WebDriverIODeviceInfoAdapter } from "../adapters/appium/webdriverio/device-info.adapter";
+import { MobileMcpSessionAdapter } from "../adapters/mobile-mcp/session.adapter";
+import { MobileMcpAppLifecycleAdapter } from "../adapters/mobile-mcp/app-lifecycle.adapter";
+import { MobileMcpPerceptionAdapter } from "../adapters/mobile-mcp/perception.adapter";
+import { MobileMcpDeviceInfoAdapter } from "../adapters/mobile-mcp/device-info.adapter";
+import { MobileMcpInputActionsAdapter } from "../adapters/mobile-mcp/input-actions.adapter";
+import { MobileMcpNavigationAdapter } from "../adapters/mobile-mcp/navigation.adapter";
 import { EncoreStorageAdapter } from "../adapters/storage/encore-storage.adapter";
 import { FakeLLM } from "../adapters/fakes/fake-llm";
+import { FakeIdleDetectorPort } from "../adapters/fakes/fake-idle-detector.port";
+import { FakePackageManagerAdapter } from "../adapters/fakes/fake-package-manager.adapter";
 import log from "encore.dev/log";
 import { MODULES, AGENT_ACTORS } from "../../logging/logger";
 import { createActor } from "xstate";
@@ -22,20 +24,22 @@ import type { AgentMachineDependencies, AgentMachineOutput, AgentMachineContext,
 import { getInspector } from "../engine/xstate/inspector";
 
 /**
- * Build AgentPorts using the WebDriverIO adapter family so the agent relies on a single
- * automation stack across the codebase.
+ * Build AgentPorts using the Mobile MCP adapter family so the agent relies on the dedicated
+ * microservice for device I/O.
  *
  * Note: The session context will be null initially and populated after ensureDevice runs.
  * The adapters use context provider functions to lazily access the session context.
  */
 function buildAgentPorts(): AgentPorts {
-  const sessionPort = new WebDriverIOSessionAdapter();
+  const sessionPort = new MobileMcpSessionAdapter();
   const contextProvider = () => sessionPort.getContext();
-  const appLifecyclePort = new WebDriverIOAppLifecycleAdapter(contextProvider);
-  const idleDetectorPort = new WebDriverIOIdleDetectorAdapter(contextProvider);
-  const packageManagerPort = new WebDriverIOPackageManagerAdapter(contextProvider);
-  const perceptionPort = new WebDriverIOPerceptionAdapter(contextProvider);
-  const deviceInfoPort = new WebDriverIODeviceInfoAdapter(contextProvider);
+  const appLifecyclePort = new MobileMcpAppLifecycleAdapter(contextProvider);
+  const perceptionPort = new MobileMcpPerceptionAdapter(contextProvider);
+  const deviceInfoPort = new MobileMcpDeviceInfoAdapter(contextProvider);
+  const inputActionsPort = new MobileMcpInputActionsAdapter(contextProvider);
+  const navigationPort = new MobileMcpNavigationAdapter(contextProvider);
+  const idleDetectorPort = new FakeIdleDetectorPort();
+  const packageManagerPort = new FakePackageManagerAdapter();
   const storagePort = new EncoreStorageAdapter();
   // TODO: Replace with real LLM adapter implementation
   const llmPort = new FakeLLM(123456);
@@ -68,6 +72,8 @@ function buildAgentPorts(): AgentPorts {
     packageManagerPort,
     perceptionPort,
     deviceInfoPort,
+    inputActionsPort,
+    navigationPort,
     storagePort,
     llmPort,
     graphPort,
@@ -326,7 +332,7 @@ export class AgentWorker {
 
 /**
  * AgentWorkerOptions: Configuration inputs that tailor each worker run while keeping the driver
- * stack fixed to WebDriverIO.
+   * stack fixed to Mobile MCP microservice.
  */
 interface AgentWorkerOptions {
   orchestrator: Orchestrator;

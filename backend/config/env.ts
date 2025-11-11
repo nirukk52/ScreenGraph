@@ -56,6 +56,26 @@ export const env = cleanEnv(process.env, {
     default: 1,
     desc: "Expected number of unique screens discovered for deterministic testing with default app config",
   }),
+  MOBILE_MCP_AWS_MCP_URL: str({
+    default: "",
+    desc: "Optional SSE endpoint URL for the AWS MCP Device Farm bridge",
+  }),
+  MOBILE_MCP_AWS_MCP_BEARER_TOKEN: str({
+    default: "",
+    desc: "Optional bearer token used when authenticating against the AWS MCP bridge",
+  }),
+  MOBILE_MCP_DEVICE_POOL_ARN: str({
+    default: "",
+    desc: "Device pool ARN used when requesting AWS Device Farm sessions",
+  }),
+  MOBILE_MCP_PROJECT_ARN: str({
+    default: "",
+    desc: "Project ARN used when requesting AWS Device Farm sessions",
+  }),
+  MOBILE_MCP_STATIC_DEVICE_ID: str({
+    default: "",
+    desc: "Fallback device identifier for local development when AWS Device Farm is unavailable",
+  }),
 });
 
 export const {
@@ -71,4 +91,9 @@ export const {
   ENABLE_GRAPH_STREAM,
   XSTATE_INSPECTOR_ENABLED,
   EXPECTED_UNIQUE_SCREENS_DISCOVERED,
+  MOBILE_MCP_AWS_MCP_URL,
+  MOBILE_MCP_AWS_MCP_BEARER_TOKEN,
+  MOBILE_MCP_DEVICE_POOL_ARN,
+  MOBILE_MCP_PROJECT_ARN,
+  MOBILE_MCP_STATIC_DEVICE_ID,
 } = env;

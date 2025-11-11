@@ -21,6 +21,43 @@ This document is the single place where agents leave status for each other. Alwa
 
 ---
 
+## Handoff #20 — Mobile MCP Microservice Integration (2025-11-11)
+
+- **What I am doing**: Integrating the upstream `mobile-mcp` runtime as an Encore microservice to replace the WebDriverIO adapters for device I/O. Backend now exposes HTTPS + SSE endpoints for screenshot, accessibility tree, tap, type, swipe, long press, launch app, press button, and screen-size tools; agent workers use new Mobile MCP adapters.
+
+- **What is pending**:
+  - [x] Code: Mobile MCP service scaffolding, session registry, Encore endpoints, AWS connector stub
+  - [x] Code: Agent session/perception/input/device-info/navigation/app-lifecycle adapters targeting the microservice
+  - [x] Code: Updated orchestrator wiring to use Mobile MCP stack
+  - [x] Tests: Added Vitest coverage for session and input adapters (mocked client)
+  - [ ] Docs: Broader architecture docs + API documentation refresh (partial update in `backend/mobile-mcp/ARCHITECTURE.md`)
+  - [ ] Manual run: Needs real-device validation once AWS Device Farm credentials are configured
+
+- **What I plan to do next**:
+  - Flesh out AWS MCP bridge integration once credentials are available (currently supports static device fallback)
+  - Expand test suite to cover navigation + app lifecycle adapters
+  - Document operational runbook for the mobile MCP service (env vars, failure modes)
+
+- **Modules I am touching**:
+  - `backend/mobile-mcp/` (new service)
+  - `backend/agent/adapters/mobile-mcp/` (new adapter family + tests)
+  - `backend/agent/orchestrator/worker.ts` (port wiring)
+  - `backend/config/env.ts`, `backend/db/migrations/010_mobile_mcp_sessions.up.sql`
+
+- **Work status rating (out of 5)**: 4
+
+- **Related docs**:
+  - `backend/mobile-mcp/ARCHITECTURE.md`
+  - `.cursor/rules/backend_coding_rules.mdc` (Mobile MCP tooling references)
+
+- **Notes for next agent**:
+  - Encore client regeneration (`bun run gen`) required so the new `mobileMcp` client is available at `~encore/clients`.
+  - Configure `MOBILE_MCP_AWS_MCP_URL` and bearer token to activate AWS Device Farm bridge; otherwise the service uses the local static device ID fallback.
+  - Mobile MCP adapters currently stub package management/idle detection via fakes; replace with real implementations once MCP exposes those primitives.
+  - Endpoints stream structured SSE events—use `encore-mcp.call_endpoint` or the new SSE path during QA.
+
+---
+
 ## Handoff #19 — Port Management Simplification (2025-11-07)
 
 - **What I am doing**: ✅ **COMPLETED** - Simplified port management to use `.env` as single source of truth per founder rules. Removed `backend/scripts/port-coordinator.mjs` which added unnecessary complexity and violated architecture principles.

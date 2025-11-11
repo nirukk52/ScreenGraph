@@ -8,6 +8,8 @@ import type { DeviceInfoPort } from "../ports/appium/device-info.port";
 import type { StoragePort } from "../ports/storage";
 import type { LLMPort } from "../ports/llm";
 import type { GraphPort } from "../ports/graph";
+import type { InputActionsPort } from "../ports/appium/input-actions.port";
+import type { NavigationPort } from "../ports/appium/navigation.port";
 
 /**
  * AgentNodeName enumerates all nodes available in the agent execution graph.
@@ -95,6 +97,8 @@ export interface AgentPorts {
   packageManagerPort: PackageManagerPort;
   perceptionPort: PerceptionPort;
   deviceInfoPort: DeviceInfoPort;
+  inputActionsPort: InputActionsPort;
+  navigationPort: NavigationPort;
   storagePort: StoragePort;
   llmPort: LLMPort;
   graphPort: GraphPort;
