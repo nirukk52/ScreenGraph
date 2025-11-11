@@ -69,10 +69,14 @@ export default defineConfig({
   ],
 
   // Auto-start frontend if not running (optional)
-  webServer: {
-    command: "bun run dev",
-    url: FRONTEND_URL,
-    reuseExistingServer: true,
-    timeout: 120_000,
-  },
+  // Uses dev:e2e script without --strictPort to allow reusing existing dev server
+  // In CI or when FRONTEND_URL responds, this will reuse the existing server
+  webServer: !CI
+    ? {
+        command: "bun run dev:e2e",
+        url: FRONTEND_URL,
+        reuseExistingServer: true,
+        timeout: 120_000,
+      }
+    : undefined,
 });
