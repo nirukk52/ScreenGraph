@@ -690,6 +690,9 @@ export const createSession = api(
       throw new Error(`No available device matching criteria: ${JSON.stringify(req.allocation)}`);
     }
 
+    // Mark device as unavailable before creating session
+    await sessionRepo.markDeviceUnavailable(device.id);
+
     const session = await sessionRepo.createSession(device.id, {
       allocation: req.allocation,
       deviceInfo: device,
@@ -733,9 +736,19 @@ export const closeSession = api(
 
     const sessionRepo = getDeviceSessionRepository();
 
+    // Get session to retrieve device ID
+    const session = await sessionRepo.getSession(req.sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${req.sessionId}`);
+    }
+
+    // Close the session
     await sessionRepo.closeSession(req.sessionId);
 
-    logger.info("closed session", { sessionId: req.sessionId });
+    // Mark device as available again for future allocation
+    await sessionRepo.markDeviceAvailable(session.deviceId);
+
+    logger.info("closed session", { sessionId: req.sessionId, deviceId: session.deviceId });
 
     return {
       success: true,

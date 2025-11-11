@@ -55,13 +55,34 @@ export class MobileMCPClient {
   private logger = log.with({ module: "mobile", component: "mcp-client" });
   private buffer = "";
   private initialized = false;
+  private initializationPromise: Promise<void> | undefined;
 
   /** Initialize the mobile-mcp server process. */
   async initialize(): Promise<void> {
+    // If already initialized, return immediately
     if (this.initialized) {
       return;
     }
 
+    // If initialization is in progress, wait for it to complete
+    if (this.initializationPromise) {
+      return this.initializationPromise;
+    }
+
+    // Start initialization and store the promise
+    this.initializationPromise = this.doInitialize();
+
+    try {
+      await this.initializationPromise;
+    } catch (error) {
+      // On failure, clear the promise so retry is possible
+      this.initializationPromise = undefined;
+      throw error;
+    }
+  }
+
+  /** Internal initialization implementation. */
+  private async doInitialize(): Promise<void> {
     this.logger.info("starting mobile-mcp server");
 
     this.process = spawn("npx", ["-y", "@mobilenext/mobile-mcp@latest"], {
@@ -69,6 +90,7 @@ export class MobileMCPClient {
     });
 
     if (!this.process.stdout || !this.process.stdin || !this.process.stderr) {
+      this.cleanup();
       throw new Error("Failed to create mobile-mcp process stdio streams");
     }
 
@@ -87,36 +109,57 @@ export class MobileMCPClient {
     this.process.on("exit", (code: number | null) => {
       this.logger.info("mobile-mcp process exited", { exitCode: code });
       this.initialized = false;
+      this.initializationPromise = undefined;
     });
 
-    // Send initialization request
-    const initRequest = {
-      jsonrpc: "2.0",
-      id: this.requestId++,
-      method: "initialize",
-      params: {
-        protocolVersion: "2024-11-05",
-        capabilities: {},
-        clientInfo: {
-          name: "screengraph-mobile-service",
-          version: "1.0.0",
+    try {
+      // Send initialization request
+      const initRequest = {
+        jsonrpc: "2.0",
+        id: this.requestId++,
+        method: "initialize",
+        params: {
+          protocolVersion: "2024-11-05",
+          capabilities: {},
+          clientInfo: {
+            name: "screengraph-mobile-service",
+            version: "1.0.0",
+          },
         },
-      },
-    };
+      };
 
-    const initResponse = await this.sendRequest<MCPInitResponse>(initRequest);
-    this.logger.info("mobile-mcp initialized", {
-      serverVersion: initResponse.serverInfo.version,
-    });
+      const initResponse = await this.sendRequest<MCPInitResponse>(initRequest);
+      this.logger.info("mobile-mcp initialized", {
+        serverVersion: initResponse.serverInfo.version,
+      });
 
-    // Send initialized notification
-    this.sendNotification({
-      jsonrpc: "2.0",
-      method: "notifications/initialized",
-      params: {},
-    });
+      // Send initialized notification
+      this.sendNotification({
+        jsonrpc: "2.0",
+        method: "notifications/initialized",
+        params: {},
+      });
 
-    this.initialized = true;
+      this.initialized = true;
+    } catch (error) {
+      // Clean up process on initialization failure
+      this.logger.error("mobile-mcp initialization failed", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      this.cleanup();
+      throw error;
+    }
+  }
+
+  /** Clean up process and reset state. */
+  private cleanup(): void {
+    if (this.process) {
+      this.process.kill();
+      this.process = undefined;
+    }
+    this.initialized = false;
+    this.buffer = "";
+    this.responseHandlers.clear();
   }
 
   /** Handle stdout data from mobile-mcp process. */
@@ -482,9 +525,7 @@ export class MobileMCPClient {
   async shutdown(): Promise<void> {
     if (this.process) {
       this.logger.info("shutting down mobile-mcp server");
-      this.process.kill();
-      this.process = undefined;
-      this.initialized = false;
+      this.cleanup();
     }
   }
 }

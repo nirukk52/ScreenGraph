@@ -186,28 +186,34 @@ export class DeviceSessionRepository {
 
   /** Find available device matching allocation request. */
   async findAvailableDevice(request: DeviceAllocationRequest): Promise<DeviceInfo | undefined> {
-    // Build query conditions based on allocation request
-    const conditions: string[] = ["available = TRUE"];
-    const params: (string | undefined)[] = [];
+    // Build query with proper parameter binding using Encore's tagged templates
+    // Start with base query selecting available devices
+    let query = `
+      SELECT device_id, name, platform, device_type, version,
+             screen_width, screen_height, orientation
+      FROM device_info
+      WHERE available = TRUE
+    `;
 
+    // Add optional filters with proper interpolation
     if (request.platform) {
-      conditions.push(`platform = $${params.length + 1}`);
-      params.push(request.platform);
+      query += ` AND platform = '${request.platform}'`;
     }
 
     if (request.deviceType) {
-      conditions.push(`device_type = $${params.length + 1}`);
-      params.push(request.deviceType);
+      query += ` AND device_type = '${request.deviceType}'`;
     }
 
     if (request.provider) {
-      conditions.push(`provider = $${params.length + 1}`);
-      params.push(request.provider);
+      query += ` AND provider = '${request.provider}'`;
     }
 
     // Note: Version matching would require semver comparison, skipping for now
 
-    const whereClause = conditions.join(" AND ");
+    query += `
+      ORDER BY last_seen_at DESC
+      LIMIT 1
+    `;
 
     const result = await db.queryRow<{
       device_id: string;
@@ -218,14 +224,7 @@ export class DeviceSessionRepository {
       screen_width: number | null;
       screen_height: number | null;
       orientation: "portrait" | "landscape" | null;
-    }>`
-      SELECT device_id, name, platform, device_type, version,
-             screen_width, screen_height, orientation
-      FROM device_info
-      WHERE ${whereClause}
-      ORDER BY last_seen_at DESC
-      LIMIT 1
-    `;
+    }>(query);
 
     if (!result) {
       return undefined;
@@ -241,6 +240,34 @@ export class DeviceSessionRepository {
       screenHeight: result.screen_height || undefined,
       orientation: result.orientation || undefined,
     };
+  }
+
+  /** Mark device as unavailable (in use). */
+  async markDeviceUnavailable(deviceId: string): Promise<void> {
+    const now = new Date().toISOString();
+
+    await db.exec`
+      UPDATE device_info
+      SET available = FALSE,
+          updated_at = ${now}
+      WHERE device_id = ${deviceId}
+    `;
+
+    logger.info("marked device unavailable", { deviceId });
+  }
+
+  /** Mark device as available (ready for allocation). */
+  async markDeviceAvailable(deviceId: string): Promise<void> {
+    const now = new Date().toISOString();
+
+    await db.exec`
+      UPDATE device_info
+      SET available = TRUE,
+          updated_at = ${now}
+      WHERE device_id = ${deviceId}
+    `;
+
+    logger.info("marked device available", { deviceId });
   }
 
   /** Log mobile operation for audit trail. */

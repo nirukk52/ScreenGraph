@@ -166,6 +166,46 @@ const elements = await mobile.getUIElements({ deviceId });
 5. **Scalability**: Ready for AWS Device Farm integration
 6. **Type Safety**: Encore generated clients provide full TypeScript types
 
+### Recent Fixes (Code Review)
+
+The following critical bugs were identified during code review and fixed:
+
+#### 1. Dynamic SQL Parameter Binding Failure
+- **Issue**: `findAvailableDevice` built parameterized queries with `$1`, `$2` placeholders but interpolated the raw WHERE clause string into tagged template, causing PostgreSQL to receive placeholders without bound values
+- **Fix**: Rewrote query building to use plain string concatenation with properly escaped values (simple approach for MVP)
+- **Future**: Consider using parameterized queries or SQL builder library for better SQL injection protection
+
+#### 2. Device Availability Never Updated
+- **Issue**: `createSession` filtered on `available = TRUE` but never marked device unavailable, allowing multiple concurrent sessions to allocate the same physical device
+- **Fix**: Added `markDeviceUnavailable()` in session creation and `markDeviceAvailable()` in session closing
+- **Note**: Operations are non-transactional (race condition possible under high load)
+
+#### 3. MCP Process Leaks and Race Conditions
+- **Issue**: Failed initialization left processes running while `initialized` stayed `false`, and concurrent `invokeTool` calls could spawn multiple processes
+- **Fix**: Implemented single-flight initialization with `initializationPromise` guard and cleanup on failure
+- **Result**: Only one MCP server process per client instance, proper cleanup on errors
+
+### Current Implementation Scope
+
+This initial integration focuses on establishing a stable foundation for mobile device automation:
+
+#### Device Allocation
+- **Simple first-match allocation**: Finds first available device matching platform/type/provider filters
+- **Availability tracking**: Devices marked unavailable during active sessions, restored on session close
+- **No version matching**: OS version filtering deferred (would require semver comparison)
+- **No smart allocation**: Load balancing, device health scoring, and preference weighting deferred
+
+#### Process Management
+- **Single-flight initialization**: Prevents multiple MCP server processes from spawning concurrently
+- **Cleanup on failure**: Zombie processes cleaned up if initialization fails
+- **Manual shutdown**: No automatic timeout or cleanup (implement when session patterns stabilize)
+
+#### Known Limitations
+- **No transactional allocation**: Device marking and session creation are separate operations (race condition possible under high concurrency)
+- **No session pooling**: Each session spawns new connection to device (connection reuse deferred)
+- **Basic error handling**: No retry logic or fallback strategies yet
+- **Manual device registration**: Devices must be upserted manually via `upsertDeviceInfo` (auto-discovery deferred)
+
 ### Future Enhancements
 
 #### AWS Device Farm Integration
