@@ -35,7 +35,7 @@ jobs:
       - name: Install Encore CLI
         run: |
           curl -L https://encore.dev/install.sh | bash
-          echo "$HOME/.encore/bin" >> $GITHUB_PATH
+          echo "${HOME}/.encore/bin" >> "${GITHUB_PATH}"
 
       - name: Verify Encore installation
         run: encore version
