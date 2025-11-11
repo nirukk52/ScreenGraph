@@ -10,60 +10,60 @@ Usage:
 ```
 -->
 <script lang="ts">
-	import autoAnimate from '@formkit/auto-animate';
-	import {
-		GitPullRequest,
-		MessageSquare,
-		Eye,
-		CheckCircle,
-		AlertCircle,
-		GitCommit,
-		Sparkles,
-		TrendingUp,
-		ArrowRight,
-		Zap,
-		Brain,
-		Users,
-		Clock,
-		ChevronRight,
-		ChevronLeft
-	} from 'lucide-svelte';
+import autoAnimate from "@formkit/auto-animate";
+import {
+  AlertCircle,
+  ArrowRight,
+  Brain,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Eye,
+  GitCommit,
+  GitPullRequest,
+  MessageSquare,
+  Sparkles,
+  TrendingUp,
+  Users,
+  Zap,
+} from "lucide-svelte";
 
-	/** Currently active step in the journey */
-	let activeStep = $state(0);
+/** Currently active step in the journey */
+let activeStep = $state(0);
 
-	/** Show comparison view on impact page */
-	let showComparison = $state(false);
+/** Show comparison view on impact page */
+const showComparison = $state(false);
 
-	/** Journey steps configuration */
-	const steps = [
-		{ id: 0, label: 'PR Created', icon: GitPullRequest },
-		{ id: 1, label: 'Bot Analysis', icon: MessageSquare },
-		{ id: 2, label: 'Review', icon: Users },
-		{ id: 3, label: 'Learning', icon: Brain }
-	];
+/** Journey steps configuration */
+const steps = [
+  { id: 0, label: "PR Created", icon: GitPullRequest },
+  { id: 1, label: "Bot Analysis", icon: MessageSquare },
+  { id: 2, label: "Review", icon: Users },
+  { id: 3, label: "Learning", icon: Brain },
+];
 
-	/** Navigate to next step */
-	function nextStep() {
-		if (activeStep < steps.length - 1) {
-			activeStep++;
-		}
-	}
+/** Navigate to next step */
+function nextStep() {
+  if (activeStep < steps.length - 1) {
+    activeStep++;
+  }
+}
 
-	/** Navigate to previous step */
-	function previousStep() {
-		if (activeStep > 0) {
-			activeStep--;
-		}
-	}
+/** Navigate to previous step */
+function previousStep() {
+  if (activeStep > 0) {
+    activeStep--;
+  }
+}
 
-	/** Set active step directly */
-	function setStep(index: number) {
-		activeStep = index;
-	}
+/** Set active step directly */
+function setStep(index: number) {
+  activeStep = index;
+}
 
-	/** Calculate progress percentage */
-	const progressPercent = $derived((activeStep / (steps.length - 1)) * 100);
+/** Calculate progress percentage */
+const progressPercent = $derived((activeStep / (steps.length - 1)) * 100);
 </script>
 
 <div class="space-y-12">

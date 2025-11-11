@@ -11,10 +11,6 @@ includes:
     taskfile: ./commands/shared/Taskfile.yml
     dir: ./commands/shared
   
-  founder:
-    taskfile: ./commands/founder/Taskfile.yml
-    dir: ./commands/founder
-  
   backend:
     taskfile: ./commands/backend/Taskfile.yml
     dir: ./commands/backend
@@ -52,14 +48,14 @@ tasks:
       - echo "ScreenGraph Unified Automation System"
       - echo ""
       - echo "Common commands:"
-      - echo "  task founder:servers:start    # Start backend + frontend"
-      - echo "  task founder:servers:stop     # Stop all services"
-      - echo "  task founder:servers:status   # Check service status"
-      - echo "  task qa:smoke:backend         # Run backend smoke tests"
-      - echo "  task qa:smoke:frontend        # Run frontend smoke tests"
-      - echo "  task founder:rules:check      # Validate founder rules"
-      - echo "  node automation/scripts/env.mjs status  # Show standard ports"
+      - echo "  task ops:servers:start        - Start backend + frontend"
+      - echo "  task ops:servers:stop         - Stop all services"
+      - echo "  task ops:servers:status       - Check service status"
+      - echo "  task qa:smoke:backend         - Run backend smoke tests"
+      - echo "  task qa:smoke:frontend        - Run frontend smoke tests"
+      - echo "  task qa:rules:check           - Validate founder rules"
+      - echo "  task backend:db:status        - Show database cluster info"
       - echo ""
-      - echo "Run 'task --list-all' for all available tasks"
+      - echo "Run task --list-all for all available tasks"
     silent: true
 

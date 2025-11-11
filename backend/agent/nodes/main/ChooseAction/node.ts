@@ -1,6 +1,6 @@
-import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
-import type { EventKind } from "../../../domain/events";
 import type { ActionCandidate, ActionDecision } from "../../../domain/actions";
+import type { EventKind } from "../../../domain/events";
+import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
 import type { LLMPort } from "../../../ports/llm";
 
 export interface ChooseActionInput extends CommonNodeInput {
@@ -31,4 +31,3 @@ export async function chooseAction(
   // TODO: Implement action selection logic
   throw new Error("chooseAction not yet implemented");
 }
-

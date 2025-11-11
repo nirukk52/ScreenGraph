@@ -138,3 +138,21 @@ tasks:
       - lsof -ti:${APPIUM_PORT:-4723} 2>/dev/null | xargs kill -9 2>/dev/null || true
       - echo "✅ Appium server stopped"
     silent: false
+
+  # Rules validation
+  rules:check:
+    desc: "Validate all founder rules"
+    cmds:
+      - node ../../../automation/scripts/check-founder-rules.mjs
+    silent: false
+
+  # Auto-fix code quality issues
+  fix:
+    desc: "Auto-fix linting and formatting issues"
+    cmds:
+      - echo "🔧 Auto-fixing backend..."
+      - cd ../../../backend && bunx biome check --write .
+      - echo "🔧 Auto-fixing frontend..."
+      - cd ../../../frontend && bunx biome check --write .
+      - echo "✅ Auto-fix complete"
+    silent: false

@@ -11,47 +11,50 @@ Usage:
 ```
 -->
 <script lang="ts">
-	import { type Snippet } from 'svelte';
+import type { Snippet } from "svelte";
 
-	/** Visual style variant of the button */
-	let { 
-		variant = 'primary',
-		/** Size of the button */
-		size = 'md',
-		/** Additional CSS classes */
-		class: className = '',
-		/** Button type attribute */
-		type = 'button',
-		/** Disabled state */
-		disabled = false,
-		/** Click handler */
-		onclick,
-		/** Button content */
-		children
-	}: {
-		variant?: 'primary' | 'secondary' | 'accent' | 'success';
-		size?: 'sm' | 'md' | 'lg';
-		class?: string;
-		type?: 'button' | 'submit' | 'reset';
-		disabled?: boolean;
-		onclick?: (e: MouseEvent) => void;
-		children?: Snippet;
-	} = $props();
+/** Visual style variant of the button */
+const {
+  variant = "primary",
+  /** Size of the button */
+  size = "md",
+  /** Additional CSS classes */
+  class: className = "",
+  /** Button type attribute */
+  type = "button",
+  /** Disabled state */
+  disabled = false,
+  /** Click handler */
+  onclick,
+  /** Button content */
+  children,
+}: {
+  variant?: "primary" | "secondary" | "accent" | "success";
+  size?: "sm" | "md" | "lg";
+  class?: string;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+  onclick?: (e: MouseEvent) => void;
+  children?: Snippet;
+} = $props();
 
-	// Variant color mappings with hover states
-	const variantClasses = {
-		primary: 'bg-[var(--color-charcoal)] text-white hover:bg-[var(--color-charcoal-dark)]',
-		secondary: 'bg-[var(--color-sky-blue)] text-[var(--color-charcoal)] hover:bg-[var(--color-sky-blue-light)]',
-		accent: 'bg-[var(--color-warm-tan)] text-[var(--color-charcoal)] hover:bg-[var(--color-warm-orange)]',
-		success: 'bg-[var(--color-soft-pink)] text-[var(--color-charcoal)] hover:bg-[var(--color-soft-rose)]'
-	};
+// Variant color mappings with hover states
+const variantClasses = {
+  primary: "bg-[var(--color-charcoal)] text-white hover:bg-[var(--color-charcoal-dark)]",
+  secondary:
+    "bg-[var(--color-sky-blue)] text-[var(--color-charcoal)] hover:bg-[var(--color-sky-blue-light)]",
+  accent:
+    "bg-[var(--color-warm-tan)] text-[var(--color-charcoal)] hover:bg-[var(--color-warm-orange)]",
+  success:
+    "bg-[var(--color-soft-pink)] text-[var(--color-charcoal)] hover:bg-[var(--color-soft-rose)]",
+};
 
-	// Size mappings
-	const sizeClasses = {
-		sm: 'px-4 py-2 text-sm',
-		md: 'px-6 py-3 text-base',
-		lg: 'px-8 py-4 text-lg'
-	};
+// Size mappings
+const sizeClasses = {
+  sm: "px-4 py-2 text-sm",
+  md: "px-6 py-3 text-base",
+  lg: "px-8 py-4 text-lg",
+};
 </script>
 
 <button

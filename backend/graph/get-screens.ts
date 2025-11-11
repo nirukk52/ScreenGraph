@@ -47,6 +47,5 @@ export const getScreens = api(
         lastSeenAt: row.last_seen_at,
       })),
     };
-  }
+  },
 );
-

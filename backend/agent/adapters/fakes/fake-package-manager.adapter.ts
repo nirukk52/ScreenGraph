@@ -1,4 +1,4 @@
-import type { PackageManagerPort, PackageInfo } from "../../ports/appium/package-manager.port";
+import type { PackageInfo, PackageManagerPort } from "../../ports/appium/package-manager.port";
 
 /**
  * Fake implementation of PackageManagerPort for testing.
@@ -20,7 +20,10 @@ export class FakePackageManagerAdapter implements PackageManagerPort {
     return this.installedPackages[packageId] || { installed: false };
   }
 
-  async installFromObjectStorage(ref: string, expectedSha256?: string): Promise<{ packageId: string }> {
+  async installFromObjectStorage(
+    ref: string,
+    expectedSha256?: string,
+  ): Promise<{ packageId: string }> {
     // Extract package ID from ref (mock implementation)
     const packageId = ref.split("/").pop()?.replace(".apk", "") || "com.example.app";
     this.installedPackages[packageId] = {
@@ -38,4 +41,3 @@ export class FakePackageManagerAdapter implements PackageManagerPort {
     return "fake-signature-hash";
   }
 }
-

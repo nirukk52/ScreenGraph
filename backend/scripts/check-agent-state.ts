@@ -33,7 +33,7 @@ async function checkAgentState(): Promise<void> {
   const lastSnapshot = snapshots[0];
   const state = JSON.parse(lastSnapshot.state_json);
 
-  console.log("Last snapshot (step " + lastSnapshot.step_ordinal + "):");
+  console.log(`Last snapshot (step ${lastSnapshot.step_ordinal}):`);
   console.log("  nodeName:", state.nodeName);
   console.log("  status:", state.status);
   console.log("  stopReason:", state.stopReason);
@@ -49,8 +49,7 @@ async function checkAgentState(): Promise<void> {
   console.log("  createdAt:", state.timestamps.createdAt);
   console.log("  updatedAt:", state.timestamps.updatedAt);
 
-  const elapsedMs =
-    Date.parse(state.timestamps.updatedAt) - Date.parse(state.timestamps.createdAt);
+  const elapsedMs = Date.parse(state.timestamps.updatedAt) - Date.parse(state.timestamps.createdAt);
   console.log("  elapsedMs:", elapsedMs);
 
   // Check if budget exhausted
@@ -68,4 +67,3 @@ checkAgentState().catch((err) => {
   console.error("Failed:", err);
   process.exit(1);
 });
-

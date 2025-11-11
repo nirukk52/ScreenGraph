@@ -37,4 +37,3 @@ export function applyStopOutput(prev: AgentState, output: StopOutput): AgentStat
     stopReason: output.confirmedTerminalDisposition === "SUCCEEDED" ? "success" : "crash",
   };
 }
-

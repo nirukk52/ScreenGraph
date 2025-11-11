@@ -1,8 +1,8 @@
+import log from "encore.dev/log";
+import { AGENT_ACTORS, MODULES } from "../../../../logging/logger";
+import type { EventKind } from "../../../domain/events";
 import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
 import type { IdleDetectorPort } from "../../../ports/appium/idle-detector.port";
-import type { EventKind } from "../../../domain/events";
-import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
 
 export interface WaitIdleInput extends CommonNodeInput {
   runId: string;

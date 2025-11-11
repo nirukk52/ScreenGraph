@@ -1,33 +1,33 @@
 <script lang="ts">
 import "../app.css";
-import { goto } from '$app/navigation';
-import { page } from '$app/state';
+import { goto } from "$app/navigation";
+import { page } from "$app/state";
 
 /** Root layout with Skeleton v3 for ultimate vibe coding */
 
 /** Navigate to app info page */
 function handleAppInfo() {
-	goto('/app-info');
+  goto("/app-info");
 }
 
 /** Navigate to home page */
 function handleHome() {
-	goto('/');
+  goto("/");
 }
 
 /** Navigate to dev journey page */
 function handleDevJourney() {
-	goto('/dev-journey');
+  goto("/dev-journey");
 }
 
 /** Navigate to components page */
 function handleComponents() {
-	goto('/components');
+  goto("/components");
 }
 
 /** Check if current path matches */
 function isActive(path: string): boolean {
-	return page.url.pathname === path;
+  return page.url.pathname === path;
 }
 </script>
 

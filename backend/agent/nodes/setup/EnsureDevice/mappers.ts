@@ -1,8 +1,8 @@
-import type { AgentState } from "../../../domain/state";
-import type { EnsureDeviceInput, EnsureDeviceOutput } from "./node";
-import type { AgentContext } from "../../types";
 import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
+import { AGENT_ACTORS, MODULES } from "../../../../logging/logger";
+import type { AgentState } from "../../../domain/state";
+import type { AgentContext } from "../../types";
+import type { EnsureDeviceInput, EnsureDeviceOutput } from "./node";
 
 /**
  * Maps AgentState and AgentContext to EnsureDeviceInput.

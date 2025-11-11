@@ -9,16 +9,16 @@ Usage:
 ```
 -->
 <script lang="ts">
-	import { Activity, GitCompare, FileText, Package } from 'lucide-svelte';
-	import { RetroButton, RetroCard, RetroInput, RetroBadge } from '$lib/components';
+import { RetroBadge, RetroButton, RetroCard, RetroInput } from "$lib/components";
+import { Activity, FileText, GitCompare, Package } from "lucide-svelte";
 
-	/** Currently active tab: 'journey' or 'components' */
-	let activeTab = $state<'journey' | 'components'>('journey');
+/** Currently active tab: 'journey' or 'components' */
+let activeTab = $state<"journey" | "components">("journey");
 
-	/** Handle tab button click */
-	function setActiveTab(tab: 'journey' | 'components') {
-		activeTab = tab;
-	}
+/** Handle tab button click */
+function setActiveTab(tab: "journey" | "components") {
+  activeTab = tab;
+}
 </script>
 
 <section class="py-16 px-8 bg-white">

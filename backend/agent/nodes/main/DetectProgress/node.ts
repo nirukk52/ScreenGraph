@@ -1,6 +1,6 @@
-import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
 import type { EventKind } from "../../../domain/events";
 import type { ProgressEvaluation, ProgressState } from "../../../domain/progress";
+import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
 import type { GraphPort } from "../../../ports/graph";
 
 export interface DetectProgressInput extends CommonNodeInput {

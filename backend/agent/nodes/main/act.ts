@@ -1,6 +1,6 @@
-import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
-import type { EventKind } from "../../domain/events";
 import type { ActionDecision, ActionExecutionResult } from "../../domain/actions";
+import type { EventKind } from "../../domain/events";
+import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import type { InputActionsPort } from "../../ports/appium/input-actions.port";
 import type { NavigationPort } from "../../ports/appium/navigation.port";
 

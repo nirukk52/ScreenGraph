@@ -41,5 +41,3 @@ export interface GetArtifactMetaResponse {
   contentHashSha256: string | null;
   createdAt: string;
 }
-
-

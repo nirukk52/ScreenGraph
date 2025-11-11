@@ -1,5 +1,5 @@
-import type { PackageManagerPort, PackageInfo } from "../../../ports/appium/package-manager.port";
-import { AppNotInstalledError, TimeoutError, InvalidArgumentError } from "../errors";
+import type { PackageInfo, PackageManagerPort } from "../../../ports/appium/package-manager.port";
+import { AppNotInstalledError, InvalidArgumentError, TimeoutError } from "../errors";
 import type { SessionContext } from "./session-context";
 
 /**
@@ -73,7 +73,10 @@ export class WebDriverIOPackageManagerAdapter implements PackageManagerPort {
    *   TimeoutError: If installation timed out
    *   InvalidArgumentError: If APK is invalid or corrupted
    */
-  async installFromObjectStorage(ref: string, _expectedSha256?: string): Promise<{ packageId: string }> {
+  async installFromObjectStorage(
+    ref: string,
+    _expectedSha256?: string,
+  ): Promise<{ packageId: string }> {
     try {
       // WebDriverIO will upload and install the APK located at ref (path accessible to Appium server)
       await this.context.driver.installApp(ref);
@@ -113,13 +116,13 @@ export class WebDriverIOPackageManagerAdapter implements PackageManagerPort {
       const output = typeof result === "string" ? result : JSON.stringify(result);
       // Look for a line like: "SHA-256 digest: ABCDEF..."
       const shaMatch = output.match(/SHA-256 digest:\s*([A-Fa-f0-9:]+)/);
-      if (shaMatch && shaMatch[1]) {
+      if (shaMatch?.[1]) {
         // Normalize to lowercase without colons
         return shaMatch[1].replace(/:/g, "").toLowerCase();
       }
       // Fallback: attempt to parse legacy signature lines
       const legacyMatch = output.match(/signatures=\[([A-Fa-f0-9:]+)\]/);
-      if (legacyMatch && legacyMatch[1]) {
+      if (legacyMatch?.[1]) {
         return legacyMatch[1].replace(/:/g, "").toLowerCase();
       }
       throw new InvalidArgumentError("Unable to parse SHA-256 signature from dumpsys output");
@@ -147,4 +150,3 @@ export class WebDriverIOPackageManagerAdapter implements PackageManagerPort {
     }
   }
 }
-

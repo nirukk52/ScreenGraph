@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import * as crypto from "node:crypto";
+import { beforeEach, describe, expect, it } from "vitest";
 
 /**
  * Artifacts Service Unit Tests
@@ -116,7 +116,9 @@ describe("Artifacts Service", () => {
       const ext = "png";
       const refId = `obj://artifacts/${runId}/${kind}/${hash}.${ext}`;
 
-      expect(refId).toMatch(/^obj:\/\/artifacts\/[^/]+\/(screenshot|ui_xml)\/[0-9a-f]{64}\.(png|jpg|xml)$/);
+      expect(refId).toMatch(
+        /^obj:\/\/artifacts\/[^/]+\/(screenshot|ui_xml)\/[0-9a-f]{64}\.(png|jpg|xml)$/,
+      );
     });
 
     it("should use correct extension for each kind", () => {
@@ -131,4 +133,3 @@ describe("Artifacts Service", () => {
     });
   });
 });
-

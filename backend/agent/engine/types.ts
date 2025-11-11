@@ -1,5 +1,5 @@
-import type { AgentState, StopReason, NodeExecutionOutcomeStatus } from "../domain/state";
 import type { EventKind } from "../domain/events";
+import type { AgentState, NodeExecutionOutcomeStatus, StopReason } from "../domain/state";
 
 /**
  * NodeNameBrand is a generic brand for node identifiers used by a phase.

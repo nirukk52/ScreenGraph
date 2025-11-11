@@ -1,5 +1,5 @@
-import db from "../db";
 import type { EventKind } from "../agent/domain/events";
+import db from "../db";
 import type {
   GraphOutcomeKind,
   GraphProjectionCursor,
@@ -223,5 +223,3 @@ export class GraphProjectionRepo {
 export function buildOutcomeId(runId: string, stepOrdinal: number): string {
   return `${runId}-${stepOrdinal.toString().padStart(6, "0")}`;
 }
-
-

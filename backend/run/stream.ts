@@ -1,4 +1,4 @@
-import { api, APIError, StreamOut, type Query } from "encore.dev/api";
+import { APIError, type Query, StreamOut, api } from "encore.dev/api";
 import log from "encore.dev/log";
 import type { EventKind } from "../agent/domain/events";
 import db from "../db";
@@ -50,10 +50,7 @@ interface MergedMessage {
  * fetchGraphOutcomes queries graph_persistence_outcomes joined with screens for SSE emission.
  * PURPOSE: Retrieves graph projection outcomes with app_package for a given run and sequence range.
  */
-async function fetchGraphOutcomes(
-  runId: string,
-  minSeq: number,
-): Promise<GraphOutcomeRow[]> {
+async function fetchGraphOutcomes(runId: string, minSeq: number): Promise<GraphOutcomeRow[]> {
   const outcomes: GraphOutcomeRow[] = [];
   for await (const row of db.query<GraphOutcomeRow>`
     SELECT 

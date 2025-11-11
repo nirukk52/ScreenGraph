@@ -1,6 +1,6 @@
+import { ulid } from "ulidx";
 import db from "../../db";
 import type { ScreenGraphDbPort } from "../ports/db-ports/screen-graph.port";
-import { ulid } from "ulidx";
 
 /**
  * ScreenGraphRepo implements ScreenGraphDbPort and persists UI graph artifacts.

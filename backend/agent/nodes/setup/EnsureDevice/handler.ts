@@ -1,9 +1,9 @@
 import type { AgentState } from "../../../domain/state";
+import type { NodeExecutorResult, NodeHandler } from "../../../engine/types";
+import type { AgentContext, AgentNodeName, AgentPorts } from "../../types";
+import { applyEnsureDeviceOutput, buildEnsureDeviceInput } from "./mappers";
 import type { EnsureDeviceInput, EnsureDeviceOutput } from "./node";
 import { ensureDevice } from "./node";
-import type { NodeHandler, NodeExecutorResult } from "../../../engine/types";
-import type { AgentContext, AgentNodeName, AgentPorts } from "../../types";
-import { buildEnsureDeviceInput, applyEnsureDeviceOutput } from "./mappers";
 import { EnsureDevicePolicy } from "./policy";
 
 /**

@@ -151,11 +151,7 @@ export interface CommonNodeOutput {
  * createInitialState builds the starting AgentState for a new run.
  * PURPOSE: Removes multi-tenancy (tenantId/projectId) for MVP simplification.
  */
-export function createInitialState(
-  runId: string,
-  budgets: Budgets,
-  now: string,
-): AgentState {
+export function createInitialState(runId: string, budgets: Budgets, now: string): AgentState {
   return {
     runId,
     nodeName: "InitialSetup",

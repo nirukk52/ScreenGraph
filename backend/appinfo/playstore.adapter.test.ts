@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { APP_INFO_MEDIA_KINDS } from "./dto";
 import { __testUtils__ } from "./playstore.adapter";
 
@@ -100,4 +100,3 @@ describe("PlayStore adapter normalization", () => {
     expect(normalized.lastStoreUpdate).toBeInstanceOf(Date);
   });
 });
-

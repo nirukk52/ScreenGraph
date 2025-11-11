@@ -1,12 +1,12 @@
 import * as crypto from "node:crypto";
 import log from "encore.dev/log";
-import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
+import { AGENT_ACTORS, MODULES } from "../../../../logging/logger";
 import type { EventKind } from "../../../domain/events";
 import type { PerceptionArtifacts } from "../../../domain/perception";
-import type { PerceptionPort } from "../../../ports/appium/perception.port";
+import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
 import type { DeviceInfoPort } from "../../../ports/appium/device-info.port";
+import type { PerceptionPort } from "../../../ports/appium/perception.port";
 import type { StoragePort } from "../../../ports/storage";
-import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
 
 export interface PerceiveCaptureDirectives {
   includeScreenshotPng: boolean;
@@ -47,7 +47,9 @@ export async function perceive(
   logger.info("Perceive INPUT", { input });
 
   if (input.captureDirectives.delayBeforeCaptureMs > 0) {
-    await new Promise((resolve) => setTimeout(resolve, input.captureDirectives.delayBeforeCaptureMs));
+    await new Promise((resolve) =>
+      setTimeout(resolve, input.captureDirectives.delayBeforeCaptureMs),
+    );
   }
 
   const screenshotPromise = input.captureDirectives.includeScreenshotPng
@@ -143,7 +145,7 @@ export async function perceive(
     stepOrdinal: input.stepOrdinal ?? 4,
     iterationOrdinalNumber: input.iterationOrdinalNumber ?? 0,
     policyVersion: 1,
-    resumeToken: `${input.runId}-${String((input.stepOrdinal ?? 4)).padStart(3, "0")}`,
+    resumeToken: `${input.runId}-${String(input.stepOrdinal ?? 4).padStart(3, "0")}`,
     randomSeed: input.randomSeed ?? 0,
     nodeExecutionOutcomeStatus: "SUCCESS",
     errorId: null,
@@ -158,4 +160,3 @@ export async function perceive(
     events,
   };
 }
-

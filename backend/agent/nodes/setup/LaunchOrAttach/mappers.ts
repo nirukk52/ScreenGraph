@@ -1,6 +1,6 @@
 import type { AgentState } from "../../../domain/state";
-import type { LaunchOrAttachInput, LaunchOrAttachOutput } from "./node";
 import type { AgentContext } from "../../types";
+import type { LaunchOrAttachInput, LaunchOrAttachOutput } from "./node";
 
 /**
  * Maps AgentState and AgentContext to LaunchOrAttachInput.

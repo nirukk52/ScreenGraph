@@ -1,6 +1,6 @@
 import { api } from "encore.dev/api";
 import db from "../db";
-import { loggerWith, MODULES, GRAPH_ACTORS } from "../logging/logger";
+import { GRAPH_ACTORS, MODULES, loggerWith } from "../logging/logger";
 
 /**
  * GraphDiagnosticsResponse contains status information about the graph projector and database.
@@ -91,6 +91,5 @@ export const diagnostics = api(
         hasSourceEventSeqColumn: sourceEventSeqExists?.exists || false,
       },
     };
-  }
+  },
 );
-

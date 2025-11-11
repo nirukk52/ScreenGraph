@@ -1,16 +1,16 @@
-import { Subscription } from "encore.dev/pubsub";
 import log from "encore.dev/log";
+import { Subscription } from "encore.dev/pubsub";
+import { WORKTREE_NAME } from "../../config/env";
+import { AGENT_ACTORS, MODULES } from "../../logging/logger";
 import { runJobTopic } from "../../run/start";
 import type { RunJob } from "../../run/types";
-import { Orchestrator } from "./orchestrator";
+import type { Budgets } from "../domain/state";
+import { AgentStateRepo } from "../persistence/agent-state.repo";
 import { RunDbRepo } from "../persistence/run-db.repo";
 import { RunEventsRepo } from "../persistence/run-events.repo";
-import { AgentStateRepo } from "../persistence/agent-state.repo";
 import { RunOutboxRepo } from "../persistence/run-outbox.repo";
-import type { Budgets } from "../domain/state";
+import { Orchestrator } from "./orchestrator";
 import { AgentWorker } from "./worker";
-import { MODULES, AGENT_ACTORS } from "../../logging/logger";
-import { WORKTREE_NAME } from "../../config/env";
 
 /**
  * Encore subscription that listens for RunJob messages and executes agent runs.
@@ -38,8 +38,8 @@ new Subscription(runJobTopic, "agent-orchestrator-worker", {
 
       const logger = subLog.with({ workerId });
       logger.info("Attempting to claim run");
-      
-      let claimed;
+
+      let claimed: boolean;
       try {
         claimed = await runDb.claimRun(job.runId, workerId, leaseDurationMs);
       } catch (claimErr) {
@@ -49,7 +49,7 @@ new Subscription(runJobTopic, "agent-orchestrator-worker", {
         });
         throw claimErr;
       }
-      
+
       if (!claimed) {
         subLog.info("Run already claimed, skipping");
         return;

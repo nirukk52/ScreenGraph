@@ -1,19 +1,16 @@
 import type { StopReason } from "../../domain/state";
-import type {
-  AgentMachineContext,
-  AgentTransitionDecision,
-} from "./types";
-import type { EngineNodeExecutionResult, NodeHandler, NodeOutputBase } from "../types";
 import type { AgentNodeName } from "../../nodes/types";
+import type { EngineNodeExecutionResult, NodeHandler, NodeOutputBase } from "../types";
+import type { AgentMachineContext, AgentTransitionDecision } from "./types";
 
 /**
  * AgentTransitionEngine handles all transition decisions, retry logic, and state updates
  * for the agent state machine.
- * 
+ *
  * PURPOSE: This class centralizes the complex logic for determining what happens next
  * after a node execution completes. It handles success/failure transitions, retry policies,
  * backtracking, budget evaluation, and state updates based on transition decisions.
- * 
+ *
  * RESPONSIBILITIES:
  * - Compute transition decisions based on execution results
  * - Evaluate budget constraints and stop conditions
@@ -21,7 +18,7 @@ import type { AgentNodeName } from "../../nodes/types";
  * - Calculate retry delays with exponential backoff
  * - Handle backtracking logic and restart counting
  * - Manage terminal state transitions
- * 
+ *
  * DESIGN PATTERNS:
  * - Strategy Pattern: Different transition strategies for different outcomes
  * - Command Pattern: Transition decisions as commands that modify state
@@ -31,18 +28,18 @@ import type { AgentNodeName } from "../../nodes/types";
 export class AgentTransitionEngine {
   /**
    * Computes the transition decision based on execution results.
-   * 
+   *
    * PURPOSE: This is the core decision-making method that determines what happens next
    * after a node execution. It considers success/failure outcomes, retry policies,
    * attempt limits, and backtracking options to make the optimal transition decision.
-   * 
+   *
    * DECISION LOGIC:
    * 1. SUCCESS → Advance to next node or terminal success
    * 2. FAILURE + RETRYABLE + UNDER LIMIT → Retry with delay
    * 3. FAILURE + RETRYABLE + OVER LIMIT + BACKTRACK → Backtrack to recovery node
    * 4. FAILURE + NOT RETRYABLE + BACKTRACK → Backtrack to recovery node
    * 5. FAILURE + NO BACKTRACK → Terminal failure
-   * 
+   *
    * @param execution - The complete execution result from a node
    * @returns Transition decision indicating next action
    */
@@ -67,7 +64,12 @@ export class AgentTransitionEngine {
 
     // RETRY STRATEGY: Attempt retry if conditions are met
     if (canRetry && attemptNumber < retry.maxAttempts) {
-      const delayMs = this.computeBackoffDelayMs(attemptNumber, retry.baseDelayMs, retry.maxDelayMs, seedUsed);
+      const delayMs = this.computeBackoffDelayMs(
+        attemptNumber,
+        retry.baseDelayMs,
+        retry.maxDelayMs,
+        seedUsed,
+      );
       return { kind: "retry", delayMs, attempt: attemptNumber };
     }
 
@@ -82,24 +84,24 @@ export class AgentTransitionEngine {
 
   /**
    * Evaluates budget constraints to determine if execution should stop.
-   * 
+   *
    * PURPOSE: This method checks all budget limits to ensure the agent doesn't
    * exceed resource constraints. It provides early termination when budgets
    * are exhausted, preventing runaway execution.
-   * 
+   *
    * BUDGET CHECKS:
    * - maxSteps: Total step limit across all nodes
    * - outsideAppLimit: Steps taken outside the target app
    * - restartLimit: Number of backtrack/restart operations
    * - maxTimeMs: Wall-clock time limit
-   * 
+   *
    * @param state - Current agent state with budgets and counters
    * @param nowIso - Current timestamp for time calculations
    * @returns Stop reason if budget exceeded, null if within limits
    */
   evaluateBudget(state: AgentMachineContext["agentState"], nowIso: string): StopReason | null {
     const { budgets, counters, timestamps } = state;
-    
+
     // Check step-based budgets
     if (counters.stepsTotal >= budgets.maxSteps) {
       return "budget_exhausted" as const;
@@ -122,11 +124,11 @@ export class AgentTransitionEngine {
 
   /**
    * Applies a transition decision to update the agent state.
-   * 
+   *
    * PURPOSE: This method transforms transition decisions into state updates,
    * ensuring that the agent state accurately reflects the current execution
    * context and next steps. It handles all transition types consistently.
-   * 
+   *
    * TRANSITION TYPES:
    * - advance: Move to next node, reset iteration counter
    * - retry: Stay on current node, update iteration counter
@@ -134,7 +136,7 @@ export class AgentTransitionEngine {
    * - terminalSuccess: Mark as completed with success status
    * - terminalFailure: Mark as failed with failure status
    * - stop: Mark as stopped with appropriate status
-   * 
+   *
    * @param state - Current agent state
    * @param decision - Transition decision to apply
    * @returns Updated agent state reflecting the transition
@@ -151,14 +153,14 @@ export class AgentTransitionEngine {
           nodeName: decision.nextNode,
           iterationOrdinalNumber: 0,
         };
-        
+
       case "retry":
         // Stay on current node, update iteration counter
         return {
           ...state,
           iterationOrdinalNumber: decision.attempt,
         };
-        
+
       case "backtrack":
         // Move to recovery node, increment restart counter
         return {
@@ -170,7 +172,7 @@ export class AgentTransitionEngine {
             restartsUsed: state.counters.restartsUsed + 1,
           },
         };
-        
+
       case "terminalSuccess":
         // Mark execution as completed successfully
         return {
@@ -178,7 +180,7 @@ export class AgentTransitionEngine {
           status: "completed",
           stopReason: "success",
         };
-        
+
       case "terminalFailure":
         // Mark execution as failed with specific reason
         return {
@@ -186,7 +188,7 @@ export class AgentTransitionEngine {
           status: "failed",
           stopReason: decision.stopReason,
         };
-        
+
       case "stop":
         // Mark execution as stopped with specific reason
         return {
@@ -194,8 +196,6 @@ export class AgentTransitionEngine {
           status: "failed",
           stopReason: decision.stopReason,
         };
-        
-      case "unexpected":
       default:
         // Handle unexpected decisions as crashes
         return {
@@ -208,18 +208,18 @@ export class AgentTransitionEngine {
 
   /**
    * Computes retry delay using exponential backoff with deterministic jitter.
-   * 
+   *
    * PURPOSE: This method implements a robust retry strategy that balances
    * immediate retry attempts with exponential backoff to avoid overwhelming
    * external systems. The deterministic jitter ensures reproducible behavior
    * while preventing thundering herd problems.
-   * 
+   *
    * BACKOFF ALGORITHM:
    * 1. Calculate exponential delay: baseDelay * 2^(attempt-1)
    * 2. Cap at maximum delay to prevent excessive waits
    * 3. Apply deterministic jitter using seed for reproducibility
    * 4. Ensure minimum delay for immediate retry attempts
-   * 
+   *
    * @param attempt - Current attempt number (1-based)
    * @param baseDelayMs - Base delay in milliseconds
    * @param maxDelayMs - Maximum delay in milliseconds
@@ -233,18 +233,18 @@ export class AgentTransitionEngine {
     seed: number,
   ): number {
     // Calculate exponential backoff: base * 2^(attempt-1)
-    const exp = baseDelayMs * Math.pow(2, Math.max(0, attempt - 1));
-    
+    const exp = baseDelayMs * 2 ** Math.max(0, attempt - 1);
+
     // Cap at maximum delay to prevent excessive waits
     const capped = Math.min(exp, maxDelayMs);
-    
+
     // Apply deterministic jitter using seed for reproducibility
     // Extract 12 bits from seed for jitter calculation
     const jitter = (seed & 0xfff) / 0xfff;
-    
+
     // Apply jitter: 75% to 100% of capped delay
     const jittered = Math.floor(capped * (0.75 + 0.25 * jitter));
-    
+
     // Ensure minimum delay and cap at maximum
     return Math.max(baseDelayMs, Math.min(jittered, maxDelayMs));
   }

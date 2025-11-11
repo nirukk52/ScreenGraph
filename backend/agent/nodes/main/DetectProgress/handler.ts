@@ -1,8 +1,8 @@
 import type { NodeHandler } from "../../../engine/types";
 import type { AgentContext, AgentNodeName, AgentPorts } from "../../types";
+import { applyDetectProgressOutput, buildDetectProgressInput } from "./mappers";
 import type { DetectProgressInput, DetectProgressOutput } from "./node";
 import { detectProgress } from "./node";
-import { buildDetectProgressInput, applyDetectProgressOutput } from "./mappers";
 import { DetectProgressPolicy } from "./policy";
 
 /**
@@ -31,4 +31,3 @@ export function createDetectProgressHandler(): NodeHandler<
     onFailure: DetectProgressPolicy,
   };
 }
-

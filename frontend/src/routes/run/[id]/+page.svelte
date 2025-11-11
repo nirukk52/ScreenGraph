@@ -1,9 +1,9 @@
 <script lang="ts">
-import { onDestroy } from "svelte";
 import { page } from "$app/state";
-import autoAnimate from "@formkit/auto-animate";
-import { streamRunEvents, streamGraphEvents, cancelRun } from "$lib/api";
+import { cancelRun, streamGraphEvents, streamRunEvents } from "$lib/api";
 import ScreenGraph from "$lib/components/ScreenGraph.svelte";
+import autoAnimate from "@formkit/auto-animate";
+import { onDestroy } from "svelte";
 
 let runId = $state("");
 let events = $state([]);
@@ -22,7 +22,7 @@ let graphCleanup = $state(null);
  */
 $effect(() => {
   const newRunId = page.params.id || "";
-  
+
   // Cleanup previous streams if runId changed
   if (newRunId !== runId && runId !== "") {
     if (cleanup) {
@@ -34,7 +34,7 @@ $effect(() => {
       graphCleanup = null;
     }
   }
-  
+
   // Reset state for new run
   runId = newRunId;
   events = [];
@@ -42,7 +42,7 @@ $effect(() => {
   graphEvents = [];
   loading = true;
   error = "";
-  
+
   // Start streaming for new run
   if (runId) {
     startStreaming();
@@ -78,35 +78,33 @@ async function startGraphStreaming() {
     console.log("[Graph Stream] Starting connection for runId:", runId);
     graphCleanup = await streamGraphEvents(runId, (event) => {
       console.log("[Graph Stream] Received event:", event);
-      
+
       // Skip heartbeat events
       if (event.data.screenId === "__heartbeat__") {
         console.log("[Graph Stream] Skipping heartbeat");
         return;
       }
-      
+
       console.log("[Graph Stream] Processing event:", {
         type: event.type,
         screenId: event.data.screenId,
-        seqRef: event.data.seqRef
+        seqRef: event.data.seqRef,
       });
-      
+
       // Add to events log
       graphEvents = [...graphEvents, event];
-      
+
       // Add or update nodes
-      const existingIndex = graphNodes.findIndex(n => n.screenId === event.data.screenId);
+      const existingIndex = graphNodes.findIndex((n) => n.screenId === event.data.screenId);
       if (existingIndex === -1) {
         console.log("[Graph Stream] Adding new node:", event.data.screenId);
         graphNodes = [...graphNodes, event.data];
       } else {
         console.log("[Graph Stream] Updating existing node:", event.data.screenId);
         // Update existing node
-        graphNodes = graphNodes.map((n, i) => 
-          i === existingIndex ? event.data : n
-        );
+        graphNodes = graphNodes.map((n, i) => (i === existingIndex ? event.data : n));
       }
-      
+
       console.log("[Graph Stream] Current graphNodes count:", graphNodes.length);
     });
     console.log("[Graph Stream] Connection established");

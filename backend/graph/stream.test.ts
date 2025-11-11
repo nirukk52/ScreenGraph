@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import db from "../db";
 
 /**
@@ -11,7 +11,7 @@ describe("Graph Stream Smoke Tests", () => {
 
   beforeEach(async () => {
     // Create a test run
-    testRunId = "test_run_stream_" + Date.now();
+    testRunId = `test_run_stream_${Date.now()}`;
     await db.exec`
       INSERT INTO runs (run_id, app_package, status, created_at)
       VALUES (${testRunId}, 'com.test.app', 'running', NOW())
@@ -30,7 +30,7 @@ describe("Graph Stream Smoke Tests", () => {
     // Create test screens
     const screen1Id = "test_screen_1";
     const screen2Id = "test_screen_2";
-    
+
     await db.exec`
       INSERT INTO screens (screen_id, app_package, layout_hash, perceptual_hash, first_seen_at, last_seen_at)
       VALUES 
@@ -69,7 +69,7 @@ describe("Graph Stream Smoke Tests", () => {
       SELECT status FROM runs WHERE run_id = ${testRunId}
     `;
     expect(row1).toBeTruthy();
-    expect(row1!.status).toBe("running");
+    expect(row1?.status).toBe("running");
 
     // Update run to completed
     await db.exec`
@@ -80,7 +80,7 @@ describe("Graph Stream Smoke Tests", () => {
       SELECT status FROM runs WHERE run_id = ${testRunId}
     `;
     expect(row2).toBeTruthy();
-    expect(row2!.status).toBe("completed");
+    expect(row2?.status).toBe("completed");
   });
 
   it("should return null for non-existent run", async () => {
@@ -106,8 +106,10 @@ describe("Event Type Mapping", () => {
     const pngRef = "obj://artifacts/run1/screenshot/abc.png";
     const jpgRef = "obj://artifacts/run1/screenshot/def.jpg";
 
-    const pngMime = pngRef.endsWith(".jpg") || pngRef.endsWith(".jpeg") ? "image/jpeg" : "image/png";
-    const jpgMime = jpgRef.endsWith(".jpg") || jpgRef.endsWith(".jpeg") ? "image/jpeg" : "image/png";
+    const pngMime =
+      pngRef.endsWith(".jpg") || pngRef.endsWith(".jpeg") ? "image/jpeg" : "image/png";
+    const jpgMime =
+      jpgRef.endsWith(".jpg") || jpgRef.endsWith(".jpeg") ? "image/jpeg" : "image/png";
 
     expect(pngMime).toBe("image/png");
     expect(jpgMime).toBe("image/jpeg");
@@ -125,5 +127,3 @@ describe("Sequence Ordering", () => {
     }
   });
 });
-
-

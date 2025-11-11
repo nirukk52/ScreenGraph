@@ -1,6 +1,6 @@
 import db from "../../db";
-import type { AgentStateDbPort } from "../ports/db-ports/agent-state.port";
 import type { AgentState } from "../domain/state";
+import type { AgentStateDbPort } from "../ports/db-ports/agent-state.port";
 
 /**
  * AgentStateRepo implements AgentStateDbPort with the `run_state_snapshots` table.

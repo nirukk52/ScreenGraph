@@ -1,9 +1,5 @@
-import { describe, it, expect } from "vitest";
-import {
-  computeLayoutHash,
-  deriveDeterministicScreenId,
-  normalizeUiHierarchyXml,
-} from "./hasher";
+import { describe, expect, it } from "vitest";
+import { computeLayoutHash, deriveDeterministicScreenId, normalizeUiHierarchyXml } from "./hasher";
 import { buildOutcomeId } from "./repo";
 
 describe("Graph hashing utilities", () => {
@@ -16,12 +12,12 @@ describe("Graph hashing utilities", () => {
 
     const normalized = normalizeUiHierarchyXml(rawXml);
 
-    expect(normalized).toBe("<hierarchy>\n<node  text= \"Hello\"  />\n</hierarchy>");
+    expect(normalized).toBe('<hierarchy>\n<node  text= "Hello"  />\n</hierarchy>');
   });
 
   it("computes identical layout hashes for identical inputs", () => {
     const appId = "com.example.app";
-    const xml = "<root><child id=\"1\" /></root>";
+    const xml = '<root><child id="1" /></root>';
     const normalized = normalizeUiHierarchyXml(xml);
 
     const hashA = computeLayoutHash(appId, normalized);
@@ -59,10 +55,3 @@ describe("Graph hashing utilities", () => {
     expect(outcomeId).toBe("01RUN-000005");
   });
 });
-
-
-
-
-
-
-

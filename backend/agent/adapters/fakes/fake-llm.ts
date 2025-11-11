@@ -1,5 +1,5 @@
-import type { LLMPort } from "../../ports/llm";
 import type { ActionCandidate, ActionDecision } from "../../domain/actions";
+import type { LLMPort } from "../../ports/llm";
 
 /**
  * FakeLLM offers deterministic LLM behavior for tests and demos.

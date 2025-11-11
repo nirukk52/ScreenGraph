@@ -1,6 +1,6 @@
-import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import type { EventKind } from "../../domain/events";
-import type { ContinuationDecision, RoutingDirective, ProgressState } from "../../domain/progress";
+import type { ContinuationDecision, ProgressState, RoutingDirective } from "../../domain/progress";
+import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 
 export interface ShouldContinueInput extends CommonNodeInput {
   runId: string;

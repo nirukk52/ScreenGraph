@@ -1,15 +1,19 @@
+import log from "encore.dev/log";
+import { AGENT_ACTORS, MODULES } from "../../../../logging/logger";
+import {
+  AppNotInstalledError,
+  InvalidArgumentError,
+  TimeoutError,
+} from "../../../adapters/appium/errors";
+import type { EventKind } from "../../../domain/events";
 import type {
   CommonNodeInput,
   CommonNodeOutput,
   ProvisionedAppState,
   SignatureValidationStatus,
 } from "../../../domain/state";
-import type { EventKind } from "../../../domain/events";
 import type { PackageManagerPort } from "../../../ports/appium/package-manager.port";
 import type { SessionPort } from "../../../ports/appium/session.port";
-import { AppNotInstalledError, InvalidArgumentError, TimeoutError } from "../../../adapters/appium/errors";
-import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
 
 export interface ProvisionAppInput extends CommonNodeInput {
   runId: string;
@@ -27,7 +31,9 @@ export interface ProvisionAppInput extends CommonNodeInput {
 
 export interface ProvisionAppOutput extends CommonNodeOutput {
   runId: string;
-  applicationProvisioningOutcome: ProvisionedAppState & { appPresenceStatus: "PRESENT" | "MISSING" };
+  applicationProvisioningOutcome: ProvisionedAppState & {
+    appPresenceStatus: "PRESENT" | "MISSING";
+  };
 }
 
 /**
@@ -50,12 +56,7 @@ export async function provisionApp(
   });
 
   const stage = {
-    current: "check_install" as
-      | "check_install"
-      | "uninstall"
-      | "install"
-      | "verify"
-      | "signature",
+    current: "check_install" as "check_install" | "uninstall" | "install" | "verify" | "signature",
   };
 
   const correlationId = `${input.runId}-${input.stepOrdinal ?? 0}-provision`;
@@ -173,7 +174,7 @@ export async function provisionApp(
       stepOrdinal: input.stepOrdinal ?? 1,
       iterationOrdinalNumber: input.iterationOrdinalNumber ?? 0,
       policyVersion: 1,
-      resumeToken: `${input.runId}-${String((input.stepOrdinal ?? 1)).padStart(3, "0")}`,
+      resumeToken: `${input.runId}-${String(input.stepOrdinal ?? 1).padStart(3, "0")}`,
       randomSeed: input.randomSeed ?? 0,
       nodeExecutionOutcomeStatus: "SUCCESS",
       errorId: null,
@@ -232,7 +233,7 @@ export async function provisionApp(
       stepOrdinal: input.stepOrdinal ?? 1,
       iterationOrdinalNumber: input.iterationOrdinalNumber ?? 0,
       policyVersion: 1,
-      resumeToken: `${input.runId}-${String((input.stepOrdinal ?? 1)).padStart(3, "0")}`,
+      resumeToken: `${input.runId}-${String(input.stepOrdinal ?? 1).padStart(3, "0")}`,
       randomSeed: input.randomSeed ?? 0,
       nodeExecutionOutcomeStatus: "FAILURE",
       errorId: normalized.code,
@@ -340,7 +341,10 @@ async function verifySignature(
   }
 }
 
-function normalizeProvisionError(error: unknown, stage: string): {
+function normalizeProvisionError(
+  error: unknown,
+  stage: string,
+): {
   message: string;
   code: string;
   retryable: boolean;

@@ -1,9 +1,9 @@
+import type { ActionCandidate } from "../domain/actions";
 import {
-  type ScreenRecordIdentity,
   type ActionRecordIdentity,
   GraphPersistenceOutcome,
+  type ScreenRecordIdentity,
 } from "../domain/graph";
-import type { ActionCandidate } from "../domain/actions";
 
 export interface GraphPort {
   persistScreen(

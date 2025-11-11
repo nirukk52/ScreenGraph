@@ -1,5 +1,5 @@
-import db from "../../db";
 import log from "encore.dev/log";
+import db from "../../db";
 import type { RunDbPort, RunLifecycleStatus, RunRecord } from "../ports/run-db.port";
 
 /**
@@ -130,7 +130,7 @@ export class RunDbRepo implements RunDbPort {
     stopReason?: string | null,
   ): Promise<boolean> {
     const logger = log.with({ module: "agent", actor: "run-db-repo", runId });
-    
+
     logger.info("updateRunStatus called", {
       runId,
       newStatus,
@@ -152,7 +152,7 @@ export class RunDbRepo implements RunDbPort {
         WHERE run_id = ${runId}
           AND status NOT IN ('completed', 'failed', 'canceled')
       `;
-      
+
       logger.info("updateRunStatus succeeded");
       return true;
     } catch (err) {

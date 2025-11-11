@@ -5,5 +5,3 @@ import { Bucket } from "encore.dev/storage/objects";
  * PURPOSE: Central, typed resource for uploads/downloads by the service.
  */
 export const artifactsBucket = new Bucket("artifacts");
-
-

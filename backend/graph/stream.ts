@@ -1,17 +1,13 @@
-import { api, APIError, StreamOut, type Query } from "encore.dev/api";
+import { APIError, type Query, StreamOut, api } from "encore.dev/api";
 import log from "encore.dev/log";
-import db from "../db";
 import { artifactsBucket } from "../artifacts/bucket";
+import db from "../db";
 
 /**
  * RUN_ENDED_STATUSES enumerates terminal run statuses.
  * PURPOSE: Avoid magic strings when checking if a run has ended.
  */
-const RUN_ENDED_STATUSES = [
-  "completed",
-  "failed",
-  "canceled",
-] as const;
+const RUN_ENDED_STATUSES = ["completed", "failed", "canceled"] as const;
 
 /**
  * GraphStreamEventType enumerates the graph event types emitted over SSE.
@@ -91,10 +87,7 @@ interface ScreenshotEventPayload {
  * fetchGraphOutcomes queries graph_persistence_outcomes for a run starting from a sequence.
  * PURPOSE: Retrieve graph projection outcomes with screen metadata for SSE emission.
  */
-async function fetchGraphOutcomes(
-  runId: string,
-  fromSeq: number,
-): Promise<GraphOutcomeRow[]> {
+async function fetchGraphOutcomes(runId: string, fromSeq: number): Promise<GraphOutcomeRow[]> {
   const outcomes: GraphOutcomeRow[] = [];
   for await (const row of db.query<GraphOutcomeRow>`
     SELECT 
@@ -136,8 +129,7 @@ async function fetchNearestScreenshot(
     return null;
   }
 
-  const payload =
-    typeof row.payload === "string" ? JSON.parse(row.payload) : row.payload;
+  const payload = typeof row.payload === "string" ? JSON.parse(row.payload) : row.payload;
   return payload as ScreenshotEventPayload;
 }
 
@@ -151,12 +143,10 @@ async function fetchScreenshotDataUrl(
 ): Promise<string | null> {
   try {
     const buffer = await artifactsBucket.download(refId);
-    
+
     // Infer MIME type from refId extension
-    const mime = refId.endsWith(".jpg") || refId.endsWith(".jpeg")
-      ? "image/jpeg"
-      : "image/png";
-    
+    const mime = refId.endsWith(".jpg") || refId.endsWith(".jpeg") ? "image/jpeg" : "image/png";
+
     const base64 = buffer.toString("base64");
     return `data:${mime};base64,${base64}`;
   } catch (err) {
@@ -175,7 +165,7 @@ async function buildScreenshotData(
   logger: ReturnType<typeof log.with>,
 ): Promise<ScreenshotData> {
   const screenshotPayload = await fetchNearestScreenshot(runId, upToSeq);
-  
+
   if (!screenshotPayload) {
     return { refId: null, dataUrl: null };
   }
@@ -200,15 +190,9 @@ async function convertOutcomeToEvent(
   logger: ReturnType<typeof log.with>,
 ): Promise<GraphStreamEvent> {
   const type: GraphStreamEventType =
-    outcome.upsert_kind === "discovered"
-      ? "graph.screen.discovered"
-      : "graph.screen.mapped";
+    outcome.upsert_kind === "discovered" ? "graph.screen.discovered" : "graph.screen.mapped";
 
-  const screenshot = await buildScreenshotData(
-    runId,
-    outcome.source_event_seq,
-    logger,
-  );
+  const screenshot = await buildScreenshotData(runId, outcome.source_event_seq, logger);
 
   return {
     type,
@@ -228,9 +212,7 @@ async function convertOutcomeToEvent(
  * checkRunStatus queries the runs table to determine if a run has ended.
  * PURPOSE: Enable stream closure decision after backfill for ended runs.
  */
-async function checkRunStatus(
-  runId: string,
-): Promise<"active" | "ended" | "not_found"> {
+async function checkRunStatus(runId: string): Promise<"active" | "ended" | "not_found"> {
   const row = await db.queryRow<{ status: string }>`
     SELECT status FROM runs WHERE run_id = ${runId}
   `;
@@ -239,9 +221,7 @@ async function checkRunStatus(
     return "not_found";
   }
 
-  return (RUN_ENDED_STATUSES as readonly string[]).includes(row.status)
-    ? "ended"
-    : "active";
+  return (RUN_ENDED_STATUSES as readonly string[]).includes(row.status) ? "ended" : "active";
 }
 
 /**
@@ -358,4 +338,3 @@ export const streamGraphForRun = api.streamOut<StreamHandshake, GraphStreamEvent
     }
   },
 );
-

@@ -11,35 +11,35 @@ Usage:
 ```
 -->
 <script lang="ts">
-	import { type Snippet } from 'svelte';
+import type { Snippet } from "svelte";
 
-	/** Visual style variant */
-	let {
-		variant = 'white',
-		/** Optional card title */
-		title = undefined,
-		/** Optional card description */
-		description = undefined,
-		/** Additional CSS classes */
-		class: className = '',
-		/** Card content */
-		children
-	}: {
-		variant?: 'sky' | 'tan' | 'pink' | 'white' | 'gray';
-		title?: string;
-		description?: string;
-		class?: string;
-		children?: Snippet;
-	} = $props();
+/** Visual style variant */
+const {
+  variant = "white",
+  /** Optional card title */
+  title = undefined,
+  /** Optional card description */
+  description = undefined,
+  /** Additional CSS classes */
+  class: className = "",
+  /** Card content */
+  children,
+}: {
+  variant?: "sky" | "tan" | "pink" | "white" | "gray";
+  title?: string;
+  description?: string;
+  class?: string;
+  children?: Snippet;
+} = $props();
 
-	// Variant color mappings
-	const variantClasses = {
-		sky: 'bg-[var(--color-sky-blue)]',
-		tan: 'bg-[var(--color-warm-tan)]',
-		pink: 'bg-[var(--color-soft-pink)]',
-		white: 'bg-white',
-		gray: 'bg-[var(--color-neutral-gray)]'
-	};
+// Variant color mappings
+const variantClasses = {
+  sky: "bg-[var(--color-sky-blue)]",
+  tan: "bg-[var(--color-warm-tan)]",
+  pink: "bg-[var(--color-soft-pink)]",
+  white: "bg-white",
+  gray: "bg-[var(--color-neutral-gray)]",
+};
 </script>
 
 <div class="retro-shadow rounded-2xl p-6 {variantClasses[variant]} {className}">

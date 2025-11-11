@@ -3,7 +3,7 @@ Components Page
 Design system showcase and component library
 -->
 <script lang="ts">
-	import { RetroButton, RetroCard, RetroBadge } from '$lib/components';
+import { RetroBadge, RetroButton, RetroCard } from "$lib/components";
 </script>
 
 <svelte:head>

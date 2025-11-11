@@ -1,21 +1,21 @@
-import { describe, it, expect } from "vitest";
-import { start } from "../../run/start";
-import db from "../../db";
+import { describe, expect, it } from "vitest";
 import { EXPECTED_UNIQUE_SCREENS_DISCOVERED } from "../../config/env";
+import db from "../../db";
+import { start } from "../../run/start";
 // Import subscription to ensure it's loaded in encore test runtime
 import "../orchestrator/subscription";
 
 /**
  * Metrics Test
  * PURPOSE: Validates agent discovers expected number of screens deterministically.
- * 
+ *
  * REQUIRES:
  * - Subscription imported (line 6) to enable worker in encore test runtime
  * - Appium server running (auto-started by task command)
  * - Android device/emulator connected
- * 
+ *
  * ENVIRONMENT: encore test (isolated runtime with imported subscription)
- * 
+ *
  * Flow:
  * 1. Start run with app from .env (VITE_PACKAGE_NAME, VITE_APK_PATH, etc.)
  * 2. Worker processes job (subscription loaded in test runtime)
@@ -45,15 +45,19 @@ describe("Metrics Test", () => {
         "EXPECTED_UNIQUE_SCREENS_DISCOVERED must be set in .env",
       ).toBeDefined();
 
+      if (!apkPath || !packageName) {
+        throw new Error("apkPath and packageName must be defined");
+      }
+
       console.log(`[Test] Starting run for ${packageName}`);
       console.log(`[Test] APK: ${apkPath}`);
       console.log(`[Test] Expected screens: ${EXPECTED_UNIQUE_SCREENS_DISCOVERED}`);
 
       // Step 2: Start the run via Encore endpoint
       const startResponse = await start({
-        apkPath: apkPath!,
+        apkPath,
         appiumServerUrl,
-        packageName: packageName!,
+        packageName,
         appActivity,
       });
 
@@ -85,7 +89,7 @@ describe("Metrics Test", () => {
         `;
 
         expect(statusRow, `Run ${runId} should exist in database`).toBeDefined();
-        runStatus = statusRow!.status;
+        runStatus = statusRow?.status;
 
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
         console.log(`[Test] Poll #${pollCount} (${elapsed}s): status=${runStatus}`);
@@ -101,13 +105,7 @@ describe("Metrics Test", () => {
       // Step 4: Assert run completed successfully
       if (runStatus === "queued") {
         throw new Error(
-          `Run stayed in 'queued' status for ${totalDuration}s.\n\n` +
-            `CAUSE: Agent worker subscription not processing jobs.\n` +
-            `REQUIRED: Subscription must be imported (see line 6: import "../orchestrator/subscription")\n\n` +
-            `If subscription is imported, check:\n` +
-            `1. Appium server is running (http://127.0.0.1:4723/)\n` +
-            `2. Android device/emulator is connected (adb devices)\n` +
-            `3. Backend logs for worker errors`,
+          `Run stayed in 'queued' status for ${totalDuration}s.\n\nCAUSE: Agent worker subscription not processing jobs.\nREQUIRED: Subscription must be imported (see line 6: import "../orchestrator/subscription")\n\nIf subscription is imported, check:\n1. Appium server is running (http://127.0.0.1:4723/)\n2. Android device/emulator is connected (adb devices)\n3. Backend logs for worker errors`,
         );
       }
 
@@ -121,9 +119,9 @@ describe("Metrics Test", () => {
           FROM runs
           WHERE run_id = ${runId}
         `;
-        
+
         const stopReason = statusRow?.stop_reason || "unknown";
-        
+
         // Get last few events to see what happened
         const lastEvents = await db.query<{
           kind: string;
@@ -135,12 +133,12 @@ describe("Metrics Test", () => {
           ORDER BY seq DESC
           LIMIT 5
         `;
-        
+
         const eventsList: string[] = [];
         for await (const event of lastEvents) {
           eventsList.push(`${event.sequence}: ${event.kind}`);
         }
-        
+
         // Get last agent state to see which node failed
         const lastState = await db.queryRow<{
           snapshot: Record<string, unknown>;
@@ -151,17 +149,11 @@ describe("Metrics Test", () => {
           ORDER BY created_at DESC
           LIMIT 1
         `;
-        
-        const lastNode = lastState?.snapshot.nodeName as string || "unknown";
-        
+
+        const lastNode = (lastState?.snapshot.nodeName as string) || "unknown";
+
         throw new Error(
-          `Run failed with stop_reason: ${stopReason}\n\n` +
-            `Last node: ${lastNode}\n` +
-            `Last events:\n${eventsList.join('\n')}\n\n` +
-            `Common cause: WebDriver session error (Appium session lost)\n` +
-            `Fix: Ensure Appium is stable and not timing out sessions.\n\n` +
-            `Debug with Encore MCP (requires 'encore run'):\n` +
-            `  mcp_encore-mcp_query_database to inspect full event timeline`,
+          `Run failed with stop_reason: ${stopReason}\n\nLast node: ${lastNode}\nLast events:\n${eventsList.join("\n")}\n\nCommon cause: WebDriver session error (Appium session lost)\nFix: Ensure Appium is stable and not timing out sessions.\n\nDebug with Encore MCP (requires 'encore run'):\n  mcp_encore-mcp_query_database to inspect full event timeline`,
         );
       }
 
@@ -182,19 +174,18 @@ describe("Metrics Test", () => {
         LIMIT 1
       `;
 
-      expect(
-        finishedEvent,
-        `agent.run.finished event should exist for run ${runId}`,
-      ).toBeDefined();
+      expect(finishedEvent, `agent.run.finished event should exist for run ${runId}`).toBeDefined();
 
-      const payload = finishedEvent!.payload;
+      const payload = finishedEvent?.payload;
       expect(payload).toHaveProperty("metrics");
 
       const metrics = payload.metrics as Record<string, unknown>;
       expect(metrics).toHaveProperty("uniqueScreensDiscoveredCount");
 
       const reportedScreenCount = metrics.uniqueScreensDiscoveredCount as number;
-      console.log(`[Test] Reported uniqueScreensDiscoveredCount from event: ${reportedScreenCount}`);
+      console.log(
+        `[Test] Reported uniqueScreensDiscoveredCount from event: ${reportedScreenCount}`,
+      );
 
       // Step 6: Query actual discovered screens from graph
       const actualScreenCount = await db.queryRow<{
@@ -206,12 +197,9 @@ describe("Metrics Test", () => {
           AND upsert_kind = 'discovered'
       `;
 
-      expect(
-        actualScreenCount,
-        "Graph should have discovered screens recorded",
-      ).toBeDefined();
+      expect(actualScreenCount, "Graph should have discovered screens recorded").toBeDefined();
 
-      const actualCount = Number.parseInt(actualScreenCount!.discovered_count, 10);
+      const actualCount = Number.parseInt(actualScreenCount?.discovered_count, 10);
       console.log(`[Test] Actual screens discovered in graph DB: ${actualCount}`);
 
       // Step 7: Assert metrics match reality (event payload == database)
@@ -233,4 +221,3 @@ describe("Metrics Test", () => {
     { timeout: 5 * 60 * 1000 }, // 5 minute timeout
   );
 });
-

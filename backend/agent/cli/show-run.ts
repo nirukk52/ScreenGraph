@@ -1,5 +1,5 @@
-import { InMemoryRepo } from "../persistence/in-memory-repo";
 import type { DomainEvent } from "../domain/events";
+import { InMemoryRepo } from "../persistence/in-memory-repo";
 
 export async function showRun(repo: InMemoryRepo, runId: string): Promise<void> {
   const run = await repo.getRun(runId);

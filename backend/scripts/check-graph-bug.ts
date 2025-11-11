@@ -36,10 +36,11 @@ async function checkGraphBug(): Promise<void> {
     }
 
     // Check for Perceive events
-    const perceiveEvents = events.filter(e => 
-      e.kind === "agent.event.screen_perceived" ||
-      e.kind === "agent.event.ui_hierarchy_captured" ||
-      e.kind === "agent.event.screenshot_captured"
+    const perceiveEvents = events.filter(
+      (e) =>
+        e.kind === "agent.event.screen_perceived" ||
+        e.kind === "agent.event.ui_hierarchy_captured" ||
+        e.kind === "agent.event.screenshot_captured",
     );
     console.log(`\n   Perceive-related events: ${perceiveEvents.length}`);
   }
@@ -77,11 +78,11 @@ async function checkGraphBug(): Promise<void> {
   console.log("   Outcomes for this run:", outcomesCount?.count);
 
   if (outcomesCount && outcomesCount.count > 0) {
-    const outcomes = await db.queryAll<{ 
-      step_ordinal: number; 
-      upsert_kind: string; 
+    const outcomes = await db.queryAll<{
+      step_ordinal: number;
+      upsert_kind: string;
       screen_id: string | null;
-      source_event_seq: number 
+      source_event_seq: number;
     }>`
       SELECT step_ordinal, upsert_kind, screen_id, source_event_seq 
       FROM graph_persistence_outcomes 
@@ -107,4 +108,3 @@ checkGraphBug()
     console.error("Diagnostic failed:", err);
     process.exit(1);
   });
-

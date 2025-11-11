@@ -49,11 +49,12 @@ async function testProjector(): Promise<void> {
   }
 
   // 4. Look for Perceive events specifically
-  const perceiveEvents = events.filter((e) =>
-    e.kind === "agent.node.started" ||
-    e.kind === "agent.event.screen_perceived" ||
-    e.kind === "agent.event.ui_hierarchy_captured" ||
-    e.kind === "agent.event.screenshot_captured"
+  const perceiveEvents = events.filter(
+    (e) =>
+      e.kind === "agent.node.started" ||
+      e.kind === "agent.event.screen_perceived" ||
+      e.kind === "agent.event.ui_hierarchy_captured" ||
+      e.kind === "agent.event.screenshot_captured",
   );
   console.log(`Perceive-related events: ${perceiveEvents.length}`);
   for (const event of perceiveEvents) {
@@ -75,4 +76,3 @@ testProjector().catch((err) => {
   console.error("Test failed:", err);
   process.exit(1);
 });
-

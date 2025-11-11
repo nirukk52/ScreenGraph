@@ -1,9 +1,9 @@
+import log from "encore.dev/log";
+import { AGENT_ACTORS, MODULES } from "../../../../logging/logger";
+import type { ApplicationForegroundContext } from "../../../domain/entities";
+import type { EventKind } from "../../../domain/events";
 import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
 import type { AppLifecyclePort } from "../../../ports/appium/app-lifecycle.port";
-import type { EventKind } from "../../../domain/events";
-import type { ApplicationForegroundContext } from "../../../domain/entities";
-import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
 
 export interface LaunchOrAttachInput extends CommonNodeInput {
   runId: string;
@@ -41,18 +41,20 @@ export async function launchOrAttach(
 
   try {
     let foregroundCtx: ApplicationForegroundContext;
-    
+
     if (input.installOrRestart === "RESTART") {
-      logger.info("Restarting app", { packageId: input.applicationUnderTestDescriptor.androidPackageId });
+      logger.info("Restarting app", {
+        packageId: input.applicationUnderTestDescriptor.androidPackageId,
+      });
       const restartSuccess = await appLifecyclePort.restartApp(
         input.applicationUnderTestDescriptor.androidPackageId,
         { launchTimeoutMs: input.appLaunchTimeoutMs },
       );
-      
+
       if (!restartSuccess) {
         throw new Error("App restart failed");
       }
-      
+
       // After restart, get the current app context
       const currentPackageId = await appLifecyclePort.getCurrentApp();
       foregroundCtx = {
@@ -61,13 +63,15 @@ export async function launchOrAttach(
         appBroughtToForegroundTimestamp: new Date().toISOString(),
       };
     } else {
-      logger.info("Launching app", { packageId: input.applicationUnderTestDescriptor.androidPackageId });
+      logger.info("Launching app", {
+        packageId: input.applicationUnderTestDescriptor.androidPackageId,
+      });
       foregroundCtx = await appLifecyclePort.launchApp(
         input.applicationUnderTestDescriptor.androidPackageId,
         { launchTimeoutMs: input.appLaunchTimeoutMs },
       );
     }
-    
+
     logger.info("ApplicationForegroundContext received", { foregroundCtx });
 
     const output: LaunchOrAttachOutput = {

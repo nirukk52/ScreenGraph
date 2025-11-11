@@ -8,10 +8,10 @@ import type { graph } from "$lib/encore-client";
 /**
  * Component props for graph nodes and events
  */
-let { 
+const {
   nodes = $bindable([]),
-  events = $bindable([])
-}: { 
+  events = $bindable([]),
+}: {
   nodes: graph.GraphStreamEventData[];
   events: graph.GraphStreamEvent[];
 } = $props();

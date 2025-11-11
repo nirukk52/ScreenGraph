@@ -1,25 +1,30 @@
-import type { AgentState, Budgets } from "../domain/state";
-import type { RunRecord, RunLifecycleStatus, RunDbPort } from "../ports/db-ports/run-db.port";
-import type { Orchestrator } from "./orchestrator";
-import { buildNodeRegistry } from "../nodes/registry";
-import { buildAgentContext } from "../nodes/context";
-import type { AgentNodeName, AgentPorts, AgentContext } from "../nodes/types";
-import type { GraphPort } from "../ports/graph";
-import type { NodeRegistry } from "../engine/types";
-import { WebDriverIOSessionAdapter } from "../adapters/appium/webdriverio/session.adapter";
+import log from "encore.dev/log";
+import { createActor } from "xstate";
+import { AGENT_ACTORS, MODULES } from "../../logging/logger";
 import { WebDriverIOAppLifecycleAdapter } from "../adapters/appium/webdriverio/app-lifecycle.adapter";
+import { WebDriverIODeviceInfoAdapter } from "../adapters/appium/webdriverio/device-info.adapter";
 import { WebDriverIOIdleDetectorAdapter } from "../adapters/appium/webdriverio/idle-detector.adapter";
 import { WebDriverIOPackageManagerAdapter } from "../adapters/appium/webdriverio/package-manager.adapter";
 import { WebDriverIOPerceptionAdapter } from "../adapters/appium/webdriverio/perception.adapter";
-import { WebDriverIODeviceInfoAdapter } from "../adapters/appium/webdriverio/device-info.adapter";
-import { EncoreStorageAdapter } from "../adapters/storage/encore-storage.adapter";
+import { WebDriverIOSessionAdapter } from "../adapters/appium/webdriverio/session.adapter";
 import { FakeLLM } from "../adapters/fakes/fake-llm";
-import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../logging/logger";
-import { createActor } from "xstate";
+import { EncoreStorageAdapter } from "../adapters/storage/encore-storage.adapter";
+import type { AgentState, Budgets } from "../domain/state";
+import type { NodeRegistry } from "../engine/types";
 import { createAgentMachine } from "../engine/xstate/agent.machine";
-import type { AgentMachineDependencies, AgentMachineOutput, AgentMachineContext, ShouldStopResult } from "../engine/xstate/types";
 import { getInspector } from "../engine/xstate/inspector";
+import type {
+  AgentMachineContext,
+  AgentMachineDependencies,
+  AgentMachineOutput,
+  ShouldStopResult,
+} from "../engine/xstate/types";
+import { buildAgentContext } from "../nodes/context";
+import { buildNodeRegistry } from "../nodes/registry";
+import type { AgentContext, AgentNodeName, AgentPorts } from "../nodes/types";
+import type { RunDbPort, RunLifecycleStatus, RunRecord } from "../ports/db-ports/run-db.port";
+import type { GraphPort } from "../ports/graph";
+import type { Orchestrator } from "./orchestrator";
 
 /**
  * Build AgentPorts using the WebDriverIO adapter family so the agent relies on a single
@@ -214,7 +219,7 @@ export class AgentWorker {
               return;
             }
             // Fallback: derive final output from context when snapshot has no explicit output
-            const ctx = (snapshot.context as unknown) as AgentMachineContext;
+            const ctx = snapshot.context as unknown as AgentMachineContext;
             const derived: AgentMachineOutput = {
               state: ctx.agentState,
               status:

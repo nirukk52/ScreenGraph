@@ -1,8 +1,14 @@
 #!/bin/sh
 # Husky pre-commit hook
-# Validates founder rules before allowing commit
+# Auto-fixes and validates code before allowing commit
 
-cd .cursor && task founder:rules:check
+# Auto-fix linting and formatting
+echo "🔧 Auto-fixing code quality issues..."
+cd .cursor && task qa:fix
+
+# Validate founder rules
+echo "📋 Validating founder rules..."
+cd .cursor && task qa:rules:check
 
 # Cursor docs validation (informational, won't block commit)
 cd .. && node automation/scripts/validate-cursor-docs.mjs || echo "⚠️  Cursor docs validation failed (non-blocking)"

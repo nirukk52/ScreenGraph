@@ -5,4 +5,3 @@ import { Service } from "encore.dev/service";
 import "./orchestrator/subscription";
 
 export default new Service("agent");
-

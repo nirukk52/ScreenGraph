@@ -12,9 +12,3 @@ describe.skip("Appium Service Holder", () => {
     await new Promise(() => {});
   });
 });
-
-
-
-
-
-

@@ -1,29 +1,29 @@
-import { describe, it, expect } from "vitest";
-import { start } from "./start";
+import { describe, expect, it } from "vitest";
 import db from "../db";
+import { start } from "./start";
 
 // ✅ CRITICAL: Import all services needed for full integration test
-import "../agent/orchestrator/subscription";  // Worker subscription
-import "../artifacts/store";  // Artifacts storage
-import "../artifacts/get";    // Artifacts retrieval  
-import "../graph/encore.service.ts";  // Graph projection service
+import "../agent/orchestrator/subscription"; // Worker subscription
+import "../artifacts/store"; // Artifacts storage
+import "../artifacts/get"; // Artifacts retrieval
+import "../graph/encore.service.ts"; // Graph projection service
 
 /**
  * Integration Test: POST /run/start → Agent discovers screens
- * 
+ *
  * PURPOSE: Test the REAL user flow - not petty unit tests.
- * 
+ *
  * Flow:
  * 1. User calls POST /run/start
  * 2. Worker picks up job (subscription loaded above)
  * 3. Agent runs and discovers screens
  * 4. Verify: countUniqueScreensDiscovered >= 1
- * 
+ *
  * Requirements:
  * - Appium running: http://127.0.0.1:4723
  * - Android device/emulator connected
  * - APK in .env (VITE_APK_PATH)
- * 
+ *
  * Run: encore test ./run/start.integration.test.ts
  */
 
@@ -86,7 +86,7 @@ describe("Integration: POST /run/start discovers screens", () => {
         throw new Error(
           `❌ Run stayed 'queued' - worker subscription not working!\n\n` +
             `This means: import "../agent/orchestrator/subscription" didn't load.\n` +
-            `Check: Is subscription file being imported in encore.service.ts?`,
+            "Check: Is subscription file being imported in encore.service.ts?",
         );
       }
 
@@ -109,22 +109,17 @@ describe("Integration: POST /run/start discovers screens", () => {
         }
 
         throw new Error(
-          `❌ Run failed: ${row?.stop_reason || "unknown"}\n\n` +
-            `Last events:\n${lastEvents.map((e) => `  ${e.seq}: ${e.kind}`).join("\n")}\n\n` +
-            `Common causes:\n` +
-            `- Appium not running (http://127.0.0.1:4723)\n` +
-            `- Device not connected (adb devices)\n` +
-            `- APK path invalid (${apkPath})`,
+          `❌ Run failed: ${row?.stop_reason || "unknown"}\n\nLast events:\n${lastEvents.map((e) => `  ${e.seq}: ${e.kind}`).join("\n")}\n\nCommon causes:\n- Appium not running (http://127.0.0.1:4723)\n- Device not connected (adb devices)\n- APK path invalid (${apkPath})`,
         );
       }
 
       expect(runStatus).toBe("completed");
-      console.log(`[Test] ✅ Run completed successfully`);
+      console.log("[Test] ✅ Run completed successfully");
 
       // THEN: Wait for graph projector to process events (runs async after agent completes)
-      console.log(`[Test] Waiting for graph projection...`);
+      console.log("[Test] Waiting for graph projection...");
       await new Promise((resolve) => setTimeout(resolve, 5000)); // Give projector time to process (polls every 300ms)
-      
+
       // THEN: Verify screens were discovered
       const screenCount = await db.queryRow<{ count: string }>`
         SELECT COUNT(*)::text as count
@@ -157,4 +152,3 @@ describe("Integration: POST /run/start discovers screens", () => {
     { timeout: 90_000 }, // 90 second timeout
   );
 });
-

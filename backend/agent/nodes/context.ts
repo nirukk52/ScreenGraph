@@ -1,6 +1,6 @@
-import type { AgentContext } from "./types";
 import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../logging/logger";
+import { AGENT_ACTORS, MODULES } from "../../logging/logger";
+import type { AgentContext } from "./types";
 
 /**
  * Builds AgentContext from run job configuration.

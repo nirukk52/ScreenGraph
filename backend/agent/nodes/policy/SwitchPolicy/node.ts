@@ -1,5 +1,5 @@
-import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
 import type { EventKind } from "../../../domain/events";
+import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
 
 export interface SwitchPolicyInput extends CommonNodeInput {
   runId: string;
@@ -29,9 +29,7 @@ export interface SwitchPolicyOutput extends CommonNodeOutput {
  * switchPolicy selects the active exploration policy for the agent.
  * PURPOSE: Provides a deterministic hand-off from setup into the main loop strategy.
  */
-export async function switchPolicy(
-  input: SwitchPolicyInput,
-): Promise<{
+export async function switchPolicy(input: SwitchPolicyInput): Promise<{
   output: SwitchPolicyOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
 }> {
@@ -64,4 +62,3 @@ export async function switchPolicy(
     ],
   };
 }
-

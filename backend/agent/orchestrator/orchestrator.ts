@@ -1,18 +1,18 @@
-import { type AgentState, createInitialState, type Budgets } from "../domain/state";
+import log from "encore.dev/log";
+import { AGENT_ACTORS, MODULES } from "../../logging/logger";
 import {
-  createDomainEvent,
-  createRunStartedEvent,
-  createRunFinishedEvent,
   type DomainEvent,
   type EventKind,
   type EventPayloadMap,
+  createDomainEvent,
+  createRunFinishedEvent,
+  createRunStartedEvent,
 } from "../domain/events";
-import type { RunRecord, RunDbPort } from "../ports/db-ports/run-db.port";
-import type { RunEventsDbPort } from "../ports/db-ports/run-events.port";
+import { type AgentState, type Budgets, createInitialState } from "../domain/state";
 import type { AgentStateDbPort } from "../ports/db-ports/agent-state.port";
+import type { RunDbPort, RunRecord } from "../ports/db-ports/run-db.port";
+import type { RunEventsDbPort } from "../ports/db-ports/run-events.port";
 import type { RunOutboxDbPort } from "../ports/db-ports/run-outbox.port";
-import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../logging/logger";
 
 export class Orchestrator {
   private sequenceCounter = 0;
@@ -170,7 +170,7 @@ export class Orchestrator {
 
       logger.info("Recording finished event");
       await this.recordEvent(finishedEvent);
-      
+
       logger.info("Run finalized successfully");
     } catch (err) {
       logger.error("Error in finalizeRun", {

@@ -1,9 +1,9 @@
-import { api, APIError } from "encore.dev/api";
-import log from "encore.dev/log";
 import * as crypto from "node:crypto";
-import { artifactsBucket } from "./bucket";
-import type { StoreArtifactRequest, StoreArtifactResponse, ArtifactKind } from "./dto";
+import { APIError, api } from "encore.dev/api";
+import log from "encore.dev/log";
 import db from "../db";
+import { artifactsBucket } from "./bucket";
+import type { ArtifactKind, StoreArtifactRequest, StoreArtifactResponse } from "./dto";
 
 /**
  * deriveRef builds a deterministic object ref path based on runId, kind, and content hash.
@@ -62,5 +62,3 @@ export const storeArtifact = api<StoreArtifactRequest, StoreArtifactResponse>(
     return { refId, byteSize: contentBytes.byteLength, contentHashSha256 };
   },
 );
-
-

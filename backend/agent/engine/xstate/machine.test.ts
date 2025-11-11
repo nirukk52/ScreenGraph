@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { createActor } from "xstate";
-import { createAgentMachine } from "./agent.machine";
-import type { AgentMachineDependencies, AgentMachineOutput } from "./types";
-import type { AgentContext, AgentNodeName, AgentPorts } from "../../nodes/types";
-import type { NodeHandler, NodeOutputBase, NodeRegistry } from "../types";
 import { createInitialState } from "../../domain/state";
 import type { AgentState, StopReason } from "../../domain/state";
+import type { AgentContext, AgentNodeName, AgentPorts } from "../../nodes/types";
+import type { NodeHandler, NodeOutputBase, NodeRegistry } from "../types";
+import { createAgentMachine } from "./agent.machine";
+import type { AgentMachineDependencies, AgentMachineOutput } from "./types";
 
 interface StubOutcome {
   status: "SUCCESS" | "FAILURE";
@@ -139,10 +139,10 @@ function createStubRegistry(
   scripts: Partial<Record<AgentNodeName, OutcomeScript>> = {},
 ): NodeRegistry<AgentNodeName, AgentPorts, AgentContext> {
   const registry: NodeRegistry<AgentNodeName, AgentPorts, AgentContext> = {};
-  (Object.keys(transitionMap) as AgentNodeName[]).forEach((node) => {
+  for (const node of Object.keys(transitionMap) as AgentNodeName[]) {
     const sequence = scripts[node] ?? [{ status: "SUCCESS", retryable: null }];
     registry[node] = createStubHandler(node, transitionMap[node], sequence);
-  });
+  }
   return registry;
 }
 
@@ -259,7 +259,11 @@ async function runMachine(
   machineDependencies: AgentMachineDependencies,
 ): Promise<{
   output: AgentMachineOutput;
-  history: Array<{ status: AgentState["status"]; latestNode: AgentNodeName | null; decision: string | null }>;
+  history: Array<{
+    status: AgentState["status"];
+    latestNode: AgentNodeName | null;
+    decision: string | null;
+  }>;
 }> {
   const machine = createAgentMachine({
     initialState,
@@ -268,7 +272,11 @@ async function runMachine(
   });
 
   const actor = createActor(machine);
-  const history: Array<{ status: AgentState["status"]; latestNode: AgentNodeName | null; decision: string | null }> = [];
+  const history: Array<{
+    status: AgentState["status"];
+    latestNode: AgentNodeName | null;
+    decision: string | null;
+  }> = [];
 
   const completion = new Promise<AgentMachineOutput>((resolve, reject) => {
     const subscription = actor.subscribe({
@@ -308,9 +316,18 @@ async function runMachine(
   return { output: finalOutput, history };
 }
 
-function createState(overrides?: Partial<AgentState>, budgetsOverride?: Partial<AgentState["budgets"]>) {
+function createState(
+  overrides?: Partial<AgentState>,
+  budgetsOverride?: Partial<AgentState["budgets"]>,
+) {
   const createdAt = new Date("2025-01-01T00:00:00.000Z").toISOString();
-  const state = createInitialState("tenant", "project", "run", { ...baseBudgets, ...budgetsOverride }, createdAt);
+  const state = createInitialState(
+    "tenant",
+    "project",
+    "run",
+    { ...baseBudgets, ...budgetsOverride },
+    createdAt,
+  );
   return { ...state, ...overrides };
 }
 
@@ -376,4 +393,3 @@ describe("createAgentMachine", () => {
     expect(built.callbacks.onPersist).toHaveBeenCalledTimes(1);
   });
 });
-

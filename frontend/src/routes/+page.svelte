@@ -3,85 +3,85 @@ ScreenGraph Landing Page
 Retro-modern design landing page showcasing the UX drift detection platform
 -->
 <script lang="ts">
-	import autoAnimate from '@formkit/auto-animate';
-	import { Check } from 'lucide-svelte';
-	import { RetroButton, RetroCard, RetroInput, RetroBadge, TabSection } from '$lib/components';
-	import ModernJourneyFull from '$lib/components/ModernJourneyFull.svelte';
-	import DebugRetro from '$lib/components/DebugRetro.svelte';
-	import { goto } from '$app/navigation';
-    import { startRun } from '$lib/api';
-    import { DEFAULT_RUN_CONFIG, DEFAULT_DEVICE_CONFIG } from '$lib/config';
+import { goto } from "$app/navigation";
+import { startRun } from "$lib/api";
+import { RetroBadge, RetroButton, RetroCard, RetroInput, TabSection } from "$lib/components";
+import DebugRetro from "$lib/components/DebugRetro.svelte";
+import ModernJourneyFull from "$lib/components/ModernJourneyFull.svelte";
+import { DEFAULT_DEVICE_CONFIG, DEFAULT_RUN_CONFIG } from "$lib/config";
+import autoAnimate from "@formkit/auto-animate";
+import { Check } from "lucide-svelte";
 
-	/** Email input for beta signup */
-	let email = $state('');
-	/** Show signup success message */
-	let signupSuccess = $state(false);
-	/** Loading state for starting a run */
-	let startingRun = $state(false);
+/** Email input for beta signup */
+let email = $state("");
+/** Show signup success message */
+let signupSuccess = $state(false);
+/** Loading state for starting a run */
+let startingRun = $state(false);
 
-	/**
-	 * Handle beta signup form submission
-	 * @param e - Form submit event
-	 */
-	function handleSignup(e: Event) {
-		e.preventDefault();
-		signupSuccess = true;
-		// Reset after 3 seconds
-		setTimeout(() => {
-			signupSuccess = false;
-			email = '';
-		}, 3000);
-	}
+/**
+ * Handle beta signup form submission
+ * @param e - Form submit event
+ */
+function handleSignup(e: Event) {
+  e.preventDefault();
+  signupSuccess = true;
+  // Reset after 3 seconds
+  setTimeout(() => {
+    signupSuccess = false;
+    email = "";
+  }, 3000);
+}
 
-	/**
-	 * Handle starting a drift detection run with the provided debugging parameters
-	 */
-	async function handleDetectDrift() {
-		if (startingRun) return;
-		
-		startingRun = true;
-        try {
-            const response = await startRun({
-                apkPath: DEFAULT_DEVICE_CONFIG.apkPath,
-                appiumServerUrl: DEFAULT_RUN_CONFIG.appiumServerUrl,
-                packageName: DEFAULT_DEVICE_CONFIG.packageName,
-                appActivity: DEFAULT_DEVICE_CONFIG.appActivity,
-                maxSteps: DEFAULT_RUN_CONFIG.maxSteps,
-                goal: DEFAULT_RUN_CONFIG.goal
-            });
-			
-			// Navigate to the run page
-			await goto(`/run/${response.runId}`);
-		} catch (error) {
-			console.error("Failed to start run:", error);
-			alert(`Failed to start run: ${error instanceof Error ? error.message : "Unknown error"}`);
-			startingRun = false;
-		}
-	}
+/**
+ * Handle starting a drift detection run with the provided debugging parameters
+ */
+async function handleDetectDrift() {
+  if (startingRun) return;
 
-	/**
-	 * Scroll to the "How It Works" section smoothly
-	 */
-	function handleSeeHowItWorks() {
-		const section = document.getElementById('how-it-works');
-		if (section) {
-			section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-		}
-	}
+  startingRun = true;
+  try {
+    const response = await startRun({
+      apkPath: DEFAULT_DEVICE_CONFIG.apkPath,
+      appiumServerUrl: DEFAULT_RUN_CONFIG.appiumServerUrl,
+      packageName: DEFAULT_DEVICE_CONFIG.packageName,
+      appActivity: DEFAULT_DEVICE_CONFIG.appActivity,
+      maxSteps: DEFAULT_RUN_CONFIG.maxSteps,
+      goal: DEFAULT_RUN_CONFIG.goal,
+    });
 
-	// Animation states for phone mockups
-	let phoneOffset1 = $state(0);
-	let phoneOffset2 = $state(0);
+    // Navigate to the run page
+    await goto(`/run/${response.runId}`);
+  } catch (error) {
+    console.error("Failed to start run:", error);
+    alert(`Failed to start run: ${error instanceof Error ? error.message : "Unknown error"}`);
+    startingRun = false;
+  }
+}
 
-	// Animate phone mockups continuously
-	$effect(() => {
-		const interval = setInterval(() => {
-			phoneOffset1 = Math.sin(Date.now() / 1000) * 10;
-			phoneOffset2 = Math.cos(Date.now() / 1000) * 10;
-		}, 50);
+/**
+ * Scroll to the "How It Works" section smoothly
+ */
+function handleSeeHowItWorks() {
+  const section = document.getElementById("how-it-works");
+  if (section) {
+    section.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
 
-		return () => clearInterval(interval);
-	});
+// Animation states for phone mockups
+let phoneOffset1 = $state(0);
+let phoneOffset2 = $state(0);
+
+// Animate phone mockups continuously
+$effect(() => {
+  const interval = setInterval(() => {
+    phoneOffset1 = Math.sin(Date.now() / 1000) * 10;
+    phoneOffset2 = Math.cos(Date.now() / 1000) * 10;
+  }, 50);
+
+  return () => clearInterval(interval);
+});
 </script>
 
 <svelte:head>
