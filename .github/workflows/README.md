@@ -216,8 +216,13 @@ Following qa_vibe.json principles, the CI is designed for speed and reliability:
 3. Install Encore CLI
 4. Cache Bun dependencies (keyed by `backend/bun.lock`)
 5. Install backend dependencies
-6. Run `encore test`
+6. Run `encore test` (Encore's test runner wraps vitest with additional features)
 7. Upload test results as artifacts
+
+**Why Encore test instead of vitest directly?**
+- `encore test` provides additional context and setup for Encore services
+- Automatically handles service mocking and database provisioning
+- Provides better error messages for API-related test failures
 
 **Optimizations:**
 - Dependency caching reduces install time
@@ -238,15 +243,25 @@ Following qa_vibe.json principles, the CI is designed for speed and reliability:
 4. Install frontend dependencies
 5. Cache Playwright browsers (keyed by `frontend/bun.lock`)
 6. Install Playwright browsers (Chromium only for speed)
-7. Build frontend
-8. Run Playwright E2E tests in CI mode
-9. Upload Playwright report and test results as artifacts
+7. Install Encore CLI and backend dependencies
+8. Start backend service (required for E2E tests)
+9. Build frontend
+10. Run Playwright E2E tests in CI mode
+11. Stop backend service
+12. Upload backend logs, Playwright report, and test results as artifacts
+
+**Why does E2E need the backend?**
+- E2E tests validate complete user workflows including API calls
+- Tests create runs, stream events, and verify real-time updates
+- Backend provides health endpoint for readiness checks
+- True integration testing requires full stack
 
 **Optimizations:**
 - Chromium-only testing (faster than all browsers)
 - Browser caching for subsequent runs
 - Separate system deps install if cache hit
-- Path-based filtering for frontend changes only
+- Path-based filtering for frontend OR backend changes
+- Backend started in background with health check polling
 - 20-minute timeout for comprehensive E2E coverage
 
 ---
