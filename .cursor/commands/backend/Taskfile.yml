@@ -1,104 +1,67 @@
 version: '3'
 
-# Backend commands
-# Backend-specific development tasks
+# Backend database management
+# Encore maintains separate database clusters for dev (encore run) and test (encore test)
 
 tasks:
-  dev:
-    desc: "Start backend development server"
-    cmds:
-      - echo "🔧 Starting backend..."
-      - cd ../../../backend && encore run
-    silent: false
-
-  logs:
-    desc: "View backend logs"
-    cmds:
-      - tail -f ../../backend.log
-    silent: false
-
-  health:
-    desc: "Check backend health"
-    cmds:
-      - echo "❤️  Checking backend health..."
-      - curl -f http://localhost:${BACKEND_PORT:-4000}/health || echo "⚠️  Backend not responding"
-    silent: false
-
+  # Dev cluster commands (for encore run)
   db:migrate:
-    desc: "Run database migrations"
+    desc: "Run migrations on dev cluster"
     cmds:
-      - echo "🔄 Running database migrations..."
+      - echo "🔄 Running migrations on dev cluster..."
       - cd ../../../backend && encore db migrate
-      - echo "✅ Migrations complete"
+      - echo "✅ Dev cluster migrations complete"
     silent: false
 
   db:reset:
-    desc: "Reset database (DESTRUCTIVE)"
-    prompt: "This will delete all data. Continue?"
+    desc: "Reset dev cluster database (DESTRUCTIVE)"
+    prompt: "This will delete all DEV data. Continue?"
     cmds:
-      - echo "⚠️  Resetting database..."
-      - cd ../../../backend && encore db reset
-      - echo "✅ Database reset complete"
+      - echo "⚠️  Resetting dev cluster database..."
+      - cd ../../../backend && encore db reset --all
+      - echo "✅ Dev cluster database reset"
     silent: false
 
   db:shell:
-    desc: "Open database shell"
+    desc: "Open dev cluster database shell. To be used along side encore run."
     cmds:
-      - cd ../../../backend && encore db shell run --write
+      - echo "🗄️  Opening dev cluster shell..."
+      - cd ../../../backend && encore db shell db --write
     silent: false
 
-  test:
-    desc: "Run backend tests"
+  # Test cluster commands (for encore test)
+  db:migrate:test:
+    desc: "Run migrations on test cluster"
     cmds:
-      - echo "🧪 Running backend tests..."
-      - cd ../../../backend && encore test
+      - echo "🔄 Running migrations on test cluster..."
+      - cd ../../../backend && encore db migrate --test
+      - echo "✅ Test cluster migrations complete"
     silent: false
 
-  integration:metrics:
-    desc: "Verify metrics via full agent run (requires backend + Appium harness)"
+  db:reset:test:
+    desc: "Reset test cluster database (DESTRUCTIVE)"
     cmds:
-      - echo "Validating prerequisites for metrics integration test..."
-      - echo "Phase 1 - Health Checks (backend-debugging_skill)"
-      - >
-        if ! command -v adb >/dev/null 2>&1; then
-          echo "❌ adb not found. Install Android platform tools."; exit 1;
-        fi
-      - >
-        if ! adb devices | grep -E "device$" | grep -v "^List" >/dev/null 2>&1; then
-          echo "❌ No Android device/emulator detected via 'adb devices'."; exit 1;
-        else
-          echo "✅ Android device detected.";
-        fi
-      - >
-        APPIUM_URL=${VITE_APPIUM_SERVER_URL:-http://127.0.0.1:4723/};
-        echo "📡 Checking Appium server at $APPIUM_URL ...";
-        if curl -sf "$APPIUM_URL/status" >/dev/null 2>&1 || curl -sf "$APPIUM_URL/wd/hub/status" >/dev/null 2>&1; then
-          echo "✅ Appium server already running.";
-        else
-          echo "⚡ Appium not running. Starting via dev-android-appium.sh...";
-          (cd ../../../backend && bash scripts/dev-android-appium.sh) || {
-            echo "❌ Failed to start Appium. Check logs at \$TMPDIR/appium.log";
-            exit 1;
-          };
-        fi
-      - echo "Phase 2 - Skipping Backend Health Check"
-      - >
-        echo "ℹ️  Backend health check skipped - test runs in isolated encore test runtime";
-        echo "ℹ️  Worker subscription will be loaded via import in test file";
-        echo "ℹ️  Use Encore MCP tools to inspect test results after run";
-      - echo "Phase 3 - Running Integration Test"
-      - >
-        echo "📝 Prerequisites:";
-        echo "   ✅ Appium Inspector running manually";
-        echo "   ✅ Android Studio emulator running manually";
-        echo "   ✅ App installed from .env (VITE_PACKAGE_NAME)";
-        echo "";
-        echo "🔍 Debugging with Encore MCP:";
-        echo "   After test runs, use Encore MCP tools to inspect:";
-        echo "   - mcp_encore-mcp_get_services (service status)";
-        echo "   - mcp_encore-mcp_get_traces (recent traces)";
-        echo "   - mcp_encore-mcp_query_database (run details)";
-        echo "";
-      - echo "🚀 Starting metrics test (encore test with worker subscription loaded)..."
-      - cd ../../../backend && encore test agent/tests/metrics.test.ts
+      - echo "⚠️  Resetting test cluster database..."
+      - cd ../../../backend && encore db reset --all --test
+      - echo "✅ Test cluster database reset"
+    silent: false
+
+  db:shell:test:
+    desc: "Open test cluster database shell. To be used when debugging backend tests."
+    cmds:
+      - echo "🗄️  Opening test cluster shell..."
+      - cd ../../../backend && encore db shell db --test --write
+    silent: false
+
+  # Utility commands
+  db:status:
+    desc: "Show database connection info for both clusters"
+    cmds:
+      - echo "📊 Database Status"
+      - echo ""
+      - echo "Dev Cluster (encore run):"
+      - cd ../../../backend && encore db conn-uri db 2>&1 || echo "  ⚠️  Dev cluster not available"
+      - echo ""
+      - echo "Test Cluster (encore test):"
+      - cd ../../../backend && encore db conn-uri db --test 2>&1 || echo "  ⚠️  Test cluster not available"
     silent: false
