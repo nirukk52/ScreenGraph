@@ -69,9 +69,8 @@ export default defineConfig({
   ],
 
   // Auto-start frontend if not running (optional)
-  // Note: Uses vite directly without --strictPort to allow reusing existing server
   webServer: {
-    command: "FRONTEND_PORT=${FRONTEND_PORT:-5173} vite dev --port ${FRONTEND_PORT:-5173}",
+    command: "bun run dev",
     url: FRONTEND_URL,
     reuseExistingServer: true,
     timeout: 120_000,
