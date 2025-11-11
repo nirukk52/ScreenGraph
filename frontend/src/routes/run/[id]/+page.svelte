@@ -166,11 +166,15 @@ async function handleCancel() {
 	</div>
 	
 	<!-- Run Events List -->
-	<div class="card p-6">
+	<div class="card p-6" data-testid="run-events">
 		<h2 class="h2 mb-4">Run Events ({events.length})</h2>
 		<div class="space-y-4" use:autoAnimate>
 			{#each events.slice().reverse() as event}
-				<div class="card variant-ghost p-4">
+				<div
+					class="card variant-ghost p-4"
+					data-event-kind={event.kind}
+					data-event-seq={event.seq}
+				>
 					<div class="flex justify-between items-start mb-2">
 						<span class="chip variant-soft">{event.kind}</span>
 						<span class="badge variant-filled">#{event.seq}</span>
