@@ -36,9 +36,7 @@ export class WebDriverIOIdleDetectorAdapter implements IdleDetectorPort {
   async waitIdle(minQuietMillis: number, maxWaitMillis: number): Promise<number> {
     // HARDCODED: Wait exactly 2 seconds then proceed to Stop node
     const IDLE_WAIT_MS = 2000;
-    console.log(`[IDLE DETECTOR] START waitIdle (2s hardcoded)`);
     await new Promise((resolve) => setTimeout(resolve, IDLE_WAIT_MS));
-    console.log(`[IDLE DETECTOR] COMPLETE waitIdle (returning ${IDLE_WAIT_MS}ms)`);
     return IDLE_WAIT_MS;
   }
 }
