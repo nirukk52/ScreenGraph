@@ -15,7 +15,7 @@
         "@statelyai/inspect": "^0.4.0",
         "@types/webdriverio": "^5.0.0",
         "dotenv": "^17.2.3",
-        "encore.dev": "^1.50.6",
+        "encore.dev": "1.51.6",
         "envalid": "^8.1.1",
         "google-play-scraper": "^10.1.1",
         "ulidx": "^2.4.1",
@@ -939,7 +939,7 @@
 
     "encoding-sniffer": ["encoding-sniffer@0.2.1", "", { "dependencies": { "iconv-lite": "^0.6.3", "whatwg-encoding": "^3.1.1" } }, "sha512-5gvq20T6vfpekVtqrYQsSCFZ1wEg5+wW0/QaZMWkFr6BqD3NfKs0rLCx4rrVlSWJeZb5NBJgVLswK/w2MWU+Gw=="],
 
-    "encore.dev": ["encore.dev@1.51.5", "", {}, "sha512-i4E558QvBeXWdQ3FNnHtf48qLnNWCMJDRbn5lzJmKhgXXZ5AmoAj/KZMHecwRuA+khQGb6UcR7Iqf2JJvnJGcA=="],
+    "encore.dev": ["encore.dev@1.51.6", "", {}, "sha512-Y+roP9N5gN6ft0q06HsKVrUqLvGPI+LKRubC0Nvq2cqTlZk8u6Omh/wIHavomgZJlmkiBBf+pXm4DWEsu/Z3Nw=="],
 
     "end-of-stream": ["end-of-stream@1.4.5", "", { "dependencies": { "once": "^1.4.0" } }, "sha512-ooEGc6HP26xXq/N+GCGOT0JKCLDGrq2bQUZrQ7gyrJiZANJ/8YDTxTpQBXGMn+WbIQXNVpyWymm7KYVICQnyOg=="],
 

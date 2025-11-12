@@ -1,8 +1,0 @@
-#!/bin/bash
-# Worktree isolation check (deprecated)
-
-cat <<'MSG'
-ℹ️ Worktree verification is no longer required.
-- All development uses the shared .env ports (backend 4000, frontend 5173, dashboard 9400, appium 4723).
-- Worktrees are for writing code only; run smoke tests on main via `bun run qa:smoke`.
-MSG

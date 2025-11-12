@@ -1,1 +1,0 @@
-Identify the bug (Jira docs, Graphiti, docs notes); capture acceptance criteria and suspected surface area.

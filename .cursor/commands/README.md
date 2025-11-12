@@ -1,69 +1,29 @@
 # Cursor Commands
 
-Quick reference for `.cursor/commands/` - all commands are executable scripts.
+Quick reference for automation kept in `.cursor/commands/`. Execute scripts from the repo root; Task namespaces live under the subdirectories here.
 
 ---
 
-## Item Handoff Commands (NEW)
+## Service Automation
 
-### `update-handoff [ITEM-ID]`
-Update handoff for FR/BUG/TD/CHORE item. Interactive prompts.
-```bash
-update-handoff FR-015
-```
-
-### `quick-update-handoff [ITEM-ID]`
-Fast handoff (30s). Auto-detects item from git branch/files.
-```bash
-quick-update-handoff        # Auto-detect
-quick-update-handoff FR-015 # Explicit
-```
-
-### `update-status [ITEM-ID]`
-Update status.md timestamp (< 5s).
-```bash
-update-status FR-015
-```
-
-### `update-main [ITEM-ID] [note]`
-Append note to main.md (< 5s).
-```bash
-update-main FR-015 "Added API endpoint"
-```
+- `start-services` — Start both backend and frontend with the Turborepo harness.
+- `stop-services` — Stop all running services.
 
 ---
 
-## Item Creation
+## Testing & Drift Verification
 
-- `create-feature-doc` - Create FR-XXX
-- `create-bug-doc` - Create BUG-XXX
-- `create-tech-debt-doc` - Create TD-XXX
-- `create-chore` - Create CHORE-XXX (NEW)
+- `run-default-test` — Guided Playwright flow for the default drift detection run.
+- `qa/Taskfile.yml` — Invoke with `cd .cursor && task qa:<command>` for smoke tests, linting, and E2E suites.
 
 ---
 
-## Validation
+## Maintenance
 
-### `validate-docs`
-Check all items for required files and line limits.
-```bash
-validate-docs
-```
+- `update-skills.md` — Procedure for keeping vibes and Claude skills current.
+- `shared/Taskfile.yml` & `ops/Taskfile.yml` — Environment helpers (`task shared:*`, `task ops:*`).
+- `verify-worktree-isolation` — Legacy check kept for reference; runs only if explicitly invoked.
 
 ---
 
-## Service Commands
-
-- `start-services` - Start backend + frontend
-- `stop-services` - Stop all services
-
----
-
-## Archived
-
-Old commands moved to `archive/`:
-- `verify-worktree-isolation` (deprecated)
-
----
-
-**Last Updated:** 2025-11-07
+**Last Updated:** 2025-11-12

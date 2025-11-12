@@ -1,7 +1,7 @@
 <script lang="ts">
 import { cn } from "$lib/utils.js";
-import type { HTMLButtonAttributes } from "svelte/elements";
 import type { Snippet } from "svelte";
+import type { HTMLButtonAttributes } from "svelte/elements";
 
 /** Button component with multiple variants for ultimate vibe coding */
 const BASE_CLASS =
@@ -11,7 +11,8 @@ const BASE_CLASS =
 const VARIANT_CLASS_MAP = {
   default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
   destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-  outline: "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
+  outline:
+    "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
   secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
   ghost: "hover:bg-accent hover:text-accent-foreground",
   link: "text-primary underline-offset-4 hover:underline",
@@ -44,7 +45,7 @@ let {
 
 /** Combines base, variant, and size classes to style the button element. */
 const computedClass = $derived(
-  cn(BASE_CLASS, VARIANT_CLASS_MAP[variant], SIZE_CLASS_MAP[size], className ?? "")
+  cn(BASE_CLASS, VARIANT_CLASS_MAP[variant], SIZE_CLASS_MAP[size], className ?? ""),
 );
 </script>
 

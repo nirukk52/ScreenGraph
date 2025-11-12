@@ -114,12 +114,12 @@
     },
     {
       "skill": "frontend-development",
-      "when": "Comprehensive Svelte 5 + SvelteKit development guide",
+      "when": "Svelte 5 + Skeleton development workflow with progressive disclosure references",
       "type": "knowledge"
     },
     {
-      "skill": "webapp-testing",
-      "when": "Playwright testing strategies for ScreenGraph",
+      "skill": "e2e-testing",
+      "when": "Playwright-first end-to-end testing strategies for ScreenGraph UI flows",
       "type": "knowledge"
     }
   ],

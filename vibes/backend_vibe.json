@@ -90,8 +90,8 @@
       "type": "knowledge"
     },
     {
-      "skill": "backend-testing",
-      "when": "API testing with Encore MCP - write tests, validate contracts, debug with traces",
+      "skill": "backend-development",
+      "when": "Encore.ts development patterns covering testing, polling, and database verification",
       "type": "knowledge"
     }
   ],

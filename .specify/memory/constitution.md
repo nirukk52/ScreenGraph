@@ -13,7 +13,7 @@
 **Every work item starts in `.specify/specs/`; code implements the spec.**
 
 All work (bugs, features, tech debt) follows the same pattern:
-1. Create folder: `.specify/specs/{bugs|features|tech-debt}/NAME/`
+1. Create folder: `.specify/specs/{bugs|features|tech-debt|chore}/NAME/`
 2. Write `spec.md` — WHAT we're solving (problem, acceptance criteria)
 3. Write `plan.md` — HOW we'll solve it (architecture, approach)
 4. Write `tasks.md` — STEPS to implement (checklist)
@@ -128,7 +128,7 @@ logger.error("device failed", { err: error.message, deviceId });
 
 ### 1. Specification Phase
 
-**Location:** `.specify/specs/{bugs|features|tech-debt}/`
+**Location:** `.specify/specs/{bugs|features|tech-debt|chore}/`
 
 1. Create folder with descriptive name
 2. Write `spec.md` (problem, scope, acceptance criteria)

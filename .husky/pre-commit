@@ -14,7 +14,4 @@ echo "🛠️ Running comprehensive QA checks..."
 echo "📋 Validating founder rules..."
 (cd .cursor && task qa:rules:check) || exit 1
 
-# Cursor docs validation (informational, won't block commit)
-node automation/scripts/validate-cursor-docs.mjs || echo "⚠️  Cursor docs validation failed (non-blocking)"
-
 

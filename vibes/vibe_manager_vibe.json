@@ -226,7 +226,7 @@
           "Test suites (unit, E2E, smoke)",
           "QA Task commands (qa:*)",
           "Testing MCP tools: playwright, encore-mcp (for API testing)",
-          "Testing skills: webapp-testing, backend-testing",
+          "Testing skills: e2e-testing, backend-development",
           "Test documentation and procedures"
         ],
         "does_not_touch": "Service implementation code, vibe definitions"
@@ -298,12 +298,15 @@
         "count": "19+ specialized skills",
         "examples": [
           "backend-debugging_skill - 10-phase Encore.ts debugging",
+          "backend-development_skill - Encore.ts development + testing patterns",
           "frontend-debugging_skill - 10-phase SvelteKit debugging",
-          "webapp-testing_skill - Playwright-first testing playbook",
+          "frontend-development_skill - Svelte 5 + Skeleton development workflow",
+          "e2e-testing_skill - Playwright-first end-to-end testing playbook",
           "mcp-builder_skill - 4-phase MCP server creation",
           "skill-creator_skill - Create new skills workflow"
         ],
-        "ownership": "Assigned to vibes via claude_skills field"
+        "ownership": "Assigned to vibes via claude_skills field",
+        "progressive_disclosure": "Keep SKILL.md lean (<300 lines) and move detailed docs/scripts/assets into references/, scripts/, and assets/ directories per skill-creator guidelines"
       }
     },
     "naming_conventions": {
@@ -364,14 +367,14 @@
       "8. Verify links and cross-references work"
     ],
     "update_skills_and_vibes": [
-      "1. Use .cursor/commands/update-skills.md as primary guide",
-      "2. Phase 1: Search Graphiti for recent skill/vibe decisions and struggles",
-      "3. Phase 2: Fetch updated docs via context7 MCP (resolve-library-id → get-library-docs)",
-      "4. Phase 3: Update skills following skill-creator_skill/SKILL.md best practices",
-      "5. Phase 4: Update vibes' mcp_tools, documentation, claude_skills, task_commands fields",
-      "6. Phase 5: Synchronize root documentation (vibes/README.md, .claude-skills/README.md, CLAUDE.md)",
-      "7. Phase 6: Test updated skills/vibes, validate with founder:rules:check",
-      "8. Phase 7: Document update decisions in Graphiti (add_episode with library versions, pattern changes, insights)"
+      "1. Load vibe_manager_vibe and use context7 MCP to gather latest library updates",
+      "2. Search Graphiti for recent skill/vibe decisions and documented struggles",
+      "3. Follow skill-creator_skill/SKILL.md (Step 4 onward) to plan edits and iterate",
+      "4. Move detailed content into references/ directories to maintain progressive disclosure",
+      "5. Update vibes' mcp_tools, documentation, claude_skills, and task_commands fields to match skill changes",
+      "6. Synchronize root documentation (vibes/README.md, .claude-skills/README.md, CLAUDE.md)",
+      "7. Test updated skills/vibes, run task founder:rules:check, and verify Cursor loads updated skills",
+      "8. Document update decisions in Graphiti (include library versions, pattern changes, and new references)"
     ]
   },
   "common_pitfalls": [

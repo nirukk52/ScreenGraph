@@ -8,7 +8,7 @@
     "@statelyai/inspect": "^0.4.0",
     "@types/webdriverio": "^5.0.0",
     "dotenv": "^17.2.3",
-    "encore.dev": "^1.50.6",
+    "encore.dev": "1.51.6",
     "envalid": "^8.1.1",
     "google-play-scraper": "^10.1.1",
     "ulidx": "^2.4.1",
