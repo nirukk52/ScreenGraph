@@ -33,7 +33,7 @@ import {
 } from "lucide-svelte";
 
 /** Show Slack notification preview */
-let showSlackPreview = $state(false);
+const showSlackPreview = $state(false);
 
 /** Timeline scrubber position (0-10) */
 const timelinePosition = $state(0);
