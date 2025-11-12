@@ -11,12 +11,26 @@
       "when_to_use": [
         "Capture vibe design decisions",
         "Document skill organization patterns",
-        "Record MCP tool configurations and why they're assigned to specific vibes"
+        "Record MCP tool configurations and why they're assigned to specific vibes",
+        "Search for existing skill/vibe improvement opportunities"
       ],
       "key_operations": [
         "graphiti.add_entity (new vibe/skill/MCP server)",
         "graphiti.add_episode (vibe refactoring decisions)",
         "graphiti.search (find existing organizational patterns)"
+      ]
+    },
+    {
+      "name": "context7",
+      "purpose": "Fetch up-to-date library documentation for skill/vibe updates",
+      "when_to_use": [
+        "Update skills after library version changes",
+        "Verify current API patterns for documentation",
+        "Refresh skill knowledge with latest best practices"
+      ],
+      "key_operations": [
+        "mcp_context7_resolve-library-id (libraryName: 'encore'|'@sveltejs/kit'|'svelte'|'playwright')",
+        "mcp_context7_get-library-docs (context7CompatibleLibraryID, topic, tokens)"
       ]
     },
     {
@@ -237,7 +251,10 @@
           "Root documentation (CLAUDE.md, README.md, etc.)",
           "Founder rules (.cursor/rules/)",
           "Task command organization (.cursor/commands/)",
-          "Ensure vibes/skills/MCPs are correctly organized"
+          "Ensure vibes/skills/MCPs are correctly organized",
+          "Keep skills/vibes current via context7 MCP (fetch latest library docs)",
+          "Document skill/vibe decisions in Graphiti",
+          "Follow skill-creator patterns for updates"
         ],
         "does_not_touch": "Service implementation code (backend/frontend/)"
       }
@@ -250,7 +267,7 @@
       "Domain-specific tools assigned to the vibe that uses them most",
       "Testing tools can be shared (playwright in both qa_vibe and frontend_vibe)",
       "Infrastructure tools (github, vercel) assigned to infra_vibe",
-      "Meta tools (graphiti for org decisions) used by vibe_manager_vibe"
+      "Meta tools (graphiti for org decisions, context7 for skill/vibe updates) used by vibe_manager_vibe"
     ],
     "registry": {
       "base_vibe": ["graphiti", "context7", "sequential-thinking"],
@@ -258,7 +275,7 @@
       "frontend_vibe": ["playwright", "svelte", "figma", "vercel"],
       "qa_vibe": ["playwright", "encore-mcp", "github"],
       "infra_vibe": ["github", "vercel"],
-      "vibe_manager_vibe": ["graphiti", "github"]
+      "vibe_manager_vibe": ["graphiti", "context7", "github"]
     }
   },
   "skill_organization_strategy": {
@@ -345,6 +362,16 @@
       "6. Keep all docs synchronized with actual capabilities",
       "7. Surgical edits only (per founder rules)",
       "8. Verify links and cross-references work"
+    ],
+    "update_skills_and_vibes": [
+      "1. Use .cursor/commands/update-skills.md as primary guide",
+      "2. Phase 1: Search Graphiti for recent skill/vibe decisions and struggles",
+      "3. Phase 2: Fetch updated docs via context7 MCP (resolve-library-id → get-library-docs)",
+      "4. Phase 3: Update skills following skill-creator_skill/SKILL.md best practices",
+      "5. Phase 4: Update vibes' mcp_tools, documentation, claude_skills, task_commands fields",
+      "6. Phase 5: Synchronize root documentation (vibes/README.md, .claude-skills/README.md, CLAUDE.md)",
+      "7. Phase 6: Test updated skills/vibes, validate with founder:rules:check",
+      "8. Phase 7: Document update decisions in Graphiti (add_episode with library versions, pattern changes, insights)"
     ]
   },
   "common_pitfalls": [
@@ -359,7 +386,11 @@
     "❌ Forgetting to update vibes when adding new Task commands or skills",
     "✅ Keep vibes synchronized with actual automation capabilities",
     "❌ Creating root documentation that duplicates .cursor/rules/ content",
-    "✅ CLAUDE.md for quick reference, founder_rules.mdc for detailed standards"
+    "✅ CLAUDE.md for quick reference, founder_rules.mdc for detailed standards",
+    "❌ Letting skills get outdated after library upgrades",
+    "✅ Use context7 MCP to fetch latest docs, update skills following skill-creator patterns",
+    "❌ Guessing at skill improvements without checking Graphiti for existing patterns",
+    "✅ Always search Graphiti first for skill/vibe decisions and documented struggles"
   ],
   "quality_checklist": {
     "after_vibe_changes": [
@@ -385,6 +416,18 @@
       "✓ Tool purpose and key_operations documented in vibe",
       "✓ vibes/README.md reflects MCP tool assignments",
       "✓ Tool tested in vibe context"
+    ],
+    "after_skill_vibe_updates": [
+      "✓ Used Graphiti to search for existing patterns before updating",
+      "✓ Fetched latest library docs via context7 MCP",
+      "✓ Updated skills following skill-creator_skill/SKILL.md guidelines",
+      "✓ SKILL.md uses imperative/infinitive form (not second person)",
+      "✓ Detailed content moved to references/ (keep SKILL.md lean)",
+      "✓ Vibes' mcp_tools reflect current capabilities",
+      "✓ Vibes' task_commands match actual Taskfile commands",
+      "✓ Root docs synchronized (vibes/README.md, .claude-skills/README.md)",
+      "✓ Updated skills tested on real tasks",
+      "✓ Update decisions documented in Graphiti (add_episode)"
     ]
   }
 }

@@ -122,5 +122,4 @@ Common causes:
     expect(screenshotEventPayload).toContain("refId");
     expect(screenshotEventPayload).toMatch(/screenshot\/.+\.png/);
   });
-
 });

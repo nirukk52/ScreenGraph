@@ -33,7 +33,7 @@ import {
 let activeStep = $state(0);
 
 /** Show comparison view on impact page */
-const showComparison = $state(false);
+let showComparison = $state(false);
 
 /** Journey steps configuration */
 const steps = [
