@@ -18,7 +18,7 @@ Usage:
 const inputId = `retro-input-${Math.random().toString(36).substring(2, 9)}`;
 
 /** Input label text */
-const {
+let {
   label = undefined,
   /** Input type */
   type = "text",
@@ -58,9 +58,12 @@ const {
 		{type}
 		{placeholder}
 		{required}
-		bind:value
+		{value}
+		oninput={(e) => {
+			value = e.currentTarget.value;
+			oninput?.(e);
+		}}
 		{onchange}
-		{oninput}
 		class="w-full px-4 py-3 bg-white retro-shadow rounded-xl text-[var(--color-charcoal)] placeholder:text-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-charcoal)] focus:ring-offset-2 transition-all"
 	/>
 </div>

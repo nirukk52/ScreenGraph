@@ -31,6 +31,10 @@ function isActive(path: string): boolean {
 }
 </script>
 
+<svelte:head>
+  <title>ScreenGraph</title>
+</svelte:head>
+
 <!-- App Header with Skeleton v3 -->
 <header class="bg-surface-100-900-token border-b border-surface-300-700-token">
   <div class="container mx-auto flex h-14 items-center px-4">
