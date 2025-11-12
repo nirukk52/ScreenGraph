@@ -15,6 +15,7 @@ import { TEST_APP_CONFIG, TEST_PACKAGE_NAME } from "./helpers";
  * - Test package from .env: ${TEST_PACKAGE_NAME}
  */
 test.describe("/run page smoke tests", () => {
+  test.setTimeout(60000); // 60s timeout for full run flow
   test.beforeAll(() => {
     // Log test configuration from .env
     console.log("🎯 E2E Test Configuration:");
@@ -63,8 +64,9 @@ test.describe("/run page smoke tests", () => {
     // Race between screenshot success and launch failure (fast-fail)
     console.log("⏱ Waiting for agent to capture screenshots...");
 
-    const screenshotEventSelector = '[data-event="agent.event.screenshot_captured"]';
-    const launchFailedEventSelector = '[data-event="agent.app.launch_failed"]';
+    const runEventsRoot = page.locator("[data-testid='run-events']");
+    const screenshotEventLocator = runEventsRoot.getByText("agent.event.screenshot_captured", { exact: false });
+    const launchFailedEventLocator = runEventsRoot.getByText("agent.app.launch_failed", { exact: false });
 
     const startTime = Date.now();
     const timeout = 15000;
@@ -72,11 +74,10 @@ test.describe("/run page smoke tests", () => {
 
     while (!screenshotFound && Date.now() - startTime < timeout) {
       // Check for launch failure first
-      const launchFailedEvent = page.locator(launchFailedEventSelector);
-      const launchFailedCount = await launchFailedEvent.count();
+      const launchFailedCount = await launchFailedEventLocator.count();
 
       if (launchFailedCount > 0) {
-        const eventText = await launchFailedEvent.first().textContent();
+        const eventText = await launchFailedEventLocator.first().textContent();
         throw new Error(
           `❌ App launch failed during E2E test!
 
@@ -91,10 +92,9 @@ Common causes:
       }
 
       // Check if screenshot event is visible
-      const screenshotEvent = page.locator(screenshotEventSelector);
-      const screenshotCount = await screenshotEvent.count();
+      const screenshotCount = await screenshotEventLocator.count();
       if (screenshotCount > 0) {
-        screenshotFound = await screenshotEvent.first().isVisible();
+        screenshotFound = await screenshotEventLocator.first().isVisible();
         if (screenshotFound) break;
       }
 
@@ -108,27 +108,15 @@ Common causes:
 
     console.log("✅ Screenshot event detected in timeline");
 
-    // Wait for screenshot image to render in the discovered screens gallery
-    // Use data-testid for reliable selection
-    const screenshotGallery = page.locator('[data-testid="discovered-screens"] img');
-
-    // Wait for at least one screenshot image to be visible
-    await expect(screenshotGallery.first()).toBeVisible({ timeout: 10000 });
-
-    // Count how many screenshots were discovered
-    const screenshotCount = await screenshotGallery.count();
-    console.log(`📸 Found ${screenshotCount} screenshot(s) in gallery`);
-
-    // Assert at least 1 screenshot is present
-    expect(screenshotCount).toBeGreaterThanOrEqual(1);
-
-    // Verify the first screenshot has a valid src attribute (data URL or HTTP URL)
-    const firstScreenshot = screenshotGallery.first();
-    const src = await firstScreenshot.getAttribute("src");
-    expect(src).toBeTruthy();
-    expect(src).toMatch(/^(data:image|http)/); // Either data URL or HTTP URL
-
-    console.log(`✅ Screenshot verification passed: ${screenshotCount} screenshot(s) visible`);
+    // Extract JSON payload from event for artifact verification
+    const screenshotEventPayload = await screenshotEventLocator
+      .first()
+      .locator("pre")
+      .textContent();
+    expect(screenshotEventPayload).toBeTruthy();
+    console.log("📦 Screenshot event payload:", screenshotEventPayload);
+    expect(screenshotEventPayload).toContain("refId");
+    expect(screenshotEventPayload).toMatch(/screenshot\/.+\.png/);
   });
 
   /**

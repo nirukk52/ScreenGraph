@@ -35,11 +35,10 @@ task founder:workflows:regen-client
 ```
 
 ### Phase 4: Svelte 5 Runes
-- Check proper rune usage
-- $state for reactive state
-- $derived for computed values
-- $effect for side effects
-- $props for component props
+- Check proper rune usage **and declaration**
+- `$state`, `$derived`, `$bindable`, `$props` that you mutate must use `let` (never `const`)
+- `$bindable` requires `{value}` with `oninput` instead of `bind:value`
+- `$effect` for side effects only (no async return)
 
 ### Phase 5: Routing
 - Verify +page.svelte structure
@@ -74,10 +73,24 @@ task frontend:build
 
 ## Common Issues
 
+### Rune Const vs Let (Critical 2025-11-12)
+- **Symptom**: Browser shows Vite overlay `[plugin:vite-plugin-svelte] Cannot assign/bind to constant` and Playwright screenshots display the 500 Internal Error page.
+- **Fix workflow**:
+  1. Search `src/lib` and `src/routes` for `const .* $state`, `const .* $bindable`, `const { .* = $props`.
+  2. Replace with `let` if the value is mutated or bound.
+  3. Restart `bun run dev` to clear cached overlay.
+  4. Re-run `grep -R "\\$state" src | grep 'const'` to confirm there are no remaining matches.
+- **Remember**: `$bindable` inputs must use `{value}` + `oninput={(e) => value = e.currentTarget.value}` (no `bind:value`).
+
 ### Rune Misuse
 - Can't use runes in `.ts` files (only `.svelte`)
 - Must be top-level declarations
 - No conditional runes
+
+### Fast-Fail Signals
+- Landing page sticks at `page.waitForURL` → backend `startRun` likely failed (check backend logs, ensure Appium/device online).
+- Timeline shows `agent.app.launch_failed` → Appium/device misconfiguration (fails in ~2s with detailed payload).
+- Backend integration test `encore test run/start.integration.test.ts` must pass before Playwright has a chance to render screenshots.
 
 ### API Type Errors
 - Regenerate client after backend changes

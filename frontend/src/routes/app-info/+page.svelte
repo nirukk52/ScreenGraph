@@ -11,7 +11,7 @@ const appInfo = data.appInfo;
 const error = data.error;
 
 /** Track failed image loads for error handling */
-const failedImages = $state<Set<string>>(new Set());
+let failedImages = $state<Set<string>>(new Set());
 
 /** Handle image load errors */
 function handleImageError(event: Event) {
