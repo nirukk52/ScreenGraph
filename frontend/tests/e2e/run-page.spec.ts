@@ -65,8 +65,12 @@ test.describe("/run page smoke tests", () => {
     console.log("⏱ Waiting for agent to capture screenshots...");
 
     const runEventsRoot = page.locator("[data-testid='run-events']");
-    const screenshotEventLocator = runEventsRoot.getByText("agent.event.screenshot_captured", { exact: false });
-    const launchFailedEventLocator = runEventsRoot.getByText("agent.app.launch_failed", { exact: false });
+    const screenshotEventLocator = runEventsRoot.getByText("agent.event.screenshot_captured", {
+      exact: false,
+    });
+    const launchFailedEventLocator = runEventsRoot.getByText("agent.app.launch_failed", {
+      exact: false,
+    });
 
     const startTime = Date.now();
     const timeout = 15000;
