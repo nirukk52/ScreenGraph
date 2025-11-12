@@ -18,7 +18,7 @@ Usage:
 const inputId = `retro-input-${Math.random().toString(36).substring(2, 9)}`;
 
 /** Input label text */
-let {
+const {
   label = undefined,
   /** Input type */
   type = "text",

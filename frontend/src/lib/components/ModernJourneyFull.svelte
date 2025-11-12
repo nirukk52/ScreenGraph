@@ -36,7 +36,7 @@ import {
 let showSlackPreview = $state(false);
 
 /** Timeline scrubber position (0-10) */
-let timelinePosition = $state(0);
+const timelinePosition = $state(0);
 
 /** Calculated confidence based on timeline */
 const confidence = $derived(75 + timelinePosition * 2);
