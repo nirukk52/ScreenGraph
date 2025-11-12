@@ -4,12 +4,17 @@
 
 # Auto-fix linting and formatting
 echo "🔧 Auto-fixing code quality issues..."
-cd .cursor && task qa:fix
+(cd .cursor && task qa:fix) || exit 1
+
+# Run the full QA suite (linting, testing, etc.)
+echo "🛠️ Running comprehensive QA checks..."
+(cd .cursor && task qa:all) || exit 1
 
 # Validate founder rules
 echo "📋 Validating founder rules..."
-cd .cursor && task qa:rules:check
+(cd .cursor && task qa:rules:check) || exit 1
 
 # Cursor docs validation (informational, won't block commit)
-cd .. && node automation/scripts/validate-cursor-docs.mjs || echo "⚠️  Cursor docs validation failed (non-blocking)"
+node automation/scripts/validate-cursor-docs.mjs || echo "⚠️  Cursor docs validation failed (non-blocking)"
+
 

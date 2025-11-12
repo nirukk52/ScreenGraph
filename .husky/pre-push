@@ -1,8 +1,7 @@
 #!/bin/sh
 # Husky pre-push hook
 # 1. Cleanup root documentation (vibe_manager_vibe responsibility)
-# 2. Run smoke tests
-# 3. Run E2E tests
+# 2. Run auto-fix and comprehensive QA suite
 
 echo "🧹 Vibe Manager: Cleaning up root documentation..."
 echo ""
@@ -11,18 +10,14 @@ echo ""
 node automation/scripts/cleanup-root-docs.mjs || echo "⚠️  Cleanup had warnings (non-blocking)"
 
 echo ""
-echo "🧪 Running smoke tests before push (bun run qa:smoke)..."
+echo "🔧 Auto-fixing code quality issues before push..."
 echo ""
-
-# Single entry point ensures Turborepo + Taskfile stay in sync
-bun run qa:smoke || exit 1
+(cd .cursor && task qa:fix) || exit 1
 
 echo ""
-echo "🎭 Running E2E tests before push (bun run test:e2e:ci)..."
+echo "🛠️ Running comprehensive QA checks before push..."
 echo ""
-
-# Run E2E tests in headless CI mode
-bun run test:e2e:ci || exit 1
+(cd .cursor && task qa:all) || exit 1
 
 echo ""
 echo "✅ All checks passed - proceeding with push"
