@@ -231,7 +231,7 @@ function setActiveTab(tab: "journey" | "components") {
 							<RetroBadge variant="sky">Product Analytics</RetroBadge>
 							<RetroBadge variant="tan">Beta Access</RetroBadge>
 							<RetroBadge variant="pink">New Feature</RetroBadge>
-							<RetroBadge variant="white">Default</RetroBadge>
+							<RetroBadge variant="gray">Default</RetroBadge>
 						</div>
 					</div>
 
