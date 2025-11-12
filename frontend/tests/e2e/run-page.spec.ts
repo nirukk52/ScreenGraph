@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { TEST_APP_CONFIG, TEST_PACKAGE_NAME } from "./helpers";
 
 /**
+ * Only updates to the exising test don't add new.
  * /run page E2E regression suite
  *
  * Verifies complete run flow:
@@ -51,7 +52,7 @@ test.describe("/run page smoke tests", () => {
     await runButton.click();
 
     // Wait for run page to load
-    await page.waitForURL(/\/run\/[a-f0-9-]+/i, {
+    await page.waitForURL(/\/run\/[A-Za-z0-9-]+/, {
       waitUntil: "domcontentloaded",
       timeout: 30000,
     });
@@ -111,6 +112,49 @@ Common causes:
     }
 
     console.log("✅ Screenshot event detected in timeline");
+
+    // Verify screenshot gallery renders captured images on screen
+    const galleryLocator = page.locator("[data-testid='discovered-screens']");
+    const galleryImageLocator = galleryLocator.locator("img").first();
+    const emptyStateLocator = page.locator("[data-testid='discovered-screens-empty']");
+
+    const galleryStartTime = Date.now();
+    const galleryTimeout = 30000;
+    let galleryReady = false;
+
+    while (!galleryReady && Date.now() - galleryStartTime < galleryTimeout) {
+      const imageCount = await galleryImageLocator.count();
+      if (imageCount > 0) {
+        galleryReady = await galleryImageLocator.isVisible();
+        if (galleryReady) {
+          break;
+        }
+      }
+      await page.waitForTimeout(500);
+    }
+
+    if (!galleryReady) {
+      const emptyStateVisible = await emptyStateLocator.isVisible().catch(() => false);
+      throw new Error(
+        `Timeout waiting for screenshot gallery to render (empty state visible: ${emptyStateVisible})`,
+      );
+    }
+
+    await galleryImageLocator.scrollIntoViewIfNeeded();
+    await expect(galleryImageLocator).toBeVisible({ timeout: 5000 });
+
+    const screenshotSrc = await galleryImageLocator.getAttribute("src");
+    if (!screenshotSrc) {
+      throw new Error("Screenshot image rendered without src attribute");
+    }
+    expect(screenshotSrc).toMatch(/^data:image\//);
+
+    const boundingBox = await galleryImageLocator.boundingBox();
+    if (!boundingBox) {
+      throw new Error("Screenshot image failed to compute bounding box");
+    }
+    expect(boundingBox.width).toBeGreaterThan(0);
+    expect(boundingBox.height).toBeGreaterThan(0);
 
     // Extract JSON payload from event for artifact verification
     const screenshotEventPayload = await screenshotEventLocator

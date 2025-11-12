@@ -1,18 +1,157 @@
 <script lang="ts">
 import { page } from "$app/state";
-import { cancelRun, streamGraphEvents, streamRunEvents } from "$lib/api";
+import { cancelRun, fetchArtifactDataUrl, streamGraphEvents, streamRunEvents } from "$lib/api";
 import ScreenGraph from "$lib/components/ScreenGraph.svelte";
 import autoAnimate from "@formkit/auto-animate";
 import { onDestroy } from "svelte";
+import type { graph, run } from "$lib/encore-client";
 
 let runId = $state("");
 let events = $state([]);
-let graphNodes = $state([]);
-let graphEvents = $state([]);
+let graphNodes = $state<graph.GraphStreamEventData[]>([]);
+let graphEvents = $state<graph.GraphStreamEvent[]>([]);
 let loading = $state(true);
 let error = $state("");
 let cleanup = $state(null);
 let graphCleanup = $state(null);
+let graphNodeMap = new Map<string, graph.GraphStreamEventData>();
+
+/**
+ * Type guard for screenshot event payloads.
+ * PURPOSE: Ensure run event data contains the fields required to fetch artifacts.
+ */
+function isScreenshotEventData(
+  data: unknown,
+): data is { refId: string; width?: number; height?: number } {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    typeof (data as Record<string, unknown>).refId === "string"
+  );
+}
+
+/**
+ * Type guard for screen perceived event payloads.
+ * PURPOSE: Allows us to enrich discovered nodes with perceptual metadata.
+ */
+function isScreenPerceivedEventData(
+  data: unknown,
+): data is { screenId: string; perceptualHash64?: string } {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    typeof (data as Record<string, unknown>).screenId === "string"
+  );
+}
+
+/**
+ * Persists graph node updates locally and triggers UI reactivity.
+ * PURPOSE: Maintain deterministic ordering and ensure Svelte updates subscribers.
+ */
+function upsertGraphNode(node: graph.GraphStreamEventData) {
+  graphNodeMap.set(node.screenId, node);
+  graphNodes = Array.from(graphNodeMap.values()).sort((a, b) => a.seqRef - b.seqRef);
+}
+
+/**
+ * Records graph events (real or synthetic) while deduplicating by sequence reference.
+ * PURPOSE: Keeps the graph event log consistent with visualized nodes.
+ */
+function recordGraphEvent(event: graph.GraphStreamEvent) {
+  const existingIndex = graphEvents.findIndex(
+    (entry) => entry.data.seqRef === event.data.seqRef && entry.type === event.type,
+  );
+
+  if (existingIndex === -1) {
+    graphEvents = [...graphEvents, event];
+    return;
+  }
+
+  graphEvents = graphEvents.map((entry, index) => (index === existingIndex ? event : entry));
+}
+
+/**
+ * Ensures a graph node contains inline screenshot data before rendering.
+ * PURPOSE: Fetches artifact data URLs on-demand when the stream omits them.
+ */
+async function ensureScreenshotData(
+  node: graph.GraphStreamEventData,
+): Promise<graph.GraphStreamEventData> {
+  const screenshot = node.screenshot;
+  if (!screenshot?.refId) {
+    return node;
+  }
+
+  if (screenshot.dataUrl) {
+    return node;
+  }
+
+  const dataUrl = await fetchArtifactDataUrl(screenshot.refId);
+  if (!dataUrl) {
+    return node;
+  }
+
+  return {
+    ...node,
+    screenshot: {
+      ...screenshot,
+      dataUrl,
+    },
+  };
+}
+
+/**
+ * Handles run stream events and hydrates graph nodes when screenshots are captured.
+ * PURPOSE: Protects UI rendering even when graph projector backfill is delayed.
+ */
+async function ingestRunEvent(event: run.RunEventMessage) {
+  if (event.kind === "agent.event.screenshot_captured" && isScreenshotEventData(event.data)) {
+    const dataUrl = await fetchArtifactDataUrl(event.data.refId);
+    if (!dataUrl) {
+      console.warn("[Run Stream] Unable to fetch screenshot content", {
+        eventSeq: event.seq,
+        refId: event.data.refId,
+      });
+      return;
+    }
+
+    const node: graph.GraphStreamEventData = {
+      runId,
+      screenId: event.data.refId,
+      layoutHash: "",
+      perceptualHash: "",
+      seqRef: event.seq,
+      ts: event.timestamp,
+      screenshot: {
+        refId: event.data.refId,
+        dataUrl,
+        width: event.data.width,
+        height: event.data.height,
+      },
+    };
+
+    upsertGraphNode(node);
+    recordGraphEvent({ type: "graph.screen.discovered", data: node });
+    return;
+  }
+
+  if (event.kind === "agent.event.screen_perceived" && isScreenPerceivedEventData(event.data)) {
+    const existing = graphNodeMap.get(event.data.screenId);
+    if (!existing) {
+      return;
+    }
+
+    const updated: graph.GraphStreamEventData = {
+      ...existing,
+      perceptualHash: event.data.perceptualHash64 ?? existing.perceptualHash,
+      seqRef: Math.max(existing.seqRef, event.seq),
+      ts: event.timestamp,
+    };
+
+    upsertGraphNode(updated);
+    recordGraphEvent({ type: "graph.screen.mapped", data: updated });
+  }
+}
 
 /**
  * Reacts to route param changes and resets component state.
@@ -40,6 +179,7 @@ $effect(() => {
   events = [];
   graphNodes = [];
   graphEvents = [];
+  graphNodeMap = new Map();
   loading = true;
   error = "";
 
@@ -62,8 +202,9 @@ onDestroy(() => {
 /** Handles subscribing to the run event stream so the timeline stays live. */
 async function startStreaming() {
   try {
-    cleanup = await streamRunEvents(runId, (event) => {
+    cleanup = await streamRunEvents(runId, async (event) => {
       events = [...events, event];
+      await ingestRunEvent(event);
       loading = false;
     });
   } catch (e) {
@@ -76,7 +217,7 @@ async function startStreaming() {
 async function startGraphStreaming() {
   try {
     console.log("[Graph Stream] Starting connection for runId:", runId);
-    graphCleanup = await streamGraphEvents(runId, (event) => {
+    graphCleanup = await streamGraphEvents(runId, async (event) => {
       console.log("[Graph Stream] Received event:", event);
 
       // Skip heartbeat events
@@ -91,19 +232,9 @@ async function startGraphStreaming() {
         seqRef: event.data.seqRef,
       });
 
-      // Add to events log
-      graphEvents = [...graphEvents, event];
-
-      // Add or update nodes
-      const existingIndex = graphNodes.findIndex((n) => n.screenId === event.data.screenId);
-      if (existingIndex === -1) {
-        console.log("[Graph Stream] Adding new node:", event.data.screenId);
-        graphNodes = [...graphNodes, event.data];
-      } else {
-        console.log("[Graph Stream] Updating existing node:", event.data.screenId);
-        // Update existing node
-        graphNodes = graphNodes.map((n, i) => (i === existingIndex ? event.data : n));
-      }
+      const hydratedData = await ensureScreenshotData(event.data);
+      upsertGraphNode(hydratedData);
+      recordGraphEvent({ ...event, data: hydratedData });
 
       console.log("[Graph Stream] Current graphNodes count:", graphNodes.length);
     });

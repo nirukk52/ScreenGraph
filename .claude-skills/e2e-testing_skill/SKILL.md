@@ -38,6 +38,7 @@ bun run test:e2e:ui
 - Total Playwright test time per spec ≤ 60 seconds (budget defined in references)
 - Failures include screenshot + console output attachments
 - Regressions traced back to backend/frontend root cause with notes in Graphiti
+- Run-flow assertions confirm both timeline events and visible screenshot gallery output
 
 ## Reference Library
 - `references/automated-tests.md` – Quick start commands, configuration, timeout policy, and pre-push integration

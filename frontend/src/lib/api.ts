@@ -15,7 +15,7 @@ export async function startRun(params: run.StartRunRequest): Promise<run.StartRu
  */
 export async function streamRunEvents(
   runId: string,
-  onEvent: (event: run.RunEventMessage) => void,
+  onEvent: (event: run.RunEventMessage) => void | Promise<void>,
 ) {
   const client = await getEncoreClient();
   const stream = await client.run.stream(runId, { lastEventSeq: 0 });
@@ -27,7 +27,7 @@ export async function streamRunEvents(
         if (!active) {
           return;
         }
-        onEvent(event);
+        await onEvent(event);
       }
     } catch (error) {
       console.error("Run stream error:", error);
@@ -53,7 +53,7 @@ export async function streamRunEvents(
  */
 export async function streamGraphEvents(
   runId: string,
-  onEvent: (event: graph.GraphStreamEvent) => void,
+  onEvent: (event: graph.GraphStreamEvent) => void | Promise<void>,
 ) {
   const client = await getEncoreClient();
 
@@ -100,7 +100,7 @@ export async function streamGraphEvents(
             return;
           }
           console.log("[Graph Stream] Received event from stream:", event);
-          onEvent(event);
+          await onEvent(event);
         }
         console.log("[Graph Stream] Stream ended (no more events)");
       } catch (error) {
@@ -133,4 +133,20 @@ export async function streamGraphEvents(
 export async function cancelRun(runId: string): Promise<run.CancelRunResponse> {
   const client = await getEncoreClient();
   return client.run.cancel(runId);
+}
+
+/**
+ * fetchArtifactDataUrl downloads artifact content and returns a browser-friendly data URL.
+ * PURPOSE: Provide frontend rendering support for screenshots stored in object storage.
+ */
+export async function fetchArtifactDataUrl(refId: string): Promise<string | null> {
+  const client = await getEncoreClient();
+
+  try {
+    const response = await client.artifacts.getArtifactContent({ refId });
+    return response.dataUrl ?? null;
+  } catch (error) {
+    console.error("Failed to fetch artifact data URL", { error, refId });
+    return null;
+  }
 }
