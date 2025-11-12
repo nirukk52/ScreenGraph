@@ -20,7 +20,7 @@ interface DebugSession {
 /**
  * Debugging sessions we've done
  */
-const sessions: DebugSession[] = $state([
+let sessions: DebugSession[] = $state([
   {
     id: "graph-stream-connection",
     title: "Graph Stream WebSocket Connection Failure",
