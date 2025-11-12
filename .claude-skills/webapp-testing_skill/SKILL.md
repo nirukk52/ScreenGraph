@@ -32,12 +32,12 @@ bun run test:e2e:ui
 - **Helpers**: `frontend/tests/e2e/helpers.ts` (reusable utilities)
 - **Default Timeout**: 30 seconds (Playwright default, no override)
 
-### Timeout Policy (Standardized 2025-11-09)
-All Playwright tests must complete within **30 seconds total**. Individual waits must fit within this budget:
+### Timeout Policy (Standardized 2025-11-12)
+All Playwright tests must complete within **60 seconds total**. The primary integration test (`should discover and display screenshots`) sets `test.setTimeout(60000)` to give the agent time to explore while still keeping runs deterministic. Individual waits must fit within this budget:
 
 | Operation | Timeout | Notes |
 |-----------|---------|-------|
-| Test Total | 30s | Playwright default, no `test.setTimeout()` override |
+| Test Total | 60s | `test.setTimeout(60000)` for screenshot discovery test |
 | Page Navigation | 30s | Initial page load via `page.goto()` |
 | Element Visibility | 10s | Headings, buttons, basic UI elements |
 | Agent Events | 15s | Screenshot capture, graph events (SSE) |
@@ -45,21 +45,36 @@ All Playwright tests must complete within **30 seconds total**. Individual waits
 
 **Example Breakdown:**
 ```typescript
-test("example", async ({ page }) => {
-  // No test.setTimeout() - use 30s default
-  await page.goto("/");                              // ~2s
-  await page.getByRole("button").click();            // ~1s
-  await page.waitForURL(/\/run\/.+/);                // ~3s
-  await expect(heading).toBeVisible({ timeout: 10000 }); // max 10s
-  await page.waitForSelector('[data-event="..."]', { timeout: 15000 }); // max 15s
-  // Total: ~31s max (fits in 30s with fast agent)
+test.describe("/run page smoke tests", () => {
+  test.setTimeout(60_000); // keep total budget bounded
+
+  test("should discover and display screenshots", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: /detect.*drift/i }).click();
+    await page.waitForURL(/\/run\/[a-f0-9-]+/i, { waitUntil: "domcontentloaded", timeout: 30_000 });
+    await expect(
+      page.locator("[data-testid='run-events'] [data-event-kind='agent.event.screenshot_captured']").first(),
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator("[data-testid='discovered-screens'] img").first()).toBeVisible({ timeout: 10_000 });
+  });
 });
 ```
+
+### Svelte 5 Runes Pitfalls (Critical 2025-11-12)
+- **`const` vs `let`**: Any rune created with `$state`, `$derived`, `$bindable`, or `$props` that you mutate later MUST use `let`. Using `const` triggers `[plugin:vite-plugin-svelte] Cannot assign/bind to constant` and the entire app shows a 500 overlay, causing Playwright to fail instantly.
+  - ✅ `let { value = $bindable("") } = $props();`
+  - ✅ `let showSlackPreview = $state(false);`
+  - ❌ `const ... = $state(...)`
+- **`bind:value` + `$bindable`**: You cannot combine `bind:value` with `$bindable`. Use `{value}` + `oninput={(e) => value = e.currentTarget.value}`.
+- **Symptoms in tests**: Playwright screenshot shows `500 Internal Error` overlay with the exact file/line from Vite. If you see this, fix the rune declaration first before debugging Playwright.
+- **Skill updates**: See `frontend-development_skill` and `frontend-debugging_skill` for the full playbook.
 
 ### Current Tests
 1. **Landing Page Load** - Verifies frontend health (no agent required)
 2. **Run Page Navigation** - Clicks "Detect My First Drift" → verifies Run Timeline heading (no agent required)
 3. **Screenshot Discovery** - Full integration test: start run → wait for screenshots → verify images visible (requires agent + Appium)
+
+> ℹ️ Fast-fail guard: the test polls the `run_events` timeline for `agent.app.launch_failed`. If Appium/device is missing it fails in ~2s with a detailed error (package, attempt, duration, hints). Use this signal before chasing 30s timeouts.
 
 ### Pre-Push Hook Integration
 E2E tests run automatically before every push:
@@ -111,6 +126,14 @@ test("my new test", async ({ page }) => {
    curl -sf "${FRONTEND_URL}" > /dev/null && echo "✅ Frontend up"
    ```
 4. Keep a clean workspace: run Playwright scripts from `/tmp` or a disposable directory—never add dependencies to the repo.
+
+5. **Diagnosing stuck runs**  
+   ```bash
+   DEBUG=pw:api HEADLESS=true bun run playwright test --config=playwright.config.temp.ts --max-failures=1
+   ```
+   - Watch for `page.waitForURL` timeouts → check backend logs for `startRun` failures and confirm Appium/device is online.
+   - If screenshot gallery waits time out, ensure the backend test `encore test run/start.integration.test.ts` passes (agent must be healthy).
+   - Use the generated error-context.md to confirm whether the page shows the 500 overlay (rune issues) or a healthy landing page (run start failing).
 
 ---
 

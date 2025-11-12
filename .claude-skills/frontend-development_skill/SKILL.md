@@ -606,6 +606,121 @@ console.log('User logged in:', user);
 - Cause: Client not regenerated after backend changes
 - Fix: `cd frontend && bun run gen`
 
+**5. "Cannot assign to constant" with $props() or $bindable()**
+- **Cause:** Using `const` instead of `let` in destructuring assignment with Svelte 5 runes
+- **Symptom:** `[plugin:vite-plugin-svelte] Cannot assign to constant https://svelte.dev/e/constant_assignment`
+- **Fix:** Use `let` for destructuring when you need to reassign values
+
+```typescript
+// ❌ WRONG - Cannot mutate const
+const {
+  value = $bindable(""),
+  items = $state([])
+} = $props();
+
+// ✅ CORRECT - Use let for mutable runes
+let {
+  value = $bindable(""),
+  items = $state([])
+} = $props();
+
+// For $bindable in components:
+let {
+  value = $bindable("")
+} = $props();
+
+// Then in template:
+<input
+  {value}
+  oninput={(e) => {
+    value = e.currentTarget.value; // This requires 'let'
+  }}
+/>
+```
+
+**6. "Cannot bind to constant" with bind: directives**
+- **Cause:** Trying to use `bind:value` with $bindable() (Svelte 5 two-way binding)
+- **Fix:** Use value + oninput pattern instead
+
+```svelte
+<!-- ❌ WRONG - Can't use bind: with $bindable -->
+<input bind:value />
+
+<!-- ✅ CORRECT - Manual two-way binding -->
+<input
+  {value}
+  oninput={(e) => {
+    value = e.currentTarget.value;
+    oninput?.(e); // Call optional handler
+  }}
+/>
+```
+
+**7. Missing page title in E2E tests**
+- **Cause:** No `<svelte:head>` with `<title>` in root layout
+- **Symptom:** Playwright tests fail with `expected page to have title`
+- **Fix:** Add title in root layout AFTER closing `</script>` tag
+
+```svelte
+<script lang="ts">
+  // ... your code
+</script>
+
+<svelte:head>
+  <title>ScreenGraph</title>
+</svelte:head>
+
+<!-- rest of layout -->
+```
+
+---
+
+## Svelte 5 Runes Critical Rules
+
+### $props() Destructuring
+
+**ALWAYS use `let` not `const`:**
+```typescript
+// ❌ BAD - causes "cannot assign to constant"
+const { value = $bindable("") } = $props();
+
+// ✅ GOOD  
+let { value = $bindable("") } = $props();
+```
+
+### $bindable() Two-Way Binding
+
+**Cannot use `bind:` directive:**
+```svelte
+<!-- ❌ BAD -->
+<script lang="ts">
+let { value = $bindable("") } = $props();
+</script>
+<input bind:value />
+
+<!-- ✅ GOOD -->
+<script lang="ts">
+let { value = $bindable("") } = $props();
+</script>
+<input
+  {value}
+  oninput={(e) => value = e.currentTarget.value}
+/>
+```
+
+### $state() Reactive Variables
+
+**Use `let` for mutable state:**
+```typescript
+// ❌ BAD
+const count = $state(0);
+count++; // Error: cannot assign
+
+// ✅ GOOD
+let count = $state(0);
+count++; // Works!
+```
+
 ---
 
 ## Quality Checklist

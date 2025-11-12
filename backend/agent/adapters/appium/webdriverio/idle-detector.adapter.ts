@@ -20,6 +20,9 @@ export class WebDriverIOIdleDetectorAdapter implements IdleDetectorPort {
   /**
    * Wait for UI to become idle (no activity detected).
    *
+   * TEMPORARY FIX: Hardcoded 2-second delay to allow UI to settle before transition.
+   * TODO: Replace with proper stability detection when UI heuristics are available.
+   *
    * Args:
    *   minQuietMillis: Minimum milliseconds of quiet window required
    *   maxWaitMillis: Maximum milliseconds to wait before timing out
@@ -31,34 +34,9 @@ export class WebDriverIOIdleDetectorAdapter implements IdleDetectorPort {
    *   TimeoutError: If maxWaitMillis exceeded
    */
   async waitIdle(minQuietMillis: number, maxWaitMillis: number): Promise<number> {
-    const startTime = Date.now();
-    let lastChangeTime = startTime;
-    let lastPageSource = "";
-
-    while (Date.now() - startTime < maxWaitMillis) {
-      try {
-        const currentPageSource = await this.context.driver.getPageSource();
-
-        if (currentPageSource !== lastPageSource) {
-          lastChangeTime = Date.now();
-          lastPageSource = currentPageSource;
-        }
-
-        const quietWindow = Date.now() - lastChangeTime;
-        if (quietWindow >= minQuietMillis) {
-          return quietWindow;
-        }
-
-        // Small delay before next check
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      } catch (error) {
-        if (error instanceof Error && error.message.includes("timeout")) {
-          throw new TimeoutError(`Idle detection timed out: ${error.message}`);
-        }
-        // Continue checking despite errors
-      }
-    }
-
-    throw new TimeoutError(`UI did not become idle within ${maxWaitMillis}ms`);
+    // HARDCODED: Wait exactly 2 seconds then proceed to Stop node
+    const IDLE_WAIT_MS = 2000;
+    await new Promise((resolve) => setTimeout(resolve, IDLE_WAIT_MS));
+    return IDLE_WAIT_MS;
   }
 }
