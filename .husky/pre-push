@@ -6,9 +6,6 @@
 echo "🧹 Vibe Manager: Cleaning up root documentation..."
 echo ""
 
-# Clean up temporary/analysis docs from root
-node automation/scripts/cleanup-root-docs.mjs || echo "⚠️  Cleanup had warnings (non-blocking)"
-
 echo ""
 echo "🔧 Auto-fixing code quality issues before push..."
 echo ""

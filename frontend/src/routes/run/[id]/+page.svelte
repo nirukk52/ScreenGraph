@@ -2,9 +2,9 @@
 import { page } from "$app/state";
 import { cancelRun, fetchArtifactDataUrl, streamGraphEvents, streamRunEvents } from "$lib/api";
 import ScreenGraph from "$lib/components/ScreenGraph.svelte";
+import type { graph, run } from "$lib/encore-client";
 import autoAnimate from "@formkit/auto-animate";
 import { onDestroy } from "svelte";
-import type { graph, run } from "$lib/encore-client";
 
 let runId = $state("");
 let events = $state([]);
