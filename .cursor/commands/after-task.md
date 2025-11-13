@@ -258,3 +258,4 @@ From `founder_rules.mdc`:
 - **Quick reference**: `THE_3_COMMANDS.md`
 - **Template examples**: `.claude-skills/after-task_skill/SKILL.md` (has multiple examples)
 
+

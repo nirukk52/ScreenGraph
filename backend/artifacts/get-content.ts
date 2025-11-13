@@ -40,3 +40,4 @@ function inferMimeType(refId: string): "image/png" | "image/jpeg" {
   }
   return "image/png";
 }
+

@@ -187,3 +187,4 @@ After running this command, user should know:
 - **Quick reference**: `THE_3_COMMANDS.md`
 - **Workflow guide**: `.specify/WORKFLOW.md`
 
+

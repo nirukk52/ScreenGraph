@@ -25,6 +25,20 @@
 
 ## 📚 Documentation Hierarchy & Usage
 
+### 0. `README.md` — External-Facing Overview
+**What**: Minimal platform description + essential run/test commands  
+**Scope**: What ScreenGraph does, who it's for, 4 core commands only  
+**Usage**: New developers, external stakeholders, GitHub landing page
+
+**Contains:**
+- Platform vision (UX mapping, drift detection, AI QA)
+- Architecture diagram + stack
+- Run: `cd backend && encore run` / `cd frontend && bun run dev`
+- Test: `cd backend && encore test` / `cd frontend && bun test`
+- Points to CLAUDE.md for detailed commands
+
+---
+
 ### 1. `.cursor/rules/founder_rules.mdc` — Non-Negotiable Standards
 **What**: Immutable development rules enforced across all agents/developers  
 **Scope**: Architecture boundaries, naming conventions, type safety, American spelling  
@@ -170,6 +184,8 @@ Vibe-aware + MCP routing. Simple, brief, actionable.
 |----------|-----|
 | **"START EVERY TASK"** | **`@project-context [task]`** ⭐ MANDATORY |
 | **"Which MCPs for this task?"** | **`screengraph-orchestrator` → `suggest_mcps()`** ⭐ |
+| "What is ScreenGraph?" | `README.md` (platform vision + basics) |
+| "Quick run/test commands?" | `README.md` (4 core commands) |
 | "What naming convention?" | `.cursor/rules/founder_rules.mdc` |
 | "What port is frontend?" | `CLAUDE.md` |
 | "Start the dev servers" | `.cursor/commands/` (Task) |
@@ -574,19 +590,43 @@ encore run
 
 ## Document Maintenance Rules
 
-### ✅ Add to CLAUDE.md
+### README.md (External-Facing)
+**✅ Add:**
+- Platform description (what/who/why)
+- Architecture diagram + stack summary
+- 4 core commands: run backend, run frontend, test backend, test frontend
+- Essential setup (prerequisites, install, env)
+- Key API endpoints
+- Project structure overview
+- Basic troubleshooting
+- Status/roadmap (high-level)
+
+**❌ Do NOT Add:**
+- Detailed command explanations (→ CLAUDE.md)
+- Task automation details (→ .cursor/commands/)
+- Development workflows (→ cursor rules)
+- Internal team processes (→ CLAUDE.md)
+
+**Keep:** 350 lines max, surgical, bulletpoints only
+
+---
+
+### CLAUDE.md (Internal Reference)
+**✅ Add:**
 - Project-specific configuration values
 - Environment-specific URLs/ports
 - Common commands unique to this project
 - Project-specific naming conventions
 - Quick troubleshooting for common issues
 
-### ❌ Do NOT Add to CLAUDE.md
+**❌ Do NOT Add:**
 - General Encore.ts concepts (→ `backend_coding_rules.mdc`)
 - General coding principles (→ `founder_rules.mdc`)
 - Backend patterns/architecture (→ `backend_coding_rules.mdc`)
 - Frontend patterns/architecture (→ `frontend_engineer.mdc`)
 - Philosophy or "why" explanations (→ cursor rules)
+
+---
 
 ### Editing Guidelines
 - Keep entries to 1-3 lines with code examples
