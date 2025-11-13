@@ -41,10 +41,45 @@
 
 ---
 
+---
+
+## 🐛 Repository Configuration Issue
+
+**GitHub Branch Protection Rule Blocking Legitimate Pushes:**
+
+The repository rule "must not contain merge commits" checks **all commits in the branch**, including those inherited from `main`. When `main` itself contains merge commits (like `bf0d8fd` from PR #22), GitHub blocks feature branches even when they have a clean linear history.
+
+**Root Cause:**
+- Repository rule: `refs/heads/*` must not contain merge commits
+- Rule checks entire branch history, not just new commits
+- Main branch contains merge commit `bf0d8fd` from previous PR
+- Feature branch inherits this commit, triggering false positive
+
+**Solution:**
+1. **Recommended**: Adjust repository rule to only check commits **not in main**:
+   - GitHub Settings → Branches → Branch protection rules
+   - Modify "Restrict merge commits" to use `merge_base` comparison
+   - Or use GitHub Actions to check only new commits
+
+2. **Workaround**: Squash-merge PRs instead of merge commits on main
+   - Keeps main history linear
+   - Prevents inherited merge commits in feature branches
+
+3. **Updated Husky Hook**: Added pre-push check that only validates **new commits**
+   - Checks `merge_base..HEAD` for merge commits
+   - Provides clear instructions if merge commits found
+   - Prevents wasted CI/CD time
+
+**Files Updated:**
+- `.husky/pre-push` - Added merge commit detection for new changes only
+
+---
+
 ## 🎯 Action Items for Next Spec
 
 - [ ] Add "validate event names against DB constraints" task to Phase 1 (setup)
 - [ ] Add "test multi-device scenarios" to foundational test phase (not polish)
 - [ ] Add "check migration sequence numbers" to data model phase
 - [ ] Consider linter rule to enforce event name consistency between types and migrations
+- [ ] **Adjust GitHub repository rules** to check only commits not in main (prevents false positives)
 
