@@ -107,7 +107,11 @@ export type EventPayloadMap = {
   "agent.device.check_completed": { isOnline: boolean; deviceId?: string };
   "agent.device.check_failed": { error: string; appId: string };
   "agent.appium.health_check_started": { port: number };
-  "agent.appium.health_check_completed": { isHealthy: boolean; port: number; reusingExisting: boolean };
+  "agent.appium.health_check_completed": {
+    isHealthy: boolean;
+    port: number;
+    reusingExisting: boolean;
+  };
   "agent.appium.health_check_failed": { error: string; port: number };
   "agent.appium.starting": { port: number };
   "agent.appium.ready": { pid: number; port: number; startDurationMs: number };

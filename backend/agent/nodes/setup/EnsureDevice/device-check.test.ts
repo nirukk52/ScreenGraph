@@ -1,4 +1,4 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import { checkDevicePrerequisites } from "./device-check";
 
 describe("checkDevicePrerequisites", () => {
@@ -10,7 +10,7 @@ describe("checkDevicePrerequisites", () => {
     // This test depends on having a device/emulator connected
     // In CI, we'd mock the exec call
     expect(result).toHaveProperty("isOnline");
-    
+
     if (result.isOnline) {
       expect(result.deviceId).toBeTruthy();
       expect(result.details).toHaveProperty("totalDevices");
@@ -29,7 +29,7 @@ describe("checkDevicePrerequisites", () => {
     });
 
     expect(result).toHaveProperty("isOnline");
-    
+
     if (!result.isOnline) {
       expect(result.error).toBeTruthy();
       expect(result.error).toContain("device");
@@ -43,7 +43,7 @@ describe("checkDevicePrerequisites", () => {
     });
 
     expect(result).toHaveProperty("details");
-    
+
     if (result.isOnline) {
       expect(result.details).toHaveProperty("adbOutput");
     }
@@ -80,11 +80,10 @@ describe("checkDevicePrerequisites", () => {
     expect(result.error).toBeTruthy();
     expect(result.error).toContain("nonexistent-device-12345");
     expect(result.error).toContain("not found");
-    
+
     // Should list available devices in error
     if (result.details?.availableDevices) {
       expect(Array.isArray(result.details.availableDevices)).toBe(true);
     }
   });
 });
-

@@ -1,7 +1,7 @@
-import { describe, test, expect, vi } from "vitest";
-import { ensureDevice, type EnsureDeviceInput } from "./node";
-import type { SessionPort, DeviceRuntimeContext } from "../../../ports/appium/session.port";
 import { nanoid } from "nanoid";
+import { describe, expect, test, vi } from "vitest";
+import type { DeviceRuntimeContext, SessionPort } from "../../../ports/appium/session.port";
+import { type EnsureDeviceInput, ensureDevice } from "./node";
 
 describe("ensureDevice with lifecycle", () => {
   const mockGenerateId = () => nanoid();
@@ -77,16 +77,15 @@ describe("ensureDevice with lifecycle", () => {
 
     // Should always emit events array
     expect(result.events).toBeInstanceOf(Array);
-    
+
     // Should have emitted device check events
     expect(result.events.some((e) => e.kind === "agent.device.check_started")).toBe(true);
-    
+
     // Either succeeded or failed, should have completion event
     const hasDeviceCheckCompleted = result.events.some(
-      (e) => e.kind === "agent.device.check_completed"
+      (e) => e.kind === "agent.device.check_completed",
     );
     const hasDeviceCheckFailed = result.events.some((e) => e.kind === "agent.device.check_failed");
     expect(hasDeviceCheckCompleted || hasDeviceCheckFailed).toBe(true);
   });
 });
-

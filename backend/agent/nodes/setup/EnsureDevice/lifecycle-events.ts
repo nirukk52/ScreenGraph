@@ -1,5 +1,5 @@
-import { createDomainEvent, type DomainEvent } from "../../../domain/events";
 import { nanoid } from "nanoid";
+import { type DomainEvent, createDomainEvent } from "../../../domain/events";
 
 /**
  * Event emission helpers for Appium lifecycle operations.
@@ -11,7 +11,7 @@ export function createDeviceCheckStartedEvent(
   runId: string,
   sequence: number,
   appId: string,
-  deviceId?: string
+  deviceId?: string,
 ): DomainEvent<"agent.device.check_started"> {
   return createDomainEvent(
     nanoid(),
@@ -19,7 +19,7 @@ export function createDeviceCheckStartedEvent(
     sequence,
     new Date().toISOString(),
     "agent.device.check_started",
-    { appId, deviceId }
+    { appId, deviceId },
   );
 }
 
@@ -28,7 +28,7 @@ export function createDeviceCheckCompletedEvent(
   runId: string,
   sequence: number,
   isOnline: boolean,
-  deviceId?: string
+  deviceId?: string,
 ): DomainEvent<"agent.device.check_completed"> {
   return createDomainEvent(
     nanoid(),
@@ -36,7 +36,7 @@ export function createDeviceCheckCompletedEvent(
     sequence,
     new Date().toISOString(),
     "agent.device.check_completed",
-    { isOnline, deviceId }
+    { isOnline, deviceId },
   );
 }
 
@@ -45,7 +45,7 @@ export function createDeviceCheckFailedEvent(
   runId: string,
   sequence: number,
   error: string,
-  appId: string
+  appId: string,
 ): DomainEvent<"agent.device.check_failed"> {
   return createDomainEvent(
     nanoid(),
@@ -53,7 +53,7 @@ export function createDeviceCheckFailedEvent(
     sequence,
     new Date().toISOString(),
     "agent.device.check_failed",
-    { error, appId }
+    { error, appId },
   );
 }
 
@@ -61,7 +61,7 @@ export function createDeviceCheckFailedEvent(
 export function createAppiumHealthCheckStartedEvent(
   runId: string,
   sequence: number,
-  port: number
+  port: number,
 ): DomainEvent<"agent.appium.health_check_started"> {
   return createDomainEvent(
     nanoid(),
@@ -69,7 +69,7 @@ export function createAppiumHealthCheckStartedEvent(
     sequence,
     new Date().toISOString(),
     "agent.appium.health_check_started",
-    { port }
+    { port },
   );
 }
 
@@ -79,7 +79,7 @@ export function createAppiumHealthCheckCompletedEvent(
   sequence: number,
   isHealthy: boolean,
   port: number,
-  reusingExisting: boolean
+  reusingExisting: boolean,
 ): DomainEvent<"agent.appium.health_check_completed"> {
   return createDomainEvent(
     nanoid(),
@@ -87,7 +87,7 @@ export function createAppiumHealthCheckCompletedEvent(
     sequence,
     new Date().toISOString(),
     "agent.appium.health_check_completed",
-    { isHealthy, port, reusingExisting }
+    { isHealthy, port, reusingExisting },
   );
 }
 
@@ -96,7 +96,7 @@ export function createAppiumHealthCheckFailedEvent(
   runId: string,
   sequence: number,
   error: string,
-  port: number
+  port: number,
 ): DomainEvent<"agent.appium.health_check_failed"> {
   return createDomainEvent(
     nanoid(),
@@ -104,7 +104,7 @@ export function createAppiumHealthCheckFailedEvent(
     sequence,
     new Date().toISOString(),
     "agent.appium.health_check_failed",
-    { error, port }
+    { error, port },
   );
 }
 
@@ -112,7 +112,7 @@ export function createAppiumHealthCheckFailedEvent(
 export function createAppiumStartingEvent(
   runId: string,
   sequence: number,
-  port: number
+  port: number,
 ): DomainEvent<"agent.appium.starting"> {
   return createDomainEvent(
     nanoid(),
@@ -120,7 +120,7 @@ export function createAppiumStartingEvent(
     sequence,
     new Date().toISOString(),
     "agent.appium.starting",
-    { port }
+    { port },
   );
 }
 
@@ -130,7 +130,7 @@ export function createAppiumReadyEvent(
   sequence: number,
   pid: number,
   port: number,
-  startDurationMs: number
+  startDurationMs: number,
 ): DomainEvent<"agent.appium.ready"> {
   return createDomainEvent(
     nanoid(),
@@ -138,7 +138,7 @@ export function createAppiumReadyEvent(
     sequence,
     new Date().toISOString(),
     "agent.appium.ready",
-    { pid, port, startDurationMs }
+    { pid, port, startDurationMs },
   );
 }
 
@@ -148,7 +148,7 @@ export function createAppiumStartFailedEvent(
   sequence: number,
   error: string,
   port: number,
-  timeoutMs: number
+  timeoutMs: number,
 ): DomainEvent<"agent.appium.start_failed"> {
   return createDomainEvent(
     nanoid(),
@@ -156,7 +156,6 @@ export function createAppiumStartFailedEvent(
     sequence,
     new Date().toISOString(),
     "agent.appium.start_failed",
-    { error, port, timeoutMs }
+    { error, port, timeoutMs },
   );
 }
-

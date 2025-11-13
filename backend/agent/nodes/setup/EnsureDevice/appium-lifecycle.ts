@@ -66,7 +66,7 @@ export async function checkAppiumHealth(port: number = APPIUM_PORT): Promise<App
       logger.info("appium is healthy", { port, ready: true });
       return { isHealthy: true, statusCode: response.status };
     }
-    
+
     logger.warn("appium not ready", { port, data });
     return {
       isHealthy: false,
