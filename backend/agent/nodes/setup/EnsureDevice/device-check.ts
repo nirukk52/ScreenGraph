@@ -3,6 +3,38 @@ import log from "encore.dev/log";
 /** Logger for device prerequisite checks. */
 const logger = log.with({ module: "agent", actor: "device-check" });
 
+/** Whitespace matcher used for parsing adb output columns. */
+const WHITESPACE_SPLIT_REGEX = /\s+/;
+
+/** Parsed adb device row with serial and status. */
+interface ParsedAdbDeviceRow {
+  /** Raw line returned by adb. */
+  raw: string;
+  /** Serial reported by adb. */
+  serial: string;
+  /** Connection status reported by adb (device/offline/unauthorized/etc.). */
+  status: string;
+}
+
+/**
+ * Extracts online devices from adb CLI output.
+ * PURPOSE: Filter to rows whose status column equals "device".
+ *
+ * @param adbOutput - Raw stdout from `adb devices -l`
+ * @returns Array of parsed rows representing online devices
+ */
+function extractOnlineDeviceRows(adbOutput: string): ParsedAdbDeviceRow[] {
+  return adbOutput
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && !line.startsWith("List of devices"))
+    .map((line) => {
+      const [serial = "", status = ""] = line.split(WHITESPACE_SPLIT_REGEX);
+      return { raw: line, serial, status };
+    })
+    .filter((row) => row.status === "device");
+}
+
 /** Device prerequisite check result. */
 export interface DevicePrerequisite {
   /** Whether device is online and connectable. */
@@ -62,12 +94,10 @@ export async function checkDevicePrerequisites(
 
     // Parse adb output (format: "SERIAL\tdevice ..." or "SERIAL          device ...")
     // Filter for lines with "device" status (not "offline" or "unauthorized")
-    const lines = stdout
-      .split("\n")
-      .filter((line) => line.trim().length > 0 && line.includes("device"))
-      .filter((line) => !line.startsWith("List of devices")); // Skip header
+    const deviceRows = extractOnlineDeviceRows(stdout);
+    const lines = deviceRows.map((row) => row.raw);
 
-    if (lines.length === 0) {
+    if (deviceRows.length === 0) {
       logger.error("no devices found", { adbOutput: stdout });
       return {
         isOnline: false,
@@ -78,10 +108,10 @@ export async function checkDevicePrerequisites(
 
     // If caller specified a deviceId, find that specific device
     if (config.deviceId) {
-      const matchingLine = lines.find((line) => line.startsWith(config.deviceId));
+      const matchingRow = deviceRows.find((row) => row.serial === config.deviceId);
 
-      if (!matchingLine) {
-        const availableDevices = lines.map((line) => line.trim().split(/\s+/)[0]);
+      if (!matchingRow) {
+        const availableDevices = deviceRows.map((row) => row.serial);
         logger.error("requested device not found", {
           requestedDeviceId: config.deviceId,
           availableDevices,
@@ -108,26 +138,26 @@ export async function checkDevicePrerequisites(
         isOnline: true,
         deviceId: config.deviceId,
         details: {
-          totalDevices: lines.length,
+          totalDevices: deviceRows.length,
           adbOutput: stdout,
         },
       };
     }
 
     // No specific device requested - return first available device
-    const firstLine = lines[0];
-    const deviceId = firstLine.trim().split(/\s+/)[0];
+    const primaryRow = deviceRows[0];
+    const deviceId = primaryRow.serial;
 
     logger.info("device found online", {
       deviceId,
-      totalDevices: lines.length,
+      totalDevices: deviceRows.length,
     });
 
     return {
       isOnline: true,
       deviceId,
       details: {
-        totalDevices: lines.length,
+        totalDevices: deviceRows.length,
         adbOutput: stdout,
       },
     };

@@ -115,22 +115,38 @@ export async function startAppium(port: number = APPIUM_PORT): Promise<AppiumPro
     throw new Error(error);
   }
 
-  // Capture stdout/stderr for debugging
+  // Capture stdout/stderr for debugging while bounding memory usage
+  const MAX_STDIO_BUFFER = 5_000;
   let stdoutData = "";
   let stderrData = "";
 
-  appiumProcess.stdout?.on("data", (data) => {
-    stdoutData += data.toString();
-    // Log if it contains "Welcome to Appium" or error messages
-    if (data.toString().includes("Welcome to Appium") || data.toString().includes("error")) {
-      logger.info("appium stdout", { output: data.toString().trim() });
-    }
-  });
+  const limitBuffer = (buffer: string, chunk: string): string => {
+    const updated = buffer + chunk;
+    return updated.length > MAX_STDIO_BUFFER ? updated.slice(-MAX_STDIO_BUFFER) : updated;
+  };
 
-  appiumProcess.stderr?.on("data", (data) => {
-    stderrData += data.toString();
-    logger.warn("appium stderr", { error: data.toString().trim() });
-  });
+  const handleStdout = (data: Buffer): void => {
+    const chunk = data.toString();
+    stdoutData = limitBuffer(stdoutData, chunk);
+    // Log if it contains "Welcome to Appium" or error messages
+    if (chunk.includes("Welcome to Appium") || chunk.includes("error")) {
+      logger.info("appium stdout", { output: chunk.trim() });
+    }
+  };
+
+  const handleStderr = (data: Buffer): void => {
+    const chunk = data.toString();
+    stderrData = limitBuffer(stderrData, chunk);
+    logger.warn("appium stderr", { error: chunk.trim() });
+  };
+
+  const detachListeners = (): void => {
+    appiumProcess.stdout?.off("data", handleStdout);
+    appiumProcess.stderr?.off("data", handleStderr);
+  };
+
+  appiumProcess.stdout?.on("data", handleStdout);
+  appiumProcess.stderr?.on("data", handleStderr);
 
   logger.info("appium process spawned", { pid, port });
 
@@ -143,6 +159,7 @@ export async function startAppium(port: number = APPIUM_PORT): Promise<AppiumPro
     // Check if process died
     if (appiumProcess.exitCode !== null) {
       const error = `Appium process exited with code ${appiumProcess.exitCode}`;
+      detachListeners();
       logger.error(error, {
         pid,
         port,
@@ -157,6 +174,7 @@ export async function startAppium(port: number = APPIUM_PORT): Promise<AppiumPro
 
     if (health.isHealthy) {
       logger.info("appium ready", { pid, port, elapsedMs: Date.now() - startTime });
+      detachListeners();
       return { pid, port };
     }
 
@@ -167,6 +185,7 @@ export async function startAppium(port: number = APPIUM_PORT): Promise<AppiumPro
   // Timeout - kill the process and throw
   try {
     appiumProcess.kill("SIGTERM");
+    detachListeners();
     logger.error("appium start timeout - process killed", {
       pid,
       port,
@@ -175,6 +194,7 @@ export async function startAppium(port: number = APPIUM_PORT): Promise<AppiumPro
       stderr: stderrData.slice(-1000),
     });
   } catch (killError) {
+    detachListeners();
     logger.error("failed to kill stalled appium process", {
       pid,
       error: killError instanceof Error ? killError.message : String(killError),
