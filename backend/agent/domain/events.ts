@@ -28,7 +28,16 @@ export type EventKind =
   | "agent.app.signature_verified"
   | "agent.app.launch_started"
   | "agent.app.launch_completed"
-  | "agent.app.launch_failed";
+  | "agent.app.launch_failed"
+  | "agent.device.check_started"
+  | "agent.device.check_completed"
+  | "agent.device.check_failed"
+  | "agent.appium.health_check_started"
+  | "agent.appium.health_check_completed"
+  | "agent.appium.health_check_failed"
+  | "agent.appium.starting"
+  | "agent.appium.ready"
+  | "agent.appium.start_failed";
 
 /**
  * Discriminated union mapping EventKind to its typed payload structure.
@@ -94,6 +103,19 @@ export type EventPayloadMap = {
     errorKind: string;
     durationMs: number;
   };
+  "agent.device.check_started": { appId: string; deviceId?: string };
+  "agent.device.check_completed": { isOnline: boolean; deviceId?: string };
+  "agent.device.check_failed": { error: string; appId: string };
+  "agent.appium.health_check_started": { port: number };
+  "agent.appium.health_check_completed": {
+    isHealthy: boolean;
+    port: number;
+    reusingExisting: boolean;
+  };
+  "agent.appium.health_check_failed": { error: string; port: number };
+  "agent.appium.starting": { port: number };
+  "agent.appium.ready": { pid: number; port: number; startDurationMs: number };
+  "agent.appium.start_failed": { error: string; port: number; timeoutMs: number };
 };
 
 /**

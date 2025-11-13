@@ -76,7 +76,8 @@
     "documentation": [
       ".cursor/rules/founder_rules.mdc (universal standards)",
       "CLAUDE.md (project quick reference)",
-      "steering-docs/ (architectural context)"
+      "steering-docs/ (architectural context)",
+      "DEBUGGING_TOOLKIT.md (comprehensive debugging reference)"
     ],
     "automation": [
       ".cursor/commands/Taskfile.yml (deterministic workflows)",
@@ -86,6 +87,45 @@
       ".claude-skills/*_skill/SKILL.md (knowledge-based playbooks)",
       "steering-docs/ (project context and decisions)"
     ]
+  },
+  "debugging_strategy": {
+    "priority_order": [
+      "1. MCP Tools (fastest, most contextual)",
+      "2. Structured Logs (for runtime behavior)",
+      "3. Browser Inspection (for frontend issues)",
+      "4. Database Queries (for data verification)",
+      "5. Manual Testing (for user experience)"
+    ],
+    "golden_rules": [
+      "ALWAYS start with highest-level tool available (MCP)",
+      "ADD diagnostic logs strategically, REMOVE after fixing",
+      "DOCUMENT solutions in Graphiti for future reference",
+      "USE sequential-thinking MCP for complex reasoning",
+      "PREFER MCP tools over manual dashboard/browser navigation"
+    ],
+    "common_workflows": {
+      "the_hang": [
+        "Add checkpoint console.logs to narrow down location",
+        "Find last successful checkpoint",
+        "Add granular checkpoints between last and next",
+        "Inspect state at hang point (logs, DB, external deps)",
+        "Common causes: uncaught async error, DB constraint, deadlock, timeout"
+      ],
+      "integration_issue": [
+        "Run E2E test to reproduce",
+        "Use Playwright MCP to inspect frontend state",
+        "Use Encore MCP to check backend traces/data",
+        "Verify event stream (run_events → frontend SSE)",
+        "Add regression test"
+      ],
+      "database_constraint": [
+        "Look for 'violates check constraint' in logs",
+        "Use encore.query_database() to inspect schema",
+        "Compare code expectations vs actual constraints",
+        "Create migration to align schema with code",
+        "Add validation script to prevent future mismatches"
+      ]
+    }
   }
 }
 

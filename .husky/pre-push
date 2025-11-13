@@ -2,6 +2,7 @@
 # Husky pre-push hook
 # 1. Cleanup root documentation (vibe_manager_vibe responsibility)
 # 2. Run auto-fix and comprehensive QA suite
+# 3. Check for merge commits in new changes
 
 echo "🧹 Vibe Manager: Cleaning up root documentation..."
 echo ""
@@ -15,6 +16,56 @@ echo ""
 echo "🛠️ Running comprehensive QA checks before push..."
 echo ""
 (cd .cursor && task qa:all) || exit 1
+
+echo ""
+echo "🔍 Checking for merge commits in branch..."
+echo ""
+
+# Get remote and branch being pushed to
+remote="$1"
+url="$2"
+
+# Check each ref being pushed
+while read local_ref local_sha remote_ref remote_sha
+do
+  if [ "$local_sha" = "0000000000000000000000000000000000000000" ]; then
+    # Branch deletion, skip
+    continue
+  fi
+  
+  # Get merge base with main
+  merge_base=$(git merge-base origin/main "$local_sha" 2>/dev/null || echo "")
+  
+  if [ -z "$merge_base" ]; then
+    echo "⚠️  Warning: Could not find merge base with origin/main"
+    echo "   Skipping merge commit check"
+    continue
+  fi
+  
+  # Check for merge commits in range
+  merge_commits=$(git log --merges --oneline "$merge_base..$local_sha" 2>/dev/null)
+  
+  if [ -n "$merge_commits" ]; then
+    echo ""
+    echo "❌ ERROR: Branch contains merge commits (repository requires linear history)"
+    echo ""
+    echo "Found merge commits:"
+    echo "$merge_commits"
+    echo ""
+    echo "To fix:"
+    echo "  1. Rebase your branch:"
+    echo "     git fetch origin main"
+    echo "     git rebase origin/main"
+    echo ""
+    echo "  2. Force push (safe for feature branches):"
+    echo "     git push origin $(git rev-parse --abbrev-ref HEAD) --force-with-lease"
+    echo ""
+    echo "Or bypass this check (emergency only):"
+    echo "  HUSKY=0 git push"
+    echo ""
+    exit 1
+  fi
+done
 
 echo ""
 echo "✅ All checks passed - proceeding with push"

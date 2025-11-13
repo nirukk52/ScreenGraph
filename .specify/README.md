@@ -74,11 +74,43 @@ All in `.specify/commands/`:
 
 ---
 
-## Related Systems
+## Integration with @project-context
 
-- `.claude-skills/` — AI workflows (Python)
-- `vibes/` — Engineering personas (backend, frontend, infra, qa)
+**ALWAYS use @project-context before each spec-kit phase:**
+
+```bash
+# Discovery
+@project-context Research [feature idea]
+
+# Specify
+/speckit.specify "[idea]"
+
+# Plan
+@project-context Plan implementation
+/speckit.plan
+
+# Tasks
+@project-context Break down tasks
+/speckit.tasks
+
+# Implement
+@project-context Implement [each task]
+
+# Retro
+add_memory() to document in Graphiti
+```
+
+**See:** `WORKFLOW.md` for complete integration guide
 
 ---
 
-**Ready to use.** Run `/speckit.specify` to start.
+## Related Systems
+
+- `START_HERE.md` — THE ONE COMMAND (@project-context)
+- `.claude-skills/` — AI workflows (Python)
+- `vibes/` — Engineering personas (backend, frontend, infra, qa)
+- `.mcp-servers/screengraph-orchestrator/` — MCP routing
+
+---
+
+**Ready to use.** Run `@project-context Research [idea]` then `/speckit.specify` to start.

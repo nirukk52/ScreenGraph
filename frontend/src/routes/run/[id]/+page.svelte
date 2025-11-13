@@ -7,14 +7,14 @@ import autoAnimate from "@formkit/auto-animate";
 import { onDestroy } from "svelte";
 
 let runId = $state("");
-let events = $state([]);
+let events = $state<run.RunEventMessage[]>([]);
 let graphNodes = $state<graph.GraphStreamEventData[]>([]);
 let graphEvents = $state<graph.GraphStreamEvent[]>([]);
 let loading = $state(true);
 let error = $state("");
-let cleanup = $state(null);
-let graphCleanup = $state(null);
-let graphNodeMap = new Map<string, graph.GraphStreamEventData>();
+let cleanup = $state<(() => void) | null>(null);
+let graphCleanup = $state<(() => void) | null>(null);
+let graphNodeMap = $state(new Map<string, graph.GraphStreamEventData>());
 
 /**
  * Type guard for screenshot event payloads.
@@ -36,7 +36,7 @@ function isScreenshotEventData(
  */
 function isScreenPerceivedEventData(
   data: unknown,
-): data is { screenId: string; perceptualHash64?: string } {
+): data is { screenId: string; perceptualHash64?: string; screenshotRefId?: string } {
   return (
     typeof data === "object" &&
     data !== null &&
@@ -115,9 +115,11 @@ async function ingestRunEvent(event: run.RunEventMessage) {
       return;
     }
 
+    // Create temporary node with refId as placeholder screenId
+    // This will be replaced when screen_perceived arrives with the real hash
     const node: graph.GraphStreamEventData = {
       runId,
-      screenId: event.data.refId,
+      screenId: event.data.refId, // Temporary - will be updated by screen_perceived
       layoutHash: "",
       perceptualHash: "",
       seqRef: event.seq,
@@ -136,20 +138,19 @@ async function ingestRunEvent(event: run.RunEventMessage) {
   }
 
   if (event.kind === "agent.event.screen_perceived" && isScreenPerceivedEventData(event.data)) {
-    const existing = graphNodeMap.get(event.data.screenId);
+    // Look for synthetic node by refId (from screenshot_captured event)
+    const refId = event.data.screenshotRefId;
+    const existing = refId ? graphNodeMap.get(refId) : null;
+
     if (!existing) {
+      // Node doesn't exist yet - graph stream will create it with correct screenId
+      // Don't create synthetic nodes here to avoid duplicates
       return;
     }
 
-    const updated: graph.GraphStreamEventData = {
-      ...existing,
-      perceptualHash: event.data.perceptualHash64 ?? existing.perceptualHash,
-      seqRef: Math.max(existing.seqRef, event.seq),
-      ts: event.timestamp,
-    };
-
-    upsertGraphNode(updated);
-    recordGraphEvent({ type: "graph.screen.mapped", data: updated });
+    // Remove synthetic node - graph stream will send the real one with correct screenId
+    graphNodeMap.delete(refId);
+    graphNodes = Array.from(graphNodeMap.values()).sort((a, b) => a.seqRef - b.seqRef);
   }
 }
 
@@ -216,31 +217,18 @@ async function startStreaming() {
 /** Handles subscribing to the graph stream to visualize screens in real-time */
 async function startGraphStreaming() {
   try {
-    console.log("[Graph Stream] Starting connection for runId:", runId);
     graphCleanup = await streamGraphEvents(runId, async (event) => {
-      console.log("[Graph Stream] Received event:", event);
-
       // Skip heartbeat events
       if (event.data.screenId === "__heartbeat__") {
-        console.log("[Graph Stream] Skipping heartbeat");
         return;
       }
-
-      console.log("[Graph Stream] Processing event:", {
-        type: event.type,
-        screenId: event.data.screenId,
-        seqRef: event.data.seqRef,
-      });
 
       const hydratedData = await ensureScreenshotData(event.data);
       upsertGraphNode(hydratedData);
       recordGraphEvent({ ...event, data: hydratedData });
-
-      console.log("[Graph Stream] Current graphNodes count:", graphNodes.length);
     });
-    console.log("[Graph Stream] Connection established");
   } catch (e) {
-    console.error("[Graph Stream] Streaming error:", e);
+    error = e instanceof Error ? e.message : "Graph streaming error";
   }
 }
 
@@ -248,9 +236,12 @@ async function startGraphStreaming() {
 async function handleCancel() {
   try {
     await cancelRun(runId);
-    alert("Run cancelled");
+    // Cleanup streams after cancellation
+    if (cleanup) cleanup();
+    if (graphCleanup) graphCleanup();
+    loading = false;
   } catch (e) {
-    error = e instanceof Error ? e.message : "Unknown error";
+    error = e instanceof Error ? e.message : "Failed to cancel run";
   }
 }
 </script>

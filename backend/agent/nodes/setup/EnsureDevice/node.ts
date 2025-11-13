@@ -1,9 +1,22 @@
 import log from "encore.dev/log";
+import { APPIUM_PORT } from "../../../../config/env";
 import { AGENT_ACTORS, MODULES } from "../../../../logging/logger";
 import type { EventKind } from "../../../domain/events";
 import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
 import type { DeviceConfiguration } from "../../../ports/appium/session.port";
 import type { SessionPort } from "../../../ports/appium/session.port";
+import { checkAppiumHealth, startAppium } from "./appium-lifecycle";
+import { checkDevicePrerequisites } from "./device-check";
+import {
+  createAppiumHealthCheckCompletedEvent,
+  createAppiumHealthCheckStartedEvent,
+  createAppiumReadyEvent,
+  createAppiumStartFailedEvent,
+  createAppiumStartingEvent,
+  createDeviceCheckCompletedEvent,
+  createDeviceCheckFailedEvent,
+  createDeviceCheckStartedEvent,
+} from "./lifecycle-events";
 
 export interface EnsureDeviceInput extends CommonNodeInput {
   runId: string;
@@ -37,7 +50,113 @@ export async function ensureDevice(
   });
   logger.info("EnsureDevice INPUT", { input });
 
+  const events: Array<{ kind: EventKind; payload: Record<string, unknown> }> = [];
+  let sequence = 0;
+
   try {
+    // Pre-flight check 1: Device prerequisites
+    logger.info("checking device prerequisites", { appId: input.deviceConfiguration.appId });
+
+    events.push(
+      createDeviceCheckStartedEvent(
+        input.runId,
+        sequence++,
+        input.deviceConfiguration.appId,
+        input.deviceConfiguration.deviceName,
+      ),
+    );
+
+    const deviceCheck = await checkDevicePrerequisites({
+      appId: input.deviceConfiguration.appId,
+      deviceId: input.deviceConfiguration.deviceName,
+    });
+
+    if (!deviceCheck.isOnline) {
+      logger.error("device offline", { error: deviceCheck.error });
+      events.push(
+        createDeviceCheckFailedEvent(
+          input.runId,
+          sequence++,
+          deviceCheck.error || "Device offline",
+          input.deviceConfiguration.appId,
+        ),
+      );
+
+      const offlineError = new Error(deviceCheck.error || "Device offline");
+      offlineError.name = "DeviceOfflineError";
+      throw offlineError;
+    }
+
+    logger.info("device online", { deviceId: deviceCheck.deviceId });
+    events.push(
+      createDeviceCheckCompletedEvent(input.runId, sequence++, true, deviceCheck.deviceId),
+    );
+
+    // Pre-flight check 2: Appium health check
+    logger.info("checking appium health", { port: APPIUM_PORT });
+    events.push(createAppiumHealthCheckStartedEvent(input.runId, sequence++, APPIUM_PORT));
+
+    const healthCheck = await checkAppiumHealth(APPIUM_PORT);
+
+    if (healthCheck.isHealthy) {
+      logger.info("appium already running and healthy - reusing", { port: APPIUM_PORT });
+      events.push(
+        createAppiumHealthCheckCompletedEvent(input.runId, sequence++, true, APPIUM_PORT, true),
+      );
+    } else {
+      logger.info("appium not healthy - starting fresh instance", {
+        port: APPIUM_PORT,
+        error: healthCheck.error,
+      });
+      events.push(
+        createAppiumHealthCheckCompletedEvent(input.runId, sequence++, false, APPIUM_PORT, false),
+      );
+
+      // Start Appium
+      events.push(createAppiumStartingEvent(input.runId, sequence++, APPIUM_PORT));
+
+      const startTime = Date.now();
+      try {
+        const appiumProcess = await startAppium(APPIUM_PORT);
+        const startDurationMs = Date.now() - startTime;
+
+        logger.info("appium started successfully", {
+          pid: appiumProcess.pid,
+          port: APPIUM_PORT,
+          startDurationMs,
+        });
+
+        events.push(
+          createAppiumReadyEvent(
+            input.runId,
+            sequence++,
+            appiumProcess.pid,
+            APPIUM_PORT,
+            startDurationMs,
+          ),
+        );
+      } catch (error) {
+        const timeoutMs = Date.now() - startTime;
+        const errorMessage = error instanceof Error ? error.message : String(error);
+
+        logger.error("appium start failed", { error: errorMessage, timeoutMs });
+        events.push(
+          createAppiumStartFailedEvent(
+            input.runId,
+            sequence++,
+            errorMessage,
+            APPIUM_PORT,
+            timeoutMs,
+          ),
+        );
+
+        const timeoutError = new Error(errorMessage);
+        timeoutError.name = "TimeoutError";
+        throw timeoutError;
+      }
+    }
+
+    // Lifecycle checks passed - proceed with session creation
     const ctx = await sessionPort.ensureDevice(input.deviceConfiguration);
     logger.info("DeviceRuntimeContext received", { ctx });
 
@@ -63,7 +182,7 @@ export async function ensureDevice(
 
     return {
       output,
-      events: [],
+      events,
     };
   } catch (error) {
     logger.error("EnsureDevice failure", { error });
@@ -91,7 +210,7 @@ export async function ensureDevice(
 
     return {
       output: failureOutput,
-      events: [],
+      events,
     };
   }
 }
