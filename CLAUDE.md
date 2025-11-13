@@ -4,6 +4,25 @@
 
 ---
 
+## ⚡ THE ONE COMMAND (Use Before EVERY Prompt)
+
+```
+@project-context [describe what you want to do]
+```
+
+**See**: `START_HERE.md` for complete guide.
+
+**What it does:**
+- Searches Graphiti for past work (`group_id="screengraph"`)
+- Suggests vibe to use (backend/frontend/qa/infra)
+- Recommends top 3 MCPs prioritized
+- Surfaces past solutions and gotchas
+- Provides actionable starting points
+
+**One command → Full context.**
+
+---
+
 ## 📚 Documentation Hierarchy & Usage
 
 ### 1. `.cursor/rules/founder_rules.mdc` — Non-Negotiable Standards
@@ -30,7 +49,25 @@
 
 ---
 
-### 3. `.cursor/commands/` (Taskfile) — Deterministic Automation
+### 3. `.specify/` (Spec-Kit) — Spec-Driven Development
+**What**: Structured workflow for features/bugs via specs, plans, and tasks  
+**Scope**: Discovery → Specify → Plan → Tasks → Implement → Retro  
+**Usage**: Use `@project-context` before EACH phase, then run `/speckit.[command]`
+
+**Examples:**
+```bash
+@project-context Research [idea]     # Check if solved before
+/speckit.specify "[idea]"            # Create spec
+@project-context Plan implementation # Get patterns
+/speckit.plan                        # Create plan
+# ... continue through phases
+```
+
+**See:** `.specify/WORKFLOW.md` for complete integration guide
+
+---
+
+### 4. `.cursor/commands/` (Taskfile) — Deterministic Automation
 **What**: Shell scripts and Task commands for repeatable workflows  
 **Scope**: Dev server management, database operations, testing, deployment  
 **Usage**: Run via `cd .cursor && task <command>` for any automation
@@ -44,7 +81,7 @@ task qa:smoke:all              # Run all smoke tests
 
 ---
 
-### 4. `.claude-skills/` — AI Conversational Playbooks
+### 5. `.claude-skills/` — AI Conversational Playbooks
 **What**: Multi-step procedures for AI agents to orchestrate complex tasks  
 **Scope**: Debugging workflows, skill creation, analysis procedures  
 **Usage**: Say to Claude: "Run smoke tests" or "Debug the backend issue"
@@ -60,7 +97,7 @@ task qa:smoke:all              # Run all smoke tests
 
 ---
 
-### 5. `vibes/` — Engineering Persona System ⭐
+### 6. `vibes/` — Engineering Persona System ⭐
 **What**: Role-based profiles that configure AI agents with domain-specific tools, rules, and workflows  
 **Scope**: Context switching, MCP tool selection, documentation priorities, workflow patterns  
 **Usage**: Load appropriate vibe at start of work: "Load backend_vibe and [task]"
@@ -84,10 +121,55 @@ task qa:smoke:all              # Run all smoke tests
 
 ---
 
+### 7. `.mcp-servers/screengraph-orchestrator` — MCP Meta-Router ⚡
+**What**: Intelligent MCP orchestrator that suggests which MCPs to use for any task  
+**Scope**: Task analysis, MCP recommendation, usage examples, self-improvement  
+**Usage**: CALL BEFORE EVERY TASK via `@project-context [task]` or direct `suggest_mcps()`
+
+**Purpose:**
+- Analyzes your task and recommends relevant MCPs
+- Provides usage examples and workflow guidance
+- Tracks effectiveness for self-improvement
+- Knows ScreenGraph architecture and patterns
+
+**Available MCPs:**
+- graphiti (knowledge management) - ALWAYS FIRST
+- context7 (library docs)
+- sequential-thinking (reasoning)
+- encore-mcp (backend introspection)
+- browser/playwright (frontend testing)
+- svelte (Svelte 5 & SvelteKit - 195 resources!)
+- figma (design to code)
+- aws-knowledge-mcp + aws-api-mcp (AWS)
+- vercel (deployment)
+- better-auth (auth docs)
+
+**Setup:**
+```bash
+cd .mcp-servers/screengraph-orchestrator
+pip install -r requirements.txt
+# Add to Cursor MCP settings (see README.md)
+```
+
+**Example:**
+```
+suggest_mcps(task: "Fix agent stalling")
+→ Vibe: backend_vibe (skills: backend-debugging)
+→ MCPs: 1. graphiti  2. encore-mcp  3. sequential-thinking
+```
+
+Vibe-aware + MCP routing. Simple, brief, actionable.
+
+**See:** `.mcp-servers/screengraph-orchestrator/README.md` for complete documentation
+
+---
+
 ## When to Use What?
 
 | Scenario | Use |
 |----------|-----|
+| **"START EVERY TASK"** | **`@project-context [task]`** ⭐ MANDATORY |
+| **"Which MCPs for this task?"** | **`screengraph-orchestrator` → `suggest_mcps()`** ⭐ |
 | "What naming convention?" | `.cursor/rules/founder_rules.mdc` |
 | "What port is frontend?" | `CLAUDE.md` |
 | "Start the dev servers" | `.cursor/commands/` (Task) |

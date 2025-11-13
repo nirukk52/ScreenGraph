@@ -22,11 +22,11 @@ This command orchestrates skill and vibe maintenance using three MCP tool catego
 
 ## Update Process
 
-### Phase 1: Assess Current State
+### Phase 1: Assess Current State + Analyze Usage Evidence
 
-**Goal:** Understand what needs updating and why.
+**Goal:** Understand what needs updating and why, using EVIDENCE from @after-task documentation.
 
-1. **Search Graphiti for recent skill/vibe decisions:**
+**1a. Search Graphiti for recent skill/vibe decisions:**
    ```
    Use graphiti.search to find:
    - "skill organization" 
@@ -35,15 +35,55 @@ This command orchestrates skill and vibe maintenance using three MCP tool catego
    - "library upgrade"
    ```
 
+**1b. NEW: Search Graphiti for skill usage evidence from @after-task:**
+   ```
+   For each skill category:
+   
+   // Backend skills
+   search_memory_nodes({
+     query: "backend-debugging skill backend-development skill backend-testing skill",
+     group_ids: ["screengraph"],
+     max_nodes: 20
+   })
+   
+   // Frontend skills
+   search_memory_nodes({
+     query: "frontend-debugging skill frontend-development skill",
+     group_ids: ["screengraph"],
+     max_nodes: 20
+   })
+   
+   // Testing skills
+   search_memory_nodes({
+     query: "webapp-testing skill e2e-testing skill",
+     group_ids: ["screengraph"],
+     max_nodes: 20
+   })
+   ```
+
+**1c. Extract evidence:**
+   - Which skills mentioned most frequently? (high usage = important)
+   - Which skills marked as "helpful" in @after-task docs? (high success rate)
+   - Which skills had "struggles" or "issues" mentioned? (needs improvement)
+   - Which MCP pairings repeatedly successful? (update recommendations)
+   - What patterns emerged across multiple specs? (add to skill workflows)
+
+**1d. Prioritize updates based on evidence:**
+   
+   Create priority list:
+   1. High usage + struggles = UPDATE FIRST (most impact)
+   2. High usage + successful = VALIDATE (might be fine)
+   3. Low usage + struggles = CONSIDER DEPRECATING
+   4. Low usage + successful = LEAVE AS-IS
+
 2. **Review skill inventory:**
    - `.claude-skills/README.md` - Task-based and knowledge-based skills
    - `vibes/README.md` - Current vibe definitions and MCP assignments
 
-3. **Identify outdated content:**
-   - Skills referencing old library versions
-   - Vibes missing newly added MCP tools
-   - Documentation with deprecated patterns
-   - Skills that struggle in practice (see skill-creator SKILL.md lines 206-208)
+3. **Identify outdated content using DUAL SOURCES:**
+   - **From Context7:** Skills referencing old library versions, deprecated APIs
+   - **From Graphiti:** Skills that struggled in practice (from @after-task evidence)
+   - **From both:** Patterns that need updating with new docs AND usage evidence
 
 ---
 

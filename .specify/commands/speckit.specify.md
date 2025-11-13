@@ -10,6 +10,24 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+## Pre-Flight Check
+
+**BEFORE proceeding, verify context was loaded:**
+
+Check if user ran `@before-task` before this command. Look for evidence in chat history.
+
+**If @before-task was run:**
+- ✅ Proceed with spec creation
+- ✅ Use insights from Graphiti search results
+- ✅ Reference past similar specs found
+- ✅ Incorporate gotchas surfaced
+
+**If @before-task was NOT run:**
+- ⚠️ **RECOMMEND** (don't block): "For best results, run `@before-task Research [feature idea]` first to check for similar past work."
+- Provide option: "Would you like me to search Graphiti now, or proceed without context?"
+- If user says search: Run quick Graphiti search with `search_memory_nodes({query: "[feature keywords]", group_ids: ["screengraph"], max_nodes: 5})`
+- If user says proceed: Continue but note in spec that no prior context was available
+
 ## Outline
 
 The text the user typed after `/speckit.specify` in the triggering message **is** the feature description. Assume you always have it available in this conversation even if `$ARGUMENTS` appears literally below. Do not ask the user to repeat it unless they provided an empty command.

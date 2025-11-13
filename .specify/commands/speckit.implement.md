@@ -108,6 +108,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Follow TDD approach**: Execute test tasks before their corresponding implementation tasks
    - **File-based coordination**: Tasks affecting the same files must run sequentially
    - **Validation checkpoints**: Verify each phase completion before proceeding
+   - **@during-task integration**: Before implementing each task, suggest running `@during-task [task description]` to get MCP recommendations and brief guidance
 
 7. Implementation execution rules:
    - **Setup first**: Initialize project structure, dependencies, configuration
@@ -115,6 +116,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Core development**: Implement models, services, CLI commands, endpoints
    - **Integration work**: Database connections, middleware, logging, external services
    - **Polish and validation**: Unit tests, performance optimization, documentation
+   - **Context loading**: For each task, optionally suggest: `@during-task [task description]` to get MCP guidance (300 tokens, lightweight)
 
 8. Progress tracking and error handling:
    - Report progress after each completed task
@@ -123,6 +125,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Provide clear error messages with context for debugging
    - Suggest next steps if implementation cannot proceed
    - **IMPORTANT** For completed tasks, make sure to mark the task off as [X] in the tasks file.
+   - **@during-task usage**: When implementing complex tasks, remind user they can run `@during-task [task]` for MCP guidance (optional, not mandatory)
 
 9. Completion validation:
    - Verify all required tasks are completed

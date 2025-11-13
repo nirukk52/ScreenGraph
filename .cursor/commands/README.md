@@ -4,16 +4,43 @@ Quick reference for automation kept in `.cursor/commands/`. Execute scripts from
 
 ---
 
+## 🚀 The 3 Meta Commands (NEW!)
+
+**Use these at specific lifecycle points:**
+
+- `@before-task [task]` - Comprehensive discovery before starting work (2500 tokens, 1× per spec)
+- `@during-task [subtask]` - Lightweight guidance during implementation (300 tokens, 5-10× per spec)
+- `@after-task [completed]` - Knowledge capture after completion (600 tokens, 1× per spec)
+
+**82% token savings. Guaranteed knowledge capture. Self-improving.**
+
+**See:** `THE_3_COMMANDS.md` for quick reference, `START_HERE.md` for complete guide
+
+---
+
 ## Service Automation
 
-- `start-services` — Start both backend and frontend with the Turborepo harness.
-- `stop-services` — Stop all running services.
+- `@start-services` — Start both backend and frontend with the Turborepo harness.
+- `@stop-services` — Stop all running services.
+
+---
+
+## Spec-Kit Commands
+
+Use `@before-task` before creating specs, `@during-task` during implementation, `@after-task` after completion:
+
+- `/speckit.specify` — Create feature specification
+- `/speckit.plan` — Create implementation plan
+- `/speckit.tasks` — Break down into tasks
+- `/speckit.implement` — Execute implementation
+- `/speckit.checklist` — Validation checklist
+- `/speckit.analyze` — Analyze existing code
+- `/speckit.clarify` — Ask clarifying questions
 
 ---
 
 ## Testing & Drift Verification
 
-- `run-default-test` — Guided Playwright flow for the default drift detection run.
 - `qa/Taskfile.yml` — Invoke with `cd .cursor && task qa:<command>` for smoke tests, linting, and E2E suites.
 
 ---
@@ -22,8 +49,7 @@ Quick reference for automation kept in `.cursor/commands/`. Execute scripts from
 
 - `update-skills.md` — Procedure for keeping vibes and Claude skills current.
 - `shared/Taskfile.yml` & `ops/Taskfile.yml` — Environment helpers (`task shared:*`, `task ops:*`).
-- `verify-worktree-isolation` — Legacy check kept for reference; runs only if explicitly invoked.
 
 ---
 
-**Last Updated:** 2025-11-12
+**Last Updated:** 2025-11-13
