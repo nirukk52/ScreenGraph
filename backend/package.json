@@ -40,6 +40,7 @@
     "test:watch": "bunx vitest",
     "appium": "bash scripts/start-appium-service.sh",
     "appium:standalone": "bunx appium --allow-insecure=adb_shell --address 127.0.0.1 --port 4723",
-    "wdio": "wdio run ./wdio.conf.js"
+    "wdio": "wdio run ./wdio.conf.js",
+    "visualize:machine": "bun run scripts/export-machine-viz.ts"
   }
 }

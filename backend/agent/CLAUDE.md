@@ -110,12 +110,12 @@ RunJob → Worker ↓ Worker creates: sessionPort, registry, context, machine �
 - Integration testing via log verification in Encore dashboard
 - Use fake adapters for unit tests
 
-## XState Inspector (Dev)
-- Inspector URL: `https://stately.ai/inspect?server=ws://localhost:5678`
-- Automatically enabled when `NODE_ENV !== "production"`
-- Uses `createWebSocketInspector()` to create a WebSocket server on port 5678
-- Open the URL in Chrome to view live state machine transitions, guards, and actions
-- Inspector URL is logged when a run starts in dev mode
+## XState Machine Visualization
+- **Export for Stately Studio**: `cd backend && bun run visualize:machine`
+- Copy JSON output and paste into https://stately.ai/viz for visual inspection
+- Use for documentation, team sharing, and architecture review
+- Re-export whenever machine structure changes significantly
+- Visualization shows: states, transitions, guards, actions, decision points
 
 ## Future Work
 - Wire LangGraph.js for main loop nodes

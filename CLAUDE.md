@@ -288,6 +288,9 @@ task backend:health                  # Health check
 task backend:db:migrate              # Run migrations
 task backend:db:shell                # Database shell
 
+# Visualization
+cd backend && bun run visualize:machine  # Export agent machine for Stately Studio
+
 # Frontend
 task frontend:dev                    # Start frontend only
 task frontend:build                  # Production build
