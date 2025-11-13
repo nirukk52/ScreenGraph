@@ -133,8 +133,9 @@ export async function perceive(
   events.push({
     kind: "agent.event.screen_perceived",
     payload: {
-      screenId: screenshotResult.refId,
+      screenId: perceptualHash, // Use perceptual hash as screenId (matches graph projection)
       perceptualHash64: perceptualHash,
+      screenshotRefId: screenshotResult.refId, // Include refId for frontend to match synthetic nodes
     },
   });
 

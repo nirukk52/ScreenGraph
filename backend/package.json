@@ -11,6 +11,7 @@
     "encore.dev": "1.51.6",
     "envalid": "^8.1.1",
     "google-play-scraper": "^10.1.1",
+    "nanoid": "^5.1.6",
     "ulidx": "^2.4.1",
     "webdriverio": "^9.20.0",
     "xstate": "^5.9.0"
@@ -25,7 +26,8 @@
     "@wdio/spec-reporter": "^9.20.0",
     "appium": "^2.4.0",
     "appium-uiautomator2-driver": "^2.20.0",
-    "vitest": "^2.0.0"
+    "pg": "^8.16.3",
+    "vitest": "^4.0.8"
   },
   "scripts": {
     "dev": "BACKEND_PORT=${BACKEND_PORT:-4000} encore run --port=${BACKEND_PORT:-4000}",

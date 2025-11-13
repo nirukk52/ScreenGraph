@@ -287,7 +287,7 @@
     "unit_test": "10s",
     "integration_test_database": "30s",
     "integration_test_pubsub": "60s",
-    "metrics_test": "5min",
+    "metrics_test": "30s",
     "all_commands": "30s"
   },
   "common_pitfalls": [

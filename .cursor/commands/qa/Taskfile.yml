@@ -132,11 +132,9 @@ tasks:
     silent: false
 
   appium:stop:
-    desc: "Stop Appium server"
+    desc: "Stop Appium server gracefully"
     cmds:
-      - echo "🛑 Stopping Appium server..."
-      - lsof -ti:${APPIUM_PORT:-4723} 2>/dev/null | xargs kill -9 2>/dev/null || true
-      - echo "✅ Appium server stopped"
+      - bash ../../../automation/scripts/appium-stop.sh
     silent: false
 
   # Rules validation
