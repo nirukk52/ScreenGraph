@@ -150,7 +150,7 @@ export async function checkDevicePrerequisites(
 
     logger.info("device found online", {
       deviceId,
-      totalDevices: deviceRows.length,
+      totalDevices: lines.length,
     });
 
     return {
