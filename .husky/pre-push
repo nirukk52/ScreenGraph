@@ -1,28 +1,69 @@
 #!/bin/sh
 # Husky pre-push hook
-# 1. Cleanup root documentation (vibe_manager_vibe responsibility)
-# 2. Run smoke tests
-# 3. Run E2E tests
+# Validation QA suite + merge commit check
+# 
+# WHY REDUNDANT: Coding agents can bypass pre-commit and push directly.
+# Running qa:all here ensures quality checks at EVERY push.
+#
+# IMPORTANT: qa:all is VALIDATION ONLY (does not modify code)
+# To auto-fix before pushing, run: cd .cursor && task qa:all:fix
+# This will fix issues, show you the changes, and let you stage them.
 
-echo "🧹 Vibe Manager: Cleaning up root documentation..."
+echo "🛠️ Running validation QA suite before push..."
+echo "   (Validation only - does not modify code)"
+echo "   (Redundant with pre-commit for coding agent safety)"
 echo ""
-
-# Clean up temporary/analysis docs from root
-node automation/scripts/cleanup-root-docs.mjs || echo "⚠️  Cleanup had warnings (non-blocking)"
-
-echo ""
-echo "🧪 Running smoke tests before push (bun run qa:smoke)..."
-echo ""
-
-# Single entry point ensures Turborepo + Taskfile stay in sync
-bun run qa:smoke || exit 1
+(cd .cursor && task qa:all) || exit 1
 
 echo ""
-echo "🎭 Running E2E tests before push (bun run test:e2e:ci)..."
+echo "🔍 Checking for merge commits in branch..."
 echo ""
 
-# Run E2E tests in headless CI mode
-bun run test:e2e:ci || exit 1
+# Get remote and branch being pushed to
+remote="$1"
+url="$2"
+
+# Check each ref being pushed
+while read local_ref local_sha remote_ref remote_sha
+do
+  if [ "$local_sha" = "0000000000000000000000000000000000000000" ]; then
+    # Branch deletion, skip
+    continue
+  fi
+  
+  # Get merge base with main
+  merge_base=$(git merge-base origin/main "$local_sha" 2>/dev/null || echo "")
+  
+  if [ -z "$merge_base" ]; then
+    echo "⚠️  Warning: Could not find merge base with origin/main"
+    echo "   Skipping merge commit check"
+    continue
+  fi
+  
+  # Check for merge commits in range
+  merge_commits=$(git log --merges --oneline "$merge_base..$local_sha" 2>/dev/null)
+  
+  if [ -n "$merge_commits" ]; then
+    echo ""
+    echo "❌ ERROR: Branch contains merge commits (repository requires linear history)"
+    echo ""
+    echo "Found merge commits:"
+    echo "$merge_commits"
+    echo ""
+    echo "To fix:"
+    echo "  1. Rebase your branch:"
+    echo "     git fetch origin main"
+    echo "     git rebase origin/main"
+    echo ""
+    echo "  2. Force push (safe for feature branches):"
+    echo "     git push origin $(git rev-parse --abbrev-ref HEAD) --force-with-lease"
+    echo ""
+    echo "Or bypass this check (emergency only):"
+    echo "  HUSKY=0 git push"
+    echo ""
+    exit 1
+  fi
+done
 
 echo ""
 echo "✅ All checks passed - proceeding with push"

@@ -1,9 +1,9 @@
 import type { AgentState } from "../../../domain/state";
-import type { LaunchOrAttachInput, LaunchOrAttachOutput } from "./node";
-import { launchOrAttach } from "./node";
 import type { NodeHandler } from "../../../engine/types";
 import type { AgentContext, AgentNodeName, AgentPorts } from "../../types";
-import { buildLaunchOrAttachInput, applyLaunchOrAttachOutput } from "./mappers";
+import { applyLaunchOrAttachOutput, buildLaunchOrAttachInput } from "./mappers";
+import type { LaunchOrAttachInput, LaunchOrAttachOutput } from "./node";
+import { launchOrAttach } from "./node";
 import { LaunchOrAttachPolicy } from "./policy";
 
 /**

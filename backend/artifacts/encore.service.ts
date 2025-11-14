@@ -7,5 +7,3 @@ import { Service } from "encore.dev/service";
  * generated Encore clients for deterministic, typed access.
  */
 export default new Service("artifacts");
-
-

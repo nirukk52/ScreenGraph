@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./repository", () => ({
   loadAppInfo: vi.fn(),
@@ -11,14 +11,10 @@ vi.mock("./playstore.adapter", () => ({
 }));
 
 import { APIError } from "encore.dev/api";
-import { requestAppInfoIngestion } from "./ingest";
-import {
-  loadAppInfo,
-  markAppInfoIngestFailure,
-  upsertAppInfoFromPlayStore,
-} from "./repository";
-import { fetchNormalizedPlayStoreAppData } from "./playstore.adapter";
 import type { NormalizedPlayStoreAppData, StoredAppInfoRecord } from "./dto";
+import { requestAppInfoIngestion } from "./ingest";
+import { fetchNormalizedPlayStoreAppData } from "./playstore.adapter";
+import { loadAppInfo, markAppInfoIngestFailure, upsertAppInfoFromPlayStore } from "./repository";
 
 /**
  * AppInfo Ingestion Endpoint Tests
@@ -71,7 +67,9 @@ function buildStoredRecord(overrides: Partial<StoredAppInfoRecord> = {}): Stored
   return { ...base, ...overrides };
 }
 
-function buildNormalizedData(overrides: Partial<NormalizedPlayStoreAppData> = {}): NormalizedPlayStoreAppData {
+function buildNormalizedData(
+  overrides: Partial<NormalizedPlayStoreAppData> = {},
+): NormalizedPlayStoreAppData {
   const base: NormalizedPlayStoreAppData = {
     packageName: "com.example.app",
     displayName: "Example App",
@@ -116,7 +114,9 @@ beforeEach(() => {
 
 describe("requestAppInfoIngestion", () => {
   it("rejects invalid package names", async () => {
-    await expect(requestAppInfoIngestion({ packageName: "bad package" })).rejects.toBeInstanceOf(APIError);
+    await expect(requestAppInfoIngestion({ packageName: "bad package" })).rejects.toBeInstanceOf(
+      APIError,
+    );
     expect(fetchNormalizedPlayStoreAppDataMock).not.toHaveBeenCalled();
   });
 
@@ -135,7 +135,9 @@ describe("requestAppInfoIngestion", () => {
     loadAppInfoMock.mockResolvedValueOnce(null);
     fetchNormalizedPlayStoreAppDataMock.mockRejectedValueOnce(new Error("network"));
 
-    await expect(requestAppInfoIngestion({ packageName: "com.example.app" })).rejects.toBeInstanceOf(APIError);
+    await expect(
+      requestAppInfoIngestion({ packageName: "com.example.app" }),
+    ).rejects.toBeInstanceOf(APIError);
 
     expect(markAppInfoIngestFailureMock).toHaveBeenCalledWith(
       "com.example.app",
@@ -153,7 +155,10 @@ describe("requestAppInfoIngestion", () => {
     fetchNormalizedPlayStoreAppDataMock.mockResolvedValueOnce(normalized);
     upsertAppInfoFromPlayStoreMock.mockResolvedValueOnce(stored);
 
-    const response = await requestAppInfoIngestion({ packageName: "com.example.app", forceRefresh: true });
+    const response = await requestAppInfoIngestion({
+      packageName: "com.example.app",
+      forceRefresh: true,
+    });
 
     expect(fetchNormalizedPlayStoreAppDataMock).toHaveBeenCalledWith("com.example.app", {
       language: undefined,
@@ -163,4 +168,3 @@ describe("requestAppInfoIngestion", () => {
     expect(response.appInfo).toBe(stored);
   });
 });
-

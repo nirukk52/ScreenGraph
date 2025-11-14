@@ -1,34 +1,34 @@
 <script lang="ts">
-  import { Download, Star, Users } from 'lucide-svelte';
-  import type { PageData } from './$types';
-  
-  /** App info display page component.
-   * PURPOSE: Render Play Store metadata with Skeleton UI styling for visual verification.
-   */
-  let { data }: { data: PageData } = $props();
-  
-  const appInfo = data.appInfo;
-  const error = data.error;
-  
-  /** Track failed image loads for error handling */
-  const failedImages = $state<Set<string>>(new Set());
-  
-  /** Handle image load errors */
-  function handleImageError(event: Event) {
-    const img = event.target as HTMLImageElement;
-    if (img.src) {
-      failedImages.add(img.src);
-      console.warn("Failed to load screenshot:", img.src);
-    }
+import { Download, Star, Users } from "lucide-svelte";
+import type { PageData } from "./$types";
+
+/** App info display page component.
+ * PURPOSE: Render Play Store metadata with Skeleton UI styling for visual verification.
+ */
+const { data }: { data: PageData } = $props();
+
+const appInfo = data.appInfo;
+const error = data.error;
+
+/** Track failed image loads for error handling */
+let failedImages = $state<Set<string>>(new Set());
+
+/** Handle image load errors */
+function handleImageError(event: Event) {
+  const img = event.target as HTMLImageElement;
+  if (img.src) {
+    failedImages.add(img.src);
+    console.warn("Failed to load screenshot:", img.src);
   }
-  
-  /** Handle successful image loads */
-  function handleImageLoad(event: Event) {
-    const img = event.target as HTMLImageElement;
-    if (failedImages.has(img.src)) {
-      failedImages.delete(img.src);
-    }
+}
+
+/** Handle successful image loads */
+function handleImageLoad(event: Event) {
+  const img = event.target as HTMLImageElement;
+  if (failedImages.has(img.src)) {
+    failedImages.delete(img.src);
   }
+}
 </script>
 
 {#if error}

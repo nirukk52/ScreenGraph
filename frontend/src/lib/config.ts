@@ -1,9 +1,4 @@
-import {
-  VITE_APP_ACTIVITY,
-  VITE_APK_PATH,
-  VITE_APPIUM_SERVER_URL,
-  VITE_PACKAGE_NAME,
-} from "./env";
+import { VITE_APK_PATH, VITE_APPIUM_SERVER_URL, VITE_APP_ACTIVITY, VITE_PACKAGE_NAME } from "./env";
 
 /**
  * DEFAULT_RUN_CONFIG centralizes configurable defaults for starting a run.
@@ -24,5 +19,3 @@ export const DEFAULT_DEVICE_CONFIG = {
   packageName: VITE_PACKAGE_NAME,
   appActivity: VITE_APP_ACTIVITY,
 } as const;
-
-

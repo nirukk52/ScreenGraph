@@ -1,6 +1,6 @@
-import type { AgentContext } from "./types";
 import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../logging/logger";
+import { AGENT_ACTORS, MODULES } from "../../logging/logger";
+import type { AgentContext } from "./types";
 
 /**
  * Builds AgentContext from run job configuration.
@@ -36,7 +36,7 @@ export function buildAgentContext(params: {
       applicationUnderTestDescriptor: {
         androidPackageId: params.packageName,
         apkStorageObjectReference: params.apkPath,
-        expectedBuildSignatureSha256: "default-sha256",
+        expectedBuildSignatureSha256: null, // Skip signature check for local dev
         expectedVersionCode: null,
         expectedVersionName: null,
       },

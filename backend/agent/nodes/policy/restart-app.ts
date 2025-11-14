@@ -1,5 +1,5 @@
-import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import type { EventKind } from "../../domain/events";
+import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import type { AppLifecyclePort } from "../../ports/appium/app-lifecycle.port";
 
 export interface RestartAppInput extends CommonNodeInput {

@@ -20,7 +20,7 @@ export class EncoreStorageAdapter implements StoragePort {
 
     // Lazy import to avoid compile-time error before client generation
     const { artifacts } = await import("~encore/clients");
-    
+
     const res = await artifacts.storeArtifact({
       runId,
       kind,
@@ -42,5 +42,3 @@ export class EncoreStorageAdapter implements StoragePort {
     return { content: Buffer.alloc(0), metadata: meta as unknown as Record<string, unknown> };
   }
 }
-
-

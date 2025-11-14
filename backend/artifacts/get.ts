@@ -1,7 +1,7 @@
-import { api, APIError } from "encore.dev/api";
+import { APIError, api } from "encore.dev/api";
 import log from "encore.dev/log";
-import type { GetArtifactMetaResponse } from "./dto";
 import db from "../db";
+import type { GetArtifactMetaResponse } from "./dto";
 
 /**
  * getArtifactMeta returns indexed metadata for a given refId.
@@ -41,5 +41,3 @@ export const getArtifactMeta = api<{ refId: string }, GetArtifactMetaResponse>(
     };
   },
 );
-
-

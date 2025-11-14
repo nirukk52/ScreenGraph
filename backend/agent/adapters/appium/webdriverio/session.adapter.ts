@@ -1,10 +1,10 @@
+import log from "encore.dev/log";
 import { remote } from "webdriverio";
+import { AGENT_ACTORS, MODULES } from "../../../../logging/logger";
 import type { DeviceRuntimeContext } from "../../../domain/entities";
-import type { SessionPort, DeviceConfiguration } from "../../../ports/appium/session.port";
+import type { DeviceConfiguration, SessionPort } from "../../../ports/appium/session.port";
 import { DeviceOfflineError, TimeoutError } from "../errors";
 import type { SessionContext } from "./session-context";
-import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
 
 interface RemoteOptions {
   hostname: string;
@@ -63,18 +63,18 @@ export class WebDriverIOSessionAdapter implements SessionPort {
 
   /**
    * Lazily initialize the Appium session if not already created.
-   * 
+   *
    * PURPOSE:
    * --------
    * Create the actual WebDriverIO session on first use (not during EnsureDevice).
    * Defers session creation until app context is available in ProvisionApp.
-   * 
+   *
    * Args:
    *   config: Device configuration (needed for session creation)
-   * 
+   *
    * Returns:
    *   SessionContext with active WebDriverIO driver
-   * 
+   *
    * Raises:
    *   DeviceOfflineError: If session creation fails
    *   TimeoutError: If session creation times out
@@ -86,9 +86,9 @@ export class WebDriverIOSessionAdapter implements SessionPort {
     });
 
     // If we already have a real driver, return existing context
-    if (this.context?.driver && this.context.driver.sessionId) {
-      logger.info("Session already initialized, reusing", { 
-        sessionId: this.context.driver.sessionId 
+    if (this.context?.driver?.sessionId) {
+      logger.info("Session already initialized, reusing", {
+        sessionId: this.context.driver.sessionId,
       });
       return this.context;
     }
@@ -154,14 +154,16 @@ export class WebDriverIOSessionAdapter implements SessionPort {
       logger.error("Failed to create Appium session", {
         error: error instanceof Error ? error.message : String(error),
       });
-      
+
       if (error instanceof Error) {
         const errorMsg = error.message.toLowerCase();
         if (errorMsg.includes("timeout")) {
           throw new TimeoutError(`Session creation timeout: ${error.message}`);
         }
       }
-      throw new DeviceOfflineError(`Failed to create session: ${error instanceof Error ? error.message : String(error)}`);
+      throw new DeviceOfflineError(
+        `Failed to create session: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -204,7 +206,7 @@ export class WebDriverIOSessionAdapter implements SessionPort {
       if (this.context?.driver === null || (this.context && !this.context.driver.sessionId)) {
         logger.info("Lazy initialization: creating Appium session");
         await this.ensureSessionInitialized(config);
-        
+
         if (!this.context) {
           throw new DeviceOfflineError("Session initialization failed");
         }
@@ -222,7 +224,7 @@ export class WebDriverIOSessionAdapter implements SessionPort {
       logger.info("Deferring session creation until app context is available");
 
       const deviceRuntimeContextId = `pending-${Date.now()}`;
-      
+
       // Store minimal context for later
       const capabilities = {
         platformName: config.platformName,
@@ -242,16 +244,17 @@ export class WebDriverIOSessionAdapter implements SessionPort {
         healthProbeStatus: "HEALTHY" as const,
       };
     } catch (error) {
-      const errorDetails = error instanceof Error 
-        ? {
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
-          }
-        : String(error);
-      
+      const errorDetails =
+        error instanceof Error
+          ? {
+              name: error.name,
+              message: error.message,
+              stack: error.stack,
+            }
+          : String(error);
+
       logger.error("ensureDevice failed", { error: errorDetails, config });
-      
+
       if (error instanceof Error) {
         const errorMsg = error.message.toLowerCase();
         if (errorMsg.includes("econnrefused") || errorMsg.includes("econnreset")) {
@@ -261,7 +264,9 @@ export class WebDriverIOSessionAdapter implements SessionPort {
           throw new TimeoutError(`Connection timeout: ${error.message}`);
         }
       }
-      throw new DeviceOfflineError(`Failed to ensure device: ${error instanceof Error ? error.message : String(error)}`);
+      throw new DeviceOfflineError(
+        `Failed to ensure device: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 

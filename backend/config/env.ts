@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { bool, cleanEnv, num, port, str, url } from "envalid";
+import { url, bool, cleanEnv, num, port, str } from "envalid";
 
 /**
  * env exposes validated, typed environment variables for the backend runtime.

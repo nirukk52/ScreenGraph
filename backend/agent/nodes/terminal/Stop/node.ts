@@ -1,8 +1,8 @@
-import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
-import type { EventKind } from "../../../domain/events";
-import db from "../../../../db";
 import log from "encore.dev/log";
-import { MODULES, AGENT_ACTORS } from "../../../../logging/logger";
+import db from "../../../../db";
+import { AGENT_ACTORS, MODULES } from "../../../../logging/logger";
+import type { EventKind } from "../../../domain/events";
+import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
 
 export interface StopInput extends CommonNodeInput {
   runId: string;
@@ -28,9 +28,7 @@ export interface StopOutput extends CommonNodeOutput {
  * stop finalizes the run and emits terminal disposition telemetry.
  * PURPOSE: Provides a deterministic completion point for the agent orchestration loop.
  */
-export async function stop(
-  input: StopInput,
-): Promise<{
+export async function stop(input: StopInput): Promise<{
   output: StopOutput;
   events: Array<{ kind: EventKind; payload: Record<string, unknown> }>;
 }> {
@@ -40,7 +38,7 @@ export async function stop(
     runId: input.runId,
     nodeName: "Stop",
   });
-  logger.info("Stop INPUT", { 
+  logger.info("Stop INPUT", {
     input: {
       runId: input.runId,
       stepOrdinal: input.stepOrdinal,
@@ -48,7 +46,7 @@ export async function stop(
       intendedTerminalDisposition: input.intendedTerminalDisposition,
       terminalizationBasis: input.terminalizationBasis,
       finalRunMetrics: input.finalRunMetrics,
-    }
+    },
   });
 
   // Use metrics from input (DB query removed to fix regression)
@@ -75,13 +73,13 @@ export async function stop(
     humanReadableFailureSummary: null,
   };
 
-  logger.info("Stop OUTPUT", { 
+  logger.info("Stop OUTPUT", {
     output: {
       runId: output.runId,
       confirmedTerminalDisposition: output.confirmedTerminalDisposition,
       stepOrdinal: output.stepOrdinal,
       correctedMetrics,
-    }
+    },
   });
 
   return {
@@ -98,4 +96,3 @@ export async function stop(
     ],
   };
 }
-

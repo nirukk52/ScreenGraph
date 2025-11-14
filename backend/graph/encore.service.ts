@@ -12,5 +12,3 @@ startGraphProjector();
 // Import endpoints to register them with Encore
 import "./get-screens";
 import "./stream";
-
-

@@ -1,4 +1,4 @@
-import { api, APIError } from "encore.dev/api";
+import { APIError, api } from "encore.dev/api";
 import log from "encore.dev/log";
 import type {
   GetAppInfoRequest,
@@ -7,12 +7,8 @@ import type {
   RequestAppInfoIngestionResponse,
   StoredAppInfoRecord,
 } from "./dto";
-import {
-  loadAppInfo,
-  markAppInfoIngestFailure,
-  upsertAppInfoFromPlayStore,
-} from "./repository";
 import { fetchNormalizedPlayStoreAppData } from "./playstore.adapter";
+import { loadAppInfo, markAppInfoIngestFailure, upsertAppInfoFromPlayStore } from "./repository";
 
 /**
  * PACKAGE_NAME_PATTERN restricts allowed Android package identifiers.
@@ -78,55 +74,65 @@ function isFresh(record: StoredAppInfoRecord | null): boolean {
  * requestAppInfoIngestion fetches Play Store metadata and persists it to Postgres.
  * PURPOSE: Primary Encore endpoint invoked by backend workflows.
  */
-export const requestAppInfoIngestion = api<RequestAppInfoIngestionRequest, RequestAppInfoIngestionResponse>(
-  { method: "POST", path: "/appinfo/ingest", expose: true },
-  async (req) => {
-    validatePackageName(req.packageName);
+export const requestAppInfoIngestion = api<
+  RequestAppInfoIngestionRequest,
+  RequestAppInfoIngestionResponse
+>({ method: "POST", path: "/appinfo/ingest", expose: true }, async (req) => {
+  validatePackageName(req.packageName);
 
-    const baseLog = log.with({ module: "appinfo", actor: "ingestion", packageName: req.packageName });
+  const baseLog = log.with({ module: "appinfo", actor: "ingestion", packageName: req.packageName });
 
-    if (!req.forceRefresh) {
-      const existing = await loadAppInfo(req.packageName);
-      if (isFresh(existing)) {
-        baseLog.info("Using cached appinfo record", { ingestedAt: existing?.ingestedAt?.toISOString() });
-        return { appInfo: existing as StoredAppInfoRecord };
-      }
-    }
-
-    baseLog.info("Fetching Play Store metadata", {
-      language: req.language ?? "default",
-      country: req.country ?? "default",
-    });
-
-    let normalized;
-    try {
-      normalized = await fetchNormalizedPlayStoreAppData(req.packageName, {
-        language: req.language,
-        country: req.country,
+  if (!req.forceRefresh) {
+    const existing = await loadAppInfo(req.packageName);
+    if (isFresh(existing)) {
+      baseLog.info("Using cached appinfo record", {
+        ingestedAt: existing?.ingestedAt?.toISOString(),
       });
-    } catch (err) {
-      baseLog.error("Play Store fetch failed", { err });
-      await markAppInfoIngestFailure(req.packageName, "play_store_fetch_failed", err instanceof Error ? err.message : "unknown_error");
-      throw APIError.internal("play_store_fetch_failed");
+      return { appInfo: existing as StoredAppInfoRecord };
     }
+  }
 
-    let stored: StoredAppInfoRecord;
-    try {
-      stored = await upsertAppInfoFromPlayStore(normalized);
-    } catch (err) {
-      baseLog.error("Persistence failed", { err });
-      await markAppInfoIngestFailure(req.packageName, "appinfo_persistence_failed", err instanceof Error ? err.message : "unknown_error");
-      throw APIError.internal("appinfo_persistence_failed");
-    }
+  baseLog.info("Fetching Play Store metadata", {
+    language: req.language ?? "default",
+    country: req.country ?? "default",
+  });
 
-    baseLog.info("Appinfo ingestion completed", {
-      ingestStatus: stored.ingestStatus,
-      ingestedAt: stored.ingestedAt?.toISOString(),
+  let normalized: Awaited<ReturnType<typeof fetchNormalizedPlayStoreAppData>>;
+  try {
+    normalized = await fetchNormalizedPlayStoreAppData(req.packageName, {
+      language: req.language,
+      country: req.country,
     });
+  } catch (err) {
+    baseLog.error("Play Store fetch failed", { err });
+    await markAppInfoIngestFailure(
+      req.packageName,
+      "play_store_fetch_failed",
+      err instanceof Error ? err.message : "unknown_error",
+    );
+    throw APIError.internal("play_store_fetch_failed");
+  }
 
-    return { appInfo: stored };
-  },
-);
+  let stored: StoredAppInfoRecord;
+  try {
+    stored = await upsertAppInfoFromPlayStore(normalized);
+  } catch (err) {
+    baseLog.error("Persistence failed", { err });
+    await markAppInfoIngestFailure(
+      req.packageName,
+      "appinfo_persistence_failed",
+      err instanceof Error ? err.message : "unknown_error",
+    );
+    throw APIError.internal("appinfo_persistence_failed");
+  }
+
+  baseLog.info("Appinfo ingestion completed", {
+    ingestStatus: stored.ingestStatus,
+    ingestedAt: stored.ingestedAt?.toISOString(),
+  });
+
+  return { appInfo: stored };
+});
 
 /**
  * getAppInfo returns the cached metadata for a package name.
@@ -145,4 +151,3 @@ export const getAppInfo = api<GetAppInfoRequest, GetAppInfoResponse>(
     return { appInfo: record };
   },
 );
-

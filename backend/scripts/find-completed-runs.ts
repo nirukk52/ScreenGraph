@@ -41,7 +41,7 @@ async function findCompletedRuns(): Promise<void> {
       console.log(`  ${run.run_id}`);
       console.log(`    status=${run.status} created=${run.created_at}`);
     }
-    
+
     process.exit(0);
   }
 
@@ -60,4 +60,3 @@ findCompletedRuns().catch((err) => {
   console.error("Failed:", err);
   process.exit(1);
 });
-

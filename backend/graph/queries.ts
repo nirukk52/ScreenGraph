@@ -46,4 +46,3 @@ export async function getRunStatus(runId: string): Promise<string | null> {
 
   return result?.status || null;
 }
-

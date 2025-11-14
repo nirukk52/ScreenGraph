@@ -14,36 +14,36 @@ Usage:
 ```
 -->
 <script lang="ts">
-	/** Generate unique ID for label association */
-	const inputId = `retro-input-${Math.random().toString(36).substring(2, 9)}`;
+/** Generate unique ID for label association */
+const inputId = `retro-input-${Math.random().toString(36).substring(2, 9)}`;
 
-	/** Input label text */
-	let {
-		label = undefined,
-		/** Input type */
-		type = 'text',
-		/** Placeholder text */
-		placeholder = '',
-		/** Input value */
-		value = $bindable(''),
-		/** Required field */
-		required = false,
-		/** Additional CSS classes */
-		class: className = '',
-		/** Change handler */
-		onchange = undefined,
-		/** Input handler */
-		oninput = undefined
-	}: {
-		label?: string;
-		type?: string;
-		placeholder?: string;
-		value?: string;
-		required?: boolean;
-		class?: string;
-		onchange?: (e: Event) => void;
-		oninput?: (e: Event) => void;
-	} = $props();
+/** Input label text */
+let {
+  label = undefined,
+  /** Input type */
+  type = "text",
+  /** Placeholder text */
+  placeholder = "",
+  /** Input value */
+  value = $bindable(""),
+  /** Required field */
+  required = false,
+  /** Additional CSS classes */
+  class: className = "",
+  /** Change handler */
+  onchange = undefined,
+  /** Input handler */
+  oninput = undefined,
+}: {
+  label?: string;
+  type?: string;
+  placeholder?: string;
+  value?: string;
+  required?: boolean;
+  class?: string;
+  onchange?: (e: Event) => void;
+  oninput?: (e: Event) => void;
+} = $props();
 </script>
 
 <div class="space-y-2 {className}">
@@ -58,9 +58,12 @@ Usage:
 		{type}
 		{placeholder}
 		{required}
-		bind:value
+		{value}
+		oninput={(e) => {
+			value = e.currentTarget.value;
+			oninput?.(e);
+		}}
 		{onchange}
-		{oninput}
 		class="w-full px-4 py-3 bg-white retro-shadow rounded-xl text-[var(--color-charcoal)] placeholder:text-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-charcoal)] focus:ring-offset-2 transition-all"
 	/>
 </div>

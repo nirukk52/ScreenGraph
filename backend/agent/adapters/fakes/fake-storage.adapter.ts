@@ -5,7 +5,8 @@ import type { StoragePort } from "../../ports/storage";
  * Stores artifacts in-memory without requiring actual object storage.
  */
 export class FakeStorageAdapter implements StoragePort {
-  private artifacts: Map<string, { content: string | Buffer; metadata: Record<string, unknown> }> = new Map();
+  private artifacts: Map<string, { content: string | Buffer; metadata: Record<string, unknown> }> =
+    new Map();
 
   async storeArtifact(
     runId: string,
@@ -18,7 +19,9 @@ export class FakeStorageAdapter implements StoragePort {
     return { refId };
   }
 
-  async retrieveArtifact(refId: string): Promise<{ content: string | Buffer; metadata: Record<string, unknown> }> {
+  async retrieveArtifact(
+    refId: string,
+  ): Promise<{ content: string | Buffer; metadata: Record<string, unknown> }> {
     const artifact = this.artifacts.get(refId);
     if (!artifact) {
       throw new Error(`Artifact not found: ${refId}`);
@@ -26,4 +29,3 @@ export class FakeStorageAdapter implements StoragePort {
     return artifact;
   }
 }
-

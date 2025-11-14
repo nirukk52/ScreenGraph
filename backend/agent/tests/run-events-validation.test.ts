@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { InMemoryRepo } from "../persistence/in-memory-repo";
-import {
-  createRunStartedEvent,
-  createRunFinishedEvent,
-  createNodeStartedEvent,
-  createNodeFinishedEvent,
-  type DomainEvent,
-} from "../domain/events";
 import { ulid } from "ulidx";
+import { beforeEach, describe, expect, it } from "vitest";
+import {
+  type DomainEvent,
+  createNodeFinishedEvent,
+  createNodeStartedEvent,
+  createRunFinishedEvent,
+  createRunStartedEvent,
+} from "../domain/events";
+import { InMemoryRepo } from "../persistence/in-memory-repo";
 
 /**
  * Run Events Invariant Tests
@@ -37,12 +37,16 @@ describe("Run Events Invariants", () => {
   function assertRunEventsInvariant(events: DomainEvent[]): void {
     const startEvents = events.filter((event) => event.kind === "agent.run.started");
     if (startEvents.length !== 1) {
-      throw new Error(`Expected exactly one agent.run.started event, received ${startEvents.length}`);
+      throw new Error(
+        `Expected exactly one agent.run.started event, received ${startEvents.length}`,
+      );
     }
 
     const stopEvents = events.filter((event) => event.kind === "agent.run.finished");
     if (stopEvents.length !== 1) {
-      throw new Error(`Expected exactly one agent.run.finished event, received ${stopEvents.length}`);
+      throw new Error(
+        `Expected exactly one agent.run.finished event, received ${stopEvents.length}`,
+      );
     }
 
     const lastEvent = events.at(-1);
@@ -55,21 +59,15 @@ describe("Run Events Invariants", () => {
     const now = () => new Date().toISOString();
 
     await repo.appendEvent(createRunStartedEvent(ulid(), runId, 1, now()));
-    await repo.appendEvent(
-      createNodeStartedEvent(ulid(), runId, 2, now(), "EnsureDevice", 1),
-    );
+    await repo.appendEvent(createNodeStartedEvent(ulid(), runId, 2, now(), "EnsureDevice", 1));
     await repo.appendEvent(
       createNodeFinishedEvent(ulid(), runId, 3, now(), "EnsureDevice", 1, "success"),
     );
-    await repo.appendEvent(
-      createNodeStartedEvent(ulid(), runId, 4, now(), "ProvisionApp", 2),
-    );
+    await repo.appendEvent(createNodeStartedEvent(ulid(), runId, 4, now(), "ProvisionApp", 2));
     await repo.appendEvent(
       createNodeFinishedEvent(ulid(), runId, 5, now(), "ProvisionApp", 2, "success"),
     );
-    await repo.appendEvent(
-      createRunFinishedEvent(ulid(), runId, 6, now(), "goal_reached"),
-    );
+    await repo.appendEvent(createRunFinishedEvent(ulid(), runId, 6, now(), "goal_reached"));
 
     const events = await repo.getEvents(runId);
 

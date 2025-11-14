@@ -110,16 +110,41 @@ tasks:
       - cd ../../../frontend && bun run test:e2e:ui
     silent: false
 
-  # Complete test suite
+  # Validation-only QA suite (for git hooks and CI)
+  # Does NOT modify code - only validates
   all:
-    desc: "Complete test suite (smoke + lint + typecheck + unit + e2e)"
+    desc: "Validation QA suite (rules + smoke + lint + typecheck + unit + e2e)"
     cmds:
+      - echo "🎯 Running validation QA suite (no auto-fix)..."
+      - echo ""
+      - task: rules:check
+      - echo ""
       - task: smoke
+      - echo ""
       - task: lint
+      - echo ""
       - task: typecheck
+      - echo ""
       - task: unit
+      - echo ""
       - task: e2e
-      - echo "🎉 All tests passed!"
+      - echo ""
+      - echo "🎉 All validation checks passed!"
+    silent: false
+  
+  # Complete QA workflow (fix THEN validate)
+  # Use this manually before committing
+  all:fix:
+    desc: "Complete workflow - auto-fix then validate (manual use only)"
+    cmds:
+      - echo "Step 1 - Auto-fixing issues..."
+      - task: fix
+      - echo ""
+      - echo "Auto-fix complete. Review changes with git diff"
+      - echo "Stage changes with git add . if satisfied"
+      - echo ""
+      - echo "Step 2 - Running validation suite..."
+      - task: all
     silent: false
 
   # Appium (mobile testing)
@@ -132,9 +157,25 @@ tasks:
     silent: false
 
   appium:stop:
-    desc: "Stop Appium server"
+    desc: "Stop Appium server gracefully"
     cmds:
-      - echo "🛑 Stopping Appium server..."
-      - lsof -ti:${APPIUM_PORT:-4723} 2>/dev/null | xargs kill -9 2>/dev/null || true
-      - echo "✅ Appium server stopped"
+      - bash ../../../automation/scripts/appium-stop.sh
+    silent: false
+
+  # Rules validation
+  rules:check:
+    desc: "Validate all founder rules"
+    cmds:
+      - node ../../../automation/scripts/check-founder-rules.mjs
+    silent: false
+
+  # Auto-fix code quality issues
+  fix:
+    desc: "Auto-fix linting and formatting issues"
+    cmds:
+      - echo "🔧 Auto-fixing backend..."
+      - cd ../../../backend && bunx biome check --write .
+      - echo "🔧 Auto-fixing frontend..."
+      - cd ../../../frontend && bunx biome check --write .
+      - echo "✅ Auto-fix complete"
     silent: false

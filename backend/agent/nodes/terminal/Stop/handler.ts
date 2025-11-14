@@ -1,8 +1,8 @@
 import type { NodeHandler } from "../../../engine/types";
 import type { AgentContext, AgentNodeName, AgentPorts } from "../../types";
+import { applyStopOutput, buildStopInput } from "./mappers";
 import type { StopInput, StopOutput } from "./node";
 import { stop } from "./node";
-import { buildStopInput, applyStopOutput } from "./mappers";
 import { StopPolicy } from "./policy";
 
 /**
@@ -31,4 +31,3 @@ export function createStopHandler(): NodeHandler<
     onFailure: StopPolicy,
   };
 }
-

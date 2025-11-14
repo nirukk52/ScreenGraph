@@ -198,7 +198,9 @@ function deriveMediaAssets(details: GooglePlayScraperAppDetails): PlayStoreMedia
  * toNormalizedPlayStoreAppData maps scraper payloads into ScreenGraph DTOs.
  * PURPOSE: Centralize transformation logic to keep endpoints slim.
  */
-function toNormalizedPlayStoreAppData(details: GooglePlayScraperAppDetails): NormalizedPlayStoreAppData {
+function toNormalizedPlayStoreAppData(
+  details: GooglePlayScraperAppDetails,
+): NormalizedPlayStoreAppData {
   const primaryCategory = mapCategoryId(details.genreId);
   const additionalCategories: AppInfoCategory[] = [];
   const familyCategory = mapCategoryId(details.familyGenreId);
@@ -284,7 +286,8 @@ export function mapMediaKind(kind: string): AppInfoMediaKind {
     "feature_graphic",
     "video_trailer",
   ];
-  return (allowedKinds.find((candidate) => candidate === kind) ?? "phone_screenshot") as AppInfoMediaKind;
+  return (allowedKinds.find((candidate) => candidate === kind) ??
+    "phone_screenshot") as AppInfoMediaKind;
 }
 
 /**
@@ -296,4 +299,3 @@ export const __testUtils__ = {
   deriveMediaAssets,
   toNormalizedPlayStoreAppData,
 };
-

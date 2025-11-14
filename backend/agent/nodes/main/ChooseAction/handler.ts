@@ -1,8 +1,8 @@
 import type { NodeHandler } from "../../../engine/types";
 import type { AgentContext, AgentNodeName, AgentPorts } from "../../types";
+import { applyChooseActionOutput, buildChooseActionInput } from "./mappers";
 import type { ChooseActionInput, ChooseActionOutput } from "./node";
 import { chooseAction } from "./node";
-import { buildChooseActionInput, applyChooseActionOutput } from "./mappers";
 import { ChooseActionPolicy } from "./policy";
 
 /**
@@ -31,4 +31,3 @@ export function createChooseActionHandler(): NodeHandler<
     onFailure: ChooseActionPolicy,
   };
 }
-

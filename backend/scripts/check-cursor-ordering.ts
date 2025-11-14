@@ -24,7 +24,9 @@ async function checkCursorOrdering(): Promise<void> {
 
   console.log("Oldest 50 cursors (processed by projector):");
   console.log(`  First: ${oldestCursors[0]?.run_id} updated=${oldestCursors[0]?.updated_at}`);
-  console.log(`  Last:  ${oldestCursors[oldestCursors.length - 1]?.run_id} updated=${oldestCursors[oldestCursors.length - 1]?.updated_at}`);
+  console.log(
+    `  Last:  ${oldestCursors[oldestCursors.length - 1]?.run_id} updated=${oldestCursors[oldestCursors.length - 1]?.updated_at}`,
+  );
   console.log();
 
   // Get newest cursors
@@ -62,4 +64,3 @@ checkCursorOrdering().catch((err) => {
   console.error("Failed:", err);
   process.exit(1);
 });
-

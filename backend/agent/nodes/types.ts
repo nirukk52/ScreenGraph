@@ -1,13 +1,13 @@
-import type { DeviceConfiguration } from "../ports/appium/session.port";
-import type { SessionPort } from "../ports/appium/session.port";
 import type { AppLifecyclePort } from "../ports/appium/app-lifecycle.port";
+import type { DeviceInfoPort } from "../ports/appium/device-info.port";
 import type { IdleDetectorPort } from "../ports/appium/idle-detector.port";
 import type { PackageManagerPort } from "../ports/appium/package-manager.port";
 import type { PerceptionPort } from "../ports/appium/perception.port";
-import type { DeviceInfoPort } from "../ports/appium/device-info.port";
-import type { StoragePort } from "../ports/storage";
-import type { LLMPort } from "../ports/llm";
+import type { DeviceConfiguration } from "../ports/appium/session.port";
+import type { SessionPort } from "../ports/appium/session.port";
 import type { GraphPort } from "../ports/graph";
+import type { LLMPort } from "../ports/llm";
+import type { StoragePort } from "../ports/storage";
 
 /**
  * AgentNodeName enumerates all nodes available in the agent execution graph.

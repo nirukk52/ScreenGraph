@@ -1,10 +1,10 @@
-import { Orchestrator } from "../orchestrator/orchestrator";
-import { InMemoryRepo } from "../persistence/in-memory-repo";
-import { FakeSessionPort } from "../adapters/fakes/fake-session.port";
-import { FakeStorage } from "../adapters/fakes/fake-storage";
 import { FakeLLM } from "../adapters/fakes/fake-llm";
 import { FakeOCR } from "../adapters/fakes/fake-ocr";
+import { FakeSessionPort } from "../adapters/fakes/fake-session.port";
+import { FakeStorage } from "../adapters/fakes/fake-storage";
 import type { Budgets } from "../domain/state";
+import { Orchestrator } from "../orchestrator/orchestrator";
+import { InMemoryRepo } from "../persistence/in-memory-repo";
 const policyDefaults = {
   maxSteps: 50,
   maxTimeMs: 300000,
@@ -111,7 +111,7 @@ async function runDemo() {
 
   console.log("⏳ Step 4: WaitIdle (Skipped - not yet migrated to capsule)");
   await repo.saveSnapshot(runId, 3, state);
-  console.log(`   → Quiet window: 500ms\n`);
+  console.log("   → Quiet window: 500ms\n");
 
   console.log("=== MAIN LOOP (Stubbed - 3 iterations) ===\n");
 

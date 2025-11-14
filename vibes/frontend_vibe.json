@@ -114,12 +114,12 @@
     },
     {
       "skill": "frontend-development",
-      "when": "Comprehensive Svelte 5 + SvelteKit development guide",
+      "when": "Svelte 5 + Skeleton development workflow with progressive disclosure references",
       "type": "knowledge"
     },
     {
-      "skill": "webapp-testing",
-      "when": "Playwright testing strategies for ScreenGraph",
+      "skill": "e2e-testing",
+      "when": "Playwright-first end-to-end testing strategies for ScreenGraph UI flows",
       "type": "knowledge"
     }
   ],
@@ -165,6 +165,76 @@
     "✅ Always run: task founder:workflows:regen-client",
     "❌ Using deprecated Svelte syntax in new code",
     "✅ Validate with svelte.autofixer before delivery"
+  ],
+  "debugging_techniques": {
+    "visual_issues": {
+      "recommended": [
+        "Use playwright.snapshot() to inspect DOM structure",
+        "Use playwright.screenshot() for visual verification",
+        "Check Tailwind classes in browser DevTools",
+        "Verify component hierarchy with Svelte DevTools"
+      ],
+      "avoid": [
+        "Reading compiled Svelte JS (too complex)",
+        "Adding debug UI overlays (clutters code)",
+        "Using alert() for debugging (blocks execution)"
+      ]
+    },
+    "reactivity_issues": {
+      "recommended": [
+        "Add strategic console.log in $effect() to track changes",
+        "Use svelte.autofixer to validate rune syntax",
+        "Check if state is properly wrapped in $state()",
+        "Verify $derived() dependencies are reactive"
+      ],
+      "avoid": [
+        "Using legacy $: syntax (Svelte 3/4)",
+        "Mutating state directly without set/update",
+        "Forgetting to destructure $props() in components"
+      ]
+    },
+    "api_integration": {
+      "recommended": [
+        "Use playwright.console_messages() to check for API errors",
+        "Verify Encore client import: import { service } from '~encore/clients'",
+        "Check network tab via playwright.network_requests()",
+        "Test with E2E tests that exercise full flow"
+      ],
+      "avoid": [
+        "Manual fetch() calls (lose type safety)",
+        "Assuming API shape without checking types",
+        "Testing only happy path (add error cases)"
+      ]
+    },
+    "duplication_bugs": {
+      "symptoms": [
+        "Duplicate elements in UI (e.g., two screenshots for same event)",
+        "Keys not unique in {#each} blocks",
+        "Multiple subscriptions to same data stream"
+      ],
+      "diagnosis": [
+        "Use playwright.snapshot() to inspect duplicate elements",
+        "Check if IDs/keys are truly unique",
+        "Verify data source doesn't emit duplicates",
+        "Look for race conditions in async updates"
+      ],
+      "fixes": [
+        "Ensure unique keys in {#each} blocks",
+        "Deduplicate data at source or in derived state",
+        "Use Map for O(1) lookups instead of arrays",
+        "Add cleanup logic in $effect() return function"
+      ]
+    }
+  },
+  "debugging_checklist": [
+    "[ ] Loaded frontend_vibe with appropriate MCP tools",
+    "[ ] Checked DEBUGGING_TOOLKIT.md for similar issues",
+    "[ ] Used playwright.snapshot() to inspect live DOM",
+    "[ ] Verified Svelte syntax with svelte.autofixer",
+    "[ ] Checked browser console via playwright.console_messages()",
+    "[ ] Tested with E2E test + Playwright MCP inspection",
+    "[ ] Added regression test to prevent recurrence",
+    "[ ] Documented solution in Graphiti if complex"
   ]
 }
 

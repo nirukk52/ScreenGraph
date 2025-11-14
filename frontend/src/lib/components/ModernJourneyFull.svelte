@@ -10,42 +10,42 @@ Usage:
 ```
 -->
 <script lang="ts">
-	import autoAnimate from '@formkit/auto-animate';
-	import {
-		GitPullRequest,
-		MessageSquare,
-		Eye,
-		CheckCircle,
-		AlertCircle,
-		GitCommit,
-		Sparkles,
-		TrendingUp,
-		ArrowRight,
-		ArrowDown,
-		Clock,
-		Zap,
-		Brain,
-		Users,
-		ThumbsUp,
-		ThumbsDown,
-		Layers
-	} from 'lucide-svelte';
-	import { RetroButton, RetroBadge } from '$lib/components';
+import { RetroBadge, RetroButton } from "$lib/components";
+import autoAnimate from "@formkit/auto-animate";
+import {
+  AlertCircle,
+  ArrowDown,
+  ArrowRight,
+  Brain,
+  CheckCircle,
+  Clock,
+  Eye,
+  GitCommit,
+  GitPullRequest,
+  Layers,
+  MessageSquare,
+  Sparkles,
+  ThumbsDown,
+  ThumbsUp,
+  TrendingUp,
+  Users,
+  Zap,
+} from "lucide-svelte";
 
-	/** Show Slack notification preview */
-	let showSlackPreview = $state(false);
+/** Show Slack notification preview */
+let showSlackPreview = $state(false);
 
-	/** Timeline scrubber position (0-10) */
-	let timelinePosition = $state(0);
+/** Timeline scrubber position (0-10) */
+let timelinePosition = $state(0);
 
-	/** Calculated confidence based on timeline */
-	const confidence = $derived(75 + timelinePosition * 2);
+/** Calculated confidence based on timeline */
+const confidence = $derived(75 + timelinePosition * 2);
 
-	/** Calculated patterns based on timeline */
-	const patterns = $derived(30 + timelinePosition * 5);
+/** Calculated patterns based on timeline */
+const patterns = $derived(30 + timelinePosition * 5);
 
-	/** Calculated screens based on timeline */
-	const screens = $derived(100 + timelinePosition * 20);
+/** Calculated screens based on timeline */
+const screens = $derived(100 + timelinePosition * 20);
 </script>
 
 <div

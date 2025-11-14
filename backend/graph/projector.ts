@@ -1,19 +1,10 @@
 import { artifacts } from "~encore/clients";
-import { artifactsBucket } from "../artifacts/bucket";
 import type { EventPayloadMap } from "../agent/domain/events";
-import { loggerWith, MODULES, GRAPH_ACTORS } from "../logging/logger";
-import {
-  computeLayoutHash,
-  deriveDeterministicScreenId,
-  normalizeUiHierarchyXml,
-} from "./hasher";
-import { buildOutcomeId, GraphProjectionRepo } from "./repo";
-import type {
-  GraphOutcomeKind,
-  GraphProjectionCursor,
-  ParsedRunEvent,
-  RunMetadata,
-} from "./types";
+import { artifactsBucket } from "../artifacts/bucket";
+import { GRAPH_ACTORS, MODULES, loggerWith } from "../logging/logger";
+import { computeLayoutHash, deriveDeterministicScreenId, normalizeUiHierarchyXml } from "./hasher";
+import { GraphProjectionRepo, buildOutcomeId } from "./repo";
+import type { GraphOutcomeKind, GraphProjectionCursor, ParsedRunEvent, RunMetadata } from "./types";
 
 const POLL_INTERVAL_MS = 300;
 const CURSOR_LIMIT = 200; // Increased from 50 to handle more concurrent runs
@@ -49,7 +40,7 @@ export function startGraphProjector(): void {
 
 async function scheduleTick(): Promise<void> {
   const logger = loggerWith({ module: MODULES.GRAPH, actor: GRAPH_ACTORS.PROJECTOR });
-  
+
   try {
     await repo.hydrateMissingCursors(HYDRATE_LIMIT);
     const cursors = await repo.listCursors(CURSOR_LIMIT);
@@ -92,7 +83,10 @@ async function processRun(cursor: GraphProjectionCursor): Promise<void> {
         break;
       }
       case "agent.event.ui_hierarchy_captured": {
-        handleUiHierarchyCapturedEvent(event as ParsedRunEvent<"agent.event.ui_hierarchy_captured">, context);
+        handleUiHierarchyCapturedEvent(
+          event as ParsedRunEvent<"agent.event.ui_hierarchy_captured">,
+          context,
+        );
         break;
       }
       case "agent.event.screen_perceived": {
@@ -134,8 +128,11 @@ function ensureContext(runId: string): RunProjectionContext {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  return contexts.get(runId)!;
+  const context = contexts.get(runId);
+  if (!context) {
+    throw new Error(`Failed to get or create context for runId: ${runId}`);
+  }
+  return context;
 }
 
 function handleNodeStartedEvent(
@@ -185,10 +182,20 @@ async function handleScreenPerceivedEvent(
     return false;
   }
 
-  const layoutHash = await resolveLayoutHash(metadata, context.pendingUiRefId, event.payload.perceptualHash64, logger);
+  const layoutHash = await resolveLayoutHash(
+    metadata,
+    context.pendingUiRefId,
+    event.payload.perceptualHash64,
+    logger,
+  );
   const screenId = deriveDeterministicScreenId(metadata.appPackage, layoutHash);
 
-  const upsert = await repo.upsertScreen(screenId, metadata, layoutHash, event.payload.perceptualHash64);
+  const upsert = await repo.upsertScreen(
+    screenId,
+    metadata,
+    layoutHash,
+    event.payload.perceptualHash64,
+  );
   const outcomeKind: GraphOutcomeKind = upsert.isNew ? "discovered" : "mapped";
   const outcomeId = buildOutcomeId(runId, stepOrdinal);
   await repo.recordOutcome(outcomeId, runId, stepOrdinal, screenId, outcomeKind, event.seq);
@@ -253,5 +260,3 @@ async function resolveLayoutHash(
     return computeLayoutHash(metadata.appPackage, perceptualHash64);
   }
 }
-
-

@@ -1,16 +1,16 @@
 import type {
+  ApplicationForegroundContext,
   DeviceConfiguration,
   DeviceRuntimeContext,
-  ApplicationForegroundContext,
 } from "../../domain/entities";
 import type { ScreenshotData, UiHierarchyData } from "../../domain/perception";
-import type { SessionPort } from "./session.port";
 import type { AppLifecyclePort } from "./app-lifecycle.port";
-import type { PerceptionPort } from "./perception.port";
 import type { DeviceInfoPort } from "./device-info.port";
+import type { IdleDetectorPort } from "./idle-detector.port";
 import type { InputActionsPort } from "./input-actions.port";
 import type { NavigationPort } from "./navigation.port";
-import type { IdleDetectorPort } from "./idle-detector.port";
+import type { PerceptionPort } from "./perception.port";
+import type { SessionPort } from "./session.port";
 
 /**
  * Legacy DriverPort façade that delegates to granular ports.

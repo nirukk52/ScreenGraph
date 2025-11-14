@@ -28,7 +28,16 @@ export type EventKind =
   | "agent.app.signature_verified"
   | "agent.app.launch_started"
   | "agent.app.launch_completed"
-  | "agent.app.launch_failed";
+  | "agent.app.launch_failed"
+  | "agent.device.check_started"
+  | "agent.device.check_completed"
+  | "agent.device.check_failed"
+  | "agent.appium.health_check_started"
+  | "agent.appium.health_check_completed"
+  | "agent.appium.health_check_failed"
+  | "agent.appium.starting"
+  | "agent.appium.ready"
+  | "agent.appium.start_failed";
 
 /**
  * Discriminated union mapping EventKind to its typed payload structure.
@@ -71,11 +80,42 @@ export type EventPayloadMap = {
   "agent.run.recovery_applied": { errorCode: string; actionTaken: string };
   "agent.run.checkpoint_restored": { checkpointId: string; stepOrdinal: number };
   "agent.run.heartbeat": { ts: string };
-  "agent.app.install_checked": { correlationId: string; packageId: string; installed: boolean; versionName?: string; versionCode?: number };
-  "agent.app.signature_verified": { correlationId: string; packageId: string; expectedSha256: string; actualSha256: string; matched: boolean };
+  "agent.app.install_checked": {
+    correlationId: string;
+    packageId: string;
+    installed: boolean;
+    versionName?: string;
+    versionCode?: number;
+  };
+  "agent.app.signature_verified": {
+    correlationId: string;
+    packageId: string;
+    expectedSha256: string;
+    actualSha256: string;
+    matched: boolean;
+  };
   "agent.app.launch_started": { correlationId: string; packageId: string; attempt: number };
   "agent.app.launch_completed": { correlationId: string; packageId: string; durationMs: number };
-  "agent.app.launch_failed": { correlationId: string; packageId: string; attempt: number; errorKind: string; durationMs: number };
+  "agent.app.launch_failed": {
+    correlationId: string;
+    packageId: string;
+    attempt: number;
+    errorKind: string;
+    durationMs: number;
+  };
+  "agent.device.check_started": { appId: string; deviceId?: string };
+  "agent.device.check_completed": { isOnline: boolean; deviceId?: string };
+  "agent.device.check_failed": { error: string; appId: string };
+  "agent.appium.health_check_started": { port: number };
+  "agent.appium.health_check_completed": {
+    isHealthy: boolean;
+    port: number;
+    reusingExisting: boolean;
+  };
+  "agent.appium.health_check_failed": { error: string; port: number };
+  "agent.appium.starting": { port: number };
+  "agent.appium.ready": { pid: number; port: number; startDurationMs: number };
+  "agent.appium.start_failed": { error: string; port: number; timeoutMs: number };
 };
 
 /**

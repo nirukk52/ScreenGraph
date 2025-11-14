@@ -1,5 +1,5 @@
-import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 import type { EventKind } from "../../domain/events";
+import type { CommonNodeInput, CommonNodeOutput } from "../../domain/state";
 
 export interface ResumeFromCheckpointInput extends CommonNodeInput {
   runId: string;

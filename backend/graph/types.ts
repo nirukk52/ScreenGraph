@@ -42,7 +42,3 @@ export interface ScreenUpsertResult {
   screenId: string;
   isNew: boolean;
 }
-
-
-
-

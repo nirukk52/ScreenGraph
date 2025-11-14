@@ -1,6 +1,6 @@
-import { api } from "encore.dev/api";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { api } from "encore.dev/api";
 
 interface DocFile {
   filename: string;

@@ -1,7 +1,7 @@
-import type { AgentState, StopReason } from "../../domain/state";
-import type { AgentNodeName, AgentContext, AgentPorts } from "../../nodes/types";
-import type { EngineNodeExecutionResult, NodeEvent, NodeRegistry } from "../types";
 import type log from "encore.dev/log";
+import type { AgentState, StopReason } from "../../domain/state";
+import type { AgentContext, AgentNodeName, AgentPorts } from "../../nodes/types";
+import type { EngineNodeExecutionResult, NodeEvent, NodeRegistry } from "../types";
 
 /**
  * ShouldStopResult captures the outcome of cancellation or budget interception checks.
@@ -61,9 +61,7 @@ export type AgentTransitionDecision =
  * AgentMachineEvent enumerates events consumed by the orchestration XState machine.
  * PURPOSE: Keeps the machine fully typed while supporting deterministic transitions.
  */
-export type AgentMachineEvent =
-  | { type: "START" }
-  | { type: "RETRY_TIMEOUT" };
+export type AgentMachineEvent = { type: "START" } | { type: "RETRY_TIMEOUT" };
 
 /**
  * AgentMachineOutput mirrors AgentRunnerResult for consumers awaiting machine completion.
@@ -121,4 +119,3 @@ export interface AgentMachineParams {
   entryNode: AgentNodeName;
   dependencies: AgentMachineDependencies;
 }
-

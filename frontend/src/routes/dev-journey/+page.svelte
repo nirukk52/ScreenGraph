@@ -3,7 +3,7 @@ Dev Journey Page
 Complete developer workflow from PR to production
 -->
 <script lang="ts">
-	import ModernJourneyFull from '$lib/components/ModernJourneyFull.svelte';
+import ModernJourneyFull from "$lib/components/ModernJourneyFull.svelte";
 </script>
 
 <svelte:head>

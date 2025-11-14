@@ -28,4 +28,3 @@ export function applySwitchPolicyOutput(prev: AgentState, output: SwitchPolicyOu
     policyVersion: output.effectiveStrategyConfiguration.policyVersion,
   };
 }
-

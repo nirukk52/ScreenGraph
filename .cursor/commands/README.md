@@ -1,69 +1,55 @@
 # Cursor Commands
 
-Quick reference for `.cursor/commands/` - all commands are executable scripts.
+Quick reference for automation kept in `.cursor/commands/`. Execute scripts from the repo root; Task namespaces live under the subdirectories here.
 
 ---
 
-## Item Handoff Commands (NEW)
+## 🚀 The 3 Meta Commands (NEW!)
 
-### `update-handoff [ITEM-ID]`
-Update handoff for FR/BUG/TD/CHORE item. Interactive prompts.
-```bash
-update-handoff FR-015
-```
+**Use these at specific lifecycle points:**
 
-### `quick-update-handoff [ITEM-ID]`
-Fast handoff (30s). Auto-detects item from git branch/files.
-```bash
-quick-update-handoff        # Auto-detect
-quick-update-handoff FR-015 # Explicit
-```
+- `@before-task [task]` - Comprehensive discovery before starting work (2500 tokens, 1× per spec)
+- `@during-task [subtask]` - Lightweight guidance during implementation (300 tokens, 5-10× per spec)
+- `@after-task [completed]` - Knowledge capture after completion (600 tokens, 1× per spec)
 
-### `update-status [ITEM-ID]`
-Update status.md timestamp (< 5s).
-```bash
-update-status FR-015
-```
+**82% token savings. Guaranteed knowledge capture. Self-improving.**
 
-### `update-main [ITEM-ID] [note]`
-Append note to main.md (< 5s).
-```bash
-update-main FR-015 "Added API endpoint"
-```
+**See:** `THE_3_COMMANDS.md` for quick reference, `START_HERE.md` for complete guide
 
 ---
 
-## Item Creation
+## Service Automation
 
-- `create-feature-doc` - Create FR-XXX
-- `create-bug-doc` - Create BUG-XXX
-- `create-tech-debt-doc` - Create TD-XXX
-- `create-chore` - Create CHORE-XXX (NEW)
+- `@start-services` — Start both backend and frontend with the Turborepo harness.
+- `@stop-services` — Stop all running services.
 
 ---
 
-## Validation
+## Spec-Kit Commands
 
-### `validate-docs`
-Check all items for required files and line limits.
-```bash
-validate-docs
-```
+Use `@before-task` before creating specs, `@during-task` during implementation, `@after-task` after completion:
 
----
-
-## Service Commands
-
-- `start-services` - Start backend + frontend
-- `stop-services` - Stop all services
+- `/speckit.specify` — Create feature specification
+- `/speckit.plan` — Create implementation plan
+- `/speckit.tasks` — Break down into tasks
+- `/speckit.implement` — Execute implementation
+- `/speckit.checklist` — Validation checklist
+- `/speckit.analyze` — Analyze existing code
+- `/speckit.clarify` — Ask clarifying questions
 
 ---
 
-## Archived
+## Testing & Drift Verification
 
-Old commands moved to `archive/`:
-- `verify-worktree-isolation` (deprecated)
+- `qa/Taskfile.yml` — Invoke with `cd .cursor && task qa:<command>` for smoke tests, linting, and E2E suites.
 
 ---
 
-**Last Updated:** 2025-11-07
+## Maintenance
+
+- `update-skills.md` — Procedure for keeping vibes and Claude skills current.
+- `shared/Taskfile.yml` & `ops/Taskfile.yml` — Environment helpers (`task shared:*`, `task ops:*`).
+
+---
+
+**Last Updated:** 2025-11-13

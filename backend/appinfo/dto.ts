@@ -2,7 +2,7 @@
  * AppInfoMediaKind models the allowed media categories for stored assets.
  * PURPOSE: Enforce type safety across repositories and API DTOs.
  */
-export type AppInfoMediaKind = 
+export type AppInfoMediaKind =
   | "phone_screenshot"
   | "tablet_screenshot"
   | "feature_graphic"
@@ -23,10 +23,7 @@ export const APP_INFO_MEDIA_KINDS: readonly AppInfoMediaKind[] = [
  * AppInfoIngestStatus signals the most recent ingestion outcome for a package.
  * PURPOSE: Surface operational visibility to API consumers.
  */
-export type AppInfoIngestStatus = 
-  | "pending"
-  | "succeeded"
-  | "failed";
+export type AppInfoIngestStatus = "pending" | "succeeded" | "failed";
 
 /**
  * APP_INFO_INGEST_STATUSES defines ingestion lifecycle states for Play Store sync.
@@ -42,7 +39,7 @@ export const APP_INFO_INGEST_STATUSES: readonly AppInfoIngestStatus[] = [
  * AppInfoCategory is the normalized Google Play category code assigned to an app.
  * PURPOSE: Drive analytics grouping and downstream filtering.
  */
-export type AppInfoCategory = 
+export type AppInfoCategory =
   | "unknown"
   | "art_and_design"
   | "auto_and_vehicles"
@@ -293,4 +290,3 @@ export interface StoredAppInfoRecord {
 export interface GetAppInfoResponse {
   readonly appInfo: StoredAppInfoRecord;
 }
-

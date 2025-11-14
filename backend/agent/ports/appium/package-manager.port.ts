@@ -82,4 +82,3 @@ export interface PackageManagerPort {
    */
   getSignatureSha256(packageId: string): Promise<string>;
 }
-

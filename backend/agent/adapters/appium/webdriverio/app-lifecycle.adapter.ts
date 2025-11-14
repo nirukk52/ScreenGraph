@@ -1,7 +1,10 @@
 import type { ApplicationForegroundContext } from "../../../domain/entities";
-import type { AppLifecyclePort, AppLifecycleBudget } from "../../../ports/appium/app-lifecycle.port";
-import { AppNotInstalledError, AppCrashedError, TimeoutError } from "../errors";
-import { DriverErrorKind, mapAdapterErrorToDriverErrorKind } from "../error-kinds";
+import type {
+  AppLifecycleBudget,
+  AppLifecyclePort,
+} from "../../../ports/appium/app-lifecycle.port";
+import { type DriverErrorKind, mapAdapterErrorToDriverErrorKind } from "../error-kinds";
+import { AppCrashedError, AppNotInstalledError, TimeoutError } from "../errors";
 import type { SessionContext } from "./session-context";
 
 /**

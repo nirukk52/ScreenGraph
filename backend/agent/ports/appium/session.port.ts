@@ -6,8 +6,8 @@ export interface DeviceConfiguration {
   platformVersion: string;
   appiumServerUrl: string;
   // Optional app context for session initialization
-  app?: string;         // Path to APK file
-  appPackage?: string;  // Android package ID
+  app?: string; // Path to APK file
+  appPackage?: string; // Android package ID
 }
 
 /**

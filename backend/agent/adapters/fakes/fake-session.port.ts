@@ -10,7 +10,9 @@ export class FakeSessionPort implements SessionPort {
   private sessionCounter = 0;
   private isClosed = false;
 
-  async ensureDevice(config: DeviceConfiguration): Promise<DeviceRuntimeContext & DeviceRuntimeContextRef> {
+  async ensureDevice(
+    config: DeviceConfiguration,
+  ): Promise<DeviceRuntimeContext & DeviceRuntimeContextRef> {
     if (this.isClosed) {
       this.sessionCounter++;
       this.isClosed = false;

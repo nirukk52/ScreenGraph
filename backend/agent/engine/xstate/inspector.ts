@@ -1,7 +1,7 @@
 import { createSkyInspector } from "@statelyai/inspect";
 import log from "encore.dev/log";
-import { env, XSTATE_INSPECTOR_ENABLED } from "../../../config/env";
-import { MODULES, AGENT_ACTORS } from "../../../logging/logger";
+import { XSTATE_INSPECTOR_ENABLED, env } from "../../../config/env";
+import { AGENT_ACTORS, MODULES } from "../../../logging/logger";
 
 /**
  * getInspector returns a dev-only singleton cloud inspector instance for XState.
@@ -37,5 +37,3 @@ export function getInspector(): ReturnType<typeof createSkyInspector> | null {
 
   return singletonInspector;
 }
-
-

@@ -1,5 +1,5 @@
-import type { ScreenshotData, UiHierarchyData } from "../../domain/perception";
 import { ActionKind } from "../../domain/actions";
+import type { ScreenshotData, UiHierarchyData } from "../../domain/perception";
 
 export interface DriverPort {
   captureScreenshot(): Promise<ScreenshotData>;

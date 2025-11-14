@@ -7,58 +7,60 @@ PURPOSE: Shows what we learned during debugging sessions with visual timeline
  * Debugging session entry for retro display
  */
 interface DebugSession {
-	id: string;
-	title: string;
-	description: string;
-	status: "solved" | "investigating" | "blocked";
-	findings: string[];
-	learnings: string[];
-	resolution?: string;
-	date: string;
+  id: string;
+  title: string;
+  description: string;
+  status: "solved" | "investigating" | "blocked";
+  findings: string[];
+  learnings: string[];
+  resolution?: string;
+  date: string;
 }
 
 /**
  * Debugging sessions we've done
  */
-const sessions: DebugSession[] = $state([
-	{
-		id: "graph-stream-connection",
-		title: "Graph Stream WebSocket Connection Failure",
-		description: "Graph visualization not receiving events - WebSocket connection fails immediately",
-		status: "solved",
-		findings: [
-			"WebSocket connection attempted but returns no status code (fails before upgrade)",
-			"Run stream WebSocket works perfectly (status 101)",
-			"Backend endpoint returns 404 Not Found when tested directly",
-			"Other graph endpoints (/graph/diagnostics, /graph/screens) work fine",
-			"Graph service is loaded (diagnostics returns 'initialized')",
-			"Endpoint pattern matches working run stream: api.streamOut with path parameter"
-		],
-		learnings: [
-			"Browser MCP tools essential for debugging: browser_console_messages() shows connection lifecycle",
-			"Network tab (browser_network_requests()) reveals WebSocket status codes",
-			"404 on endpoint means it's not registered - backend needs restart for new endpoints",
-			"Encore automatically extracts path parameters (:runId → handshake.runId)",
-			"Systematic debugging: compare working vs failing implementations side-by-side",
-			"Console logging with prefixes ([Graph Stream]) enables easy filtering"
-		],
-		resolution: "Root cause identified: Endpoint code is correct but backend needs restart to register new endpoints. After restart, WebSocket should upgrade successfully (status 101) and graph visualization will populate with events.",
-		date: new Date().toISOString().split('T')[0]
-	}
+let sessions: DebugSession[] = $state([
+  {
+    id: "graph-stream-connection",
+    title: "Graph Stream WebSocket Connection Failure",
+    description:
+      "Graph visualization not receiving events - WebSocket connection fails immediately",
+    status: "solved",
+    findings: [
+      "WebSocket connection attempted but returns no status code (fails before upgrade)",
+      "Run stream WebSocket works perfectly (status 101)",
+      "Backend endpoint returns 404 Not Found when tested directly",
+      "Other graph endpoints (/graph/diagnostics, /graph/screens) work fine",
+      "Graph service is loaded (diagnostics returns 'initialized')",
+      "Endpoint pattern matches working run stream: api.streamOut with path parameter",
+    ],
+    learnings: [
+      "Browser MCP tools essential for debugging: browser_console_messages() shows connection lifecycle",
+      "Network tab (browser_network_requests()) reveals WebSocket status codes",
+      "404 on endpoint means it's not registered - backend needs restart for new endpoints",
+      "Encore automatically extracts path parameters (:runId → handshake.runId)",
+      "Systematic debugging: compare working vs failing implementations side-by-side",
+      "Console logging with prefixes ([Graph Stream]) enables easy filtering",
+    ],
+    resolution:
+      "Root cause identified: Endpoint code is correct but backend needs restart to register new endpoints. After restart, WebSocket should upgrade successfully (status 101) and graph visualization will populate with events.",
+    date: new Date().toISOString().split("T")[0],
+  },
 ]);
 
 /**
  * Get status color for visual display
  */
 function getStatusColor(status: DebugSession["status"]): string {
-	switch (status) {
-		case "solved":
-			return "bg-green-100 text-green-800 border-green-300";
-		case "investigating":
-			return "bg-yellow-100 text-yellow-800 border-yellow-300";
-		case "blocked":
-			return "bg-red-100 text-red-800 border-red-300";
-	}
+  switch (status) {
+    case "solved":
+      return "bg-green-100 text-green-800 border-green-300";
+    case "investigating":
+      return "bg-yellow-100 text-yellow-800 border-yellow-300";
+    case "blocked":
+      return "bg-red-100 text-red-800 border-red-300";
+  }
 }
 </script>
 

@@ -27,13 +27,18 @@ description: "Non-negotiable development standards for ScreenGraph. Enforces arc
 13. [Handoff Documentation](#handoff-documentation)
 14. [Vibe Usage](#vibe-usage-engineering-personas)
 
-### Part II: Environment Policy
-15. [Single Environment Execution](#single-environment-execution)
-16. [Worktree Usage](#worktree-usage)
-17. [Standard Ports](#standard-ports)
-18. [Git Operations](#git-operations)
-19. [Cursor Modes](#cursor-dropdown-modes)
-20. [Enforcement Rules](#enforcement-what-agents-cannot-do)
+15. [Knowledge Management](#knowledge-management-graphiti)
+
+### Part II: Scripting Architecture & Policy
+16. [Scripting Governance](#scripting-governance)
+17. [Where Scripts Live](#where-scripts-live)
+18. [Forbidden Practices](#forbidden-practices)
+
+### Part III: Environment Policy
+19. [Single Environment Execution](#single-environment-execution)
+20. [Worktree Usage](#worktree-usage)
+21. [Standard Ports](#standard-ports)
+22. [Git Operations](#git-operations)
 
 ---
 
@@ -320,7 +325,292 @@ Update after significant changes.
 
 ---
 
-## Part II: Environment Policy
+### 🧠 Knowledge Management (Graphiti)
+
+**MANDATORY: 3-Command Structured Workflow**
+
+AI agents MUST use the 3-command system at appropriate lifecycle points:
+
+```
+@before-task  [task]      ← Before starting (comprehensive discovery)
+@during-task  [subtask]   ← During work (lightweight guidance)
+@after-task   [completed] ← After completion (knowledge capture)
+```
+
+**Command details:**
+
+1. **@before-task** (2500 tokens, 1× per spec):
+   - Full Graphiti search for past work (`group_id="screengraph"`)
+   - Vibe + MCP + skills recommendations
+   - Architecture patterns and gotchas
+   - Use BEFORE /speckit.specify or major work
+
+2. **@during-task** (300 tokens, 5-10× per spec):
+   - Quick MCP suggestions (no full search)
+   - Brief workflow guidance
+   - Use BEFORE implementing each subtask
+
+3. **@after-task** (600 tokens, 1× per spec):
+   - Document solution in Graphiti
+   - Track MCP effectiveness
+   - Use AFTER pre-push, BEFORE PR
+
+**Token savings:** 82% (5.5k vs 30k per spec)  
+**Knowledge retention:** 100% (mandatory documentation)
+
+**MANDATORY: Graphiti-First Workflow**
+
+Every AI agent MUST use Graphiti to avoid reinventing solutions and to build institutional knowledge.
+
+**Before Starting ANY Task:**
+1. ✅ **Search Graphiti for existing patterns**
+   ```
+   search_memory_nodes(query="[topic]", max_nodes=10)
+   search_memory_facts(query="[specific question]", max_facts=10)
+   ```
+2. ✅ Review results for similar past work, solutions, gotchas
+3. ✅ Use Context7 if external library docs needed
+4. ✅ Proceed with implementation using domain-specific MCP tools
+
+**During Complex Work:**
+- ✅ Document non-obvious decisions as you make them
+- ✅ Capture workarounds or gotchas immediately
+- ✅ Use sequential-thinking MCP for multi-step reasoning
+
+**After Completing Task:**
+1. ✅ **Document solution via Graphiti**
+   ```
+   add_memory(
+     name="[Feature/Bug/Pattern Name]",
+     episode_body="Problem: ... Solution: ... Gotchas: ... Files: ...",
+     group_id="screengraph",
+     source="text"
+   )
+   ```
+2. ✅ Include: problem statement, solution approach, caveats, files touched
+3. ✅ Use tags/categories in episode_body for organization
+
+**ScreenGraph Project Identifier:**
+
+- ✅ **ALWAYS use `group_id="screengraph"`** for ALL Graphiti operations
+- ✅ Graphiti is shared across multiple projects - group_id provides project isolation
+- ✅ Use descriptive tags in episode_body to categorize (backend, frontend, testing, appium, etc.)
+- ❌ **NEVER use different group_ids** - ScreenGraph = `"screengraph"` always
+
+**Example Queries:**
+```typescript
+// Before implementing agent recovery
+search_memory_nodes({
+  query: "agent state machine error handling",
+  group_ids: ["screengraph"],
+  max_nodes: 10
+})
+
+// Before fixing Appium issue
+search_memory_facts({
+  query: "WebDriver session timeout recovery",
+  group_ids: ["screengraph"],
+  max_facts: 10
+})
+
+// Before building UI component
+search_memory_nodes({
+  query: "Svelte 5 runes component patterns",
+  group_ids: ["screengraph"],
+  max_nodes: 5
+})
+```
+
+**Example Documentation:**
+```typescript
+// After solving complex bug
+add_memory({
+  name: "Agent Stalls on Privacy Consent Dialog",
+  episode_body: `
+    [Tags: backend, agent, appium, debugging]
+    
+    Problem: Agent hangs when encountering privacy consent dialogs
+    Root Cause: Policy engine doesn't handle modal dialogs
+    Solution: Added pre-flight dialog detection + user intervention
+    Gotchas: Must check for dialogs BEFORE starting policy execution
+    Files: backend/agent/nodes/setup/EnsureDevice/device-check.ts
+    Related: BUG-015
+  `,
+  group_id: "screengraph",
+  source: "text"
+})
+```
+
+**Enforcement:**
+- ❌ Never implement without searching Graphiti first
+- ❌ Never solve complex issues without documenting
+- ❌ Never assume you're the first to encounter a problem
+- ✅ ALWAYS search → reason → implement → document
+- ✅ ALWAYS use appropriate group_ids for discoverability
+- ✅ ALWAYS include file paths in documentation
+
+**Integration with Skills:**
+- See: `.claude-skills/graphiti-mcp-usage_skill/SKILL.md` for detailed workflow
+- Use sequential-thinking MCP when analysis gets complex
+- Document skill improvements back into Graphiti
+
+---
+
+## Part II: Scripting Architecture & Policy
+
+### 🔧 Scripting Governance
+
+**Single Source of Truth:**
+- All automation flows through **four entry points** that all call `automation/` library
+- No duplication across Husky, Taskfile, GitHub Actions, or Claude Skills
+- Each script is both CLI tool AND reusable module (dual interface pattern)
+
+**Four Authorized Entry Points:**
+
+| Entry Point | Location | Use Case | Guardrail |
+|------------|----------|----------|-----------|
+| **Taskfile** | `.cursor/commands/` | Primary dev/CI entry | Task descriptions ≤ 5 words |
+| **Husky Hooks** | `.husky/` | Git commit/push enforcement | Prevent bad commits/pushes |
+| **GitHub Actions** | `.github/workflows/` | CI/CD pipeline | Automated on pull/push |
+| **Claude Skills** | `.claude-skills/` | AI agent workflows | Call Tasks + MCP tools |
+
+**All four layers call the same `automation/scripts/` library.** Never duplicate business logic.
+
+---
+
+### 📍 Where Scripts Live
+
+**✅ AUTHORIZED Locations:**
+
+1. **Central Authority: `automation/scripts/`**
+   - Environment resolution (`env.mjs`)
+   - Founder rules enforcement (`check-founder-rules.mjs`)
+   - Documentation management (`cleanup-root-docs.mjs`)
+   - **Rule**: Reusable modules with dual CLI + export interface
+   - **Example**: `node automation/scripts/env.mjs status` OR `import { getPorts } from './automation/scripts/env.mjs'`
+
+2. **Speckit Automation: `.specify/scripts/bash/`**
+   - Spec creation (`create-new-feature.sh`)
+   - Plan setup (`setup-plan.sh`)
+   - Prerequisite checks (`check-prerequisites.sh`)
+   - **Rule**: Bash scripts, used by spec-driven workflows
+   - **Not part of standard dev cycle** — only for spec-kit operations
+
+3. **Service NPM Scripts: `backend/package.json` & `frontend/package.json`**
+   - Service-level dev/test commands
+   - **Rule**: Must delegate to service code, not orchestration
+   - **Examples**: `dev`, `test`, `lint`, `build`
+
+4. **Backend Inspection Tools: `backend/scripts/`**
+   - Debugging utilities (`check-agent-state.ts`, `inspect-run.ts`)
+   - **Rule**: Must be prefixed with `check-` or `inspect-` (not part of workflow)
+   - **Purpose**: Ad-hoc investigation only
+
+---
+
+### ❌ Forbidden Practices
+
+**NEVER create:**
+
+1. **Free-floating shell scripts at root or in service roots**
+   - ❌ `./run-something.sh`
+   - ❌ `./backend/debug.sh`
+   - ✅ Either add to Taskfile OR put in `backend/scripts/check-*.sh`
+
+2. **Helper scripts outside recognized locations**
+   - ❌ `./helpers/my-script.sh`
+   - ❌ `./scripts/utility.mjs`
+   - ✅ Either add to `automation/scripts/` (if reusable) OR backend/scripts/check-* (if debug-only)
+
+3. **Service commands that duplicate automation logic**
+   - ❌ Backend NPM script that reimplements `check-founder-rules.mjs`
+   - ✅ Backend NPM script that CALLS `node automation/scripts/check-founder-rules.mjs`
+
+4. **Inline scripts in Taskfiles without module exports**
+   - ❌ Complex bash logic directly in task YAML
+   - ✅ Extract to `automation/scripts/` module, call from Taskfile
+
+5. **Scripts with no CLI interface (import-only)**
+   - ❌ Module that only works as `import { fn } from './script.mjs'`
+   - ✅ Both: `node script.mjs [command]` AND `import { fn } from './script.mjs'`
+
+---
+
+### 📋 Script Design Requirements
+
+**Every script MUST have:**
+
+| Requirement | Example |
+|-------------|---------|
+| **Purpose comment** | `// Validates all Founder Rules before commits` |
+| **CLI usage** | Works when run directly: `node check-founder-rules.mjs` |
+| **Module exports** | `export function checkNoConsoleLog()` for reuse |
+| **Exit codes** | `0` = success, `1` = failure |
+| **Human-friendly output** | JSON-compatible but readable by default |
+| **Optional `--json` flag** | `node script.mjs --json` for machine parsing |
+| **Documentation** | Listed in `automation/README.md` or task description |
+
+**Example Pattern:**
+```javascript
+#!/usr/bin/env node
+// Purpose: Check for console.log violations in TypeScript files
+
+export async function checkNoConsoleLog() {
+  // Implementation
+  return { violations: [...], passed: boolean };
+}
+
+// CLI interface
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const result = await checkNoConsoleLog();
+  console.log(result.passed ? '✅ All checks passed' : '❌ Violations found');
+  process.exit(result.passed ? 0 : 1);
+}
+```
+
+---
+
+### 🎯 Common Patterns
+
+**Adding New Automation:**
+
+1. **Is it recurring?** → Add to `automation/scripts/` (reusable + CLI)
+2. **Is it service-specific?** → Add to service NPM scripts
+3. **Is it debug-only?** → Add to `backend/scripts/check-*.ts` or `inspect-*.ts`
+4. **Is it one-time?** → Put in `.specify/scripts/` (spec-kit only)
+
+**Calling Automation From Different Layers:**
+
+```yaml
+# Taskfile: call automation script
+tasks:
+  preflight:
+    cmds:
+      - node ../automation/scripts/check-founder-rules.mjs
+```
+
+```bash
+# Husky hook: call automation script
+#!/bin/sh
+node automation/scripts/check-founder-rules.mjs
+```
+
+```json
+// NPM script: delegate to automation
+"scripts": {
+  "check:rules": "node ../automation/scripts/check-founder-rules.mjs"
+}
+```
+
+```yaml
+# GitHub Action: call automation script
+- name: Validate
+  run: node automation/scripts/check-founder-rules.mjs
+```
+
+---
+
+## Part III: Environment Policy
 
 ### Single Environment Execution
 - All local development uses the shared `.env` file checked into the repo.
@@ -361,4 +651,42 @@ cd frontend && bun run dev # Service-specific when needed
 
 ---
 
-**Last Updated**: 2025-11-09
+**CRITICAL: Always create a new branch for new work**
+
+- ✅ **ALWAYS create a new branch** before starting any new feature, bug fix, or task
+- ✅ Branch naming: `[type]-[description]` (e.g., `feature-agent-recovery`, `bug-session-timeout`, `chore-update-deps`)
+- ✅ Branch from latest main/master: `git checkout main && git pull && git checkout -b [branch-name]`
+- ❌ **NEVER work directly on main/master branch**
+- ❌ **NEVER commit to main/master** unless it's a hotfix explicitly approved by founder
+
+**Branch Types:**
+- `feature-*` → New features
+- `bug-*` → Bug fixes
+- `chore-*` → Maintenance, refactoring, docs
+- `test-*` → Test infrastructure
+- `spec-*` → Spec-driven development (from `.specify/`)
+
+**Rationale:**
+- Isolates work and enables clean PRs
+- Protects main branch from WIP commits
+- Enables parallel work streams without conflicts
+- Facilitates code review and rollback
+
+**Example Workflow:**
+```bash
+# Start new work
+git checkout main
+git pull
+git checkout -b feature-appium-lifecycle
+
+# ... do work ...
+
+# When ready (founder approval required)
+git add .
+git commit -m "feat: automate appium lifecycle"
+git push origin feature-appium-lifecycle
+```
+
+---
+
+**Last Updated**: 2025-11-13

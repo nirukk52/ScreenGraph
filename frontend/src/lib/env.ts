@@ -1,4 +1,4 @@
-import { bool, cleanEnv, str, url } from "envalid";
+import { url, bool, cleanEnv, str } from "envalid";
 
 /**
  * env exposes validated frontend environment variables supplied by Vite.
@@ -15,8 +15,7 @@ export const env = cleanEnv(import.meta.env, {
     desc: "Local Appium server used during development",
   }),
   VITE_APK_PATH: str({
-    default: 
-      "/Users/priyankalalge/SAAS/Scoreboard/AppiumPythonClient/test/apps/kotlinconf.apk",
+    default: "/Users/priyankalalge/SAAS/Scoreboard/AppiumPythonClient/test/apps/kotlinconf.apk",
     desc: "Absolute path to the Android APK used for local runs",
   }),
   VITE_PACKAGE_NAME: str({

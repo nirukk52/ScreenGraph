@@ -1,6 +1,6 @@
 import type { AgentState } from "../../../domain/state";
-import type { WaitIdleInput, WaitIdleOutput } from "./node";
 import type { AgentContext } from "../../types";
+import type { WaitIdleInput, WaitIdleOutput } from "./node";
 
 /**
  * Maps AgentState and AgentContext to WaitIdleInput.

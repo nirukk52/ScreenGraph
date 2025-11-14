@@ -8,17 +8,20 @@ import type { graph } from "$lib/encore-client";
 /**
  * Component props for graph nodes and events
  */
-let { 
+const {
   nodes = $bindable([]),
-  events = $bindable([])
-}: { 
+  events = $bindable([]),
+}: {
   nodes: graph.GraphStreamEventData[];
   events: graph.GraphStreamEvent[];
 } = $props();
 </script>
 
 {#if nodes.length === 0}
-	<div class="p-8 text-center text-gray-500 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+	<div
+		class="p-8 text-center text-gray-500 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300"
+		data-testid="discovered-screens-empty"
+	>
 		<p class="text-lg">Waiting for screens to be discovered...</p>
 		<p class="text-sm mt-2">The graph will populate as the agent explores the app</p>
 	</div>
@@ -64,7 +67,7 @@ let {
 		<!-- Event Log -->
 		<div class="bg-white rounded-lg border p-6" data-testid="graph-events">
 			<h2 class="text-xl font-semibold mb-4">Graph Events ({events.length})</h2>
-			<div class="space-y-2 max-h-64 overflow-y-auto">
+			<div class="space-y-2 max-h-64 overflow-y-auto" data-testid="graph-events">
 				{#each events.slice().reverse() as event}
 					<div
 						class="text-sm font-mono p-2 bg-gray-50 rounded border"

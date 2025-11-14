@@ -1,8 +1,8 @@
 import type { NodeHandler } from "../../../engine/types";
 import type { AgentContext, AgentNodeName, AgentPorts } from "../../types";
+import { applySwitchPolicyOutput, buildSwitchPolicyInput } from "./mappers";
 import type { SwitchPolicyInput, SwitchPolicyOutput } from "./node";
 import { switchPolicy } from "./node";
-import { buildSwitchPolicyInput, applySwitchPolicyOutput } from "./mappers";
 import { SwitchPolicyPolicy } from "./policy";
 
 /**
@@ -31,4 +31,3 @@ export function createSwitchPolicyHandler(): NodeHandler<
     onFailure: SwitchPolicyPolicy,
   };
 }
-

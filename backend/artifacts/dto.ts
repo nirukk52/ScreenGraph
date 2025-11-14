@@ -42,4 +42,12 @@ export interface GetArtifactMetaResponse {
   createdAt: string;
 }
 
-
+/**
+ * GetArtifactContentResponse includes inline artifact data for rendering in clients.
+ * PURPOSE: Provide encoded screenshot content to frontend consumers without exposing buckets directly.
+ */
+export interface GetArtifactContentResponse {
+  refId: string;
+  mimeType: string;
+  dataUrl: string;
+}

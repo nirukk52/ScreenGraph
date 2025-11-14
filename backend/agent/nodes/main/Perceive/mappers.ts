@@ -8,7 +8,8 @@ import type { PerceiveInput, PerceiveOutput } from "./node";
  */
 export function buildPerceiveInput(state: AgentState, ctx: AgentContext): PerceiveInput {
   const baseDirectives = ctx.perceive.captureDirectives;
-  const delayBeforeCaptureMs = state.nodeName === "LaunchOrAttach" ? baseDirectives.delayBeforeCaptureMs : 0;
+  const delayBeforeCaptureMs =
+    state.nodeName === "LaunchOrAttach" ? baseDirectives.delayBeforeCaptureMs : 0;
 
   return {
     runId: state.runId,
@@ -39,4 +40,3 @@ export function applyPerceiveOutput(prev: AgentState, output: PerceiveOutput): A
     },
   };
 }
-

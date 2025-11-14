@@ -1,9 +1,4 @@
-import {
-  AppCrashedError,
-  AppNotInstalledError,
-  DeviceOfflineError,
-  TimeoutError,
-} from "./errors";
+import { AppCrashedError, AppNotInstalledError, DeviceOfflineError, TimeoutError } from "./errors";
 
 /**
  * DriverErrorKind enumerates normalized error categories surfaced by Appium adapters.
@@ -41,4 +36,3 @@ export function mapAdapterErrorToDriverErrorKind(error: unknown): DriverErrorKin
 
   return DriverErrorKind.INTERNAL_DRIVER_ERROR;
 }
-

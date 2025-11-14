@@ -4,6 +4,79 @@
   "version": "1.0",
   "extends": "base_vibe",
   "domain": "backend",
+  "environment_boundaries": {
+    "encore_test": {
+      "purpose": "Isolated testing with ephemeral resources",
+      "runtime": "isolated_encore_runtime",
+      "database": "ephemeral_test_db",
+      "pubsub": "isolated_topics_require_explicit_imports",
+      "use_cases": [
+        "Unit tests for endpoints and domain logic",
+        "Integration tests with imported subscriptions",
+        "Fast feedback during development",
+        "CI/CD pipeline testing"
+      ],
+      "commands": [
+        "cd backend && encore test",
+        "cd backend && encore test path/to/test.ts"
+      ],
+      "critical_rules": [
+        "PubSub subscriptions MUST be explicitly imported in test files",
+        "Import statement: import \"../path/to/subscription\"",
+        "Without import, jobs publish but workers never start (stays 'queued')",
+        "Test database is ephemeral and isolated"
+      ],
+      "pros": [
+        "Fast test execution",
+        "Clean isolation between tests",
+        "Type-safe with Encore validation",
+        "No external dependencies (except integration tests)"
+      ],
+      "cons": [
+        "Separate from encore run runtime",
+        "PubSub requires explicit imports",
+        "Not connected to real external services"
+      ]
+    },
+    "encore_run": {
+      "purpose": "Full stack development with all services and workers",
+      "runtime": "complete_encore_application",
+      "database": "local_persistent_db",
+      "pubsub": "all_subscriptions_active_automatically",
+      "use_cases": [
+        "Local development with hot reload",
+        "Manual API testing via dashboard or curl",
+        "Debugging PubSub flows with real workers",
+        "Integration with external services (Appium, devices)"
+      ],
+      "commands": [
+        "cd backend && encore run",
+        "bun run dev (via Turborepo harness)",
+        "cd .cursor && task founder:servers:start"
+      ],
+      "services": {
+        "backend": "http://localhost:4000",
+        "dashboard": "http://localhost:9400"
+      },
+      "critical_rules": [
+        "NOT for running tests (use encore test instead)",
+        "All PubSub subscriptions active by default",
+        "Use for manual testing and debugging",
+        "Connected to external services (Appium, devices)"
+      ],
+      "pros": [
+        "Full system running with hot reload",
+        "Real-time logging and tracing",
+        "Encore dashboard for API testing",
+        "All workers and subscriptions active"
+      ],
+      "cons": [
+        "Slower startup than encore test",
+        "Requires external dependencies",
+        "Not suitable for automated testing"
+      ]
+    }
+  },
   "mcp_tools": [
     {
       "name": "encore-mcp",
@@ -19,6 +92,33 @@
         "encore-mcp.get_metadata (full app metadata)",
         "encore-mcp.call_endpoint (test API calls)",
         "encore-mcp.get_traces (debugging request flows)"
+      ],
+      "common_tools": [
+        {
+          "name": "mcp_encore-mcp_get_services",
+          "purpose": "Inspect services and endpoints",
+          "use_case": "Understanding endpoint signatures before writing tests"
+        },
+        {
+          "name": "mcp_encore-mcp_query_database",
+          "purpose": "Query test database during debugging",
+          "use_case": "Inspecting run status, events, or graph data"
+        },
+        {
+          "name": "mcp_encore-mcp_get_traces",
+          "purpose": "List and analyze request traces",
+          "use_case": "Debugging slow tests or request flows"
+        },
+        {
+          "name": "mcp_encore-mcp_get_pubsub",
+          "purpose": "Inspect PubSub topics and subscriptions",
+          "use_case": "Verifying subscription configuration"
+        },
+        {
+          "name": "mcp_encore-mcp_get_databases",
+          "purpose": "Get database schema and table structure",
+          "use_case": "Writing queries or understanding relationships"
+        }
       ]
     },
     {
@@ -45,6 +145,39 @@
     "backend/CLAUDE.md",
     "BACKEND_HANDOFF.md"
   ],
+  "testing_patterns": {
+    "unit_test": {
+      "description": "Test single endpoint or function in isolation",
+      "environment": "encore_test",
+      "requires_imports": false,
+      "example": "backend/run/start.test.ts"
+    },
+    "integration_test_database": {
+      "description": "Test endpoint with database interaction",
+      "environment": "encore_test",
+      "requires_imports": false,
+      "example": "backend/agent/persistence/run-db.repo.test.ts"
+    },
+    "integration_test_pubsub": {
+      "description": "Test PubSub flow with worker subscription",
+      "environment": "encore_test",
+      "requires_imports": true,
+      "import_statement": "import \"../orchestrator/subscription\"",
+      "example": "backend/agent/tests/metrics.test.ts"
+    },
+    "metrics_test": {
+      "description": "Validate agent metrics against deterministic expectations",
+      "environment": "encore_test",
+      "requires_imports": true,
+      "requires_external": {
+        "appium": "Start manually via Appium Inspector (not automated)",
+        "android_device": "Start manually via Android Studio (not automated)",
+        "note": "Task command checks prerequisites but does NOT auto-start services"
+      },
+      "command": "cd .cursor && task backend:integration:metrics",
+      "example": "backend/agent/tests/metrics.test.ts"
+    }
+  },
   "task_commands": [
     {
       "command": "task backend:dev",
@@ -81,6 +214,31 @@
     {
       "command": "task founder:workflows:db-reset",
       "when": "Reset database (DESTRUCTIVE)"
+    },
+    {
+      "command": "task backend:integration:metrics",
+      "when": "Run metrics integration test with Appium prerequisites",
+      "prerequisites": [
+        "Start Appium manually via Appium Inspector",
+        "Start Android emulator via Android Studio",
+        "Ensure backend is healthy (task checks this)",
+        "Task verifies ADB, device, Appium, backend health before running test"
+      ]
+    },
+    {
+      "command": "encore test path/to/test.ts",
+      "directory": "backend",
+      "when": "Execute focused Encore test file"
+    },
+    {
+      "command": "bun test:watch",
+      "directory": "backend",
+      "when": "Watch backend Vitest suite for rapid feedback"
+    },
+    {
+      "command": "encore run",
+      "directory": "backend",
+      "when": "Manually run backend runtime outside automation harness"
     }
   ],
   "claude_skills": [
@@ -91,7 +249,12 @@
     },
     {
       "skill": "backend-testing",
-      "when": "API testing with Encore MCP - write tests, validate contracts, debug with traces",
+      "when": "Testing patterns covering Encore.ts database and PubSub flows",
+      "type": "knowledge"
+    },
+    {
+      "skill": "backend-development",
+      "when": "Encore.ts development patterns covering testing, polling, and database verification",
       "type": "knowledge"
     }
   ],
@@ -120,6 +283,13 @@
       "5. Document solution in Graphiti for future reference"
     ]
   },
+  "default_timeouts": {
+    "unit_test": "10s",
+    "integration_test_database": "30s",
+    "integration_test_pubsub": "60s",
+    "metrics_test": "30s",
+    "all_commands": "30s"
+  },
   "common_pitfalls": [
     "❌ Using indexed access types: (typeof ARRAY)[number]",
     "✅ Use explicit literal unions instead",
@@ -129,6 +299,28 @@
     "✅ Always specify generic type: db.query<ResultType>",
     "❌ Magic strings for status/enums",
     "✅ Use literal unions or const objects"
-  ]
+  ],
+  "critical_patterns": {
+    "pubsub_in_tests": {
+      "rule": "ALWAYS import subscription at top of test file for PubSub tests",
+      "import_statement": "import \"../orchestrator/subscription\"",
+      "reason": "encore test only loads subscriptions that are imported",
+      "without_import": "Jobs will publish but never be consumed (stays 'queued')"
+    },
+    "metrics_validation": {
+      "rule": "Assert both event metrics AND database state",
+      "reason": "Ensures consistency between reported metrics and actual data",
+      "example": "backend/agent/tests/metrics.test.ts"
+    },
+    "environment_variables": {
+      "rule": "Use env vars for test configuration and expectations",
+      "config_file": "backend/config/env.ts",
+      "example": "EXPECTED_UNIQUE_SCREENS_DISCOVERED"
+    },
+    "structured_logging": {
+      "rule": "Use encore.dev/log with required fields: module, actor, runId",
+      "never": "console.log (prohibited by founder rules)"
+    }
+  }
 }
 

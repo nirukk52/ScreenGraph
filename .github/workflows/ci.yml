@@ -1,0 +1,148 @@
+# GitHub Actions CI Workflow
+#
+# Status: ACTIVE
+# Purpose: Run comprehensive QA suite on every push/PR
+#
+# This workflow uses the unified `task qa:all` command.
+# Mirrors Husky pre-push hook exactly (same commands, same checks).
+
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Comprehensive QA Suite (mirrors pre-push hook)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Command: cd .cursor && task qa:all
+  # Includes: fix, rules, smoke, lint, typecheck, unit, e2e
+  
+  qa-all:
+    name: QA Suite (fix + rules + smoke + lint + typecheck + unit + e2e)
+    runs-on: ubuntu-latest
+    env:
+      ENCORE_AUTH_KEY: ${{ secrets.ENCORE_AUTH_KEY }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install go-task
+        run: |
+          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+          task --version
+      
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Encore CLI
+        run: |
+          curl -L https://encore.dev/install.sh | bash
+          echo "$HOME/.encore/bin" >> $GITHUB_PATH
+      
+      - name: Authenticate with Encore Cloud
+        run: |
+          if [ -z "$ENCORE_AUTH_KEY" ]; then
+            echo "⚠️  WARNING: ENCORE_AUTH_KEY not set in GitHub Secrets"
+            echo "   Encore builds requiring secrets will fail"
+            echo "   To fix:"
+            echo "   1. Go to https://app.encore.cloud/screengraph-ovzi"
+            echo "   2. Navigate to: App Settings → Auth Keys"
+            echo "   3. Create new auth key"
+            echo "   4. Add as GitHub Secret named 'ENCORE_AUTH_KEY'"
+            exit 1
+          else
+            echo "🔐 Authenticating with Encore Cloud..."
+            encore auth login --auth-key "$ENCORE_AUTH_KEY"
+            echo "✅ Encore authentication successful"
+          fi
+      
+      - name: Install Backend Dependencies
+        run: cd backend && bun install
+      
+      - name: Install Frontend Dependencies
+        run: cd frontend && bun install
+      
+      - name: Install Playwright Browser Binaries
+        run: cd frontend && bunx playwright install --with-deps chromium
+      
+      - name: Start Backend
+        run: |
+          cd backend
+          encore run &
+          echo "Waiting for backend to be ready..."
+          timeout 60 bash -c 'until curl -sf http://localhost:4000/health > /dev/null; do sleep 2; done'
+      
+      - name: Start Frontend
+        run: |
+          cd frontend
+          bun run dev &
+          echo "Waiting for frontend to be ready..."
+          timeout 60 bash -c 'until curl -sf http://localhost:5173 > /dev/null; do sleep 2; done'
+      
+      - name: Run Complete QA Suite
+        run: cd .cursor && task qa:all
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Implementation Notes:
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#
+# SIMPLICITY: Single job runs `task qa:all` - same as pre-push hook
+# MIRRORS LOCAL: Exact same command developers run locally
+# DRY: No duplication - all logic in .cursor/commands/qa/Taskfile.yml
+#
+# What `task qa:all` runs (VALIDATION ONLY - no code modification):
+# 1. qa:rules     - Validate founder rules (no console.log, no any, American spelling)
+# 2. qa:smoke     - Health checks (backend + frontend)
+# 3. qa:lint      - Linting (backend + frontend)
+# 4. qa:typecheck - TypeScript validation (frontend)
+# 5. qa:unit      - Unit tests (backend only - encore test)
+# 6. qa:e2e       - E2E tests (frontend Playwright)
+#
+# Note: Auto-fix (qa:fix) is intentionally excluded from qa:all
+# - Git hooks should validate, not modify uncommitted code
+# - CI should validate, not modify code (anti-pattern)
+# - Manual workflow: `task qa:all:fix` (fix → validate) before committing
+#
+# Dependencies:
+# - go-task      - Taskfile runner
+# - bun          - Package manager
+# - Node.js      - Automation scripts
+# - Encore CLI   - Backend runtime
+#
+# Environment:
+# - Uses standard ports from .env (4000 backend, 5173 frontend)
+# - In-memory database for tests
+# - ENCORE_AUTH_KEY: GitHub Secret (app-specific auth key) for Encore Cloud authentication
+#
+# GitHub Secrets Setup:
+# 1. Go to: https://app.encore.cloud/screengraph-ovzi → App Settings → Auth Keys
+# 2. Create new auth key (NOT `encore auth token` - that's different!)
+# 3. Go to: GitHub repo → Settings → Secrets and variables → Actions
+# 4. Create new secret: ENCORE_AUTH_KEY
+# 5. Paste the auth key from step 2
+#
+# Testing before activation:
+# 1. Create feature branch
+# 2. Rename to ci.yml
+# 3. Push to trigger workflow
+# 4. Verify qa:all passes
+# 5. Merge to main
+
+# Validation checklist when modifying:
+# 1. Create feature branch
+# 2. Push to trigger workflow
+# 3. Confirm qa:all passes in GitHub Actions
+# 4. Merge to main after review
+

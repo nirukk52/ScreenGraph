@@ -9,7 +9,12 @@ async function main(): Promise<void> {
 
   console.log(`Inspecting run ${runId}\n`);
 
-  const events: Array<{ seq: number; kind: string; node_name: string | null; payload: string | null }> = [];
+  const events: Array<{
+    seq: number;
+    kind: string;
+    node_name: string | null;
+    payload: string | null;
+  }> = [];
   for await (const row of db.query<{
     seq: number;
     kind: string;
@@ -26,7 +31,7 @@ async function main(): Promise<void> {
 
   console.log("Run events:");
   for (const event of events) {
-    const base = `  seq=${event.seq} kind=${event.kind}` + (event.node_name ? ` node=${event.node_name}` : "");
+    const base = `  seq=${event.seq} kind=${event.kind}${event.node_name ? ` node=${event.node_name}` : ""}`;
     if (event.payload) {
       try {
         const parsed = JSON.parse(event.payload);
@@ -45,7 +50,12 @@ async function main(): Promise<void> {
     }
   }
 
-  const outcomes: Array<{ step_ordinal: number; upsert_kind: string; screen_id: string | null; source_event_seq: number }> = [];
+  const outcomes: Array<{
+    step_ordinal: number;
+    upsert_kind: string;
+    screen_id: string | null;
+    source_event_seq: number;
+  }> = [];
   for await (const row of db.query<{
     step_ordinal: number;
     upsert_kind: string;
@@ -112,5 +122,3 @@ main().catch((err) => {
   console.error("Inspection failed:", err);
   process.exit(1);
 });
-
-

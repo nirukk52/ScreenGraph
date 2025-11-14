@@ -1,7 +1,7 @@
-import db from "../../db";
-import type { RunEventsDbPort } from "../ports/run-events.port";
-import type { DomainEvent, EventKind } from "../domain/events";
 import { ulid } from "ulidx";
+import db from "../../db";
+import type { DomainEvent, EventKind } from "../domain/events";
+import type { RunEventsDbPort } from "../ports/run-events.port";
 
 /**
  * RunEventsRepo implements RunEventsDbPort with the SQL-backed `run_events` table.

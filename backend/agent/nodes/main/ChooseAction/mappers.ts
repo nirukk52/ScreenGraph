@@ -30,4 +30,3 @@ export function applyChooseActionOutput(prev: AgentState, output: ChooseActionOu
     chosenActionDecisionId: null, // TODO: Extract ID from output.chosenActionDecision
   };
 }
-

@@ -1,6 +1,6 @@
 import type { AgentState } from "../../../domain/state";
-import type { ProvisionAppInput, ProvisionAppOutput } from "./node";
 import type { AgentContext } from "../../types";
+import type { ProvisionAppInput, ProvisionAppOutput } from "./node";
 
 /**
  * Maps AgentState and AgentContext to ProvisionAppInput.

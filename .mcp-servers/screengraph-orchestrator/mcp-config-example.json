@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "screengraph-orchestrator": {
+      "command": "python",
+      "args": [
+        "/absolute/path/to/ScreenGraph/.mcp-servers/screengraph-orchestrator/server.py"
+      ],
+      "disabled": false
+    }
+  }
+}
+
+

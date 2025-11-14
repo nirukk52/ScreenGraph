@@ -28,9 +28,9 @@ export function computeLayoutHash(appPackage: string, normalizedXml: string): st
  * PURPOSE: Guarantees idempotent inserts without relying on database-generated UUIDs.
  */
 export function deriveDeterministicScreenId(appPackage: string, layoutHash: string): string {
-  return crypto.createHash("sha256").update(`${appPackage}::${layoutHash}`).digest("hex").slice(0, 32);
+  return crypto
+    .createHash("sha256")
+    .update(`${appPackage}::${layoutHash}`)
+    .digest("hex")
+    .slice(0, 32);
 }
-
-
-
-

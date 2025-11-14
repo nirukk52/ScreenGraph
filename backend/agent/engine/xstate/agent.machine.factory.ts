@@ -1,7 +1,10 @@
-import { assign, setup, fromPromise } from "xstate";
+import { assign, fromPromise, setup } from "xstate";
 import { advanceStep } from "../../domain/state";
 import type { StopReason } from "../../domain/state";
 import type { AgentContext, AgentNodeName, AgentPorts } from "../../nodes/types";
+import type { EngineNodeExecutionResult, NodeHandler, NodeOutputBase } from "../types";
+import { AgentMachineExecutor } from "./agent.machine.executor";
+import { AgentTransitionEngine } from "./agent.transition.engine";
 import type {
   AgentMachineContext,
   AgentMachineDependencies,
@@ -11,20 +14,17 @@ import type {
   AgentTransitionDecision,
   ShouldStopResult,
 } from "./types";
-import type { EngineNodeExecutionResult, NodeHandler, NodeOutputBase } from "../types";
-import { AgentMachineExecutor } from "./agent.machine.executor";
-import { AgentTransitionEngine } from "./agent.transition.engine";
 
 /**
  * AgentMachineFactory is responsible for creating and configuring the XState-based orchestration machine.
- * 
+ *
  * PURPOSE: This class centralizes the machine definition, state management, and actor configuration
  * without handling the actual execution logic. It provides a clean separation between machine
  * configuration and execution concerns.
- * 
+ *
  * RESPONSIBILITIES:
  * - Define XState machine structure and states
- * - Configure actors (runNode, shouldStop) 
+ * - Configure actors (runNode, shouldStop)
  * - Define actions for state transitions
  * - Set up guards for decision making
  * - Configure delays for retry mechanisms
@@ -41,10 +41,10 @@ export class AgentMachineFactory {
 
   /**
    * Creates the main XState machine that orchestrates the agent execution flow.
-   * 
+   *
    * PURPOSE: This is the entry point for creating a configured XState machine that handles
    * the complete agent lifecycle from idle to completion/failure.
-   * 
+   *
    * @param params - Configuration parameters including initial state, entry node, and dependencies
    * @returns Configured XState machine ready for execution
    */
@@ -66,19 +66,23 @@ export class AgentMachineFactory {
       actions: {
         // Caches the stop decision from shouldStop actor for later evaluation
         cacheStopDecision: assign(({ event }) => {
-          const stop = "output" in event ? (event.output as ShouldStopResult | undefined) : undefined;
+          const stop =
+            "output" in event ? (event.output as ShouldStopResult | undefined) : undefined;
           if (!stop) {
             return {} satisfies Partial<AgentMachineContext>;
           }
           return { pendingStop: stop } satisfies Partial<AgentMachineContext>;
         }),
-        
+
         // Clears any pending stop decision when continuing execution
-        clearPendingStop: assign(() => ({ pendingStop: null } satisfies Partial<AgentMachineContext>)),
-        
+        clearPendingStop: assign(
+          () => ({ pendingStop: null }) satisfies Partial<AgentMachineContext>,
+        ),
+
         // Stores the execution result and updates machine context with new state
         storeExecutionResult: assign(({ event, context }) => {
-          const output = "output" in event ? (event.output as RunNodeActorOutput | undefined) : undefined;
+          const output =
+            "output" in event ? (event.output as RunNodeActorOutput | undefined) : undefined;
           if (!output) {
             dependencies.logger.warn("storeExecutionResult: no output in event", { event });
             return {} satisfies Partial<AgentMachineContext>;
@@ -96,7 +100,7 @@ export class AgentMachineFactory {
             lastDecision: output.decision.kind,
           } satisfies Partial<AgentMachineContext>;
         }),
-        
+
         // Marks the final stop disposition based on pending stop decision
         markStopDisposition: assign(({ context }) => {
           const disposition = context.pendingStop;
@@ -168,7 +172,7 @@ export class AgentMachineFactory {
             },
           },
         },
-        
+
         // Checks if execution should stop based on budgets/constraints
         checkStop: {
           invoke: {
@@ -183,7 +187,7 @@ export class AgentMachineFactory {
             },
           },
         },
-        
+
         // Evaluates the stop decision and either continues or stops
         evaluateStop: {
           always: [
@@ -198,7 +202,7 @@ export class AgentMachineFactory {
             },
           ],
         },
-        
+
         // Executes the current node and waits for completion
         executing: {
           invoke: {
@@ -216,7 +220,7 @@ export class AgentMachineFactory {
             },
           },
         },
-        
+
         // Decides next action based on execution result
         decide: {
           always: [
@@ -245,7 +249,7 @@ export class AgentMachineFactory {
             },
           ],
         },
-        
+
         // Waits for retry delay before attempting again
         waitingRetry: {
           after: {
@@ -254,7 +258,7 @@ export class AgentMachineFactory {
             },
           },
         },
-        
+
         // Terminal success state - execution completed successfully
         finished: {
           type: "final",
@@ -265,7 +269,7 @@ export class AgentMachineFactory {
             lastNode: context.latestExecution?.nodeName ?? context.currentNode,
           }),
         },
-        
+
         // Terminal failure state - execution failed
         failed: {
           type: "final",
@@ -276,7 +280,7 @@ export class AgentMachineFactory {
             lastNode: context.latestExecution?.nodeName ?? context.currentNode,
           }),
         },
-        
+
         // Stopped state - execution was stopped externally
         stopped: {
           type: "final",
@@ -293,26 +297,36 @@ export class AgentMachineFactory {
 
   /**
    * Creates the runNode actor that executes individual nodes.
-   * 
+   *
    * PURPOSE: This actor encapsulates the complete node execution flow including
    * handler resolution, execution, decision computation, and persistence.
-   * 
+   *
    * @param deps - Machine dependencies including registry, ports, callbacks
    * @returns Actor function that executes nodes and returns results
    */
   private createRunNodeActor(deps: AgentMachineDependencies) {
-    return async ({ input }: { input: { agentState: AgentMachineContext["agentState"]; currentNode: AgentNodeName } }) => {
+    return async ({
+      input,
+    }: {
+      input: { agentState: AgentMachineContext["agentState"]; currentNode: AgentNodeName };
+    }) => {
       // Execute the node using the executor
       const executionResult = await this.executor.executeNode(input, deps);
-      
+
       // Compute transition decision using the transition engine
-      const budgetStopReason = this.transitionEngine.evaluateBudget(executionResult.execution.state, deps.now());
+      const budgetStopReason = this.transitionEngine.evaluateBudget(
+        executionResult.execution.state,
+        deps.now(),
+      );
       const decision = budgetStopReason
         ? ({ kind: "terminalFailure", stopReason: budgetStopReason } as AgentTransitionDecision)
         : this.transitionEngine.computeTransitionDecision(executionResult.execution);
 
       // Apply decision to state
-      const nextState = this.transitionEngine.applyDecisionToState(executionResult.execution.state, decision);
+      const nextState = this.transitionEngine.applyDecisionToState(
+        executionResult.execution.state,
+        decision,
+      );
 
       // Update callbacks with decision information
       await deps.callbacks.onAttempt({
@@ -341,10 +355,10 @@ export class AgentMachineFactory {
 
   /**
    * Creates the shouldStop actor that evaluates stop conditions.
-   * 
+   *
    * PURPOSE: This actor checks if execution should stop based on budgets,
    * time limits, or external cancellation signals.
-   * 
+   *
    * @param deps - Machine dependencies
    * @returns Actor function that evaluates stop conditions
    */
@@ -355,10 +369,10 @@ export class AgentMachineFactory {
 
   /**
    * Ensures the initial state has the correct entry node set.
-   * 
+   *
    * PURPOSE: Handles the transition from InitialSetup to the actual entry node
    * when starting execution from a clean state.
-   * 
+   *
    * @param state - Current agent state
    * @param entryNode - The node to start execution from
    * @returns State with entry node properly set
@@ -375,24 +389,24 @@ export class AgentMachineFactory {
 
   /**
    * Resolves the initial node for execution.
-   * 
+   *
    * PURPOSE: Determines which node to start execution from, either from
    * the current state or the provided entry node.
-   * 
+   *
    * @param state - Current agent state
    * @param entryNode - Fallback entry node
    * @returns The node name to start execution from
    */
   private resolveInitialNode(state: AgentMachineContext["agentState"], entryNode: AgentNodeName) {
-    return (state.nodeName && state.nodeName !== "InitialSetup"
+    return state.nodeName && state.nodeName !== "InitialSetup"
       ? (state.nodeName as AgentNodeName)
-      : entryNode);
+      : entryNode;
   }
 }
 
 /**
  * Output interface for the runNode actor.
- * 
+ *
  * PURPOSE: Defines the structure of data returned by node execution,
  * including execution results, transition decisions, and updated state.
  */

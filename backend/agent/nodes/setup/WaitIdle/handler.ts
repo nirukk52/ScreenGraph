@@ -1,9 +1,9 @@
 import type { AgentState } from "../../../domain/state";
-import type { WaitIdleInput, WaitIdleOutput } from "./node";
-import { waitIdle } from "./node";
 import type { NodeHandler } from "../../../engine/types";
 import type { AgentContext, AgentNodeName, AgentPorts } from "../../types";
-import { buildWaitIdleInput, applyWaitIdleOutput } from "./mappers";
+import { applyWaitIdleOutput, buildWaitIdleInput } from "./mappers";
+import type { WaitIdleInput, WaitIdleOutput } from "./node";
+import { waitIdle } from "./node";
 import { WaitIdlePolicy } from "./policy";
 
 /**

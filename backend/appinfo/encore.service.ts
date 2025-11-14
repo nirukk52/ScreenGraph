@@ -6,4 +6,3 @@ import { Service } from "encore.dev/service";
  * metadata persisted in the ScreenGraph backend database.
  */
 export default new Service("appinfo");
-

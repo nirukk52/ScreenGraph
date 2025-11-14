@@ -1,19 +1,19 @@
+import { advanceStep } from "../../domain/state";
 import type { AgentContext, AgentNodeName, AgentPorts } from "../../nodes/types";
+import type { EngineNodeExecutionResult, NodeHandler, NodeOutputBase } from "../types";
 import type {
   AgentMachineContext,
   AgentMachineDependencies,
   AgentTransitionDecision,
 } from "./types";
-import type { EngineNodeExecutionResult, NodeHandler, NodeOutputBase } from "../types";
-import { advanceStep } from "../../domain/state";
 
 /**
  * AgentMachineExecutor handles the execution of individual nodes within the agent state machine.
- * 
+ *
  * PURPOSE: This class encapsulates all node execution logic, including handler resolution,
  * input building, execution, output application, and result packaging. It provides a clean
  * separation between execution concerns and the broader machine orchestration.
- * 
+ *
  * RESPONSIBILITIES:
  * - Resolve node handlers from the registry
  * - Build input for node execution from current state and context
@@ -22,7 +22,7 @@ import { advanceStep } from "../../domain/state";
  * - Package execution results with metadata
  * - Handle retryable flag extraction
  * - Manage execution attempt numbering
- * 
+ *
  * DESIGN PATTERNS:
  * - Single Responsibility: Only handles node execution
  * - Dependency Injection: Receives all dependencies through parameters
@@ -32,18 +32,18 @@ import { advanceStep } from "../../domain/state";
 export class AgentMachineExecutor {
   /**
    * Executes a single node and returns the complete execution result.
-   * 
+   *
    * PURPOSE: This is the main entry point for node execution. It orchestrates the complete
    * flow from handler resolution to result packaging, providing all necessary metadata
    * for the machine to make transition decisions.
-   * 
+   *
    * @param input - Execution input containing current state and node to execute
    * @param deps - Machine dependencies including registry, ports, callbacks
    * @returns Complete execution result with state, events, and metadata
    */
   async executeNode(
     input: { agentState: AgentMachineContext["agentState"]; currentNode: AgentNodeName },
-    deps: AgentMachineDependencies
+    deps: AgentMachineDependencies,
   ): Promise<NodeExecutionOutput> {
     const handler = this.resolveHandler(deps.registry, input.currentNode);
     const attemptNumber = (input.agentState.iterationOrdinalNumber ?? 0) + 1;
@@ -90,11 +90,11 @@ export class AgentMachineExecutor {
 
   /**
    * Resolves a node handler from the registry by node name.
-   * 
+   *
    * PURPOSE: Provides type-safe handler resolution with proper error handling.
    * This method ensures that only registered nodes can be executed and provides
    * clear error messages for debugging.
-   * 
+   *
    * @param registry - The node registry containing all available handlers
    * @param node - The name of the node to resolve
    * @returns The resolved node handler
@@ -113,11 +113,11 @@ export class AgentMachineExecutor {
 
   /**
    * Executes a node handler with the provided parameters.
-   * 
+   *
    * PURPOSE: This method encapsulates the complete node execution flow including
    * input building, handler execution, state advancement, and output application.
    * It provides a consistent interface for executing any node type.
-   * 
+   *
    * EXECUTION FLOW:
    * 1. Build input from current state and context
    * 2. Execute handler with input and ports
@@ -125,7 +125,7 @@ export class AgentMachineExecutor {
    * 4. Apply handler output to updated state
    * 5. Extract retryable flag from output
    * 6. Package complete execution result
-   * 
+   *
    * @param params - Execution parameters including handler, state, context, ports, etc.
    * @returns Complete execution result with updated state and metadata
    */
@@ -139,23 +139,23 @@ export class AgentMachineExecutor {
     attemptNumber: number;
   }): Promise<EngineNodeExecutionResult<AgentNodeName>> {
     const { handler, state, ctx, ports, seed, nowIso, attemptNumber } = params;
-    
+
     // Step 1: Build input from current state and context
     // This transforms the agent state into the specific input format expected by the handler
     const input = handler.buildInput(state, ctx);
-    
+
     // Step 2: Execute the handler with input and ports
     // This is where the actual node logic runs (e.g., device operations, app provisioning)
     const { output, events } = await handler.execute(input as never, ports);
-    
+
     // Step 3: Advance step counter and update timestamps
     // This maintains the execution history and timing information
     const advanced = advanceStep(state, handler.name, nowIso, seed);
-    
+
     // Step 4: Apply handler output to update agent state
     // This incorporates the node's results into the overall agent state
     const updated = handler.applyOutput(advanced, output as NodeOutputBase);
-    
+
     // Step 5: Extract retryable flag from output
     // This determines whether the node can be retried on failure
     const retryable = (output as NodeOutputBase & { retryable?: boolean | null }).retryable ?? null;
@@ -178,7 +178,7 @@ export class AgentMachineExecutor {
 
 /**
  * Output interface for node execution.
- * 
+ *
  * PURPOSE: Defines the structure of data returned by node execution,
  * including execution results and updated state. The transition decision
  * is computed separately by the AgentTransitionEngine.

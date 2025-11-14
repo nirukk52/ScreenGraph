@@ -1,6 +1,6 @@
-import db from "../db";
-import { RunOutboxRepo } from "../agent/persistence/run-outbox.repo";
 import type { EventKind } from "../agent/domain/events";
+import { RunOutboxRepo } from "../agent/persistence/run-outbox.repo";
+import db from "../db";
 
 interface RunEventRow {
   run_id: string;

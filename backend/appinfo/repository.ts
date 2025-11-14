@@ -1,3 +1,4 @@
+import db from "../db";
 import type {
   AppInfoCategory,
   AppInfoIngestStatus,
@@ -6,12 +7,7 @@ import type {
   NormalizedPlayStoreAppData,
   StoredAppInfoRecord,
 } from "./dto";
-import {
-  APP_INFO_CATEGORIES,
-  APP_INFO_INGEST_STATUSES,
-  APP_INFO_MEDIA_KINDS,
-} from "./dto";
-import db from "../db";
+import { APP_INFO_CATEGORIES, APP_INFO_INGEST_STATUSES, APP_INFO_MEDIA_KINDS } from "./dto";
 
 /**
  * APPINFO_BASE_URL anchors Play Store deep links for fallback rows.
@@ -491,4 +487,3 @@ export async function markAppInfoIngestFailure(
       updated_at = ${now};
   `;
 }
-

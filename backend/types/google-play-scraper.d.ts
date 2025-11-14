@@ -68,4 +68,3 @@ declare module "google-play-scraper" {
 
   export default _default;
 }
-

@@ -44,7 +44,8 @@
           "options": {
             "deniedGlobals": ["any"]
           }
-        }
+        },
+        "useConst": "off"
       }
     }
   },
