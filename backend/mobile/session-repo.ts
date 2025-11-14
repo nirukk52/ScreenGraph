@@ -1,0 +1,334 @@
+/** Device session repository for managing mobile device sessions. */
+
+import log from "encore.dev/log";
+import db from "../db";
+import { ulid } from "ulidx";
+import type { DeviceAllocationRequest, DeviceInfo, DeviceSession, SessionState } from "./types";
+
+const logger = log.with({ module: "mobile", component: "session-repo" });
+
+/** Device session repository. */
+export class DeviceSessionRepository {
+  /** Create a new device session and mark device unavailable. */
+  async createSession(deviceId: string, metadata: Record<string, unknown>): Promise<DeviceSession> {
+    const sessionId = ulid();
+    const now = new Date().toISOString();
+
+    // Mark device unavailable BEFORE creating session (prevents race condition)
+    await this.markDeviceUnavailable(deviceId);
+
+    try {
+      // Note: Encore's db.query handles JSONB serialization if we pass string
+      // It will return JSONB as a plain JavaScript object automatically
+      const metadataJson = JSON.stringify(metadata);
+      const result = await db.queryRow<{
+        session_id: string;
+        device_id: string;
+        state: SessionState;
+        current_app: string | null;
+        started_at: string;
+        last_activity_at: string;
+        metadata: Record<string, unknown>;
+      }>`
+        INSERT INTO device_sessions (
+          session_id, device_id, state, started_at, last_activity_at, metadata
+        ) VALUES (
+          ${sessionId}, ${deviceId}, 'connected', ${now}, ${now}, ${metadataJson}
+        )
+        RETURNING session_id, device_id, state, current_app, started_at, last_activity_at, metadata
+      `;
+
+      logger.info("created device session", { sessionId, deviceId });
+
+      // JSONB is returned as string by Postgres, need to parse
+      const parsedMetadata = typeof result.metadata === 'string' 
+        ? JSON.parse(result.metadata)
+        : result.metadata;
+
+      return {
+        sessionId: result.session_id,
+        deviceId: result.device_id,
+        state: result.state,
+        currentApp: result.current_app || undefined,
+        startedAt: result.started_at,
+        lastActivityAt: result.last_activity_at,
+        metadata: parsedMetadata,
+      };
+    } catch (err) {
+      // Rollback device availability on session creation failure
+      logger.error("failed to create session, rolling back device availability", { sessionId, deviceId, err });
+      await this.markDeviceAvailable(deviceId);
+      throw err;
+    }
+  }
+
+  /** Get session by ID. */
+  async getSession(sessionId: string): Promise<DeviceSession | undefined> {
+    const result = await db.queryRow<{
+      session_id: string;
+      device_id: string;
+      state: SessionState;
+      current_app: string | null;
+      started_at: string;
+      last_activity_at: string;
+      metadata: Record<string, unknown>; // Postgres returns JSONB as object
+    }>`
+      SELECT session_id, device_id, state, current_app, started_at, last_activity_at, metadata
+      FROM device_sessions
+      WHERE session_id = ${sessionId}
+    `;
+
+    if (!result) {
+      return undefined;
+    }
+
+    // JSONB is returned as string by Postgres, need to parse
+    const parsedMetadata = typeof result.metadata === 'string' 
+      ? JSON.parse(result.metadata)
+      : result.metadata;
+
+    return {
+      sessionId: result.session_id,
+      deviceId: result.device_id,
+      state: result.state,
+      currentApp: result.current_app || undefined,
+      startedAt: result.started_at,
+      lastActivityAt: result.last_activity_at,
+      metadata: parsedMetadata,
+    };
+  }
+
+  /** Update session state. */
+  async updateSessionState(
+    sessionId: string,
+    state: SessionState,
+    currentApp?: string,
+  ): Promise<void> {
+    const now = new Date().toISOString();
+
+    await db.exec`
+      UPDATE device_sessions
+      SET state = ${state},
+          current_app = ${currentApp || null},
+          last_activity_at = ${now},
+          updated_at = ${now}
+      WHERE session_id = ${sessionId}
+    `;
+
+    logger.info("updated session state", { sessionId, state, currentApp });
+  }
+
+  /** Update session last activity time. */
+  async updateSessionActivity(sessionId: string): Promise<void> {
+    const now = new Date().toISOString();
+
+    await db.exec`
+      UPDATE device_sessions
+      SET last_activity_at = ${now},
+          updated_at = ${now}
+      WHERE session_id = ${sessionId}
+    `;
+  }
+
+  /** Close session and mark device available. */
+  async closeSession(sessionId: string): Promise<void> {
+    const now = new Date().toISOString();
+
+    // Get session to find device ID
+    const session = await this.getSession(sessionId);
+    if (!session) {
+      logger.warn("attempted to close non-existent session", { sessionId });
+      return;
+    }
+
+    await db.exec`
+      UPDATE device_sessions
+      SET state = 'disconnected',
+          updated_at = ${now}
+      WHERE session_id = ${sessionId}
+    `;
+
+    // Mark device available again
+    await this.markDeviceAvailable(session.deviceId);
+
+    logger.info("closed device session", { sessionId, deviceId: session.deviceId });
+  }
+
+  /** Mark device as unavailable (allocated to a session). */
+  async markDeviceUnavailable(deviceId: string): Promise<void> {
+    const now = new Date().toISOString();
+
+    await db.exec`
+      UPDATE device_info
+      SET available = FALSE,
+          updated_at = ${now}
+      WHERE device_id = ${deviceId}
+    `;
+
+    logger.info("marked device unavailable", { deviceId });
+  }
+
+  /** Mark device as available (session closed, device free). */
+  async markDeviceAvailable(deviceId: string): Promise<void> {
+    const now = new Date().toISOString();
+
+    await db.exec`
+      UPDATE device_info
+      SET available = TRUE,
+          updated_at = ${now}
+      WHERE device_id = ${deviceId}
+    `;
+
+    logger.info("marked device available", { deviceId });
+  }
+
+  /** List active sessions. */
+  async listActiveSessions(): Promise<DeviceSession[]> {
+    const results = db.query<{
+      session_id: string;
+      device_id: string;
+      state: SessionState;
+      current_app: string | null;
+      started_at: string;
+      last_activity_at: string;
+      metadata: Record<string, unknown>;
+    }>`
+      SELECT session_id, device_id, state, current_app, started_at, last_activity_at, metadata
+      FROM device_sessions
+      WHERE state IN ('idle', 'connected', 'busy')
+      ORDER BY started_at DESC
+    `;
+
+    const sessions: DeviceSession[] = [];
+    for await (const row of results) {
+      sessions.push({
+        sessionId: row.session_id,
+        deviceId: row.device_id,
+        state: row.state,
+        currentApp: row.current_app || undefined,
+        startedAt: row.started_at,
+        lastActivityAt: row.last_activity_at,
+        metadata: row.metadata,
+      });
+    }
+
+    return sessions;
+  }
+
+  /** Upsert device information. */
+  async upsertDeviceInfo(device: DeviceInfo): Promise<void> {
+    const now = new Date().toISOString();
+
+    await db.exec`
+      INSERT INTO device_info (
+        device_id, name, platform, device_type, version,
+        screen_width, screen_height, orientation,
+        last_seen_at, updated_at
+      ) VALUES (
+        ${device.id}, ${device.name}, ${device.platform}, ${device.type}, ${device.version},
+        ${device.screenWidth || null}, ${device.screenHeight || null}, ${device.orientation || null},
+        ${now}, ${now}
+      )
+      ON CONFLICT (device_id) DO UPDATE SET
+        name = EXCLUDED.name,
+        version = EXCLUDED.version,
+        screen_width = EXCLUDED.screen_width,
+        screen_height = EXCLUDED.screen_height,
+        orientation = EXCLUDED.orientation,
+        last_seen_at = EXCLUDED.last_seen_at,
+        updated_at = EXCLUDED.updated_at
+    `;
+  }
+
+  /** Find available device matching allocation request. */
+  async findAvailableDevice(request: DeviceAllocationRequest): Promise<DeviceInfo | undefined> {
+    // Build WHERE conditions - Encore doesn't support nested db.query fragments
+    // Use explicit conditions with null checks
+    const results = db.query<{
+      device_id: string;
+      name: string;
+      platform: "android" | "ios";
+      device_type: "real" | "emulator" | "simulator";
+      version: string;
+      screen_width: number | null;
+      screen_height: number | null;
+      orientation: "portrait" | "landscape" | null;
+    }>`
+      SELECT device_id, name, platform, device_type, version,
+             screen_width, screen_height, orientation
+      FROM device_info
+      WHERE available = TRUE
+        AND (${request.platform !== undefined} = FALSE OR platform = ${request.platform || null})
+        AND (${request.deviceType !== undefined} = FALSE OR device_type = ${request.deviceType || null})
+        AND (${request.provider !== undefined} = FALSE OR provider = ${request.provider || null})
+      ORDER BY last_seen_at DESC
+      LIMIT 1
+    `;
+
+    // Get first result
+    for await (const result of results) {
+      return {
+        id: result.device_id,
+        name: result.name,
+        platform: result.platform,
+        type: result.device_type,
+        version: result.version,
+        screenWidth: result.screen_width || 0,
+        screenHeight: result.screen_height || 0,
+        orientation: result.orientation || "portrait",
+      };
+    }
+
+    return undefined;
+
+    if (!result) {
+      return undefined;
+    }
+
+    return {
+      id: result.device_id,
+      name: result.name,
+      platform: result.platform,
+      type: result.device_type,
+      version: result.version,
+      screenWidth: result.screen_width || undefined,
+      screenHeight: result.screen_height || undefined,
+      orientation: result.orientation || undefined,
+    };
+  }
+
+  /** Log mobile operation for audit trail. */
+  async logOperation(
+    sessionId: string | undefined,
+    deviceId: string,
+    operationType: string,
+    operationName: string,
+    parameters: Record<string, unknown>,
+    resultStatus: "success" | "error",
+    resultMessage: string | undefined,
+    durationMs: number,
+  ): Promise<void> {
+    const now = new Date().toISOString();
+
+    await db.exec`
+      INSERT INTO mobile_operations_log (
+        session_id, device_id, operation_type, operation_name,
+        parameters, result_status, result_message, duration_ms, occurred_at
+      ) VALUES (
+        ${sessionId || null}, ${deviceId}, ${operationType}, ${operationName},
+        ${JSON.stringify(parameters)}, ${resultStatus}, ${resultMessage || null}, ${durationMs}, ${now}
+      )
+    `;
+  }
+}
+
+/** Singleton device session repository instance. */
+let sessionRepoInstance: DeviceSessionRepository | undefined;
+
+/** Get or create device session repository singleton. */
+export function getDeviceSessionRepository(): DeviceSessionRepository {
+  if (!sessionRepoInstance) {
+    sessionRepoInstance = new DeviceSessionRepository();
+  }
+  return sessionRepoInstance;
+}

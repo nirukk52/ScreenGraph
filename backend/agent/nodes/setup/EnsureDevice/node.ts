@@ -1,10 +1,12 @@
 import log from "encore.dev/log";
-import { APPIUM_PORT } from "../../../../config/env";
+import { APPIUM_PORT, ENABLE_MOBILE_MCP } from "../../../../config/env";
 import { AGENT_ACTORS, MODULES } from "../../../../logging/logger";
 import type { EventKind } from "../../../domain/events";
 import type { CommonNodeInput, CommonNodeOutput } from "../../../domain/state";
 import type { DeviceConfiguration } from "../../../ports/appium/session.port";
 import type { SessionPort } from "../../../ports/appium/session.port";
+import type { DeviceAllocationRequest, DeviceInfo, DeviceSession } from "../../../../mobile/types";
+import { createMobileDeviceSession, closeMobileDeviceSession } from "../../../adapters/mobile/session.adapter";
 import { checkAppiumHealth, startAppium } from "./appium-lifecycle";
 import { checkDevicePrerequisites } from "./device-check";
 import {
@@ -28,6 +30,51 @@ export interface EnsureDeviceInput extends CommonNodeInput {
 export interface EnsureDeviceOutput extends CommonNodeOutput {
   runId: string;
   deviceRuntimeContextId: string;
+  mobileSessionId?: string | null;
+  mobileDeviceId?: string | null;
+}
+
+/**
+ * Maps session device configuration to mobile service allocation request.
+ * PURPOSE: Normalizes platform naming and optional filters for mobile-mcp.
+ */
+function buildMobileAllocation(config: DeviceConfiguration): DeviceAllocationRequest {
+  const normalizedPlatform = config.platformName?.toLowerCase() ?? "android";
+  const platform: DeviceAllocationRequest["platform"] =
+    normalizedPlatform.includes("ios") ? "ios" : "android";
+
+  const normalizedDeviceName = config.deviceName?.toLowerCase() ?? "";
+  const deviceType = normalizedDeviceName.includes("simulator")
+    ? ("simulator" as const)
+    : normalizedDeviceName.includes("emulator")
+      ? ("emulator" as const)
+      : normalizedDeviceName.includes("device")
+        ? ("real" as const)
+        : undefined;
+
+  return {
+    platform,
+    provider: "local",
+    ...(deviceType ? { deviceType } : {}),
+    ...(config.platformVersion ? { version: config.platformVersion } : {}),
+  };
+}
+
+/**
+ * Extracts DeviceInfo metadata from mobile session payload when available.
+ * PURPOSE: Allows agent to reuse detected platform/version without additional queries.
+ */
+function extractDeviceInfo(metadata: Record<string, unknown> | undefined): Partial<DeviceInfo> | null {
+  if (!metadata) {
+    return null;
+  }
+
+  const candidate = metadata.deviceInfo;
+  if (candidate && typeof candidate === "object") {
+    return candidate as Partial<DeviceInfo>;
+  }
+
+  return null;
 }
 
 /**
@@ -52,23 +99,56 @@ export async function ensureDevice(
 
   const events: Array<{ kind: EventKind; payload: Record<string, unknown> }> = [];
   let sequence = 0;
+  const appId = (input.deviceConfiguration as { appId?: string }).appId ?? "unknown";
+  const deviceConfiguration = {
+    ...input.deviceConfiguration,
+  } as DeviceConfiguration & { appId?: string };
+  let mobileSession: DeviceSession | null = null;
 
   try {
+    if (ENABLE_MOBILE_MCP) {
+      const allocation = buildMobileAllocation(deviceConfiguration);
+      mobileSession = await createMobileDeviceSession(allocation);
+
+      deviceConfiguration.deviceName = mobileSession.deviceId;
+
+      const deviceInfo = extractDeviceInfo(mobileSession.metadata);
+      if (deviceInfo?.version && !deviceConfiguration.platformVersion) {
+        deviceConfiguration.platformVersion = deviceInfo.version;
+      }
+      if (deviceInfo?.platform) {
+        deviceConfiguration.platformName =
+          deviceInfo.platform === "ios" ? "iOS" : "Android";
+      }
+
+      logger.info("using mobile-mcp allocated device", {
+        sessionId: mobileSession.sessionId,
+        deviceId: mobileSession.deviceId,
+        allocation,
+      });
+    }
+
     // Pre-flight check 1: Device prerequisites
-    logger.info("checking device prerequisites", { appId: input.deviceConfiguration.appId });
+    logger.info("checking device prerequisites", {
+      appId,
+      deviceId: deviceConfiguration.deviceName,
+    });
 
     events.push(
       createDeviceCheckStartedEvent(
         input.runId,
         sequence++,
-        input.deviceConfiguration.appId,
-        input.deviceConfiguration.deviceName,
+        appId,
+        deviceConfiguration.deviceName,
       ),
     );
 
     const deviceCheck = await checkDevicePrerequisites({
-      appId: input.deviceConfiguration.appId,
-      deviceId: input.deviceConfiguration.deviceName,
+      appId,
+      deviceId: deviceConfiguration.deviceName,
+      platform: deviceConfiguration.platformName?.toLowerCase().includes("ios")
+        ? "ios"
+        : "android",
     });
 
     if (!deviceCheck.isOnline) {
@@ -78,7 +158,7 @@ export async function ensureDevice(
           input.runId,
           sequence++,
           deviceCheck.error || "Device offline",
-          input.deviceConfiguration.appId,
+          appId,
         ),
       );
 
@@ -89,7 +169,12 @@ export async function ensureDevice(
 
     logger.info("device online", { deviceId: deviceCheck.deviceId });
     events.push(
-      createDeviceCheckCompletedEvent(input.runId, sequence++, true, deviceCheck.deviceId),
+      createDeviceCheckCompletedEvent(
+        input.runId,
+        sequence++,
+        true,
+        deviceCheck.deviceId ?? deviceConfiguration.deviceName,
+      ),
     );
 
     // Pre-flight check 2: Appium health check
@@ -157,7 +242,7 @@ export async function ensureDevice(
     }
 
     // Lifecycle checks passed - proceed with session creation
-    const ctx = await sessionPort.ensureDevice(input.deviceConfiguration);
+    const ctx = await sessionPort.ensureDevice(deviceConfiguration);
     logger.info("DeviceRuntimeContext received", { ctx });
 
     const contextId = ctx.deviceRuntimeContextId || generateId();
@@ -176,6 +261,8 @@ export async function ensureDevice(
       errorId: null,
       retryable: null,
       humanReadableFailureSummary: null,
+      mobileSessionId: mobileSession?.sessionId ?? null,
+      mobileDeviceId: mobileSession?.deviceId ?? deviceConfiguration.deviceName ?? null,
     };
 
     logger.info("EnsureDevice OUTPUT", { output });
@@ -186,6 +273,23 @@ export async function ensureDevice(
     };
   } catch (error) {
     logger.error("EnsureDevice failure", { error });
+
+    if (ENABLE_MOBILE_MCP && mobileSession) {
+      try {
+        await closeMobileDeviceSession(mobileSession.sessionId);
+        logger.info("cleaned up mobile session after failure", {
+          sessionId: mobileSession.sessionId,
+        });
+      } catch (cleanupError) {
+        const cleanupMessage =
+          cleanupError instanceof Error ? cleanupError.message : String(cleanupError);
+        logger.warn("failed to cleanup mobile session after failure", {
+          sessionId: mobileSession.sessionId,
+          error: cleanupMessage,
+        });
+      }
+      mobileSession = null;
+    }
 
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorName = error instanceof Error && error.name ? error.name : "UnknownError";
@@ -204,6 +308,8 @@ export async function ensureDevice(
       errorId: errorName,
       retryable: isRetryable,
       humanReadableFailureSummary: errorMessage,
+      mobileSessionId: null,
+      mobileDeviceId: null,
     };
 
     logger.info("EnsureDevice FAILURE OUTPUT", { failureOutput });

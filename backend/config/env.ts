@@ -27,6 +27,10 @@ export const env = cleanEnv(process.env, {
     default: 4723,
     desc: "Port for the local Appium service",
   }),
+  ENABLE_MOBILE_MCP: bool({
+    default: false,
+    desc: "Feature flag enabling mobile-mcp integration for agent device provisioning",
+  }),
   WORKTREE_MODE: str({
     choices: ["main", "worktree"],
     default: "main",
@@ -64,6 +68,7 @@ export const {
   FRONTEND_PORT,
   ENCORE_DASHBOARD_PORT,
   APPIUM_PORT,
+  ENABLE_MOBILE_MCP,
   WORKTREE_MODE,
   WORKTREE_NAME,
   NODE_ENV,

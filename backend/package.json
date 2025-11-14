@@ -5,8 +5,8 @@
   "packageManager": "bun",
   "dependencies": {
     "@dotenvx/dotenvx": "^1.51.1",
-    "@mobilenext/mobile-mcp": "latest",
-    "@modelcontextprotocol/sdk": "1.13.2",
+    "@mobilenext/mobile-mcp": "^0.0.34",
+    "@modelcontextprotocol/sdk": "^1.22.0",
     "@statelyai/inspect": "^0.4.0",
     "@types/webdriverio": "^5.0.0",
     "dotenv": "^17.2.3",

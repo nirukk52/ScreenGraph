@@ -84,6 +84,8 @@ cd backend && encore test agent/nodes/setup/EnsureDevice/
 - Session tracked in database
 - WebDriverIO session created with mobile-mcp device
 
+**Status**: ✅ 2025-11-14 — `encore test` (includes `agent/nodes/setup/EnsureDevice/node.test.ts`) with mobile provision feature flag unit coverage and full backend suite passing.
+
 ---
 
 ## Phase 2: Operations Migration
