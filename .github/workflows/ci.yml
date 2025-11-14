@@ -24,6 +24,8 @@ jobs:
   qa-all:
     name: QA Suite (fix + rules + smoke + lint + typecheck + unit + e2e)
     runs-on: ubuntu-latest
+    env:
+      ENCORE_AUTH_TOKEN: ${{ secrets.ENCORE_AUTH_TOKEN }}
     
     steps:
       - name: Checkout code
@@ -50,15 +52,16 @@ jobs:
           echo "$HOME/.encore/bin" >> $GITHUB_PATH
       
       - name: Authenticate with Encore Cloud
-        env:
-          ENCORE_AUTH_TOKEN: ${{ secrets.ENCORE_AUTH_TOKEN }}
         run: |
           if [ -z "$ENCORE_AUTH_TOKEN" ]; then
             echo "⚠️  WARNING: ENCORE_AUTH_TOKEN not set in GitHub Secrets"
             echo "   Encore builds requiring secrets will fail"
             echo "   To fix: Add your Encore auth token as a GitHub Secret named 'ENCORE_AUTH_TOKEN'"
+            exit 1
           else
-            echo "🔐 Encore authentication configured"
+            echo "🔐 Authenticating with Encore Cloud..."
+            encore auth login --token "$ENCORE_AUTH_TOKEN"
+            echo "✅ Encore authentication successful"
           fi
       
       - name: Install Backend Dependencies
@@ -71,8 +74,6 @@ jobs:
         run: cd frontend && bunx playwright install --with-deps chromium
       
       - name: Start Backend
-        env:
-          ENCORE_AUTH_TOKEN: ${{ secrets.ENCORE_AUTH_TOKEN }}
         run: |
           cd backend
           encore run &
