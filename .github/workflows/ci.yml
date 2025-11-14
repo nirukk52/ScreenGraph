@@ -1,16 +1,15 @@
-# GitHub Actions CI Workflow - SCAFFOLD
-# 
-# Status: NOT YET ACTIVE (rename to ci.yml to activate)
+# GitHub Actions CI Workflow
+#
+# Status: ACTIVE
 # Purpose: Run comprehensive QA suite on every push/PR
-# 
+#
 # This workflow uses the unified `task qa:all` command.
 # Mirrors Husky pre-push hook exactly (same commands, same checks).
 #
-# To activate:
-# 1. Rename this file from ci.yml.scaffold to ci.yml
-# 2. Verify all task commands work in CI environment
-# 3. Test in a feature branch first
-# 4. Merge to main when validated
+# Before enabling in other branches:
+# 1. Verify `task qa:all` passes locally
+# 2. Ensure backend/frontend ports match `.env`
+# 3. Confirm Encore CLI auth is configured in repo secrets
 
 name: CI
 
@@ -112,4 +111,10 @@ jobs:
 # 3. Push to trigger workflow
 # 4. Verify qa:all passes
 # 5. Merge to main
+
+# Validation checklist when modifying:
+# 1. Create feature branch
+# 2. Push to trigger workflow
+# 3. Confirm qa:all passes in GitHub Actions
+# 4. Merge to main after review
 
