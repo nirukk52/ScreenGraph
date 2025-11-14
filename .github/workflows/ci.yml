@@ -25,7 +25,7 @@ jobs:
     name: QA Suite (fix + rules + smoke + lint + typecheck + unit + e2e)
     runs-on: ubuntu-latest
     env:
-      ENCORE_AUTH_TOKEN: ${{ secrets.ENCORE_AUTH_TOKEN }}
+      ENCORE_AUTH_KEY: ${{ secrets.ENCORE_AUTH_KEY }}
     
     steps:
       - name: Checkout code
@@ -53,14 +53,18 @@ jobs:
       
       - name: Authenticate with Encore Cloud
         run: |
-          if [ -z "$ENCORE_AUTH_TOKEN" ]; then
-            echo "⚠️  WARNING: ENCORE_AUTH_TOKEN not set in GitHub Secrets"
+          if [ -z "$ENCORE_AUTH_KEY" ]; then
+            echo "⚠️  WARNING: ENCORE_AUTH_KEY not set in GitHub Secrets"
             echo "   Encore builds requiring secrets will fail"
-            echo "   To fix: Add your Encore auth token as a GitHub Secret named 'ENCORE_AUTH_TOKEN'"
+            echo "   To fix:"
+            echo "   1. Go to https://app.encore.cloud/screengraph-ovzi"
+            echo "   2. Navigate to: App Settings → Auth Keys"
+            echo "   3. Create new auth key"
+            echo "   4. Add as GitHub Secret named 'ENCORE_AUTH_KEY'"
             exit 1
           else
             echo "🔐 Authenticating with Encore Cloud..."
-            encore auth login --auth-key "$ENCORE_AUTH_TOKEN"
+            encore auth login --auth-key "$ENCORE_AUTH_KEY"
             echo "✅ Encore authentication successful"
           fi
       
@@ -116,13 +120,14 @@ jobs:
 # Environment:
 # - Uses standard ports from .env (4000 backend, 5173 frontend)
 # - In-memory database for tests
-# - ENCORE_AUTH_TOKEN: GitHub Secret required for accessing Encore Cloud secrets
+# - ENCORE_AUTH_KEY: GitHub Secret (app-specific auth key) for Encore Cloud authentication
 #
 # GitHub Secrets Setup:
-# 1. Go to: Settings → Secrets and variables → Actions
-# 2. Create new secret: ENCORE_AUTH_TOKEN
-# 3. Get token from: encore auth token (run locally)
-# 4. Paste into GitHub Secrets
+# 1. Go to: https://app.encore.cloud/screengraph-ovzi → App Settings → Auth Keys
+# 2. Create new auth key (NOT `encore auth token` - that's different!)
+# 3. Go to: GitHub repo → Settings → Secrets and variables → Actions
+# 4. Create new secret: ENCORE_AUTH_KEY
+# 5. Paste the auth key from step 2
 #
 # Testing before activation:
 # 1. Create feature branch
