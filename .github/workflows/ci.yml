@@ -5,11 +5,6 @@
 #
 # This workflow uses the unified `task qa:all` command.
 # Mirrors Husky pre-push hook exactly (same commands, same checks).
-#
-# Before enabling in other branches:
-# 1. Verify `task qa:all` passes locally
-# 2. Ensure backend/frontend ports match `.env`
-# 3. Confirm Encore CLI auth is configured in repo secrets
 
 name: CI
 
@@ -54,6 +49,18 @@ jobs:
           curl -L https://encore.dev/install.sh | bash
           echo "$HOME/.encore/bin" >> $GITHUB_PATH
       
+      - name: Authenticate with Encore Cloud
+        env:
+          ENCORE_AUTH_TOKEN: ${{ secrets.ENCORE_AUTH_TOKEN }}
+        run: |
+          if [ -z "$ENCORE_AUTH_TOKEN" ]; then
+            echo "⚠️  WARNING: ENCORE_AUTH_TOKEN not set in GitHub Secrets"
+            echo "   Encore builds requiring secrets will fail"
+            echo "   To fix: Add your Encore auth token as a GitHub Secret named 'ENCORE_AUTH_TOKEN'"
+          else
+            echo "🔐 Encore authentication configured"
+          fi
+      
       - name: Install Backend Dependencies
         run: cd backend && bun install
       
@@ -61,6 +68,8 @@ jobs:
         run: cd frontend && bun install
       
       - name: Start Backend
+        env:
+          ENCORE_AUTH_TOKEN: ${{ secrets.ENCORE_AUTH_TOKEN }}
         run: |
           cd backend
           encore run &
@@ -103,7 +112,13 @@ jobs:
 # Environment:
 # - Uses standard ports from .env (4000 backend, 5173 frontend)
 # - In-memory database for tests
-# - No secrets required
+# - ENCORE_AUTH_TOKEN: GitHub Secret required for accessing Encore Cloud secrets
+#
+# GitHub Secrets Setup:
+# 1. Go to: Settings → Secrets and variables → Actions
+# 2. Create new secret: ENCORE_AUTH_TOKEN
+# 3. Get token from: encore auth token (run locally)
+# 4. Paste into GitHub Secrets
 #
 # Testing before activation:
 # 1. Create feature branch
