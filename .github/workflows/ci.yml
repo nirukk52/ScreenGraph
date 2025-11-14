@@ -67,6 +67,9 @@ jobs:
       - name: Install Frontend Dependencies
         run: cd frontend && bun install
       
+      - name: Install Playwright Browser Binaries
+        run: cd frontend && bunx playwright install --with-deps chromium
+      
       - name: Start Backend
         env:
           ENCORE_AUTH_TOKEN: ${{ secrets.ENCORE_AUTH_TOKEN }}
