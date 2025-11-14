@@ -60,7 +60,7 @@ jobs:
             exit 1
           else
             echo "🔐 Authenticating with Encore Cloud..."
-            encore auth login --token "$ENCORE_AUTH_TOKEN"
+            encore auth login --auth-key "$ENCORE_AUTH_TOKEN"
             echo "✅ Encore authentication successful"
           fi
       
