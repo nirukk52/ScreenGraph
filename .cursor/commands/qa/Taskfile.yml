@@ -110,13 +110,12 @@ tasks:
       - cd ../../../frontend && bun run test:e2e:ui
     silent: false
 
-  # Complete QA suite (THE definitive quality check)
+  # Validation-only QA suite (for git hooks and CI)
+  # Does NOT modify code - only validates
   all:
-    desc: "Complete QA suite (fix + rules + smoke + lint + typecheck + unit + e2e)"
+    desc: "Validation QA suite (rules + smoke + lint + typecheck + unit + e2e)"
     cmds:
-      - echo "🎯 Running comprehensive QA suite..."
-      - echo ""
-      - task: fix
+      - echo "🎯 Running validation QA suite (no auto-fix)..."
       - echo ""
       - task: rules:check
       - echo ""
@@ -130,7 +129,22 @@ tasks:
       - echo ""
       - task: e2e
       - echo ""
-      - echo "🎉 All QA checks passed!"
+      - echo "🎉 All validation checks passed!"
+    silent: false
+  
+  # Complete QA workflow (fix THEN validate)
+  # Use this manually before committing
+  all:fix:
+    desc: "Complete workflow - auto-fix then validate (manual use only)"
+    cmds:
+      - echo "Step 1 - Auto-fixing issues..."
+      - task: fix
+      - echo ""
+      - echo "Auto-fix complete. Review changes with git diff"
+      - echo "Stage changes with git add . if satisfied"
+      - echo ""
+      - echo "Step 2 - Running validation suite..."
+      - task: all
     silent: false
 
   # Appium (mobile testing)

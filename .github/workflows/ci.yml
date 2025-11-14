@@ -102,14 +102,18 @@ jobs:
 # MIRRORS LOCAL: Exact same command developers run locally
 # DRY: No duplication - all logic in .cursor/commands/qa/Taskfile.yml
 #
-# What `task qa:all` runs:
-# 1. qa:fix       - Auto-fix linting/formatting
-# 2. qa:rules     - Validate founder rules (no console.log, no any, American spelling)
-# 3. qa:smoke     - Health checks (backend + frontend)
-# 4. qa:lint      - Linting (backend + frontend)
-# 5. qa:typecheck - TypeScript validation (frontend)
-# 6. qa:unit      - Unit tests (backend only - encore test)
-# 7. qa:e2e       - E2E tests (frontend Playwright)
+# What `task qa:all` runs (VALIDATION ONLY - no code modification):
+# 1. qa:rules     - Validate founder rules (no console.log, no any, American spelling)
+# 2. qa:smoke     - Health checks (backend + frontend)
+# 3. qa:lint      - Linting (backend + frontend)
+# 4. qa:typecheck - TypeScript validation (frontend)
+# 5. qa:unit      - Unit tests (backend only - encore test)
+# 6. qa:e2e       - E2E tests (frontend Playwright)
+#
+# Note: Auto-fix (qa:fix) is intentionally excluded from qa:all
+# - Git hooks should validate, not modify uncommitted code
+# - CI should validate, not modify code (anti-pattern)
+# - Manual workflow: `task qa:all:fix` (fix → validate) before committing
 #
 # Dependencies:
 # - go-task      - Taskfile runner

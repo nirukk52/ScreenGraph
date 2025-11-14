@@ -1,11 +1,16 @@
 #!/bin/sh
 # Husky pre-push hook
-# Comprehensive QA suite + merge commit check
+# Validation QA suite + merge commit check
 # 
 # WHY REDUNDANT: Coding agents can bypass pre-commit and push directly.
 # Running qa:all here ensures quality checks at EVERY push.
+#
+# IMPORTANT: qa:all is VALIDATION ONLY (does not modify code)
+# To auto-fix before pushing, run: cd .cursor && task qa:all:fix
+# This will fix issues, show you the changes, and let you stage them.
 
-echo "🛠️ Running comprehensive QA suite before push..."
+echo "🛠️ Running validation QA suite before push..."
+echo "   (Validation only - does not modify code)"
 echo "   (Redundant with pre-commit for coding agent safety)"
 echo ""
 (cd .cursor && task qa:all) || exit 1
