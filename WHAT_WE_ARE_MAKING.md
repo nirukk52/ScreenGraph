@@ -1,12 +1,30 @@
 # What We Are Making
 
-**ScreenGraph: An Autonomous Mobile App Exploration Platform**
+**ScreenGraph: Autonomous UX Mapping, Drift Detection & AI-Driven QA**
 
 ## The Vision
 
-We are building **ScreenGraph** — a system that autonomously explores mobile applications and generates a living graph of every screen, action, and transition within an app. Think of it as creating a complete "map" of a mobile app without human intervention.
+AI agents crawl mobile apps, discover screens and transitions, and construct a navigable knowledge graph — the **ScreenGraph** — the definitive source of truth for app UX.
 
-## What It Does
+## Core Capabilities
+
+- Autonomous exploration via UI actions
+- Real-time UX map generation
+- Visual/structural diff detection
+- Competitor UX mapping (Play Store crawling)
+- Test gap identification vs. test suite
+- Analytics overlay on graph
+- AI agent context for RAG/planning
+
+## Who It's For
+
+- QA: Regression detection, exploratory testing
+- Product: UX analysis, journey mapping, friction points
+- Design: Flow consistency, screen variants
+- Founders: Competitive benchmarking, feature gaps
+- Engineering: Visual bug replay, flow debugging
+
+## How It Works
 
 An AI-powered **agent** connects to a mobile device (via Appium), launches an app, and systematically explores it by:
 
@@ -16,7 +34,7 @@ An AI-powered **agent** connects to a mobile device (via Appium), launches an ap
 4. **Detecting** when the app transitions to new screens
 5. **Building** a persistent graph of unique screens and the edges (actions) that connect them
 
-The result: A complete, replayable map of the app's structure that can be visualized, analyzed, and used for automated testing, UX analysis, or competitive research.
+The result: A complete, replayable map of the app's structure that can be visualized, analyzed, and used for automated testing, UX analysis, competitive research, and drift detection.
 
 ## How It Works
 
@@ -71,7 +89,6 @@ ScreenGraph becomes the **definitive source of truth** for mobile app structure.
 We're not just building a testing tool — we're creating a **living, evolving map** of the mobile app universe.
 
 ## Features
-Out of the below what is my architecture not ready for:
 Test Web Views
 Our visual approach allows you to test both native app components and Web Views seamlessly.
 
@@ -100,3 +117,4 @@ Import & Export Tests
 Import your existing tests and export into popular tools and frameworks.
 
 Automatically handle unexpected screens and UI changes without adjusting tests.
+

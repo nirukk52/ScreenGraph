@@ -290,3 +290,4 @@ From `founder_rules.mdc`:
 
 **Purpose**: Capture institutional knowledge so future work benefits from past work. The self-improvement loop closes here.
 
+
