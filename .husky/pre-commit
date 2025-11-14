@@ -1,17 +1,16 @@
 #!/bin/sh
 # Husky pre-commit hook
-# Auto-fixes and validates code before allowing commit
+# Comprehensive QA suite BEFORE commit (coding agent safety)
+# 
+# WHY REDUNDANT: Coding agents can bypass guards and commit directly.
+# Running qa:all here ensures quality checks at EVERY commit.
 
-# Auto-fix linting and formatting
-echo "🔧 Auto-fixing code quality issues..."
-(cd .cursor && task qa:fix) || exit 1
-
-# Run the full QA suite (linting, testing, etc.)
-echo "🛠️ Running comprehensive QA checks..."
+echo "🛠️ Running comprehensive QA suite before commit..."
+echo "   (Redundant with pre-push for coding agent safety)"
+echo ""
 (cd .cursor && task qa:all) || exit 1
 
-# Validate founder rules
-echo "📋 Validating founder rules..."
-(cd .cursor && task qa:rules:check) || exit 1
+echo ""
+echo "✅ Pre-commit checks passed!"
 
 

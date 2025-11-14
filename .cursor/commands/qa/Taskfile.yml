@@ -110,16 +110,27 @@ tasks:
       - cd ../../../frontend && bun run test:e2e:ui
     silent: false
 
-  # Complete test suite
+  # Complete QA suite (THE definitive quality check)
   all:
-    desc: "Complete test suite (smoke + lint + typecheck + unit + e2e)"
+    desc: "Complete QA suite (fix + rules + smoke + lint + typecheck + unit + e2e)"
     cmds:
+      - echo "🎯 Running comprehensive QA suite..."
+      - echo ""
+      - task: fix
+      - echo ""
+      - task: rules:check
+      - echo ""
       - task: smoke
+      - echo ""
       - task: lint
+      - echo ""
       - task: typecheck
+      - echo ""
       - task: unit
+      - echo ""
       - task: e2e
-      - echo "🎉 All tests passed!"
+      - echo ""
+      - echo "🎉 All QA checks passed!"
     silent: false
 
   # Appium (mobile testing)
