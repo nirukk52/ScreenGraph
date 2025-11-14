@@ -2,6 +2,7 @@
 
 > **Line Limit:** 150 lines max (enforced)
 > **Purpose:** Core bug documentation and implementation details
+> **Status**:
 
 ---
 

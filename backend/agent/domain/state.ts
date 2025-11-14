@@ -99,6 +99,8 @@ export interface AgentState {
 
   deviceRuntimeContextId: string | null;
   applicationForegroundContextId: string | null;
+  mobileSessionId: string | null;
+  mobileDeviceId: string | null;
 
   perception: Perception;
 
@@ -165,6 +167,8 @@ export function createInitialState(runId: string, budgets: Budgets, now: string)
     },
     deviceRuntimeContextId: null,
     applicationForegroundContextId: null,
+    mobileSessionId: null,
+    mobileDeviceId: null,
     perception: {
       screenshotRefId: null,
       uiHierarchyXmlRefId: null,

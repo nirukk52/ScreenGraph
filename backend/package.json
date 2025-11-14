@@ -5,13 +5,14 @@
   "packageManager": "bun",
   "dependencies": {
     "@dotenvx/dotenvx": "^1.51.1",
+    "@mobilenext/mobile-mcp": "^0.0.34",
+    "@modelcontextprotocol/sdk": "^1.22.0",
     "@statelyai/inspect": "^0.4.0",
     "@types/webdriverio": "^5.0.0",
     "dotenv": "^17.2.3",
-    "encore.dev": "1.51.6",
+    "encore.dev": "^1.51.6",
     "envalid": "^8.1.1",
     "google-play-scraper": "^10.1.1",
-    "nanoid": "^5.1.6",
     "ulidx": "^2.4.1",
     "webdriverio": "^9.20.0",
     "xstate": "^5.9.0"
@@ -26,8 +27,7 @@
     "@wdio/spec-reporter": "^9.20.0",
     "appium": "^2.4.0",
     "appium-uiautomator2-driver": "^2.20.0",
-    "pg": "^8.16.3",
-    "vitest": "^4.0.8"
+    "vitest": "^2.0.0"
   },
   "scripts": {
     "dev": "BACKEND_PORT=${BACKEND_PORT:-4000} encore run --port=${BACKEND_PORT:-4000}",

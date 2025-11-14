@@ -28,14 +28,18 @@ const {
 {:else}
 	<div class="space-y-6">
 		<!-- Screen Grid -->
-		<div class="bg-white rounded-lg border p-6">
+		<div class="bg-white rounded-lg border p-6" data-testid="discovered-screens-container">
 			<h2 class="text-xl font-semibold mb-4">Discovered Screens ({nodes.length})</h2>
 			<div
 				class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
 				data-testid="discovered-screens"
 			>
 				{#each nodes as node}
-					<div class="border rounded-lg p-2 bg-gray-50 hover:bg-gray-100 transition-colors">
+					<div
+						class="border rounded-lg p-2 bg-gray-50 hover:bg-gray-100 transition-colors"
+						data-screen-id={node.screenId}
+						data-seq-ref={node.seqRef}
+					>
 						{#if node.screenshot?.dataUrl}
 							<img 
 								src={node.screenshot.dataUrl} 
@@ -61,11 +65,16 @@ const {
 		</div>
 
 		<!-- Event Log -->
-		<div class="bg-white rounded-lg border p-6">
+		<div class="bg-white rounded-lg border p-6" data-testid="graph-events">
 			<h2 class="text-xl font-semibold mb-4">Graph Events ({events.length})</h2>
 			<div class="space-y-2 max-h-64 overflow-y-auto" data-testid="graph-events">
 				{#each events.slice().reverse() as event}
-					<div class="text-sm font-mono p-2 bg-gray-50 rounded border">
+					<div
+						class="text-sm font-mono p-2 bg-gray-50 rounded border"
+						data-graph-event-type={event.type}
+						data-graph-event-screen={event.data.screenId}
+						data-graph-event-seq={event.data.seqRef}
+					>
 						<span class="font-semibold text-blue-600">{event.type}</span>
 						<span class="text-gray-400 ml-2">#{event.data.seqRef}</span>
 						<span class="text-gray-500 ml-2">{event.data.screenId.slice(0, 16)}...</span>

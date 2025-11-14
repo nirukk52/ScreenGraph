@@ -49,6 +49,10 @@ export function applyEnsureDeviceOutput(prev: AgentState, output: EnsureDeviceOu
     ...prev,
     deviceRuntimeContextId: output.deviceRuntimeContextId || prev.deviceRuntimeContextId,
     iterationOrdinalNumber: output.iterationOrdinalNumber ?? prev.iterationOrdinalNumber,
+    mobileSessionId:
+      output.mobileSessionId !== undefined ? output.mobileSessionId : prev.mobileSessionId,
+    mobileDeviceId:
+      output.mobileDeviceId !== undefined ? output.mobileDeviceId : prev.mobileDeviceId,
     stopReason: output.nodeExecutionOutcomeStatus === "FAILURE" ? "crash" : prev.stopReason,
   };
 
