@@ -1,9 +1,13 @@
 # Feature Specification: Integrate Mobile-MCP for Device Abstraction
 
-**Feature Branch**: `cursor/integrate-mobile-mcp-as-microservice-46cf`  
+**Feature Branch**: `cursor/integrate-mobile-mcp-as-microservice-46cf` (DO NOT MERGE)  
 **Created**: 2025-11-14  
-**Status**: Active  
-**Input**: Need cloud device support for production. Mobile-mcp provides abstraction for local devices → AWS Device Farm migration.
+**Closed**: 2025-11-14  
+**Status**: ❌ ABANDONED - Unnecessary abstraction layer  
+**Input**: ~~Need cloud device support for production. Mobile-mcp provides abstraction for local devices → AWS Device Farm migration.~~  
+**Reality**: mobile-mcp is just a wrapper around existing tools (adb, Appium). Provides zero value. Spec 001 already solves local devices.
+
+**See**: `retro.md` for full analysis of this fuckery.
 
 ---
 
