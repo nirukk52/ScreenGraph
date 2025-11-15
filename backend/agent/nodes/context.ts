@@ -13,6 +13,7 @@ import { BrowserStackAppUploadAdapter } from "../adapters/browserstack/app-uploa
  * PURPOSE: Extracts node-specific config from job parameters for agent execution.
  * NOTE: Appium URL always comes from backend env vars (BROWSERSTACK_* or fallback to localhost).
  * If BrowserStack is configured, pre-uploads APK to avoid session creation failures.
+ * In CI environments, APK pre-upload is skipped to avoid timeouts.
  */
 export async function buildAgentContext(params: {
   runId: string;
@@ -30,33 +31,39 @@ export async function buildAgentContext(params: {
   // ALWAYS use backend env vars for Appium URL (never trust frontend input)
   let appiumServerUrl: string;
   let cloudAppUrl: string | undefined;
+  const isCI = process.env.CI === "true";
   
   if (BROWSERSTACK_USERNAME && BROWSERSTACK_ACCESS_KEY) {
     const url = new URL(BROWSERSTACK_HUB_URL);
     url.username = BROWSERSTACK_USERNAME;
     url.password = BROWSERSTACK_ACCESS_KEY;
     appiumServerUrl = url.toString();
-    logger.info("Using BrowserStack for device management", { hub: BROWSERSTACK_HUB_URL });
+    logger.info("Using BrowserStack for device management", { hub: BROWSERSTACK_HUB_URL, isCI });
 
     // Pre-upload APK to BrowserStack (required for session creation)
-    logger.info("Pre-uploading APK to BrowserStack", { apkPath: params.apkPath });
-    try {
-      const uploader = new BrowserStackAppUploadAdapter(
-        BROWSERSTACK_USERNAME,
-        BROWSERSTACK_ACCESS_KEY,
-      );
-      const uploadResult = await uploader.uploadApp(params.apkPath);
-      cloudAppUrl = uploadResult.cloudUrl;
-      logger.info("APK pre-uploaded successfully", { 
-        cloudUrl: cloudAppUrl,
-        customId: uploadResult.customId,
-      });
-    } catch (uploadErr) {
-      logger.error("Failed to pre-upload APK to BrowserStack", {
-        error: uploadErr instanceof Error ? uploadErr.message : String(uploadErr),
-        apkPath: params.apkPath,
-      });
-      throw uploadErr;
+    // Skip in CI to avoid timeouts - tests use pre-uploaded APKs instead
+    if (!isCI) {
+      logger.info("Pre-uploading APK to BrowserStack", { apkPath: params.apkPath });
+      try {
+        const uploader = new BrowserStackAppUploadAdapter(
+          BROWSERSTACK_USERNAME,
+          BROWSERSTACK_ACCESS_KEY,
+        );
+        const uploadResult = await uploader.uploadApp(params.apkPath);
+        cloudAppUrl = uploadResult.cloudUrl;
+        logger.info("APK pre-uploaded successfully", { 
+          cloudUrl: cloudAppUrl,
+          customId: uploadResult.customId,
+        });
+      } catch (uploadErr) {
+        logger.error("Failed to pre-upload APK to BrowserStack", {
+          error: uploadErr instanceof Error ? uploadErr.message : String(uploadErr),
+          apkPath: params.apkPath,
+        });
+        throw uploadErr;
+      }
+    } else {
+      logger.info("Skipping APK pre-upload in CI environment");
     }
   } else {
     // Fallback to localhost for local development
