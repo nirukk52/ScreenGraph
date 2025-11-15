@@ -111,11 +111,12 @@ tasks:
     silent: false
 
   # Validation-only QA suite (for git hooks and CI)
-  # Does NOT modify code - only validates
+  # CRITICAL: Does NOT modify code - only validates, NO SKIPPING ALLOWED
+  # All tests must pass before code can be merged
   all:
-    desc: "Validation QA suite (rules + smoke + lint + typecheck + unit + e2e)"
+    desc: "Validation QA suite (rules + smoke + lint + typecheck + unit + e2e) - ALL REQUIRED"
     cmds:
-      - echo "🎯 Running validation QA suite (no auto-fix)..."
+      - echo "🎯 Running validation QA suite (no auto-fix, no skipping)..."
       - echo ""
       - task: rules:check
       - echo ""
@@ -128,27 +129,6 @@ tasks:
       - task: unit
       - echo ""
       - task: e2e
-      - echo ""
-      - echo "🎉 All validation checks passed!"
-    silent: false
-  
-  # QA suite without E2E (for CI when BrowserStack credentials unavailable)
-  all:no-e2e:
-    desc: "Validation QA suite without E2E tests (rules + smoke + lint + typecheck + unit)"
-    cmds:
-      - echo "🎯 Running validation QA suite (no E2E, no auto-fix)..."
-      - echo ""
-      - task: rules:check
-      - echo ""
-      - task: smoke
-      - echo ""
-      - task: lint
-      - echo ""
-      - task: typecheck
-      - echo ""
-      - task: unit
-      - echo ""
-      - echo "⏭️  Skipping E2E tests (BrowserStack credentials not available)"
       - echo ""
       - echo "🎉 All validation checks passed!"
     silent: false
