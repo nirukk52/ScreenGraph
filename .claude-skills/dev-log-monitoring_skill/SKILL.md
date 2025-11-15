@@ -77,12 +77,26 @@ curl -s http://localhost:5173 | head -n 1
 
 ## Step 2: Navigate and Execute Flow with Playwright MCP
 
+### 2.0 Close Existing Browser Session (MANDATORY)
+
+**ALWAYS close any existing browser tabs first to avoid "about:blank" issues:**
+
+```
+# List existing tabs
+mcp_cursor-browser-extension_browser_tabs(action: "list")
+
+# Close all tabs
+mcp_cursor-browser-extension_browser_tabs(action: "close", index: 0)
+```
+
+Repeat until no tabs remain. This prevents stale browser state and ensures clean test execution.
+
 ### 2.1 Navigate to Application
 
 Use Playwright MCP to open the app:
 
 ```
-mcp_playwright_browser_navigate(url: "http://localhost:5173")
+mcp_cursor-browser-extension_browser_navigate(url: "http://localhost:5173")
 ```
 
 ### 2.2 Trigger Drift Detection
@@ -403,6 +417,50 @@ curl -s http://localhost:4000/graph/diagnostics
 
 # Check if screen perceived event was emitted
 grep "agent.event.screen_perceived" /tmp/backend-logs.txt
+```
+
+### BrowserStack Session Issues
+
+**Symptom:** Agent times out during ProvisionApp or EnsureDevice with BrowserStack
+
+**Check:**
+```bash
+# Look for BrowserStack session creation
+grep "Creating Appium session" /tmp/backend-logs.txt | grep browserStack
+
+# Check for timeout errors
+grep -i "timeout\|timed out" /tmp/backend-logs.txt | grep -i browserstack
+
+# Verify device name
+grep "deviceName" /tmp/backend-logs.txt | tail -5
+```
+
+**Debug with BrowserStack MCP:**
+```bash
+# Check recent sessions
+curl -s -u "USERNAME:KEY" "https://api-cloud.browserstack.com/app-automate/builds.json?limit=3"
+
+# Get session details (replace SESSION_ID)
+curl -s -u "USERNAME:KEY" "https://api-cloud.browserstack.com/app-automate/builds/BUILD_ID/sessions/SESSION_ID.json"
+
+# Check available devices
+curl -s -u "USERNAME:KEY" "https://api-cloud.browserstack.com/app-automate/devices.json" | grep "Samsung\|Pixel"
+```
+
+**Common Fixes:**
+1. **Invalid device name**: Query available devices via API - names are account-specific and case-sensitive
+2. **Missing APK upload**: Pre-upload APK in buildAgentContext, pass `bs://` URL to session (CRITICAL)
+3. **Session not closed**: Add `driver.deleteSession()` in Stop node handler
+4. **Timeout issues**: 60s default is sufficient (BrowserStack completes in ~40s)
+
+**Artifact Locations:**
+```bash
+# Screenshots and UI XML stored by Encore
+ls -la ~/Library/Caches/encore/objects/*/artifacts/obj:/artifacts/[RUN_ID]/screenshot/
+ls -la ~/Library/Caches/encore/objects/*/artifacts/obj:/artifacts/[RUN_ID]/ui_xml/
+
+# Open most recent screenshot
+open "$(find ~/Library/Caches/encore/objects/*/artifacts/ -name "*.png" | tail -1)"
 ```
 
 ## Resources

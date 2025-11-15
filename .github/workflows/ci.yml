@@ -26,6 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ENCORE_AUTH_KEY: ${{ secrets.ENCORE_AUTH_KEY }}
+      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      BROWSERSTACK_HUB_URL: https://hub.browserstack.com/wd/hub
     
     steps:
       - name: Checkout code
@@ -80,6 +83,10 @@ jobs:
       - name: Start Backend
         run: |
           cd backend
+          CI=true \
+          BROWSERSTACK_USERNAME="${{ secrets.BROWSERSTACK_USERNAME }}" \
+          BROWSERSTACK_ACCESS_KEY="${{ secrets.BROWSERSTACK_ACCESS_KEY }}" \
+          BROWSERSTACK_HUB_URL="https://hub.browserstack.com/wd/hub" \
           encore run &
           echo "Waiting for backend to be ready..."
           timeout 60 bash -c 'until curl -sf http://localhost:4000/health > /dev/null; do sleep 2; done'
@@ -87,6 +94,7 @@ jobs:
       - name: Start Frontend
         run: |
           cd frontend
+          VITE_APPIUM_SERVER_URL="https://hub.browserstack.com/wd/hub" \
           bun run dev &
           echo "Waiting for frontend to be ready..."
           timeout 60 bash -c 'until curl -sf http://localhost:5173 > /dev/null; do sleep 2; done'
@@ -108,7 +116,12 @@ jobs:
 # 3. qa:lint      - Linting (backend + frontend)
 # 4. qa:typecheck - TypeScript validation (frontend)
 # 5. qa:unit      - Unit tests (backend only - encore test)
-# 6. qa:e2e       - E2E tests (frontend Playwright)
+# 6. qa:e2e       - E2E tests (frontend Playwright) - REQUIRES BrowserStack
+#
+# CRITICAL: ALL tests run in CI - NO SKIPPING
+# - Tests must pass before merge
+# - BrowserStack credentials REQUIRED for E2E tests
+# - If missing, CI will FAIL (intentional - no incomplete testing)
 #
 # Note: Auto-fix (qa:fix) is intentionally excluded from qa:all
 # - Git hooks should validate, not modify uncommitted code
@@ -125,24 +138,34 @@ jobs:
 # - Uses standard ports from .env (4000 backend, 5173 frontend)
 # - In-memory database for tests
 # - ENCORE_AUTH_KEY: GitHub Secret (app-specific auth key) for Encore Cloud authentication
+# - BROWSERSTACK_USERNAME & BROWSERSTACK_ACCESS_KEY: Optional GitHub Secrets for E2E tests
 #
-# GitHub Secrets Setup:
-# 1. Go to: https://app.encore.cloud/screengraph-ovzi → App Settings → Auth Keys
-# 2. Create new auth key (NOT `encore auth token` - that's different!)
-# 3. Go to: GitHub repo → Settings → Secrets and variables → Actions
-# 4. Create new secret: ENCORE_AUTH_KEY
-# 5. Paste the auth key from step 2
+# GitHub Secrets Setup (REQUIRED for CI to pass):
 #
-# Testing before activation:
-# 1. Create feature branch
-# 2. Rename to ci.yml
-# 3. Push to trigger workflow
-# 4. Verify qa:all passes
-# 5. Merge to main
-
-# Validation checklist when modifying:
+# 1. ENCORE_AUTH_KEY (for Encore Cloud auth)
+#    - Go to: https://app.encore.cloud/screengraph-ovzi → App Settings → Auth Keys
+#    - Create new auth key (NOT `encore auth token` - that's different!)
+#    - Add as GitHub Secret: ENCORE_AUTH_KEY
+#
+# 2. BROWSERSTACK_USERNAME & BROWSERSTACK_ACCESS_KEY (for E2E tests)
+#    - Get credentials from BrowserStack account settings (ask team if needed)
+#    - Add as GitHub Secrets: BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY
+#    - WITHOUT these, E2E tests WILL FAIL and block CI/CD
+#
+# Setup steps:
+# 1. Go to: GitHub repo → Settings → Secrets and variables → Actions
+# 2. Create 3 new secrets with values from above
+# 3. Push to trigger CI - all tests must pass for merge
+#
+# Testing workflow:
 # 1. Create feature branch
 # 2. Push to trigger workflow
-# 3. Confirm qa:all passes in GitHub Actions
-# 4. Merge to main after review
+# 3. All tests MUST pass (no skipping allowed)
+# 4. Fix failures and re-push
+# 5. Once green, merge to main after review
+#
+# Validation checklist (MANDATORY):
+# 1. All 6 QA suite components pass (rules, smoke, lint, typecheck, unit, e2e)
+# 2. No test skipping allowed - CI enforces full validation
+# 3. E2E tests require BrowserStack credentials (blocking if missing - intentional)
 

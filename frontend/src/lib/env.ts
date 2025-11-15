@@ -11,8 +11,8 @@ export const env = cleanEnv(import.meta.env, {
     desc: "Encore backend URL for the generated client",
   }),
   VITE_APPIUM_SERVER_URL: url({
-    default: "http://127.0.0.1:4723/",
-    desc: "Local Appium server used during development",
+    default: "https://hub.browserstack.com/wd/hub",
+    desc: "Appium server URL (BrowserStack hub or localhost for development)",
   }),
   VITE_APK_PATH: str({
     default: "/Users/priyankalalge/SAAS/Scoreboard/AppiumPythonClient/test/apps/kotlinconf.apk",

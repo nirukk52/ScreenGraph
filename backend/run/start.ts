@@ -21,11 +21,6 @@ export const start = api<StartRunRequest, StartRunResponse>(
       throw APIError.invalidArgument("apkPath is required");
     }
 
-    if (!req.appiumServerUrl) {
-      baseLog.info("Validation failed: appiumServerUrl missing");
-      throw APIError.invalidArgument("appiumServerUrl is required");
-    }
-
     if (!req.packageName) {
       baseLog.info("Validation failed: packageName missing");
       throw APIError.invalidArgument("packageName is required");
@@ -64,10 +59,10 @@ export const start = api<StartRunRequest, StartRunResponse>(
     await runJobTopic.publish({
       runId: run.run_id,
       apkPath: req.apkPath,
-      appiumServerUrl: req.appiumServerUrl,
       packageName: req.packageName,
       appActivity: req.appActivity,
       maxSteps: req.maxSteps,
+      // appiumServerUrl omitted - backend uses BROWSERSTACK_* env vars
     });
 
     // Build full stream URL from request headers

@@ -258,4 +258,44 @@ From `founder_rules.mdc`:
 - **Quick reference**: `THE_3_COMMANDS.md`
 - **Template examples**: `.claude-skills/after-task_skill/SKILL.md` (has multiple examples)
 
+---
+
+## 📈 Self-Improvement Loop
+
+**The documentation you just created feeds the system's continuous improvement.**
+
+Your @after-task entries are analyzed monthly via `@update-skills` to identify:
+
+- ✅ **Skills that worked well** → Keep as-is, validate patterns
+- ⚠️ **Skills that struggled** → Update with better guidance
+- 🔧 **MCP tool pairings that were effective** → Recommend more often
+- 💡 **New patterns discovered** → Add to skill documentation
+- 📚 **Library updates needed** → Fetch latest docs via Context7
+
+**Frequency**: Monthly/quarterly (founder/team lead responsibility)
+
+**Workflow**:
+```
+@after-task (you, per spec)
+     ↓
+Graphiti stores evidence
+     ↓
+@update-skills (founder, monthly)
+     ↓
+Skills improve based on real usage
+     ↓
+@project-context gives better recommendations
+     ↓
+Future specs are faster and smoother
+```
+
+**This is how the system gets exponentially smarter.**
+
+Each @after-task you write makes the next spec 10% easier.
+
+---
+
+**Command**: `.cursor/commands/after-task.md`  
+**Related**: `.cursor/commands/update-skills.md` (system maintenance)
+
 
