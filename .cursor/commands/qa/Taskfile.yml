@@ -132,6 +132,27 @@ tasks:
       - echo "🎉 All validation checks passed!"
     silent: false
   
+  # QA suite without E2E (for CI when BrowserStack credentials unavailable)
+  all:no-e2e:
+    desc: "Validation QA suite without E2E tests (rules + smoke + lint + typecheck + unit)"
+    cmds:
+      - echo "🎯 Running validation QA suite (no E2E, no auto-fix)..."
+      - echo ""
+      - task: rules:check
+      - echo ""
+      - task: smoke
+      - echo ""
+      - task: lint
+      - echo ""
+      - task: typecheck
+      - echo ""
+      - task: unit
+      - echo ""
+      - echo "⏭️  Skipping E2E tests (BrowserStack credentials not available)"
+      - echo ""
+      - echo "🎉 All validation checks passed!"
+    silent: false
+  
   # Complete QA workflow (fix THEN validate)
   # Use this manually before committing
   all:fix:

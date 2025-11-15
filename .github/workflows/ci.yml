@@ -26,6 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ENCORE_AUTH_KEY: ${{ secrets.ENCORE_AUTH_KEY }}
+      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      BROWSERSTACK_HUB_URL: https://hub.browserstack.com/wd/hub
     
     steps:
       - name: Checkout code
@@ -91,14 +94,37 @@ jobs:
           echo "Waiting for frontend to be ready..."
           timeout 60 bash -c 'until curl -sf http://localhost:5173 > /dev/null; do sleep 2; done'
       
-      - name: Run Complete QA Suite
+      - name: Validate BrowserStack Credentials
+        run: |
+          if [ -z "${{ secrets.BROWSERSTACK_USERNAME }}" ] || [ -z "${{ secrets.BROWSERSTACK_ACCESS_KEY }}" ]; then
+            echo "⚠️  WARNING: BrowserStack credentials not configured"
+            echo "   E2E tests will be skipped"
+            echo "   To enable E2E tests in CI:"
+            echo "   1. Go to BrowserStack account settings to get credentials"
+            echo "   2. Go to: GitHub repo → Settings → Secrets and variables → Actions"
+            echo "   3. Create new secrets: BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY"
+            export SKIP_E2E=1
+          else
+            echo "✅ BrowserStack credentials available - E2E tests enabled"
+            export SKIP_E2E=0
+          fi
+          echo "SKIP_E2E=$SKIP_E2E" >> $GITHUB_ENV
+      
+      - name: Run Complete QA Suite (with E2E)
+        if: env.SKIP_E2E == '0'
         run: cd .cursor && task qa:all
+      
+      - name: Run QA Suite without E2E
+        if: env.SKIP_E2E == '1'
+        run: cd .cursor && task qa:all:no-e2e
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Implementation Notes:
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #
-# SIMPLICITY: Single job runs `task qa:all` - same as pre-push hook
+# SIMPLICITY: Single job runs conditional QA suite based on credentials
+# - With BrowserStack: `task qa:all` (includes E2E tests)
+# - Without BrowserStack: `task qa:all:no-e2e` (skips E2E tests)
 # MIRRORS LOCAL: Exact same command developers run locally
 # DRY: No duplication - all logic in .cursor/commands/qa/Taskfile.yml
 #
@@ -108,7 +134,11 @@ jobs:
 # 3. qa:lint      - Linting (backend + frontend)
 # 4. qa:typecheck - TypeScript validation (frontend)
 # 5. qa:unit      - Unit tests (backend only - encore test)
-# 6. qa:e2e       - E2E tests (frontend Playwright)
+# 6. qa:e2e       - E2E tests (frontend Playwright) - REQUIRES BrowserStack
+#
+# What `task qa:all:no-e2e` runs (same as above, but WITHOUT E2E):
+# - Skips E2E tests when BrowserStack credentials unavailable
+# - Useful for early CI setup or pull requests from forks
 #
 # Note: Auto-fix (qa:fix) is intentionally excluded from qa:all
 # - Git hooks should validate, not modify uncommitted code
@@ -125,24 +155,32 @@ jobs:
 # - Uses standard ports from .env (4000 backend, 5173 frontend)
 # - In-memory database for tests
 # - ENCORE_AUTH_KEY: GitHub Secret (app-specific auth key) for Encore Cloud authentication
+# - BROWSERSTACK_USERNAME & BROWSERSTACK_ACCESS_KEY: Optional GitHub Secrets for E2E tests
 #
 # GitHub Secrets Setup:
+#
+# REQUIRED:
 # 1. Go to: https://app.encore.cloud/screengraph-ovzi → App Settings → Auth Keys
 # 2. Create new auth key (NOT `encore auth token` - that's different!)
 # 3. Go to: GitHub repo → Settings → Secrets and variables → Actions
 # 4. Create new secret: ENCORE_AUTH_KEY
 # 5. Paste the auth key from step 2
 #
+# OPTIONAL (for E2E tests):
+# 1. Get BrowserStack credentials (account settings or ask team)
+# 2. Go to: GitHub repo → Settings → Secrets and variables → Actions
+# 3. Create new secrets: BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY
+# 4. Without these, E2E tests will be skipped (not failed)
+#
 # Testing before activation:
 # 1. Create feature branch
-# 2. Rename to ci.yml
-# 3. Push to trigger workflow
-# 4. Verify qa:all passes
-# 5. Merge to main
-
+# 2. Push to trigger workflow
+# 3. Verify appropriate QA suite passes (all or all:no-e2e)
+# 4. Merge to main after review
+#
 # Validation checklist when modifying:
 # 1. Create feature branch
 # 2. Push to trigger workflow
-# 3. Confirm qa:all passes in GitHub Actions
+# 3. Confirm appropriate QA suite passes in GitHub Actions
 # 4. Merge to main after review
 
