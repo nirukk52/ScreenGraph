@@ -3,7 +3,8 @@ export type RunStatus = "PENDING" | "RUNNING" | "COMPLETED" | "FAILED" | "CANCEL
 
 export interface StartRunRequest {
   apkPath: string;
-  appiumServerUrl: string;
+  /** @deprecated Backend uses BROWSERSTACK_* env vars. This field is ignored. */
+  appiumServerUrl?: string;
   packageName: string;
   appActivity: string;
   maxSteps?: number;
@@ -46,7 +47,8 @@ export interface Run {
 export interface RunJob {
   runId: string;
   apkPath: string;
-  appiumServerUrl: string;
+  /** @deprecated Kept for backward compat, but ignored. Backend uses BROWSERSTACK_* env vars. */
+  appiumServerUrl?: string;
   packageName: string;
   appActivity: string;
   maxSteps?: number;

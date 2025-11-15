@@ -56,6 +56,18 @@ export const env = cleanEnv(process.env, {
     default: 1,
     desc: "Expected number of unique screens discovered for deterministic testing with default app config",
   }),
+  BROWSERSTACK_USERNAME: str({
+    default: "niranjankurambha_lMw1EZ",
+    desc: "BrowserStack username for remote device access",
+  }),
+  BROWSERSTACK_ACCESS_KEY: str({
+    default: "JQ15WY8xQtaxqqinvcys",
+    desc: "BrowserStack access key for authentication",
+  }),
+  BROWSERSTACK_HUB_URL: url({
+    default: "https://hub.browserstack.com/wd/hub",
+    desc: "BrowserStack Appium hub URL",
+  }),
 });
 
 export const {
@@ -71,4 +83,7 @@ export const {
   ENABLE_GRAPH_STREAM,
   XSTATE_INSPECTOR_ENABLED,
   EXPECTED_UNIQUE_SCREENS_DISCOVERED,
+  BROWSERSTACK_USERNAME,
+  BROWSERSTACK_ACCESS_KEY,
+  BROWSERSTACK_HUB_URL,
 } = env;

@@ -78,10 +78,10 @@ new Subscription(runJobTopic, "agent-orchestrator-worker", {
         leaseDurationMs,
         jobConfig: {
           runId: job.runId,
-          appiumServerUrl: job.appiumServerUrl,
           packageName: job.packageName,
           apkPath: job.apkPath,
           appActivity: job.appActivity,
+          // appiumServerUrl omitted - comes from backend env vars
         },
       });
 
