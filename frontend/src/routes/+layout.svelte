@@ -2,6 +2,13 @@
 import "../app.css";
 import { goto } from "$app/navigation";
 import { page } from "$app/state";
+import { browser } from "$app/environment";
+import { injectAnalytics } from "@vercel/analytics/sveltekit";
+
+/** Initialize Vercel Analytics for pageview and custom event tracking */
+if (browser) {
+  injectAnalytics();
+}
 
 /** Root layout with Skeleton v3 for ultimate vibe coding */
 
@@ -52,4 +59,3 @@ function isActive(path: string): boolean {
 <main>
   <slot />
 </main>
-

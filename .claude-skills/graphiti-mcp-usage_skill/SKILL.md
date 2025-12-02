@@ -55,16 +55,16 @@ Remember: **the Graphiti knowledge graph *is* your memory.** Use it consistently
 
 ---
 
-## ScreenGraph-Specific Patterns
+## Manjha-Specific Patterns
 
 ### Project Identifier (CRITICAL)
 
-**ALWAYS use `group_id="screengraph"` for ALL Graphiti operations.**
+**ALWAYS use `group_id="manjha"` for ALL Graphiti operations.**
 
 - ✅ Graphiti is shared across multiple projects
 - ✅ `group_id` provides project isolation
 - ✅ Use tags in `episode_body` to categorize content (e.g., `[Tags: backend, agent, appium]`)
-- ❌ **NEVER use different group_ids** - ScreenGraph = `"screengraph"` always
+- ❌ **NEVER use different group_ids** - Manjha = `"manjha"` always
 
 **Common Tags for Organization:**
 - `backend` - Backend/API patterns
@@ -73,7 +73,6 @@ Remember: **the Graphiti knowledge graph *is* your memory.** Use it consistently
 - `debugging` - Bug fixes, workarounds
 - `architecture` - Design decisions
 - `devops` - CI/CD, automation
-- `appium` - Device connections, WebDriver
 
 ### Common Workflow: Before Implementing
 
