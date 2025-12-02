@@ -20,12 +20,13 @@ export const TEST_PACKAGE_NAME = process.env.VITE_PACKAGE_NAME || "com.example.t
 /**
  * Test app configuration from .env for consistent E2E testing.
  * All tests run against the same package defined in .env.
+ * Uses BrowserStack cloud devices for testing.
  */
 export const TEST_APP_CONFIG = {
   packageName: process.env.VITE_PACKAGE_NAME || "com.example.testapp",
   appActivity: process.env.VITE_APP_ACTIVITY || "com.example.testapp.MainActivity",
   apkPath: process.env.VITE_APK_PATH || "/path/to/test.apk",
-  appiumServerUrl: process.env.VITE_APPIUM_SERVER_URL || "http://localhost:4723",
+  appiumServerUrl: process.env.VITE_APPIUM_SERVER_URL || "https://hub.browserstack.com/wd/hub",
 };
 
 /**

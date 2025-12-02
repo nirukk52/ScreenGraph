@@ -157,7 +157,7 @@ export class AgentWorker {
     const registry = buildNodeRegistry(
       this.options.orchestrator.generateId.bind(this.options.orchestrator),
     );
-    const ctx = buildAgentContext(this.options.jobConfig);
+    const ctx = await buildAgentContext(this.options.jobConfig);
     await this.options.orchestrator.saveSnapshot(initialState);
 
     return this.runWithXState({
@@ -343,10 +343,10 @@ interface AgentWorkerOptions {
   heartbeatIntervalMs?: number;
   jobConfig: {
     runId: string;
-    appiumServerUrl: string;
     packageName: string;
     apkPath: string;
     appActivity?: string;
+    // appiumServerUrl removed - backend uses env vars
   };
 }
 

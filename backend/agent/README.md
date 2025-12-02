@@ -1,3 +1,92 @@
+# ONE GIANT MAP — TECH STACK + CLOUD + NODES + BUSINESS VALUE
+
++-----------------------------------------------------------------------------------------------------------------+
+|                                               BUSINESS LAYER                                                    |
+|  * Primary Use-Cases *                                                                                          |
+|    - Full automated mobile QA                                                                                   |
+|    - Visual regression + drift detection                                                                        |
+|    - Competitive analysis (auto-mapping competitor apps)                                                        |
+|    - CI/CD blocking on UX changes                                                                               |
+|    - Product insights: new flows, abandoned paths, UX stability                                                 |
+|    - Release-over-release diff timelines                                                                         |
+|    - PM-facing screen explorer dashboards                                                                        |
+|    - Engineering reproducible bug reports                                                                         |
+|                                                                                                                 |
+|  * Stakeholders *                                                                                               |
+|    - QA Teams | Product Managers | Founders | Designers | Analysts                                              |
++-----------------------------------------------------------------------------------------------------------------+
+                                                         |
+                                                         v
++-----------------------------------------------------------------------------------------------------------------+
+|                                          CLOUD DEVICE PROVIDERS                                                 |
+|   (Execution backend for ACT + PERCEIVE)                                                                        |
+|     - AWS Device Farm: real devices, parallel runs, screenshots, videos                                         |
+|     - BrowserStack App Automate: instant devices, Appium endpoints                                              |
+|     - Sauce Labs: automated mobile flows + advanced debugging                                                    |
+|                                                                                                                 |
+|    All feed into: ScreenGraph DriverPort → Perceive → Act                                                       |
++-----------------------------------------------------------------------------------------------------------------+
+                                                         |
+                                                         v
++-----------------------------------------------------------------------------------------------------------------+
+|                                        TOOLING + ANALYSIS LAYER                                                 |
+|   *Dynamic Crawlers & Fuzzers*                                                                                  |
+|       - DroidBot, DroidRun, Fastbot, Stoat, Ape, Monkey, MarlonTool, DroidMate                                 |
+|   *State/Model Extractors*                                                                                      |
+|       - Gator, DroidFax, FlowDroid                                                                              |
+|   *Runtime Introspection Tools*                                                                                 |
+|       - Stetho, Flipper, Facebook Infer                                                                         |
+|   *APK / XML Processing*                                                                                        |
+|       - Apktool, AXMLPrinter2, uiautomatorviewer                                                                |
+|   *LLM / AI Engines*                                                                                            |
+|       - Humanoid, GPT/LLM-based Explorers                                                                       |
+|                                                                                                                 |
+|   Role: Enrich ENUMERATE / CHOOSE / VERIFY / PERSIST / DETECTPROGRESS                                          |
++-----------------------------------------------------------------------------------------------------------------+
+                                                         |
+                                                         v
++-----------------------------------------------------------------------------------------------------------------+
+|                                        CORE SCREENGRAPH ENGINE                                                  |
+|   State-Space Engine:                                                                                           |
+|      - ScreenGraph (screenId ↔ hash)                                                                            |
+|      - ActionGraph (edges)                                                                                      |
+|      - Coverage metrics (screens, edges, paths)                                                                 |
+|      - Loop detection, stall scoring                                                                            |
+|                                                                                                                 |
+|   Visual Engine:                                                                                                |
+|      - Perceptual hashing (pHash/dHash/SSIM)                                                                    |
+|      - Pixel diffs, layout diffs, drift scoring                                                                 |
+|                                                                                                                 |
+|   Replay Engine:                                                                                                |
+|      - Deterministic reproduction of any run                                                                    |
++-----------------------------------------------------------------------------------------------------------------+
+                                                         |
+                                                         v
++-----------------------------------------------------------------------------------------------------------------+
+|                           8-NODE DETERMINISTIC LOOP (HEART OF THE SYSTEM)                                      |
+|                                                                                                                 |
+|   [1] PERCEIVE → capture screenshot + XML + hash                                                                |
+|   [2] ENUMERATE → extract actionable elements                                                                   |
+|   [3] CHOOSE → strategy/AI/coverage-guided decision                                                              |
+|   [4] ACT → execute via Appium/ADB/Cloud Device                                                                  |
+|   [5] VERIFY → confirm visual or structural change                                                               |
+|   [6] PERSIST → upsert screen/action + edges in graph                                                            |
+|   [7] DETECT PROGRESS → stall/forward/loop                                                                       |
+|   [8] SHOULD CONTINUE → continue / restart app / switch policy / stop                                            |
+|                                                                                                                 |
+|   Single writer: run_events                                                                                     |
++-----------------------------------------------------------------------------------------------------------------+
+                                                         |
+                                                         v
++-----------------------------------------------------------------------------------------------------------------+
+|                                             RUNTIME CORE                                                         |
+|   - Event log (run_events)                                                                                      |
+|   - Outbox (strict publish ordering)                                                                            |
+|   - Graph projector (screens/actions/edges)                                                                      |
+|   - Deterministic replay core                                                                                    |
++-----------------------------------------------------------------------------------------------------------------+
+
+
 # ScreenGraph Agent System (MVP Scaffolding)
 
 ## Service Role

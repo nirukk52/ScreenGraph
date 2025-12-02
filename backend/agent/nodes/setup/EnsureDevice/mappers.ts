@@ -21,6 +21,7 @@ export function buildEnsureDeviceInput(state: AgentState, ctx: AgentContext): En
     iterationOrdinalNumber: state.iterationOrdinalNumber,
     deviceConfiguration: ctx.ensureDevice.deviceConfiguration,
     driverReusePolicy: ctx.ensureDevice.driverReusePolicy,
+    cloudAppUrl: ctx.ensureDevice.cloudAppUrl, // Pass pre-uploaded cloud URL
   };
 
   logger.info("buildEnsureDeviceInput - AgentState", { state });

@@ -111,11 +111,12 @@ tasks:
     silent: false
 
   # Validation-only QA suite (for git hooks and CI)
-  # Does NOT modify code - only validates
+  # CRITICAL: Does NOT modify code - only validates, NO SKIPPING ALLOWED
+  # All tests must pass before code can be merged
   all:
-    desc: "Validation QA suite (rules + smoke + lint + typecheck + unit + e2e)"
+    desc: "Validation QA suite (rules + smoke + lint + typecheck + unit + e2e) - ALL REQUIRED"
     cmds:
-      - echo "🎯 Running validation QA suite (no auto-fix)..."
+      - echo "🎯 Running validation QA suite (no auto-fix, no skipping)..."
       - echo ""
       - task: rules:check
       - echo ""

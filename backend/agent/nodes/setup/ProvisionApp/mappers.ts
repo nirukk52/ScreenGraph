@@ -13,9 +13,11 @@ export function buildProvisionAppInput(state: AgentState, ctx: AgentContext): Pr
   return {
     runId: state.runId,
     deviceRuntimeContextId: state.deviceRuntimeContextId,
+    appiumServerUrl: ctx.ensureDevice.deviceConfiguration.appiumServerUrl,
     applicationUnderTestDescriptor: ctx.provisionApp.applicationUnderTestDescriptor,
     installationPolicy: ctx.provisionApp.installationPolicy,
     reinstallIfOlder: ctx.provisionApp.reinstallIfOlder,
+    cloudAppUrl: ctx.provisionApp.cloudAppUrl, // Pass pre-uploaded cloud URL
     stepOrdinal: state.stepOrdinal + 1,
     iterationOrdinalNumber: state.iterationOrdinalNumber,
     randomSeed: state.randomSeed,

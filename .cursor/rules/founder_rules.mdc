@@ -182,6 +182,13 @@ logger.error("device connection failed", { err: error.message, deviceId });
 
 ### 🧪 Testing Philosophy
 
+**ABSOLUTE: NO TEST SKIPPING ALLOWED**
+- ❌ Never skip, conditional, or reduce test scope in CI/CD or pre-commit hooks
+- ❌ Never create workarounds to bypass test failures
+- ✅ ALL tests must pass before code can merge
+- ✅ If a test fails → fix code or fix test (never disable test)
+- ✅ Test failures block PRs intentionally - this is correct behavior
+
 **Test for flow reliability and correctness:**
 - High-level flow tests (not edge cases or petty tests)
 - Focus on creative consistency
@@ -190,6 +197,7 @@ logger.error("device connection failed", { err: error.message, deviceId });
 **Commands:**
 - Backend: `encore test`
 - Frontend: `bun run test`
+- Full QA: `cd .cursor && task qa:all` (runs all 6 checks, no skipping)
 
 ---
 

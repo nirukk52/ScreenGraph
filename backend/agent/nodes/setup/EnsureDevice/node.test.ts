@@ -2,11 +2,18 @@ import { nanoid } from "nanoid";
 import { describe, expect, test, vi } from "vitest";
 import type { DeviceRuntimeContext, SessionPort } from "../../../ports/appium/session.port";
 import { type EnsureDeviceInput, ensureDevice } from "./node";
+import * as appiumLifecycle from "./appium-lifecycle";
 
 describe("ensureDevice with lifecycle", () => {
   const mockGenerateId = () => nanoid();
 
   test("should check device prerequisites before session creation", async () => {
+    // Mock BrowserStack hub health check to always return healthy
+    vi.spyOn(appiumLifecycle, "checkAppiumHealth").mockResolvedValue({
+      isHealthy: true,
+      status: 0,
+    });
+
     // Mock only the SessionPort - let real lifecycle checks run
     const mockSessionPort: SessionPort = {
       ensureDevice: vi.fn().mockResolvedValue({
@@ -54,6 +61,12 @@ describe("ensureDevice with lifecycle", () => {
   });
 
   test("should emit lifecycle events", async () => {
+    // Mock BrowserStack hub health check to always return healthy
+    vi.spyOn(appiumLifecycle, "checkAppiumHealth").mockResolvedValue({
+      isHealthy: true,
+      status: 0,
+    });
+
     const mockSessionPort: SessionPort = {
       ensureDevice: vi.fn().mockResolvedValue({
         deviceRuntimeContextId: "ctx-456",

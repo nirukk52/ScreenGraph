@@ -18,6 +18,7 @@ import type { SessionPort } from "../../../ports/appium/session.port";
 export interface ProvisionAppInput extends CommonNodeInput {
   runId: string;
   deviceRuntimeContextId: string;
+  appiumServerUrl: string;
   applicationUnderTestDescriptor: {
     androidPackageId: string;
     apkStorageObjectReference: string;
@@ -27,6 +28,8 @@ export interface ProvisionAppInput extends CommonNodeInput {
   };
   installationPolicy: "INSTALL_IF_MISSING";
   reinstallIfOlder: boolean;
+  /** Cloud app URL (e.g., bs://...) if APK was pre-uploaded to BrowserStack */
+  cloudAppUrl?: string;
 }
 
 export interface ProvisionAppOutput extends CommonNodeOutput {
@@ -73,14 +76,23 @@ export async function provisionApp(
 
     // Lazy initialize Appium session if not already created (deferred from EnsureDevice)
     // Pass app info so UiAutomator2 can start properly with the target app
-    logger.info("ProvisionApp.ensureSession", { correlationId });
+    logger.info("ProvisionApp.ensureSession", { 
+      correlationId,
+      cloudAppUrl: input.cloudAppUrl,
+      apkRef: apkRef,
+    });
+    
+    // Use cloud URL if available (pre-uploaded to BrowserStack), otherwise use local path
+    const appPath = input.cloudAppUrl || apkRef;
+    logger.info("ProvisionApp using app path", { appPath, source: input.cloudAppUrl ? "cloud" : "local" });
+    
     await sessionPort.ensureDevice({
-      appiumServerUrl: "http://127.0.0.1:4723/",
+      appiumServerUrl: input.appiumServerUrl, // From AgentContext (configured via env vars)
       platformName: "Android",
       deviceName: "", // Will be auto-detected from stored context
       platformVersion: "", // Will be auto-detected from stored context
       // CRITICAL: Pass app path so UiAutomator2 can initialize with the app
-      app: apkRef,
+      app: appPath, // Use cloud URL (bs://...) or local path
       appPackage: packageId,
     });
     logger.info("ProvisionApp.sessionReady", { correlationId });

@@ -87,3 +87,5 @@ Labels & Notes – Tag screens (“Paywall”, “KYC”), leave short reviews, 
 
 Helpful commands
 open "/Users/priyankalalge/Library/Caches/encore/objects/d3u8d93djnh82bnf6l1g/artifacts/obj:/artifacts/"     
+
+https://developer.android.com/training/testing/ui-tests/screenshot

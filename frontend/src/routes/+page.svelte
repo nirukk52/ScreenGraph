@@ -9,6 +9,7 @@ import { RetroBadge, RetroButton, RetroCard, RetroInput, TabSection } from "$lib
 import DebugRetro from "$lib/components/DebugRetro.svelte";
 import ModernJourneyFull from "$lib/components/ModernJourneyFull.svelte";
 import { DEFAULT_DEVICE_CONFIG, DEFAULT_RUN_CONFIG } from "$lib/config";
+import { track } from "@vercel/analytics";
 import autoAnimate from "@formkit/auto-animate";
 import { Check } from "lucide-svelte";
 
@@ -25,6 +26,7 @@ let startingRun = $state(false);
  */
 function handleSignup(e: Event) {
   e.preventDefault();
+  track("CTA Clicked", { location: "footer_signup", cta: "Request Beta Access" });
   signupSuccess = true;
   // Reset after 3 seconds
   setTimeout(() => {
@@ -39,6 +41,7 @@ function handleSignup(e: Event) {
 async function handleDetectDrift() {
   if (startingRun) return;
 
+  track("CTA Clicked", { location: "hero", cta: "Detect My First Drift" });
   startingRun = true;
   try {
     const response = await startRun({
@@ -63,6 +66,7 @@ async function handleDetectDrift() {
  * Scroll to the "How It Works" section smoothly
  */
 function handleSeeHowItWorks() {
+  track("CTA Clicked", { location: "hero_secondary", cta: "See How It Works" });
   const section = document.getElementById("how-it-works");
   if (section) {
     section.scrollIntoView({ behavior: "smooth", block: "start" });

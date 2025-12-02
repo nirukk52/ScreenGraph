@@ -3,6 +3,8 @@ import { remote } from "webdriverio";
 import { AGENT_ACTORS, MODULES } from "../../../../logging/logger";
 import type { DeviceRuntimeContext } from "../../../domain/entities";
 import type { DeviceConfiguration, SessionPort } from "../../../ports/appium/session.port";
+import type { CloudStoragePort } from "../../../ports/cloud-storage.port";
+import { BrowserStackAppUploadAdapter } from "../../browserstack/app-upload.adapter";
 import { DeviceOfflineError, TimeoutError } from "../errors";
 import type { SessionContext } from "./session-context";
 
@@ -38,17 +40,23 @@ interface RemoteOptions {
  * - No mutable state except connection handle
  *
  * TIMEOUTS:
- * - Default timeout: 30s for session creation
- * - Max timeout: 60s
+ * - Default timeout: 60s for BrowserStack (typically completes in ~40s)
+ * - Max timeout: 90s for edge cases
  */
 export class WebDriverIOSessionAdapter implements SessionPort {
   private context: SessionContext | null = null;
   private readonly timeoutMs: number;
   private readonly maxTimeoutMs: number;
+  private cloudStoragePort: CloudStoragePort | null = null;
 
-  constructor(timeoutMs = 20000, maxTimeoutMs = 30000) {
+  constructor(
+    timeoutMs = 60000, // 60s sufficient for BrowserStack (typically ~40s)
+    maxTimeoutMs = 90000, // 90s max for slow provisioning edge cases
+    cloudStoragePort?: CloudStoragePort,
+  ) {
     this.timeoutMs = Math.min(timeoutMs, maxTimeoutMs);
     this.maxTimeoutMs = maxTimeoutMs;
+    this.cloudStoragePort = cloudStoragePort || null;
   }
 
   /**
@@ -97,27 +105,79 @@ export class WebDriverIOSessionAdapter implements SessionPort {
     const deviceName = config.deviceName || "";
     const platformVersion = config.platformVersion || "";
     const platformName = config.platformName;
+    
+    // BrowserStack requires deviceName capability even if empty
+    // Use default device name for BrowserStack (must match their device inventory)
+    const isBrowserStack = config.appiumServerUrl.includes("browserstack.com");
+    // Use Samsung Galaxy S20 (verified available via BrowserStack devices API)
+    const effectiveDeviceName = deviceName || (isBrowserStack ? "Samsung Galaxy S20" : "");
+    const effectivePlatformVersion = platformVersion || (isBrowserStack ? "10.0" : "");
 
     logger.info("Creating Appium session", {
-      deviceName: deviceName || "(auto-detect)",
-      platformVersion: platformVersion || "(auto-detect)",
+      deviceName: effectiveDeviceName || "(auto-detect)",
+      platformVersion: effectivePlatformVersion || "(auto-detect)",
       platformName,
+      isBrowserStack,
     });
 
     try {
-      // Create new WebDriverIO session - Appium handles device detection
+      // Handle BrowserStack app upload if needed
+      let effectiveAppPath = config.app;
+      if (
+        isBrowserStack &&
+        config.app &&
+        !config.app.startsWith("bs://") &&
+        !config.app.startsWith("http")
+      ) {
+        logger.info("Local app detected for BrowserStack, uploading...", {
+          localPath: config.app,
+        });
+
+        // Initialize cloudStoragePort if not provided
+        if (!this.cloudStoragePort) {
+          const username = this.extractUsername(config.appiumServerUrl);
+          const password = this.extractPassword(config.appiumServerUrl);
+          if (username && password) {
+            this.cloudStoragePort = new BrowserStackAppUploadAdapter(username, password);
+            logger.info("Initialized BrowserStack upload adapter");
+          } else {
+            throw new Error(
+              "BrowserStack credentials not found in URL. Cannot upload app.",
+            );
+          }
+        }
+
+        // Upload app to BrowserStack
+        const uploadResult = await this.cloudStoragePort.uploadApp(config.app);
+        effectiveAppPath = uploadResult.cloudUrl;
+
+        logger.info("App uploaded to BrowserStack", {
+          cloudUrl: effectiveAppPath,
+          fileName: uploadResult.fileName,
+          fileSize: uploadResult.fileSize,
+        });
+      }
+
+      // Create new WebDriverIO session - BrowserStack handles device provisioning
+      const username = this.extractUsername(config.appiumServerUrl);
+      const password = this.extractPassword(config.appiumServerUrl);
+      
       const driver = await remote({
         hostname: this.extractHostname(config.appiumServerUrl),
         port: this.extractPort(config.appiumServerUrl),
-        path: "/",
+        path: this.extractPath(config.appiumServerUrl),
+        protocol: this.extractProtocol(config.appiumServerUrl),
+        // BrowserStack/Sauce Labs/etc require credentials as separate fields
+        ...(username && { user: username }),
+        ...(password && { key: password }),
         capabilities: {
           platformName,
           "appium:automationName": "UiAutomator2",
-          // Let Appium detect device if not provided
-          ...(deviceName && { "appium:deviceName": deviceName }),
-          ...(platformVersion && { "appium:platformVersion": platformVersion }),
-          // App context (if provided)
-          ...(config.app && { "appium:app": config.app }),
+          // BrowserStack requires deviceName
+          ...(effectiveDeviceName && { "appium:deviceName": effectiveDeviceName }),
+          ...(effectivePlatformVersion && { "appium:platformVersion": effectivePlatformVersion }),
+          // App context (use uploaded cloud URL if BrowserStack)
+          ...(effectiveAppPath && { "appium:app": effectiveAppPath }),
           ...(config.appPackage && { "appium:appPackage": config.appPackage }),
           // Session behavior
           "appium:noReset": true,
@@ -308,9 +368,61 @@ export class WebDriverIOSessionAdapter implements SessionPort {
   private extractPort(url: string): number {
     try {
       const parsed = new URL(url);
-      return parsed.port ? Number.parseInt(parsed.port, 10) : 4723;
+      if (parsed.port) {
+        return Number.parseInt(parsed.port, 10);
+      }
+      // Default ports based on protocol
+      return parsed.protocol === "https:" ? 443 : 4723;
     } catch {
       return 4723;
+    }
+  }
+
+  /**
+   * Extract path from Appium server URL.
+   */
+  private extractPath(url: string): string {
+    try {
+      const parsed = new URL(url);
+      return parsed.pathname || "/wd/hub";
+    } catch {
+      return "/wd/hub";
+    }
+  }
+
+  /**
+   * Extract protocol from Appium server URL.
+   */
+  private extractProtocol(url: string): "http" | "https" {
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === "https:" ? "https" : "http";
+    } catch {
+      return "http";
+    }
+  }
+
+  /**
+   * Extract username from Appium server URL (for cloud providers like BrowserStack).
+   */
+  private extractUsername(url: string): string | undefined {
+    try {
+      const parsed = new URL(url);
+      return parsed.username || undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  /**
+   * Extract password from Appium server URL (for cloud providers like BrowserStack).
+   */
+  private extractPassword(url: string): string | undefined {
+    try {
+      const parsed = new URL(url);
+      return parsed.password || undefined;
+    } catch {
+      return undefined;
     }
   }
 }

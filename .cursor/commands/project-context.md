@@ -121,11 +121,11 @@ If Graphiti returns no matches, explicitly state that this is new territory and 
 
 ## Integration With The 3 Commands
 
-- Run `@project-context` **before** the lifecycle commands.
-- After context is loaded:
-  1. Call `@before-task [task]` for deep discovery (once per spec)
-  2. Use `@during-task [subtask]` during implementation (5-10× per spec)
-  3. Finish with `@after-task [what you completed]` to document learnings
+**@project-context IS the comprehensive discovery command.** Use it before starting work, then:
+
+1. **@project-context [task]** - Before work (comprehensive discovery - THIS COMMAND)
+2. **@during-task [subtask]** - During implementation (5-10× per spec, lightweight)
+3. **@after-task [completed]** - After completion (documents learnings, feeds @update-skills)
 
 ---
 

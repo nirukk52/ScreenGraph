@@ -149,3 +149,8 @@ out
 # Skills (Local Development Only)
 # ============================================
 skills-main/
+
+# ============================================
+# MCP Configuration (Contains Secrets)
+# ============================================
+mcp.json

@@ -1,3 +1,5 @@
+import log from "encore.dev/log";
+import { AGENT_ACTORS, MODULES } from "../../../../logging/logger";
 import type { NodeHandler } from "../../../engine/types";
 import type { AgentContext, AgentNodeName, AgentPorts } from "../../types";
 import { applyStopOutput, buildStopInput } from "./mappers";
@@ -19,7 +21,29 @@ export function createStopHandler(): NodeHandler<
   return {
     name: "Stop",
     buildInput: buildStopInput,
-    async execute(input) {
+    async execute(input, ports) {
+      const logger = log.with({
+        module: MODULES.AGENT,
+        actor: AGENT_ACTORS.ORCHESTRATOR,
+        runId: input.runId,
+        nodeName: "Stop",
+      });
+
+      // Clean up BrowserStack/Appium session before stopping
+      try {
+        const context = ports.sessionPort.getContext();
+        if (context?.driver?.sessionId) {
+          logger.info("Closing BrowserStack session", { sessionId: context.driver.sessionId });
+          await context.driver.deleteSession();
+          logger.info("BrowserStack session closed successfully");
+        }
+      } catch (cleanupErr) {
+        // Log but don't fail - cleanup is best-effort
+        logger.warn("Session cleanup failed", {
+          error: cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr),
+        });
+      }
+
       const result = await stop(input);
       return {
         output: result.output,

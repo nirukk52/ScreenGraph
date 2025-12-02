@@ -33,6 +33,8 @@ export interface AgentContext {
   ensureDevice: {
     deviceConfiguration: DeviceConfiguration;
     driverReusePolicy: "REUSE_OR_CREATE";
+    /** Cloud app URL (e.g., bs://...) if APK was pre-uploaded to BrowserStack/other cloud */
+    cloudAppUrl?: string;
   };
   provisionApp: {
     installationPolicy: "INSTALL_IF_MISSING";
@@ -44,6 +46,8 @@ export interface AgentContext {
       expectedVersionCode: number | null;
       expectedVersionName: string | null;
     };
+    /** Cloud app URL (e.g., bs://...) if APK was pre-uploaded to BrowserStack/other cloud */
+    cloudAppUrl?: string;
   };
   launchOrAttach: {
     applicationUnderTestDescriptor: {

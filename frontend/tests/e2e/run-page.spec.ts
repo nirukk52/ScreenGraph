@@ -9,20 +9,21 @@ import { TEST_APP_CONFIG, TEST_PACKAGE_NAME } from "./helpers";
  * - Landing page loads correctly
  * - Run can be started successfully
  * - Run page displays timeline heading
- * - Screenshots appear within 20 seconds
+ * - Screenshots appear within 60 seconds (BrowserStack provisioning)
  *
  * Prerequisites:
  * - Backend and frontend services running
+ * - BrowserStack credentials configured in backend .env
  * - Test package from .env: ${TEST_PACKAGE_NAME}
  */
 test.describe("/run page smoke tests", () => {
-  test.setTimeout(60000); // 60s timeout for full run flow
+  test.setTimeout(90000); // 90s timeout for full run flow (BrowserStack provisioning)
   test.beforeAll(() => {
     // Log test configuration from .env
-    console.log("🎯 E2E Test Configuration:");
+    console.log("🎯 E2E Test Configuration (BrowserStack Cloud):");
     console.log(`  Package: ${TEST_APP_CONFIG.packageName}`);
     console.log(`  Activity: ${TEST_APP_CONFIG.appActivity}`);
-    console.log(`  Appium: ${TEST_APP_CONFIG.appiumServerUrl}`);
+    console.log(`  BrowserStack Hub: ${TEST_APP_CONFIG.appiumServerUrl}`);
   });
 
   /**
@@ -31,16 +32,16 @@ test.describe("/run page smoke tests", () => {
    *
    * Prerequisites:
    * - Backend running with agent worker (cd backend && encore run)
-   * - Appium server running (auto-started by integration test)
-   * - Android device/emulator connected
+   * - BrowserStack credentials configured in backend .env
    * - Agent must capture at least 1 screenshot
    *
-   * NOTE: This is a full integration test requiring the complete harness.
-   * If backend worker isn't running, test will timeout after 30s.
+   * NOTE: This is a full integration test using BrowserStack cloud devices.
+   * BrowserStack session provisioning takes 40-60 seconds.
+   * If backend worker isn't running, test will timeout after 60s.
    * Uses package from .env: ${TEST_PACKAGE_NAME}
    *
    * To run this test:
-   * 1. Terminal 1: cd backend && encore run
+   * 1. Terminal 1: cd backend && encore run (with BrowserStack credentials)
    * 2. Terminal 2: cd frontend && bun run test:e2e:headed
    */
   test("should discover and display screenshots", async ({ page }) => {
@@ -61,9 +62,9 @@ test.describe("/run page smoke tests", () => {
     const timelineHeading = page.getByRole("heading", { name: /run timeline/i });
     await expect(timelineHeading).toBeVisible({ timeout: 10000 });
 
-    // Wait for agent to capture first screenshot (reduced to fit 30s default)
+    // Wait for agent to capture first screenshot (BrowserStack provisioning: 40-60s)
     // Race between screenshot success and launch failure (fast-fail)
-    console.log("⏱ Waiting for agent to capture screenshots...");
+    console.log("⏱ Waiting for BrowserStack session + agent screenshots (up to 60s)...");
 
     const runEventsRoot = page.locator("[data-testid='run-events']");
     const screenshotEventLocator = runEventsRoot.locator(
@@ -74,7 +75,7 @@ test.describe("/run page smoke tests", () => {
     );
 
     const startTime = Date.now();
-    const timeout = 15000;
+    const timeout = 60000; // 60s for BrowserStack session provisioning
     let screenshotFound = false;
 
     while (!screenshotFound && Date.now() - startTime < timeout) {
@@ -89,10 +90,11 @@ test.describe("/run page smoke tests", () => {
 Event detected in UI: ${eventText || "No details available"}
 
 Common causes:
-- Appium not running (http://127.0.0.1:4723)
-- Device not connected (adb devices)
-- App not installed or installation failed
-- Backend unable to connect to Appium server`,
+- BrowserStack credentials missing or invalid
+- BrowserStack hub unavailable
+- App not pre-uploaded to BrowserStack
+- Device not available in BrowserStack pool
+- Backend unable to connect to BrowserStack hub`,
         );
       }
 
