@@ -37,6 +37,7 @@ export default class Client {
     public readonly graph: graph.ServiceClient
     public readonly run: run.ServiceClient
     public readonly steering: steering.ServiceClient
+    public readonly tenants: tenants.ServiceClient
     private readonly options: ClientOptions
     private readonly target: string
 
@@ -56,6 +57,7 @@ export default class Client {
         this.graph = new graph.ServiceClient(base)
         this.run = new run.ServiceClient(base)
         this.steering = new steering.ServiceClient(base)
+        this.tenants = new tenants.ServiceClient(base)
     }
 
     /**
@@ -462,6 +464,107 @@ export namespace steering {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("PATCH", `/steering/docs/${encodeURIComponent(category)}/${encodeURIComponent(filename)}`, JSON.stringify(params))
             return await resp.json() as UpdateDocResponse
+        }
+    }
+}
+
+export namespace tenants {
+    export type ConnectorProvider = "github" | "slack" | "perplexity"
+
+    export type ConnectorStatus = "pending" | "connected" | "error" | "disconnected"
+
+    export type TenantStatus = "active" | "pending" | "disabled"
+
+    export interface ConnectTenantConnectorParams {
+        externalAccountLabel?: string
+    }
+
+    export interface ConnectTenantConnectorResponse {
+        connector: TenantConnectorRecord
+    }
+
+    export interface DisconnectTenantConnectorResponse {
+        connector: TenantConnectorRecord
+    }
+
+    export interface GetTenantResponse {
+        tenant: TenantRecord
+    }
+
+    export interface ListTenantsResponse {
+        tenants: TenantRecord[]
+    }
+
+    export interface TenantConnectorRecord {
+        connectorId: string
+        tenantId: string
+        provider: ConnectorProvider
+        status: ConnectorStatus
+        externalAccountLabel: string | null
+        lastError: string | null
+        connectedAt: string | null
+        createdAt: string
+        updatedAt: string
+    }
+
+    export interface TenantRecord {
+        tenantId: string
+        slug: string
+        displayName: string
+        websiteUrl: string
+        description: string
+        status: TenantStatus
+        sortOrder: number
+        createdAt: string
+        updatedAt: string
+        connectors: TenantConnectorRecord[]
+    }
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.connectTenantConnector = this.connectTenantConnector.bind(this)
+            this.disconnectTenantConnector = this.disconnectTenantConnector.bind(this)
+            this.getTenant = this.getTenant.bind(this)
+            this.listTenants = this.listTenants.bind(this)
+        }
+
+        /**
+         * connectTenantConnector marks a tenant connector as connected.
+         * PURPOSE: Complete GitHub / Slack / Perplexity linking for a tenant.
+         */
+        public async connectTenantConnector(slug: string, provider: ConnectorProvider, params: ConnectTenantConnectorParams): Promise<ConnectTenantConnectorResponse> {
+            const resp = await this.baseClient.callTypedAPI("POST", `/tenants/${encodeURIComponent(slug)}/connectors/${encodeURIComponent(provider)}/connect`, JSON.stringify(params))
+            return await resp.json() as ConnectTenantConnectorResponse
+        }
+
+        /**
+         * disconnectTenantConnector clears a previously connected connector.
+         * PURPOSE: Allow operators to unlink GitHub / Slack / Perplexity from a tenant.
+         */
+        public async disconnectTenantConnector(slug: string, provider: ConnectorProvider): Promise<DisconnectTenantConnectorResponse> {
+            const resp = await this.baseClient.callTypedAPI("POST", `/tenants/${encodeURIComponent(slug)}/connectors/${encodeURIComponent(provider)}/disconnect`)
+            return await resp.json() as DisconnectTenantConnectorResponse
+        }
+
+        /**
+         * getTenant returns one tenant and its connectors by slug.
+         * PURPOSE: Support tenant-focused connector management views.
+         */
+        public async getTenant(slug: string): Promise<GetTenantResponse> {
+            const resp = await this.baseClient.callTypedAPI("GET", `/tenants/${encodeURIComponent(slug)}`)
+            return await resp.json() as GetTenantResponse
+        }
+
+        /**
+         * listTenants returns the onboarded tenant roster with connector status.
+         * PURPOSE: Drive the tenant landing page (venkat.ag first, shoploop second).
+         */
+        public async listTenants(): Promise<ListTenantsResponse> {
+            const resp = await this.baseClient.callTypedAPI("GET", `/tenants`)
+            return await resp.json() as ListTenantsResponse
         }
     }
 }

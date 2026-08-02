@@ -25,6 +25,11 @@ function handleComponents() {
   goto("/components");
 }
 
+/** Navigate to tenant connector setup page */
+function handleTenants() {
+  goto("/tenants");
+}
+
 /** Check if current path matches */
 function isActive(path: string): boolean {
   return page.url.pathname === path;
@@ -41,6 +46,7 @@ function isActive(path: string): boolean {
     <a href="/" class="text-lg font-semibold text-surface-900-50-token">ScreenGraph</a>
     <nav class="ml-auto flex gap-2">
       <button onclick={handleHome} class="btn variant-ghost-surface {isActive('/') ? 'variant-filled-primary' : ''}">Home</button>
+      <button onclick={handleTenants} class="btn variant-ghost-surface {isActive('/tenants') ? 'variant-filled-primary' : ''}">Tenants</button>
       <button onclick={handleDevJourney} class="btn variant-ghost-surface {isActive('/dev-journey') ? 'variant-filled-primary' : ''}">Dev Journey</button>
       <button onclick={handleAppInfo} class="btn variant-ghost-surface {isActive('/app-info') ? 'variant-filled-primary' : ''}">App Info</button>
       <button onclick={handleComponents} class="btn variant-ghost-surface {isActive('/components') ? 'variant-filled-primary' : ''}">Components</button>

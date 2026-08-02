@@ -113,6 +113,9 @@ $effect(() => {
 						<RetroButton variant="primary" size="lg" onclick={handleDetectDrift} disabled={startingRun}>
 							{startingRun ? "Starting..." : "Detect My First Drift"}
 						</RetroButton>
+						<RetroButton variant="secondary" size="lg" onclick={() => goto("/tenants")}>
+							Connect Tenants
+						</RetroButton>
 						<RetroButton variant="secondary" size="lg" onclick={handleSeeHowItWorks}> See How It Works </RetroButton>
 					</div>
 					<div class="flex flex-wrap gap-6 text-sm text-[var(--color-text-secondary)]">
